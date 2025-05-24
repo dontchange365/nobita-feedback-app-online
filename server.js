@@ -17,7 +17,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUi
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shammu@love';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
