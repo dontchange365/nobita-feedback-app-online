@@ -120,7 +120,7 @@
       box-shadow: 0 6px 12px rgba(59,130,246,0.4);
     }
 
-    #feedback-list-container { /* Changed ID to avoid conflict with feedbackListDiv in JS */
+    #feedback-list-container {
       margin-top: 45px;
       background: #F9F9F9;
       border: 1px solid #E0E0E0;
@@ -199,19 +199,19 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    #feedback-list-container::-webkit-scrollbar { /* Changed ID */
+    #feedback-list-container::-webkit-scrollbar {
       width: 10px;
     }
-    #feedback-list-container::-webkit-scrollbar-track { /* Changed ID */
+    #feedback-list-container::-webkit-scrollbar-track {
       background: #E2E8F0;
       border-radius: 10px;
     }
-    #feedback-list-container::-webkit-scrollbar-thumb { /* Changed ID */
+    #feedback-list-container::-webkit-scrollbar-thumb {
       background: #A0AEC0;
       border-radius: 10px;
       border: 2px solid #E2E8F0;
     }
-    #feedback-list-container::-webkit-scrollbar-thumb:hover { /* Changed ID */
+    #feedback-list-container::-webkit-scrollbar-thumb:hover {
       background: #718096;
     }
 
@@ -270,14 +270,16 @@
       const feedbackTextarea = document.getElementById('feedback');
       const ratingInput = document.getElementById('rating');
       const submitButton = document.getElementById('submit-feedback');
-      const feedbackListContainer = document.getElementById('feedback-list-container'); // Corrected ID
+      const feedbackListContainer = document.getElementById('feedback-list-container');
       const stars = document.querySelectorAll('.star');
       let currentSelectedRating = 0;
 
-      // ****** YAHAN TERE PHONE KA IP ADDRESS DAAL DIYA HAI ******
-      const PHONE_IP = '172.20.10.2'; // Tera IP address
-      const API_URL = `http://${PHONE_IP}:3000/api/feedback`; // Server par feedback submit karne ke liye
-      const FETCH_API_URL = `http://${PHONE_IP}:3000/api/feedbacks`; // Server se feedbacks fetch karne ke liye
+      // ****** BASE URL AB AUTOMATICALLY SET HOGA ******
+      // JAB TU LOCALHOST PE CHALAYEGA TOH YE 'http://localhost:3000' HOGA
+      // JAB TU RENDER PE DEPLOY KAREGA TOH YE 'https://nobita-feedback-app-online.onrender.com' HOGA
+      const BASE_API_URL = window.location.origin;
+      const API_URL = `${BASE_API_URL}/api/feedback`; // Server par feedback submit karne ke liye
+      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`; // Server se feedbacks fetch karne ke liye
 
       function updateStarVisuals(ratingToShow) {
         stars.forEach(star => {
@@ -318,12 +320,11 @@
         try {
             const response = await fetch(FETCH_API_URL);
             if (!response.ok) {
-                // Agar response ok nahi hai, toh error throw karo
-                const errorText = await response.text(); // Get raw text for better error debugging
+                const errorText = await response.text();
                 throw new Error(`HTTP ERROR! STATUS: ${response.status} - ${errorText}`);
             }
             const feedbacks = await response.json();
-            feedbackListContainer.innerHTML = ''; // Clear existing feedbacks in DOM
+            feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>'; // Clear existing feedbacks and add heading back
 
             if (feedbacks.length === 0) {
               const noFeedbackMessage = document.createElement('p');
@@ -333,6 +334,8 @@
               noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
               feedbackListContainer.append(noFeedbackMessage);
             } else {
+              // Sort feedbacks by timestamp (newest first) before displaying
+              feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
               feedbacks.forEach(fb => {
                   addFeedbackToDOM(fb.name, fb.feedback, fb.rating);
               });
@@ -347,7 +350,7 @@
       submitButton.addEventListener('click', async () => {
         const name = nameInput.value.trim();
         const feedback = feedbackTextarea.value.trim();
-        const rating = ratingInput.value;
+        const rating = ratingInput.value; // ratingInput.value already gives string, will be parsed to int by server
 
         if (!name || !feedback || rating === '0') {
           alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
@@ -355,7 +358,7 @@
         }
 
         const dataToSend = { name, feedback, rating };
-        console.log('FRONTEND SE YE DATA BHEJ RAHA HOON:', dataToSend); // Debugging log
+        console.log('FRONTEND SE YE DATA BHEJ RAHA HOON:', dataToSend);
 
         try {
             const response = await fetch(API_URL, {
@@ -367,25 +370,24 @@
             });
 
             if (!response.ok) {
-                // Agar server ne non-2xx status code bheja
-                const errorData = await response.json().catch(() => ({ message: 'SERVER SE RESPONSE PARSE NAHI HUA.' })); // Try parsing as JSON, fallback to generic
+                // Try to parse error message from server
+                const errorData = await response.json().catch(() => ({ message: 'SERVER SE RESPONSE PARSE NAHI HUA YA KOI ANJAAN ERROR.' }));
                 console.error('SERVER SE ERROR RESPONSE AAYA:', errorData);
                 throw new Error(errorData.message || `FEEDBACK SUBMIT KARNE MEIN LOHDA LAG GAYA! STATUS: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('SERVER SE SAFAL RESPONSE:', result); // Debugging log
+            console.log('SERVER SE SAFAL RESPONSE:', result);
             alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
 
-            // Clear form and reset stars
+            // Clear form
             nameInput.value = '';
             feedbackTextarea.value = '';
             ratingInput.value = '0';
             currentSelectedRating = 0;
             updateStarVisuals(0);
 
-            // Fetch and display updated feedbacks from server after successful submission
-            fetchFeedbacks();
+            fetchFeedbacks(); // Refresh list after successful submission
 
         } catch (error) {
             console.error('FRONTEND MEIN FETCH ERROR:', error);
@@ -410,7 +412,7 @@
         const starsDiv = document.createElement('div');
         starsDiv.classList.add('feedback-stars');
         for (let i = 0; i < rating; i++) starsDiv.textContent += '★';
-        for (let i = rating; i < 5; i++) starsDiv.textContent += '☆'; // Add empty stars
+        for (let i = rating; i < 5; i++) starsDiv.textContent += '☆';
 
         const p = document.createElement('p');
         p.textContent = feedback;
@@ -418,11 +420,10 @@
         content.append(strong, starsDiv, p);
         item.append(avatar, content);
 
-        feedbackListContainer.prepend(item); // Add to the container
+        feedbackListContainer.prepend(item); // Prepend to add new feedback at the top
       }
 
-      // Initial load of feedbacks when the page loads
-      fetchFeedbacks();
+      fetchFeedbacks(); // Initial load of feedbacks when the page loads
     });
   </script>
 </body>
