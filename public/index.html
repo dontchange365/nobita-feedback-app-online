@@ -191,12 +191,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2em;
-      color: #fff;
+      overflow: hidden; /* To ensure the image is clipped to circle */
       flex-shrink: 0;
-      font-weight: bold;
       border: 2px solid #2563EB;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensures image covers the area */
     }
 
     /* Reply Display Styles for Main Website */
@@ -302,184 +305,214 @@
   </div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const nameInput   = document.getElementById('name');
-    const feedbackTA  = document.getElementById('feedback');
-    const ratingInput = document.getElementById('rating');
-    const submitBtn   = document.getElementById('submit-feedback');
-    const feedbackListContainer = document.getElementById('feedback-list-container');
-    const stars = document.querySelectorAll('.star');
-    let currentRating = 0;
+    document.addEventListener('DOMContentLoaded', () => {
+      const nameInput = document.getElementById('name');
+      const feedbackTextarea = document.getElementById('feedback');
+      const ratingInput = document.getElementById('rating');
+      const submitButton = document.getElementById('submit-feedback');
+      const feedbackListContainer = document.getElementById('feedback-list-container');
+      const stars = document.querySelectorAll('.star');
+      let currentSelectedRating = 0;
 
-    // --- YOUR SERVER URLS ---
-    const BASE_API_URL  = 'https://nobita-feedback-app-online.onrender.com';
-    const POST_URL      = `${BASE_API_URL}/api/feedback`;
-    const FETCH_URL     = `${BASE_API_URL}/api/feedbacks`;
+      // ****** YAHAN HAI TERI SERVER KI API DETAILS ******
+      const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // Tera Live Server URL
+      const API_URL = `${BASE_API_URL}/api/feedback`; // Feedback SUBMIT karne ke liye
+      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`; // Feedback FETCH karne ke liye
 
-    // --- STAR RATING UI HANDLERS ---
-    function updateStarVisuals(r) {
-      stars.forEach(s => {
-        const v = parseInt(s.dataset.value);
-        s.classList.toggle('selected', v <= r);
-        s.classList.remove('highlighted');
-      });
-    }
-    stars.forEach(s => {
-      s.addEventListener('click', () => {
-        currentRating = parseInt(s.dataset.value);
-        ratingInput.value = currentRating;
-        updateStarVisuals(currentRating);
-      });
-      s.addEventListener('mouseenter', () => {
-        const hoverVal = parseInt(s.dataset.value);
-        stars.forEach(x => {
-          x.classList.toggle('highlighted', parseInt(x.dataset.value) <= hoverVal);
-          x.classList.remove('selected');
+      // ****** API CALLING FUNCTIONS ******
+      async function fetchAllFeedbacks() {
+          try {
+              const response = await fetch(FETCH_API_URL);
+              if (!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+              }
+              const feedbacks = await response.json();
+              console.log('Fetched Feedbacks:', feedbacks);
+              return feedbacks;
+          } catch (error) {
+              console.error('Error fetching feedbacks:', error);
+              alert(`FEEDBACKS LOAD NAHI HO PAYE! Error: ${error.message}`);
+              return [];
+          }
+      }
+
+      async function submitNewFeedback(userName, userFeedback, userRating) {
+          const data = {
+              name: userName,
+              feedback: userFeedback,
+              rating: userRating
+          };
+
+          try {
+              const response = await fetch(API_URL, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(data)
+              );
+
+              if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({ message: 'Server error without JSON response.' }));
+                  throw new Error(errorData.message || `Failed to submit feedback: ${response.status}`);
+              }
+
+              const result = await response.json();
+              console.log('Feedback Submitted Successfully:', result);
+              return result;
+          } catch (error) {
+              console.error('Error submitting feedback:', error);
+              alert(`FEEDBACK SUBMIT NAHI HO PAYA! Error: ${error.message}`);
+              throw error;
+          }
+      }
+
+      // ****** UI AUR INTERACTION LOGIC ******
+
+      function updateStarVisuals(ratingToShow) {
+        stars.forEach(star => {
+          const starValue = parseInt(star.getAttribute('data-value'));
+          if (starValue <= ratingToShow) star.classList.add('selected');
+          else star.classList.remove('selected');
+          star.classList.remove('highlighted');
+        });
+      }
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          currentSelectedRating = parseInt(star.getAttribute('data-value'));
+          ratingInput.value = currentSelectedRating;
+          updateStarVisuals(currentSelectedRating);
+        });
+
+        star.addEventListener('mouseenter', () => {
+          const hoverValue = parseInt(star.getAttribute('data-value'));
+          stars.forEach(s => {
+            const val = parseInt(s.getAttribute('data-value'));
+            if (val <= hoverValue) {
+              s.classList.add('highlighted');
+              s.classList.remove('selected');
+            } else {
+              s.classList.remove('highlighted');
+            }
+          });
+        });
+
+        star.addEventListener('mouseleave', () => {
+          updateStarVisuals(currentSelectedRating);
         });
       });
-      s.addEventListener('mouseleave', () => {
-        updateStarVisuals(currentRating);
-      });
-    });
 
-    // --- API FUNCTIONS ---
-    async function fetchAll() {
-      try {
-        const res = await fetch(FETCH_URL, { method: 'GET', mode: 'cors', headers: { 'Accept': 'application/json' } });
-        if (!res.ok) throw new Error(`Status ${res.status}: ${await res.text()}`);
-        return await res.json();
-      } catch (err) {
-        console.error('Fetch error:', err);
-        alert(`FEEDBACK LOAD ERROR:\n${err.message}`);
-        return [];
+      // ***** NAYA FUNCTION: DICEBEAR AVATAR URL BANANE KE LIYE! *****
+      function getDiceBearAvatarUrl(name) {
+          const seed = encodeURIComponent(name.toLowerCase()); // Naam ko seed banayenge
+          // 'adventurer' style use kiya hai, aur kuch options bhi dale hain
+          return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&scale=90`;
       }
-    }
-    async function postFeedback(name, feedback, rating) {
-      try {
-        const res = await fetch(POST_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ name, feedback, rating })
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Status ${res.status}: ${text}`);
-        }
-        return await res.json();
-      } catch (err) {
-        console.error('Post error:', err);
-        alert(`FEEDBACK SUBMIT ERROR:\n${err.message}`);
-        throw err;
-      }
-    }
+      // *************************************************************
 
-    // --- DOM INSERTION ---
-    function getColorForName(name) {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      let color = '#';
-      for (let i = 0; i < 3; i++) {
-        let value = (hash >> (i * 8)) & 0xFF;
-        color += ('00' + value.toString(16)).substr(-2);
-      }
-      return color;
-    }
-    function addFeedbackToDOM(name, feedback, rating, replies) {
-      const item = document.createElement('div');
-      item.classList.add('feedback-item');
+      // Helper function to add feedback to the DOM (for display only)
+      function addFeedbackToDOM(name, feedback, rating, replies) {
+        const item = document.createElement('div');
+        item.classList.add('feedback-item');
 
-      const initial = name.charAt(0).toUpperCase();
-      const avatar = document.createElement('div');
-      avatar.classList.add('avatar');
-      avatar.textContent = initial;
-      avatar.style.backgroundColor = getColorForName(name);
+        // ***** AVATAR AB IMG TAG HOGA! *****
+        const avatar = document.createElement('div'); // Container for avatar image
+        avatar.classList.add('avatar');
+        const avatarImg = document.createElement('img');
+        avatarImg.src = getDiceBearAvatarUrl(name); // DiceBear se URL le
+        avatarImg.alt = name.charAt(0).toUpperCase(); // Alt text for accessibility
+        avatar.append(avatarImg); // Image ko avatar div me add kar
+        // **********************************
 
-      const content = document.createElement('div');
-      const strong = document.createElement('strong');
-      strong.textContent = name.toUpperCase();
+        const content = document.createElement('div');
+        const strong = document.createElement('strong');
+        strong.textContent = name.toUpperCase();
 
-      const starsDiv = document.createElement('div');
-      starsDiv.classList.add('feedback-stars');
-      for (let i = 0; i < rating; i++) starsDiv.textContent += '★';
-      for (let i = rating; i < 5; i++) starsDiv.textContent += '☆';
+        const starsDiv = document.createElement('div');
+        starsDiv.classList.add('feedback-stars');
+        for (let i = 0; i < rating; i++) starsDiv.textContent += '★';
+        for (let i = rating; i < 5; i++) starsDiv.textContent += '☆';
 
-      const p = document.createElement('p');
-      p.textContent = feedback;
-
-      content.append(strong, starsDiv, p);
-      item.append(avatar, content);
-
-      if (replies && replies.length > 0) {
-        const repliesDisplay = document.createElement('div');
-        repliesDisplay.classList.add('replies-main-display');
-
-        const repliesHeading = document.createElement('h4');
-        repliesHeading.textContent = 'ADMIN REPLIES:';
-        repliesDisplay.append(repliesHeading);
-
-        replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        replies.forEach(reply => {
-          const singleReplyDiv = document.createElement('div');
-          singleReplyDiv.classList.add('single-reply-main');
-          singleReplyDiv.innerHTML =
-            `<span class="reply-admin-name-main">${reply.adminName}:</span> ${reply.text} ` +
-            `<span class="reply-timestamp-main">(${new Date(reply.timestamp).toLocaleString()})</span>`;
-          repliesDisplay.append(singleReplyDiv);
-        });
-        item.append(repliesDisplay);
-      }
-
-      feedbackListContainer.prepend(item);
-    }
-
-    // --- RENDER LOOP ---
-    async function renderAll() {
-      const data = await fetchAll();
-      feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
-      if (!data.length) {
         const p = document.createElement('p');
-        p.style.textAlign = 'center';
-        p.style.color = '#777';
-        p.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
-        feedbackListContainer.append(p);
-        return;
-      }
-      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .forEach(fb => addFeedbackToDOM(fb.name, fb.feedback, fb.rating, fb.replies));
-      feedbackListContainer.scrollTop = 0;
-    }
+        p.textContent = feedback;
 
-    // --- SUBMIT HANDLER ---
-    submitBtn.addEventListener('click', async () => {
-      const name = nameInput.value.trim();
-      const fb   = feedbackTA.value.trim();
-      const rate = parseInt(ratingInput.value);
-      if (!name || !fb || rate === 0) {
-        return alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+        content.append(strong, starsDiv, p);
+        item.append(avatar, content);
+
+        if (replies && replies.length > 0) {
+            const repliesDisplay = document.createElement('div');
+            repliesDisplay.classList.add('replies-main-display');
+            
+            const repliesHeading = document.createElement('h4');
+            repliesHeading.textContent = 'ADMIN REPLIES:';
+            repliesDisplay.append(repliesHeading);
+
+            replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            replies.forEach(reply => {
+                const singleReplyDiv = document.createElement('div');
+                singleReplyDiv.classList.add('single-reply-main');
+                singleReplyDiv.innerHTML = `<span class="reply-admin-name-main">${reply.adminName}:</span> ${reply.text} <span class="reply-timestamp-main">(${new Date(reply.timestamp).toLocaleString()})</span>`;
+                repliesDisplay.append(singleReplyDiv);
+            });
+            item.append(repliesDisplay);
+        }
+
+        feedbackListContainer.prepend(item);
       }
-      submitBtn.disabled = true;
-      try {
-        await postFeedback(name, fb, rate);
-        alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
-        nameInput.value = '';
-        feedbackTA.value = '';
-        ratingInput.value = '0';
-        currentRating = 0;
-        updateStarVisuals(0);
-        await renderAll();
-      } catch (_) {
-        // already alerted
-      } finally {
-        submitBtn.disabled = false;
+
+      // Function to render all feedbacks to the UI
+      async function renderFeedbacksToUI() {
+          const feedbacks = await fetchAllFeedbacks();
+          feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
+
+          if (feedbacks.length === 0) {
+            const noFeedbackMessage = document.createElement('p');
+            noFeedbackMessage.style.textAlign = 'center';
+            noFeedbackMessage.style.color = '#777';
+            noFeedbackMessage.style.marginTop = '20px';
+            noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
+            feedbackListContainer.append(noFeedbackMessage);
+          } else {
+            feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            feedbacks.forEach(fb => {
+                addFeedbackToDOM(fb.name, fb.feedback, fb.rating, fb.replies); 
+            });
+          }
+          feedbackListContainer.scrollTop = 0;
       }
+
+      submitButton.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        const feedback = feedbackTextarea.value.trim();
+        const rating = ratingInput.value; 
+
+        if (!name || !feedback || rating === '0') {
+          alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+          return;
+        }
+
+        try {
+            await submitNewFeedback(name, feedback, parseInt(rating));
+            alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
+
+            nameInput.value = '';
+            feedbackTextarea.value = '';
+            ratingInput.value = '0';
+            currentSelectedRating = 0;
+            updateStarVisuals(0);
+
+            await renderFeedbacksToUI();
+
+        } catch (error) {
+            console.error('Submission failed in UI logic:', error);
+        }
+      });
+
+      // Initial load of feedbacks when the page loads
+      renderFeedbacksToUI(); 
     });
-
-    // --- INITIAL LOAD ---
-    renderAll();
-  });
   </script>
 </body>
 </html>
