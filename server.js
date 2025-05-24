@@ -10,16 +10,12 @@ const path = require('path'); // Static files serve karne ke liye
 dotenv.config();
 
 const app = express();
-// Process.env.PORT Render jaise hosting platforms provide karte hain
-// Warna local pe 3000 port use hoga
 const PORT = process.env.PORT || 3000;
 
 // ****** MongoDB Connection String ******
-// IMPORTANT: PRODUCTION MEIN YE .env FILE SE AANA CHAHIYE!
 const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
-// BAHUT ZAROORI: REAL PRODUCTION MEIN INKO HARDCODE MAT KARNA!
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
 
@@ -33,7 +29,15 @@ const feedbackSchema = new mongoose.Schema({
   name: { type: String, required: true },
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  // ***** NAYA FIELD: ADMIN REPLIES KE LIYE! *****
+  replies: [
+    {
+      text: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      adminName: { type: String, default: 'Admin' } // Kaunsa admin reply kar raha hai
+    }
+  ]
 });
 
 // Create a Model from the Schema
@@ -42,7 +46,7 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 // Middleware
 app.use(cors({
     origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'DELETE'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'], // PUT method bhi add kiya hai agar future mein update ho
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
@@ -68,7 +72,7 @@ const authenticateAdmin = (req, res, next) => {
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        next(); // Admin hai, aage badho
+        next();
     } else {
         res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
         res.status(401).json({ message: 'UNAUTHORIZED: SAHI ADMIN CREDENTIALS NAHI HAIN, BHAI!' });
@@ -140,6 +144,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         display: flex;
                         flex-direction: column;
                         justify-content: space-between;
+                        margin-bottom: 20px; /* Added margin-bottom for spacing */
                     }
                     .feedback-item h4 { margin: 0 0 8px; font-size: 1.2em; color: #3b82f6; }
                     .feedback-item p { margin: 5px 0; font-size: 0.95em; color: #ccc; }
@@ -160,7 +165,59 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-item button:hover {
                         background-color: #c82333;
                     }
-                    .no-feedback { text-align: center; color: #888; font-size: 1.2em; margin-top: 50px; }
+                    /* Reply Section Styles */
+                    .reply-section {
+                        margin-top: 15px;
+                        border-top: 1px solid #555;
+                        padding-top: 15px;
+                    }
+                    .reply-section textarea {
+                        width: calc(100% - 20px);
+                        padding: 8px;
+                        border: 1px solid #777;
+                        border-radius: 4px;
+                        background-color: #444;
+                        color: #f0f0f0;
+                        resize: vertical;
+                        min-height: 50px;
+                        margin-bottom: 10px;
+                        font-size: 0.9em;
+                    }
+                    .reply-section button {
+                        background-color: #28a745; /* Green for reply */
+                        margin-top: 0;
+                    }
+                    .reply-section button:hover {
+                        background-color: #218838;
+                    }
+                    .replies-display {
+                        margin-top: 10px;
+                        background-color: #2a2a2a;
+                        border-radius: 5px;
+                        padding: 10px;
+                        border: 1px solid #444;
+                    }
+                    .single-reply {
+                        border-bottom: 1px solid #3a3a3a;
+                        padding-bottom: 8px;
+                        margin-bottom: 8px;
+                        font-size: 0.85em;
+                        color: #bbb;
+                    }
+                    .single-reply:last-child {
+                        border-bottom: none;
+                        margin-bottom: 0;
+                    }
+                    .reply-admin-name {
+                        font-weight: bold;
+                        color: #00bcd4; /* Cyan */
+                    }
+                    .reply-timestamp {
+                        font-size: 0.75em;
+                        color: #888;
+                        margin-left: 10px;
+                    }
+
                 </style>
             </head>
             <body>
@@ -181,6 +238,20 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <p class="date">DATE: ${new Date(fb.timestamp).toLocaleString()}</p>
                         </div>
                         <button onclick="deleteFeedback('${fb._id}')">UDHA DE!</button>
+                        
+                        <div class="reply-section">
+                            <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
+                            <button onclick="postReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
+                            <div class="replies-display">
+                                ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
+                                ${fb.replies && fb.replies.map(reply => `
+                                    <div class="single-reply">
+                                        <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+                                        <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 `;
             });
@@ -194,7 +265,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     async function deleteFeedback(id) {
                         if (confirm('PAKKA UDHA DENA HAI? FIR WAPAS NAHI AAYEGA!')) {
                             try {
-                                const baseUrl = window.location.origin; // CURRENT URL KA BASE USE KAREGA
+                                const baseUrl = window.location.origin;
                                 const response = await fetch(\`\${baseUrl}/api/admin/feedback/\${id}\`, {
                                     method: 'DELETE',
                                     headers: {
@@ -203,7 +274,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 });
                                 if (response.ok) {
                                     alert('FEEDBACK UDHA DIYA!');
-                                    window.location.reload(); // PAGE REFRESH KAR DE
+                                    window.location.reload();
                                 } else {
                                     const errorData = await response.json();
                                     alert(\`UDHANE MEIN PHADDA HUA: \${errorData.message || 'KOI ANJAAN ERROR!'}\`);
@@ -211,6 +282,38 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             } catch (error) {
                                 alert(\`NETWORK KI LAGG GAYI: \${error.message}\`);
                             }
+                        }
+                    }
+
+                    async function postReply(feedbackId, textareaId) {
+                        const replyTextarea = document.getElementById(textareaId);
+                        const replyText = replyTextarea.value.trim();
+
+                        if (!replyText) {
+                            alert('REPLY KUCH LIKH TOH DE, BHAI!');
+                            return;
+                        }
+
+                        try {
+                            const baseUrl = window.location.origin;
+                            const response = await fetch(\`\${baseUrl}/api/admin/feedback/\${feedbackId}/reply\`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': AUTH_HEADER
+                                },
+                                body: JSON.stringify({ replyText: replyText, adminName: '${ADMIN_USERNAME}' }) // Admin ka naam bhi bhej raha hai
+                            });
+
+                            if (response.ok) {
+                                alert('REPLY SAFALTA-POORVAK POST HUA!');
+                                window.location.reload();
+                            } else {
+                                const errorData = await response.json();
+                                alert(\`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'KOI ANJAAN ERROR!'}\`);
+                            }
+                        } catch (error) {
+                            alert(\`NETWORK KI LAGG GAYI REPLY POST KARNE MEIN: \${error.message}\`);
                         }
                     }
                 </script>
@@ -224,7 +327,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
-// ADMIN DELETE API ENDPOINT
+// ADMIN DELETE API ENDPOINT (YE WAHI PURANA HAI)
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -237,6 +340,31 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     } catch (error) {
         console.error('FEEDBACK DELETE KARTE WAQT ERROR AAYA:', error);
         res.status(500).json({ message: 'FEEDBACK DELETE NAHI HO PAYA.', error: error.message });
+    }
+});
+
+// NAYA API ENDPOINT: ADMIN REPLY KARNE KE LIYE!
+app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { replyText, adminName } = req.body;
+
+    if (!replyText) {
+        return res.status(400).json({ message: 'REPLY TEXT BHEJ, BHAI! KUCH LIKHEGA YA NAHI?' });
+    }
+
+    try {
+        const feedback = await Feedback.findById(id);
+        if (!feedback) {
+            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, REPLY KAISE KARUN? GADBAD HAI!' });
+        }
+
+        feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
+        await feedback.save();
+
+        res.status(200).json({ message: 'REPLY SAFALTA-POORVAK JAMA HUA!', reply: feedback.replies[feedback.replies.length - 1] });
+    } catch (error) {
+        console.error('REPLY SAVE KARTE WAQT FATTI HAI:', error);
+        res.status(500).json({ message: 'REPLY SAVE NAHI HO PAYA. SERVER KI GANDI HAALAT HAI!', error: error.message });
     }
 });
 
