@@ -4,26 +4,20 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // Environment variables ke liye
-const path = require('path'); // ***** YEH LINE MISSING THI! AB ADD KI HAI! *****
+const path = require('path'); // ***** YEH LINE BAHUT ZAROORI HAI! *****
 
 // .env file se variables load karega (agar deployment pe use karna hai)
 dotenv.config();
 
 const app = express();
-// Process.env.PORT Render jaise hosting platforms provide karte hain
-// Warna local pe 3000 port use hoga
 const PORT = process.env.PORT || 3000;
 
 // ****** MongoDB Connection String ******
-// IMPORTANT: PRODUCTION MEIN YE .env FILE SE AANA CHAHIYE!
-// Yahan hardcoded hai, par Render par hum isko Environment Variable mein set karenge.
 const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
-// BAHUT ZAROORI: REAL PRODUCTION MEIN INKO HARDCODE MAT KARNA!
-// Render par inko Environment Variables (ADMIN_USERNAME, ADMIN_PASSWORD) mein set karna hoga.
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365'; // TERA ADMIN USERNAME
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123'; // TERA ADMIN PASSWORD
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
@@ -42,9 +36,8 @@ const feedbackSchema = new mongoose.Schema({
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 // Middleware
-// CORS ko update kiya hai takki Admin Panel bhi access kar sake
 app.use(cors({
-    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000', 'YOUR_ADMIN_PANEL_URL_HERE'], // Yahan apni admin panel ka URL dalna agar alag hosting pe hai
+    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'], // Added localhost for local testing
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -53,30 +46,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware for Admin Authentication
 const authenticateAdmin = (req, res, next) => {
-    // Basic Auth: Authorization header se username/password check kar
-    // Production me JWT token use karte hain. Abhi ke liye simple rakha hai.
     const authHeader = req.headers.authorization;
-
     if (!authHeader) {
         return res.status(401).json({ message: 'UNAUTHORIZED: AUTHORIZATION HEADER MISSING.' });
     }
-
-    const [scheme, credentials] = authHeader.split(' '); // Expected format: Basic <base64_credentials>
-
+    const [scheme, credentials] = authHeader.split(' ');
     if (scheme !== 'Basic' || !credentials) {
         return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTHORIZATION SCHEME.' });
     }
-
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
-
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        next(); // Admin hai, aage badho
+        next();
     } else {
         res.status(401).json({ message: 'UNAUTHORIZED: SAHI ADMIN CREDENTIALS NAHI HAIN, BHAI!' });
     }
 };
 
-// ***** YEH HAI WOH JAADUI LINE! *****
+// ***** YE HAI WOH JAADUI LINE! STATIC FILES AUR INDEX.HTML KE LIYE! *****
 // Serve static files from the 'public' directory, aur root '/' par 'index.html' ko serve kar
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
@@ -84,7 +70,7 @@ app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }))
 // API Endpoint to get all feedbacks (Fetch from DB)
 app.get('/api/feedbacks', async (req, res) => {
     try {
-        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 }); // Get latest first
+        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
         res.status(200).json(allFeedbacks);
     } catch (error) {
         console.error('FEEDBACK FETCH KARTE WAQT ERROR AAYA:', error);
@@ -95,20 +81,16 @@ app.get('/api/feedbacks', async (req, res) => {
 // API Endpoint to submit new feedback (Save to DB)
 app.post('/api/feedback', async (req, res) => {
     const { name, feedback, rating } = req.body;
-
     if (!name || !feedback || rating === '0') {
         return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
     }
-
     try {
         const newFeedback = new Feedback({
             name: name.toUpperCase(),
             feedback: feedback,
             rating: parseInt(rating)
         });
-
-        await newFeedback.save(); // Save to MongoDB
-
+        await newFeedback.save();
         console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
         res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
     } catch (error) {
@@ -117,19 +99,126 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
-// ****** NEW ADMIN DELETE API ENDPOINT ******
-// Is endpoint ko hit karne ke liye 'authenticateAdmin' middleware chalega pehle
-app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
-    const feedbackId = req.params.id; // URL se ID lega (e.g., /api/admin/feedback/60d0fe4a1234567890abcdef)
-
+// ****** YE HAI TERA ADMIN PANEL WALA ROUTE! *****
+app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
-        // Mongoose se ID ke through delete karna
-        const deletedFeedback = await Feedback.findByIdAndDelete(feedbackId);
+        const feedbacks = await Feedback.find().sort({ timestamp: -1 });
+        const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
+        const authHeaderValue = `Basic ${encodedCredentials}`;
 
+        let html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>ADMIN PANEL: GANDI BAATEIN</title>
+                <style>
+                    body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #f0f0f0; margin: 20px; }
+                    h1 { color: #ff4500; text-align: center; margin-bottom: 30px; }
+                    .feedback-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+                    .feedback-item {
+                        background-color: #333;
+                        padding: 20px;
+                        border-radius: 10px;
+                        width: 300px;
+                        box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                    }
+                    .feedback-item h4 { margin: 0 0 8px; font-size: 1.2em; color: #3b82f6; }
+                    .feedback-item p { margin: 5px 0; font-size: 0.95em; color: #ccc; }
+                    .feedback-item .rating { font-size: 1.1em; color: #ffd700; }
+                    .feedback-item .date { font-size: 0.75em; color: #aaa; margin-top: 10px; }
+                    .feedback-item button {
+                        background-color: #dc3545; /* Red for delete */
+                        color: white;
+                        border: none;
+                        padding: 10px 15px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        margin-top: 15px;
+                        transition: background-color 0.3s;
+                        font-weight: bold;
+                        width: 100%;
+                    }
+                    .feedback-item button:hover {
+                        background-color: #c82333;
+                    }
+                    .no-feedback { text-align: center; color: #888; font-size: 1.2em; margin-top: 50px; }
+                </style>
+            </head>
+            <body>
+                <h1>ADMIN PANEL: GANDI BAATEIN LOG</h1>
+                <div class="feedback-list">
+        `;
+
+        if (feedbacks.length === 0) {
+            html += `<p class="no-feedback">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI.</p>`;
+        } else {
+            feedbacks.forEach(fb => {
+                html += `
+                    <div class="feedback-item">
+                        <div>
+                            <h4>BY: ${fb.name}</h4>
+                            <p class="rating">RATING: ${'★'.repeat(fb.rating) + '☆'.repeat(5 - fb.rating)}</p>
+                            <p>FEEDBACK: ${fb.feedback}</p>
+                            <p class="date">DATE: ${new Date(fb.timestamp).toLocaleString()}</p>
+                        </div>
+                        <button onclick="deleteFeedback('${fb._id}')">UDHA DE!</button>
+                    </div>
+                `;
+            });
+        }
+
+        html += `
+                </div>
+                <script>
+                    const AUTH_HEADER = '${authHeaderValue}'; // ADMIN CREDENTIALS (PRODUCTION KE LIYE SAFE NAHI HAI)
+
+                    async function deleteFeedback(id) {
+                        if (confirm('PAKKA UDHA DENA HAI? FIR WAPAS NAHI AAYEGA!')) {
+                            try {
+                                const baseUrl = window.location.origin; // CURRENT URL KA BASE USE KAREGA
+                                const response = await fetch(\`\${baseUrl}/api/admin/feedback/\${id}\`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': AUTH_HEADER
+                                    }
+                                });
+                                if (response.ok) {
+                                    alert('FEEDBACK UDHA DIYA!');
+                                    window.location.reload(); // PAGE REFRESH KAR DE
+                                } else {
+                                    const errorData = await response.json();
+                                    alert(\`UDHANE MEIN PHADDA HUA: \${errorData.message || 'KOI ANJAAN ERROR!'}\`);
+                                }
+                            } catch (error) {
+                                alert(\`NETWORK KI LAGG GAYI: \${error.message}\`);
+                            }
+                        }
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+        res.send(html);
+    } catch (error) {
+        console.error('ERROR GENERATING ADMIN PANEL:', error);
+        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR: ${error.message}`);
+    }
+});
+
+// ****** NEW ADMIN DELETE API ENDPOINT ******
+app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
+    const feedbackId = req.params.id;
+    try {
+        const deletedFeedback = await Feedback.findByIdAndDelete(feedbackId);
         if (!deletedFeedback) {
             return res.status(404).json({ message: 'FEEDBACK NAHI MILA, BHAI. DELETE KISKO KARUN?' });
         }
-
         console.log('FEEDBACK DELETE KIYA GAYA:', deletedFeedback);
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK DELETE HUA!', deletedFeedback });
     } catch (error) {
