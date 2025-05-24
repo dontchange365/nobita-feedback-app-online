@@ -60,11 +60,15 @@
       background: #fdfdfd;
       color: #333;
       font-size: 1em;
+      box-sizing: border-box;
     }
 
-    .input-group textarea { resize: vertical; min-height: 120px; }
+    .input-group textarea {
+      resize: vertical;
+      min-height: 120px;
+      max-height: 300px;
+    }
 
-    /* ★ Much larger stars ★ */
     .stars {
       margin-top: 15px;
       display: flex;
@@ -72,7 +76,7 @@
       gap: 8px;
     }
     .star {
-      font-size: 3.5em;  /* increased */
+      font-size: 3.5em;
       color: #D1D5DB;
       cursor: pointer;
       transition: color 0.2s, transform 0.2s;
@@ -80,7 +84,7 @@
     .star.highlighted,
     .star.selected {
       color: #F59E0B;
-      transform: scale(1.5);  /* bigger pop */
+      transform: scale(1.5);
     }
 
     button {
@@ -94,13 +98,13 @@
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(59,130,246,0.3);
       margin-top: 25px;
+      transition: background-color 0.2s, transform 0.2s;
     }
     button:hover {
       background-color: #2563EB;
       transform: translateY(-2px);
     }
 
-    /* feedback list now expands freely */
     #feedback-list-container {
       margin-top: 20px;
       width: 100%;
@@ -150,7 +154,7 @@
     }
     .feedback-content .feedback-stars {
       color: #F59E0B;
-      font-size: 1.5em; /* larger for read-only stars */
+      font-size: 1.5em;
       margin-bottom: 8px;
     }
     .feedback-content p {
@@ -158,10 +162,7 @@
       line-height: 1.7;
     }
 
-    /* ★ Admin replies now full-width under feedback, indented ★ */
     .replies-main-display {
-      width: calc(100% - 75px);
-      margin-left: 75px;
       margin-top: 12px;
       border-top: 1px solid #E0E0E0;
       padding-top: 10px;
@@ -184,7 +185,6 @@
       color: #4A5568;
     }
     .single-reply-main:last-child { margin-bottom: 0; }
-
     .reply-admin-name-main {
       font-weight: bold;
       color: #1E3A8A;
@@ -226,7 +226,6 @@
 
     <div id="feedback-list-container">
       <h2>RECENT FEEDBACKS</h2>
-      <!-- items appended here -->
     </div>
   </div>
 
@@ -244,7 +243,6 @@
       const stars       = document.querySelectorAll('.star');
       let currentRating = 0;
 
-      // ★ Star UI handlers
       function updateStars(r) {
         stars.forEach(s => {
           const v = +s.dataset.value;
@@ -268,7 +266,6 @@
         s.addEventListener('mouseleave', () => updateStars(currentRating));
       });
 
-      // ★ Fetch & Post
       async function fetchAll() {
         try {
           const res = await fetch(FETCH_URL, { mode:'cors', headers:{'Accept':'application/json'} });
@@ -289,17 +286,14 @@
         return res.json();
       }
 
-      // ★ Add single feedback item
-      function addItem(name, fb, rating, replies=[]) {
+      function addItem(name, fb, rating, replies = []) {
         const item = document.createElement('div');
         item.className = 'feedback-item';
 
-        // avatar placeholder
         const av = document.createElement('div');
         av.className = 'avatar';
         av.textContent = 'BBI';
 
-        // main content
         const content = document.createElement('div');
         content.className = 'feedback-content';
         content.innerHTML = `
@@ -309,26 +303,29 @@
         `;
 
         item.append(av, content);
-        listCont.append(item);
 
-        // replies under the feedback
         if (replies.length) {
-          const rd = document.createElement('div');
-          rd.className = 'replies-main-display';
-          rd.innerHTML = '<h4>ADMIN REPLIES:</h4>' +
-            replies.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))
-                   .map(rp => `
-                     <div class="single-reply-main">
-                       <span class="reply-admin-name-main">${rp.adminName}:</span>
-                       ${rp.text}
-                       <span class="reply-timestamp-main">(${new Date(rp.timestamp).toLocaleString()})</span>
-                     </div>
-                   `).join('');
-          listCont.append(rd);
+          const repWrap = document.createElement('div');
+          repWrap.className = 'replies-main-display';
+          repWrap.innerHTML = '<h4>ADMIN REPLIES:</h4>';
+          replies
+            .sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))
+            .forEach(rp => {
+              const rDiv = document.createElement('div');
+              rDiv.className = 'single-reply-main';
+              rDiv.innerHTML = `
+                <span class="reply-admin-name-main">${rp.adminName}:</span>
+                ${rp.text}
+                <span class="reply-timestamp-main">(${new Date(rp.timestamp).toLocaleString()})</span>
+              `;
+              repWrap.append(rDiv);
+            });
+          content.append(repWrap);
         }
+
+        listCont.append(item);
       }
 
-      // ★ Render all feedbacks
       async function renderAll() {
         listCont.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
         const feedbacks = await fetchAll();
@@ -345,7 +342,6 @@
         }
       }
 
-      // ★ Submit handler
       submitBtn.addEventListener('click', async () => {
         const n = nameInput.value.trim();
         const f = fbInput.value.trim();
@@ -370,7 +366,6 @@
         }
       });
 
-      // initial load
       renderAll();
     });
   </script>
