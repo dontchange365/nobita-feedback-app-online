@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ****** MongoDB Connection String ******
-const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
@@ -30,12 +30,11 @@ const feedbackSchema = new mongoose.Schema({
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   timestamp: { type: Date, default: Date.now },
-  // ***** NAYA FIELD: ADMIN REPLIES KE LIYE! *****
   replies: [
     {
       text: { type: String, required: true },
       timestamp: { type: Date, default: Date.now },
-      adminName: { type: String, default: 'Admin' } // Kaunsa admin reply kar raha hai
+      adminName: { type: String, default: 'Admin' }
     }
   ]
 });
@@ -46,7 +45,7 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 // Middleware
 app.use(cors({
     origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'DELETE', 'PUT'], // PUT method bhi add kiya hai agar future mein update ho
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
@@ -57,7 +56,6 @@ const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        // 'WWW-Authenticate' header add kiya hai takki browser login pop-up dikhaye
         res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
         return res.status(401).json({ message: 'UNAUTHORIZED: AUTHORIZATION HEADER MISSING.' });
     }
@@ -80,7 +78,6 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 // STATIC FILES AUR INDEX.HTML KO SERVE KARNE WALI LINE
-// Ye ensure karta hai ki root URL ('/') par 'public/index.html' serve ho
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
 
@@ -144,14 +141,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         display: flex;
                         flex-direction: column;
                         justify-content: space-between;
-                        margin-bottom: 20px; /* Added margin-bottom for spacing */
+                        margin-bottom: 20px;
                     }
                     .feedback-item h4 { margin: 0 0 8px; font-size: 1.2em; color: #3b82f6; }
                     .feedback-item p { margin: 5px 0; font-size: 0.95em; color: #ccc; }
                     .feedback-item .rating { font-size: 1.1em; color: #ffd700; }
                     .feedback-item .date { font-size: 0.75em; color: #aaa; margin-top: 10px; }
                     .feedback-item button {
-                        background-color: #dc3545; /* Red for delete */
+                        background-color: #dc3545;
                         color: white;
                         border: none;
                         padding: 10px 15px;
@@ -184,7 +181,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         font-size: 0.9em;
                     }
                     .reply-section button {
-                        background-color: #28a745; /* Green for reply */
+                        background-color: #28a745;
                         margin-top: 0;
                     }
                     .reply-section button:hover {
@@ -210,7 +207,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
                     .reply-admin-name {
                         font-weight: bold;
-                        color: #00bcd4; /* Cyan */
+                        color: #00bcd4;
                     }
                     .reply-timestamp {
                         font-size: 0.75em;
@@ -302,7 +299,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     'Content-Type': 'application/json',
                                     'Authorization': AUTH_HEADER
                                 },
-                                body: JSON.stringify({ replyText: replyText, adminName: '${ADMIN_USERNAME}' }) // Admin ka naam bhi bhej raha hai
+                                // ***** YAHAN BADLAV KIYA HAI! ADMIN NAME AB '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' JAYEGA! *****
+                                body: JSON.stringify({ replyText: replyText, adminName: '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' }) 
                             });
 
                             if (response.ok) {
