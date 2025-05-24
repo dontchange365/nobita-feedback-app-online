@@ -187,7 +187,7 @@
     .avatar {
       width: 55px;
       height: 55px;
-      background: #3B82F6;
+      /* Background will be set by JS dynamically */
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -205,7 +205,7 @@
         margin-top: 15px;
         border-top: 1px solid #E0E0E0;
         padding-top: 15px;
-        background-color: #F0F2F5; /* Slightly different background */
+        background-color: #F0F2F5;
         border-radius: 8px;
         padding: 10px;
     }
@@ -216,8 +216,8 @@
         font-weight: bold;
     }
     .single-reply-main {
-        background-color: #E8EBF2; /* Lighter background for replies */
-        border-left: 3px solid #3B82F6; /* Blue border */
+        background-color: #E8EBF2;
+        border-left: 3px solid #3B82F6;
         padding: 8px 12px;
         margin-bottom: 8px;
         border-radius: 4px;
@@ -349,7 +349,7 @@
                       'Content-Type': 'application/json'
                   },
                   body: JSON.stringify(data)
-              });
+              );
 
               if (!response.ok) {
                   const errorData = await response.json().catch(() => ({ message: 'Server error without JSON response.' }));
@@ -402,8 +402,21 @@
         });
       });
 
+      // Function to generate a consistent color based on name
+      function getColorForName(name) {
+          let hash = 0;
+          for (let i = 0; i < name.length; i++) {
+              hash = name.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          let color = '#';
+          for (let i = 0; i < 3; i++) {
+              let value = (hash >> (i * 8)) & 0xFF;
+              color += ('00' + value.toString(16)).substr(-2);
+          }
+          return color;
+      }
+
       // Helper function to add feedback to the DOM (for display only)
-      // AB YE FUNCTION REPLIES KO BHI DIKHAYEGA!
       function addFeedbackToDOM(name, feedback, rating, replies) {
         const item = document.createElement('div');
         item.classList.add('feedback-item');
@@ -412,6 +425,9 @@
         const avatar = document.createElement('div');
         avatar.classList.add('avatar');
         avatar.textContent = initial;
+        // ***** YAHAN BADLAV KIYA HAI! AVATAR KA BACKGROUND COLOR DYNAMIC HOGA! *****
+        avatar.style.backgroundColor = getColorForName(name); 
+        // **********************************************************************
 
         const content = document.createElement('div');
         const strong = document.createElement('strong');
@@ -428,7 +444,6 @@
         content.append(strong, starsDiv, p);
         item.append(avatar, content);
 
-        // ****** REPLIES DIKHANE KA CODE YAHAN ADD KIYA HAI ******
         if (replies && replies.length > 0) {
             const repliesDisplay = document.createElement('div');
             repliesDisplay.classList.add('replies-main-display');
@@ -437,16 +452,15 @@
             repliesHeading.textContent = 'ADMIN REPLIES:';
             repliesDisplay.append(repliesHeading);
 
-            replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort replies by oldest first
+            replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
             replies.forEach(reply => {
                 const singleReplyDiv = document.createElement('div');
                 singleReplyDiv.classList.add('single-reply-main');
                 singleReplyDiv.innerHTML = `<span class="reply-admin-name-main">${reply.adminName}:</span> ${reply.text} <span class="reply-timestamp-main">(${new Date(reply.timestamp).toLocaleString()})</span>`;
                 repliesDisplay.append(singleReplyDiv);
             });
-            item.append(repliesDisplay); // Feedback item me replies add kar
+            item.append(repliesDisplay);
         }
-        // ******************************************************
 
         feedbackListContainer.prepend(item);
       }
@@ -465,7 +479,6 @@
             feedbackListContainer.append(noFeedbackMessage);
           } else {
             feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            // addFeedbackToDOM ko ab replies bhi de rahe hain
             feedbacks.forEach(fb => {
                 addFeedbackToDOM(fb.name, fb.feedback, fb.rating, fb.replies); 
             });
