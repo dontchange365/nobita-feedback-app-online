@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>⭐ PROFESSIONAL FEEDBACK ⭐</title>
+  <title>⭐ DYNAMIC FEEDBACK SYSTEM ⭐</title>
   <style>
+    /* CSS Code - Wahi Professional Feedback Wala Style */
     body {
       font-family: 'Arial', sans-serif;
       background-color: #F0F2F5;
@@ -199,6 +200,43 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
+    /* Reply Display Styles for Main Website */
+    .replies-main-display {
+        margin-top: 15px;
+        border-top: 1px solid #E0E0E0;
+        padding-top: 15px;
+        background-color: #F0F2F5; /* Slightly different background */
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .replies-main-display h4 {
+        color: #1E3A8A;
+        margin-bottom: 10px;
+        font-size: 1em;
+        font-weight: bold;
+    }
+    .single-reply-main {
+        background-color: #E8EBF2; /* Lighter background for replies */
+        border-left: 3px solid #3B82F6; /* Blue border */
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #4A5568;
+    }
+    .single-reply-main:last-child {
+        margin-bottom: 0;
+    }
+    .reply-admin-name-main {
+        font-weight: bold;
+        color: #1E3A8A;
+    }
+    .reply-timestamp-main {
+        font-size: 0.8em;
+        color: #777;
+        margin-left: 8px;
+    }
+
     #feedback-list-container::-webkit-scrollbar {
       width: 10px;
     }
@@ -261,7 +299,7 @@
 
     <div id="feedback-list-container">
       <h2>RECENT FEEDBACKS</h2>
-      </div>
+    </div>
   </div>
 
   <script>
@@ -274,12 +312,61 @@
       const stars = document.querySelectorAll('.star');
       let currentSelectedRating = 0;
 
-      // ****** BASE URL AB AUTOMATICALLY SET HOGA ******
-      // JAB TU LOCALHOST PE CHALAYEGA TOH YE 'http://localhost:3000' HOGA
-      // JAB TU RENDER PE DEPLOY KAREGA TOH YE 'https://nobita-feedback-app-online.onrender.com' HOGA
-      const BASE_API_URL = window.location.origin;
-      const API_URL = `${BASE_API_URL}/api/feedback`; // Server par feedback submit karne ke liye
-      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`; // Server se feedbacks fetch karne ke liye
+      // ****** YAHAN HAI TERI SERVER KI API DETAILS ******
+      const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // Tera Live Server URL
+      const API_URL = `${BASE_API_URL}/api/feedback`; // Feedback SUBMIT karne ke liye
+      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`; // Feedback FETCH karne ke liye
+
+      // ****** API CALLING FUNCTIONS ******
+      async function fetchAllFeedbacks() {
+          try {
+              const response = await fetch(FETCH_API_URL);
+              if (!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+              }
+              const feedbacks = await response.json();
+              console.log('Fetched Feedbacks:', feedbacks);
+              return feedbacks;
+          } catch (error) {
+              console.error('Error fetching feedbacks:', error);
+              alert(`FEEDBACKS LOAD NAHI HO PAYE! Error: ${error.message}`);
+              return [];
+          }
+      }
+
+      async function submitNewFeedback(userName, userFeedback, userRating) {
+          const data = {
+              name: userName,
+              feedback: userFeedback,
+              rating: userRating
+          };
+
+          try {
+              const response = await fetch(API_URL, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(data)
+              });
+
+              if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({ message: 'Server error without JSON response.' }));
+                  throw new Error(errorData.message || `Failed to submit feedback: ${response.status}`);
+              }
+
+              const result = await response.json();
+              console.log('Feedback Submitted Successfully:', result);
+              return result;
+          } catch (error) {
+              console.error('Error submitting feedback:', error);
+              alert(`FEEDBACK SUBMIT NAHI HO PAYA! Error: ${error.message}`);
+              throw error;
+          }
+      }
+
+      // ****** UI AUR INTERACTION LOGIC ******
 
       function updateStarVisuals(ratingToShow) {
         stars.forEach(star => {
@@ -315,88 +402,9 @@
         });
       });
 
-      // Function to fetch and display feedbacks from the server
-      async function fetchFeedbacks() {
-        try {
-            const response = await fetch(FETCH_API_URL);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ERROR! STATUS: ${response.status} - ${errorText}`);
-            }
-            const feedbacks = await response.json();
-            feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>'; // Clear existing feedbacks and add heading back
-
-            if (feedbacks.length === 0) {
-              const noFeedbackMessage = document.createElement('p');
-              noFeedbackMessage.style.textAlign = 'center';
-              noFeedbackMessage.style.color = '#777';
-              noFeedbackMessage.style.marginTop = '20px';
-              noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
-              feedbackListContainer.append(noFeedbackMessage);
-            } else {
-              // Sort feedbacks by timestamp (newest first) before displaying
-              feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-              feedbacks.forEach(fb => {
-                  addFeedbackToDOM(fb.name, fb.feedback, fb.rating);
-              });
-            }
-            feedbackListContainer.scrollTop = 0; // Scroll to top after loading
-        } catch (error) {
-            console.error('FEEDBACK FETCH KARNE MEIN ERROR AAYA:', error);
-            alert(`FEEDBACK LOAD NAHI HO PAYE! SERVER CHECK KAR YA NETWORK. ERROR: ${error.message}`);
-        }
-      }
-
-      submitButton.addEventListener('click', async () => {
-        const name = nameInput.value.trim();
-        const feedback = feedbackTextarea.value.trim();
-        const rating = ratingInput.value; // ratingInput.value already gives string, will be parsed to int by server
-
-        if (!name || !feedback || rating === '0') {
-          alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
-          return;
-        }
-
-        const dataToSend = { name, feedback, rating };
-        console.log('FRONTEND SE YE DATA BHEJ RAHA HOON:', dataToSend);
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dataToSend)
-            });
-
-            if (!response.ok) {
-                // Try to parse error message from server
-                const errorData = await response.json().catch(() => ({ message: 'SERVER SE RESPONSE PARSE NAHI HUA YA KOI ANJAAN ERROR.' }));
-                console.error('SERVER SE ERROR RESPONSE AAYA:', errorData);
-                throw new Error(errorData.message || `FEEDBACK SUBMIT KARNE MEIN LOHDA LAG GAYA! STATUS: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('SERVER SE SAFAL RESPONSE:', result);
-            alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
-
-            // Clear form
-            nameInput.value = '';
-            feedbackTextarea.value = '';
-            ratingInput.value = '0';
-            currentSelectedRating = 0;
-            updateStarVisuals(0);
-
-            fetchFeedbacks(); // Refresh list after successful submission
-
-        } catch (error) {
-            console.error('FRONTEND MEIN FETCH ERROR:', error);
-            alert(`FEEDBACK SUBMIT NAHI HO PAYA: ${error.message}`);
-        }
-      });
-
       // Helper function to add feedback to the DOM (for display only)
-      function addFeedbackToDOM(name, feedback, rating) {
+      // AB YE FUNCTION REPLIES KO BHI DIKHAYEGA!
+      function addFeedbackToDOM(name, feedback, rating, replies) {
         const item = document.createElement('div');
         item.classList.add('feedback-item');
 
@@ -420,10 +428,80 @@
         content.append(strong, starsDiv, p);
         item.append(avatar, content);
 
-        feedbackListContainer.prepend(item); // Prepend to add new feedback at the top
+        // ****** REPLIES DIKHANE KA CODE YAHAN ADD KIYA HAI ******
+        if (replies && replies.length > 0) {
+            const repliesDisplay = document.createElement('div');
+            repliesDisplay.classList.add('replies-main-display');
+            
+            const repliesHeading = document.createElement('h4');
+            repliesHeading.textContent = 'ADMIN REPLIES:';
+            repliesDisplay.append(repliesHeading);
+
+            replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort replies by oldest first
+            replies.forEach(reply => {
+                const singleReplyDiv = document.createElement('div');
+                singleReplyDiv.classList.add('single-reply-main');
+                singleReplyDiv.innerHTML = `<span class="reply-admin-name-main">${reply.adminName}:</span> ${reply.text} <span class="reply-timestamp-main">(${new Date(reply.timestamp).toLocaleString()})</span>`;
+                repliesDisplay.append(singleReplyDiv);
+            });
+            item.append(repliesDisplay); // Feedback item me replies add kar
+        }
+        // ******************************************************
+
+        feedbackListContainer.prepend(item);
       }
 
-      fetchFeedbacks(); // Initial load of feedbacks when the page loads
+      // Function to render all feedbacks to the UI
+      async function renderFeedbacksToUI() {
+          const feedbacks = await fetchAllFeedbacks();
+          feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
+
+          if (feedbacks.length === 0) {
+            const noFeedbackMessage = document.createElement('p');
+            noFeedbackMessage.style.textAlign = 'center';
+            noFeedbackMessage.style.color = '#777';
+            noFeedbackMessage.style.marginTop = '20px';
+            noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
+            feedbackListContainer.append(noFeedbackMessage);
+          } else {
+            feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            // addFeedbackToDOM ko ab replies bhi de rahe hain
+            feedbacks.forEach(fb => {
+                addFeedbackToDOM(fb.name, fb.feedback, fb.rating, fb.replies); 
+            });
+          }
+          feedbackListContainer.scrollTop = 0;
+      }
+
+      submitButton.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        const feedback = feedbackTextarea.value.trim();
+        const rating = ratingInput.value; 
+
+        if (!name || !feedback || rating === '0') {
+          alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+          return;
+        }
+
+        try {
+            await submitNewFeedback(name, feedback, parseInt(rating));
+            alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
+
+            nameInput.value = '';
+            feedbackTextarea.value = '';
+            ratingInput.value = '0';
+            currentSelectedRating = 0;
+            updateStarVisuals(0);
+
+            await renderFeedbacksToUI();
+
+        } catch (error) {
+            console.error('Submission failed in UI logic:', error);
+        }
+      });
+
+      // Initial load of feedbacks when the page loads
+      renderFeedbacksToUI(); 
     });
   </script>
 </body>
