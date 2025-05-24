@@ -1,107 +1,141 @@
 // server.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv'); // Environment variables ke liye
 
-// .env file se environment variables load karta hai (jaise MONGODB_URI, PORT, PHONE_IP).
-// Ye secret details ko code se alag rakhta hai.
-require('dotenv').config(); 
+// .env file se variables load karega (agar deployment pe use karna hai)
+dotenv.config();
 
-const express = require('express');   // Express.js framework import kiya server banane ke liye
-const mongoose = require('mongoose'); // Mongoose import kiya MongoDB se interact karne ke liye
-const cors = require('cors');         // CORS import kiya cross-origin requests allow karne ke liye (bahut zaroori hai jab frontend aur backend alag alag jagah se aa rahe hon)
+const app = express();
+// Process.env.PORT Render jaise hosting platforms provide karte hain
+// Warna local pe 3000 port use hoga
+const PORT = process.env.PORT || 3000;
 
-const app = express(); // Express app instance banaya
-// Server ka port define kiya. Agar .env mein PORT set hai, toh woh use hoga, nahi toh 3000.
-const PORT = process.env.PORT || 3000; 
+// ****** MongoDB Connection String ******
+// IMPORTANT: PRODUCTION MEIN YE .env FILE SE AANA CHAHIYE!
+// Yahan hardcoded hai, par Render par hum isko Environment Variable mein set karenge.
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
-// --- Middleware Setup ---
-// Ye functions hain jo har incoming request pe chalte hain.
-app.use(cors()); // CORS enable kiya. Ye har origin se requests ko allow karta hai. Production mein isko restrict karte hain.
-app.use(express.json()); // Ye server ko JSON format mein aane wale request bodies ko parse karne ki permission deta hai.
+// ****** Admin Credentials (SECURITY ALERT!) ******
+// BAHUT ZAROORI: REAL PRODUCTION MEIN INKO HARDCODE MAT KARNA!
+// Render par inko Environment Variables (ADMIN_USERNAME, ADMIN_PASSWORD) mein set karna hoga.
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365'; // TERA ADMIN USERNAME
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123'; // TERA ADMIN PASSWORD
 
-// Static files serve karna: 'public' folder ke andar jo bhi files (jaise index.html, CSS, client-side JS) hain,
-// unko web browser ke liye available banata hai. Jab koi root URL (/) request karega,
-// toh server public/index.html bhej dega.
-app.use(express.static('public'));
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('MONGODB SE CONNECTION SAFAL! DATABASE AB READY HAI!'))
+  .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
 
-// --- MongoDB Connection ---
-// MongoDB connection string .env file se liya. Ye tera database access karne ki chabhi hai.
-const mongoURI = process.env.MONGODB_URI; 
-
-// Agar MongoDB URI .env file mein nahi mili, toh error throw karo aur server band kar do.
-if (!mongoURI) {
-    console.error('FATAL ERROR: MONGODB_URI environment variable .env file mein nahi mili!');
-    process.exit(1); // Server ko exit kar do
-}
-
-// Mongoose ko MongoDB se connect karo.
-mongoose.connect(mongoURI)
-.then(() => console.log('✅ MONGODB SE SAFALTA-POORVAK JUD GAYA! KAMAAL KAR DIYA!'))
-.catch(err => console.error('❌ MONGODB SE JUDNE MEIN GHANTA LAGA! ERROR: ', err));
-
-// --- MongoDB Schema aur Model ---
-// Feedback data ka structure define karte hain.
-// 'name', 'feedback' string honge aur required hain.
-// 'rating' number hoga, 1 se 5 ke beech, aur required hai.
-// 'date' automatically current date time lega.
+// Define a Schema for Feedback
 const feedbackSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    feedback: { type: String, required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 }, 
-    date: { type: Date, default: Date.now } 
+  name: { type: String, required: true },
+  feedback: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  timestamp: { type: Date, default: Date.now }
 });
 
-// 'Feedback' naam ka Mongoose Model banaya 'feedbackSchema' ka use karke.
-// Ye model database mein 'feedbacks' collection se interact karega.
+// Create a Model from the Schema
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-// --- API Routes ---
+// Middleware
+// CORS ko update kiya hai takki Admin Panel bhi access kar sake
+app.use(cors({
+    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000', 'YOUR_ADMIN_PANEL_URL_HERE'], // Yahan apni admin panel ka URL dalna agar alag hosting pe hai
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// 1. Naya feedback submit karne ke liye route (POST request)
-// Jab client (teri website) '/api/feedback' par POST request bhejega, toh ye code chalega.
-app.post('/api/feedback', async (req, res) => {
-    console.log('NAYA FEEDBACK SERVER PAR PAHUNCH GAYA:', req.body); // Console pe incoming data dikhao
+// Middleware for Admin Authentication
+const authenticateAdmin = (req, res, next) => {
+    // Basic Auth: Authorization header se username/password check kar
+    // Production me JWT token use karte hain. Abhi ke liye simple rakha hai.
+    const authHeader = req.headers.authorization;
 
-    // Request body se name, feedback, aur rating nikalo.
-    const { name, feedback, rating } = req.body;
-
-    // Input validation: Agar koi bhi field missing hai, toh 400 Bad Request error bhej do.
-    if (!name || !feedback || !rating) {
-        return res.status(400).json({ message: 'BHAI, SAARI FIELDS BHARNA ZAROORI HAI: NAAM, FEEDBACK AUR RATING!' });
+    if (!authHeader) {
+        return res.status(401).json({ message: 'UNAUTHORIZED: AUTHORIZATION HEADER MISSING.' });
     }
 
-    try {
-        // Naya Feedback document banao Mongoose model ka use karke.
-        const newFeedback = new Feedback({ name, feedback, rating });
-        await newFeedback.save(); // Is feedback ko database mein save karo.
+    const [scheme, credentials] = authHeader.split(' '); // Expected format: Basic <base64_credentials>
 
-        // Agar feedback successfully save ho gaya, toh 201 Created status aur success message bhej do.
-        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!', feedback: newFeedback });
-    } catch (error) {
-        // Agar database save karte waqt koi error aaya, toh 500 Internal Server Error bhej do.
-        console.error('SERVER PE FEEDBACK SAVE KARNE MEIN FATAL ERROR AAYA:', error);
-        res.status(500).json({ message: 'SERVER KI GADBAD: FEEDBACK SAVE NAHI HO PAYA.', error: error.message });
+    if (scheme !== 'Basic' || !credentials) {
+        return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTHORIZATION SCHEME.' });
     }
-});
 
-// 2. Saare feedbacks fetch karne ke liye route (GET request)
-// Jab client (teri website) '/api/feedbacks' par GET request bhejega, toh ye code chalega.
+    const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        next(); // Admin hai, aage badho
+    } else {
+        res.status(401).json({ message: 'UNAUTHORIZED: SAHI ADMIN CREDENTIALS NAHI HAIN, BHAI!' });
+    }
+};
+
+
+// API Endpoint to get all feedbacks (Fetch from DB)
 app.get('/api/feedbacks', async (req, res) => {
     try {
-        // Database se saare feedbacks nikalo, aur unko latest date ke hisaab se sort karo (-1 descending order hai).
-        const feedbacks = await Feedback.find().sort({ date: -1 }); 
-        // Feedbacks ko JSON format mein client ko bhej do (200 OK status ke saath).
-        res.status(200).json(feedbacks);
+        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 }); // Get latest first
+        res.status(200).json(allFeedbacks);
     } catch (error) {
-        // Agar feedbacks fetch karte waqt koi error aaya, toh 500 Internal Server Error bhej do.
-        console.error('SERVER PE FEEDBACKS FETCH KARNE MEIN FATAL ERROR AAYA:', error);
-        res.status(500).json({ message: 'SERVER KI GADBAD: FEEDBACKS FETCH NAHI HO PAYE.', error: error.message });
+        console.error('FEEDBACK FETCH KARTE WAQT ERROR AAYA:', error);
+        res.status(500).json({ message: 'FEEDBACK FETCH NAHI HO PAYE.', error: error.message });
     }
 });
 
-// --- Server Start Karo ---
-// Server ko defined PORT par sunna shuru karo. Jab server start ho jaye, toh callback function chalega.
+// API Endpoint to submit new feedback (Save to DB)
+app.post('/api/feedback', async (req, res) => {
+    const { name, feedback, rating } = req.body;
+
+    if (!name || !feedback || rating === '0') {
+        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
+    }
+
+    try {
+        const newFeedback = new Feedback({
+            name: name.toUpperCase(),
+            feedback: feedback,
+            rating: parseInt(rating)
+        });
+
+        await newFeedback.save(); // Save to MongoDB
+
+        console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
+        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
+    } catch (error) {
+        console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
+        res.status(500).json({ message: 'FEEDBACK DATABASE MEIN SAVE NAHI HO PAYA.', error: error.message });
+    }
+});
+
+// ****** NEW ADMIN DELETE API ENDPOINT ******
+// Is endpoint ko hit karne ke liye 'authenticateAdmin' middleware chalega pehle
+app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
+    const feedbackId = req.params.id; // URL se ID lega (e.g., /api/admin/feedback/60d0fe4a1234567890abcdef)
+
+    try {
+        // Mongoose se ID ke through delete karna
+        const deletedFeedback = await Feedback.findByIdAndDelete(feedbackId);
+
+        if (!deletedFeedback) {
+            return res.status(404).json({ message: 'FEEDBACK NAHI MILA, BHAI. DELETE KISKO KARUN?' });
+        }
+
+        console.log('FEEDBACK DELETE KIYA GAYA:', deletedFeedback);
+        res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK DELETE HUA!', deletedFeedback });
+    } catch (error) {
+        console.error('FEEDBACK DELETE KARTE WAQT ERROR AAYA:', error);
+        res.status(500).json({ message: 'FEEDBACK DELETE NAHI HO PAYA.', error: error.message });
+    }
+});
+
+
+// Start the server
 app.listen(PORT, () => {
-    console.log(`🚀 SERVER CHALU HAI PORT ${PORT} PAR! AB WEBSITE KO BHI JALA DE!`);
-    // Ye URLs hain jahan se tu apni website access kar sakta hai.
-    // process.env.PHONE_IP .env file se aayega.
-    console.log(`🌐 BROWSER MEIN YE KHOL: http://localhost:${PORT} YA PHIR YE: http://${process.env.PHONE_IP || 'TERA_ACTUAL_IP_YA_RENDER_URL'}:${PORT}`);
+    console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
+    console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
