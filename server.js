@@ -4,18 +4,22 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // Environment variables ke liye
-const path = require('path'); // ***** YEH LINE BAHUT ZAROORI HAI! *****
+const path = require('path'); // Static files serve karne ke liye
 
 // .env file se variables load karega (agar deployment pe use karna hai)
 dotenv.config();
 
 const app = express();
+// Process.env.PORT Render jaise hosting platforms provide karte hain
+// Warna local pe 3000 port use hoga
 const PORT = process.env.PORT || 3000;
 
 // ****** MongoDB Connection String ******
+// IMPORTANT: PRODUCTION MEIN YE .env FILE SE AANA CHAHIYE!
 const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
+// BAHUT ZAROORI: REAL PRODUCTION MEIN INKO HARDCODE MAT KARNA!
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
 
@@ -37,7 +41,7 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 // Middleware
 app.use(cors({
-    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'], // Added localhost for local testing
+    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -47,23 +51,32 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Middleware for Admin Authentication
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
+
     if (!authHeader) {
+        // 'WWW-Authenticate' header add kiya hai takki browser login pop-up dikhaye
+        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
         return res.status(401).json({ message: 'UNAUTHORIZED: AUTHORIZATION HEADER MISSING.' });
     }
+
     const [scheme, credentials] = authHeader.split(' ');
+
     if (scheme !== 'Basic' || !credentials) {
+        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
         return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTHORIZATION SCHEME.' });
     }
+
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
+
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        next();
+        next(); // Admin hai, aage badho
     } else {
+        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
         res.status(401).json({ message: 'UNAUTHORIZED: SAHI ADMIN CREDENTIALS NAHI HAIN, BHAI!' });
     }
 };
 
-// ***** YE HAI WOH JAADUI LINE! STATIC FILES AUR INDEX.HTML KE LIYE! *****
-// Serve static files from the 'public' directory, aur root '/' par 'index.html' ko serve kar
+// STATIC FILES AUR INDEX.HTML KO SERVE KARNE WALI LINE
+// Ye ensure karta hai ki root URL ('/') par 'public/index.html' serve ho
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
 
@@ -99,7 +112,7 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
-// ****** YE HAI TERA ADMIN PANEL WALA ROUTE! *****
+// ADMIN PANEL KA ROUTE
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
         const feedbacks = await Feedback.find().sort({ timestamp: -1 });
@@ -211,7 +224,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
-// ****** NEW ADMIN DELETE API ENDPOINT ******
+// ADMIN DELETE API ENDPOINT
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
