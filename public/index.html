@@ -27,7 +27,6 @@
       text-align: center;
       width: 90%;
       max-width: 700px;
-      transition: all 0.3s ease-in-out;
       border: 1px solid #E0E0E0;
     }
 
@@ -61,42 +60,27 @@
       background: #fdfdfd;
       color: #333;
       font-size: 1em;
-      outline: none;
-      transition: all 0.3s ease;
-      box-sizing: border-box;
     }
 
-    .input-group input:focus,
-    .input-group textarea:focus {
-      border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
-    }
+    .input-group textarea { resize: vertical; min-height: 120px; }
 
-    .input-group textarea {
-      resize: vertical;
-      min-height: 120px;
-      max-height: 300px;
-    }
-
+    /* ★ Much larger stars ★ */
     .stars {
       margin-top: 15px;
       display: flex;
       justify-content: center;
       gap: 8px;
     }
-
     .star {
-      font-size: 2.8em;
+      font-size: 3.5em;  /* increased */
       color: #D1D5DB;
       cursor: pointer;
-      transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
+      transition: color 0.2s, transform 0.2s;
     }
-
     .star.highlighted,
     .star.selected {
       color: #F59E0B;
-      transform: scale(1.2);
-      text-shadow: 0 0 15px rgba(245,158,11,0.7);
+      transform: scale(1.5);  /* bigger pop */
     }
 
     button {
@@ -108,25 +92,20 @@
       font-size: 1.1em;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
       box-shadow: 0 4px 10px rgba(59,130,246,0.3);
-      letter-spacing: 0.5px;
       margin-top: 25px;
     }
-
     button:hover {
       background-color: #2563EB;
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(59,130,246,0.4);
     }
 
-    /* now the list container just expands */
+    /* feedback list now expands freely */
     #feedback-list-container {
       margin-top: 20px;
       width: 100%;
       text-align: left;
     }
-
     #feedback-list-container h2 {
       font-family: 'Verdana', sans-serif;
       color: #1E3A8A;
@@ -147,68 +126,54 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       transition: transform 0.3s ease;
     }
+    .feedback-item:hover { transform: translateY(-3px); }
+    .feedback-item:last-child { margin-bottom: 0; }
 
-    .feedback-item:hover {
-      transform: translateY(-3px);
+    .avatar {
+      width: 55px; height: 55px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #3B82F6; color: #fff;
+      font-weight: bold; font-size: 0.9em;
+      flex-shrink: 0;
+      border: 2px solid #2563EB;
     }
 
-    .feedback-item:last-child {
-      margin-bottom: 0;
+    .feedback-content {
+      flex: 1;
     }
-
-    .feedback-item strong {
+    .feedback-content strong {
       color: #2D3748;
       font-size: 1.15em;
       display: block;
       margin-bottom: 5px;
     }
-
-    .feedback-item p {
+    .feedback-content .feedback-stars {
+      color: #F59E0B;
+      font-size: 1.5em; /* larger for read-only stars */
+      margin-bottom: 8px;
+    }
+    .feedback-content p {
       color: #4A5568;
       line-height: 1.7;
-      margin-top: 8px;
     }
 
-    .feedback-stars {
-      color: #F59E0B;
-      font-size: 1.3em;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
-    }
-
-    /* BBI placeholder avatar */
-    .avatar {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #3B82F6;
-      color: #fff;
-      font-weight: bold;
-      font-size: 0.9em;
-      flex-shrink: 0;
-      border: 2px solid #2563EB;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
+    /* ★ Admin replies now full-width under feedback, indented ★ */
     .replies-main-display {
-      margin-top: 15px;
+      width: calc(100% - 75px);
+      margin-left: 75px;
+      margin-top: 12px;
       border-top: 1px solid #E0E0E0;
-      padding-top: 15px;
+      padding-top: 10px;
       background-color: #F0F2F5;
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 6px;
     }
-
     .replies-main-display h4 {
       color: #1E3A8A;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-size: 1em;
       font-weight: bold;
     }
-
     .single-reply-main {
       background-color: #E8EBF2;
       border-left: 3px solid #3B82F6;
@@ -218,16 +183,12 @@
       font-size: 0.9em;
       color: #4A5568;
     }
-
-    .single-reply-main:last-child {
-      margin-bottom: 0;
-    }
+    .single-reply-main:last-child { margin-bottom: 0; }
 
     .reply-admin-name-main {
       font-weight: bold;
       color: #1E3A8A;
     }
-
     .reply-timestamp-main {
       font-size: 0.8em;
       color: #777;
@@ -241,12 +202,12 @@
 
     <div class="input-group">
       <label for="name">YOUR NAME:</label>
-      <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
+      <input type="text" id="name" placeholder="ENTER YOUR NAME">
     </div>
 
     <div class="input-group">
       <label for="feedback">YOUR FEEDBACK:</label>
-      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
+      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..."></textarea>
     </div>
 
     <div class="input-group">
@@ -263,10 +224,9 @@
 
     <button id="submit-feedback">SUBMIT FEEDBACK</button>
 
-    <!-- moved outside scroll and above -->
     <div id="feedback-list-container">
       <h2>RECENT FEEDBACKS</h2>
-      <!-- feedback items will append here -->
+      <!-- items appended here -->
     </div>
   </div>
 
@@ -284,7 +244,7 @@
       const stars       = document.querySelectorAll('.star');
       let currentRating = 0;
 
-      // ★ Star UI
+      // ★ Star UI handlers
       function updateStars(r) {
         stars.forEach(s => {
           const v = +s.dataset.value;
@@ -308,7 +268,7 @@
         s.addEventListener('mouseleave', () => updateStars(currentRating));
       });
 
-      // ★ Fetch helpers
+      // ★ Fetch & Post
       async function fetchAll() {
         try {
           const res = await fetch(FETCH_URL, { mode:'cors', headers:{'Accept':'application/json'} });
@@ -329,30 +289,34 @@
         return res.json();
       }
 
-      // ★ Add a feedback item
+      // ★ Add single feedback item
       function addItem(name, fb, rating, replies=[]) {
         const item = document.createElement('div');
         item.className = 'feedback-item';
 
-        // BBI placeholder avatar
+        // avatar placeholder
         const av = document.createElement('div');
         av.className = 'avatar';
         av.textContent = 'BBI';
 
-        // content
+        // main content
         const content = document.createElement('div');
+        content.className = 'feedback-content';
         content.innerHTML = `
           <strong>${name.toUpperCase()}</strong>
           <div class="feedback-stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</div>
           <p>${fb}</p>
         `;
-        item.append(av, content);
 
+        item.append(av, content);
+        listCont.append(item);
+
+        // replies under the feedback
         if (replies.length) {
           const rd = document.createElement('div');
           rd.className = 'replies-main-display';
           rd.innerHTML = '<h4>ADMIN REPLIES:</h4>' +
-            replies.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+            replies.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))
                    .map(rp => `
                      <div class="single-reply-main">
                        <span class="reply-admin-name-main">${rp.adminName}:</span>
@@ -360,18 +324,20 @@
                        <span class="reply-timestamp-main">(${new Date(rp.timestamp).toLocaleString()})</span>
                      </div>
                    `).join('');
-          item.append(rd);
+          listCont.append(rd);
         }
-
-        listCont.append(item);
       }
 
-      // ★ Render all
+      // ★ Render all feedbacks
       async function renderAll() {
         listCont.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
         const feedbacks = await fetchAll();
         if (!feedbacks.length) {
-          listCont.innerHTML += `<p style="color:#777;text-align:center;">ABHI TAK KOI FEEDBACK NAHI AAYA HAI!</p>`;
+          const p = document.createElement('p');
+          p.style.color = '#777';
+          p.style.textAlign = 'center';
+          p.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
+          listCont.append(p);
         } else {
           feedbacks
             .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
@@ -381,15 +347,15 @@
 
       // ★ Submit handler
       submitBtn.addEventListener('click', async () => {
-        const name = nameInput.value.trim();
-        const fb   = fbInput.value.trim();
-        const r    = +ratingInput.value;
-        if (!name || !fb || r === 0) {
+        const n = nameInput.value.trim();
+        const f = fbInput.value.trim();
+        const r = +ratingInput.value;
+        if (!n || !f || r === 0) {
           return alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
         }
         submitBtn.disabled = true;
         try {
-          await postOne(name, fb, r);
+          await postOne(n, f, r);
           alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
           nameInput.value = '';
           fbInput.value = '';
