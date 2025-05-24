@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>⭐ PROFESSIONAL FEEDBACK ⭐</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #F0F2F5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 35px;
+      text-align: center;
+      width: 90%;
+      max-width: 700px;
+      transition: all 0.3s ease-in-out;
+      border: 1px solid #E0E0E0;
+    }
+
+    h1 {
+      font-family: 'Verdana', sans-serif;
+      color: #1E3A8A;
+      margin-bottom: 30px;
+      font-size: 2.2em;
+      font-weight: 700;
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: #555;
+      font-weight: bold;
+      font-size: 1.05em;
+    }
+
+    .input-group input,
+    .input-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fdfdfd;
+      color: #333;
+      font-size: 1em;
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .input-group input:focus,
+    .input-group textarea:focus {
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
+    }
+
+    .input-group textarea {
+      resize: vertical;
+      min-height: 120px;
+      max-height: 300px;
+    }
+
+    .stars {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .star {
+      font-size: 2.8em;
+      color: #D1D5DB;
+      cursor: pointer;
+      transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
+    }
+
+    .star.highlighted,
+    .star.selected {
+      color: #F59E0B;
+      transform: scale(1.2);
+      text-shadow: 0 0 15px rgba(245,158,11,0.7);
+    }
+
+    button {
+      background-color: #3B82F6;
+      color: #fff;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(59,130,246,0.3);
+      letter-spacing: 0.5px;
+      margin-top: 25px;
+    }
+
+    button:hover {
+      background-color: #2563EB;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(59,130,246,0.4);
+    }
+
+    #feedback-list-container { /* Changed ID to avoid conflict with feedbackListDiv in JS */
+      margin-top: 45px;
+      background: #F9F9F9;
+      border: 1px solid #E0E0E0;
+      border-radius: 10px;
+      padding: 25px;
+      max-height: 450px;
+      overflow-y: auto;
+      text-align: left;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    #feedback-list-container h2 {
+      font-family: 'Verdana', sans-serif;
+      color: #1E3A8A;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #E0E0E0;
+      padding-bottom: 10px;
+      font-size: 1.8em;
+      font-weight: 700;
+    }
+
+    .feedback-item {
+      background: #fff;
+      border: 1px solid #EEE;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      padding: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease;
+    }
+
+    .feedback-item:hover {
+      transform: translateY(-3px);
+    }
+
+    .feedback-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .feedback-item strong {
+      color: #2D3748;
+      font-size: 1.15em;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .feedback-item p {
+      color: #4A5568;
+      line-height: 1.7;
+      margin-top: 8px;
+    }
+
+    .feedback-stars {
+      color: #F59E0B;
+      font-size: 1.3em;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    .avatar {
+      width: 55px;
+      height: 55px;
+      background: #3B82F6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: #fff;
+      flex-shrink: 0;
+      font-weight: bold;
+      border: 2px solid #2563EB;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #feedback-list-container::-webkit-scrollbar { /* Changed ID */
+      width: 10px;
+    }
+    #feedback-list-container::-webkit-scrollbar-track { /* Changed ID */
+      background: #E2E8F0;
+      border-radius: 10px;
+    }
+    #feedback-list-container::-webkit-scrollbar-thumb { /* Changed ID */
+      background: #A0AEC0;
+      border-radius: 10px;
+      border: 2px solid #E2E8F0;
+    }
+    #feedback-list-container::-webkit-scrollbar-thumb:hover { /* Changed ID */
+      background: #718096;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 25px; }
+      h1 { font-size: 1.8em; }
+      button { padding: 12px 25px; font-size: 1em; }
+      .star { font-size: 2.2em; }
+      .feedback-item { flex-direction: column; align-items: center; text-align: center; }
+      .avatar { margin-bottom: 10px; }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5em; }
+      .input-group label { font-size: 0.95em; }
+      .star { font-size: 1.8em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⭐ SHARE YOUR VALUABLE FEEDBACK ⭐</h1>
+
+    <div class="input-group">
+      <label for="name">YOUR NAME:</label>
+      <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
+    </div>
+
+    <div class="input-group">
+      <label for="feedback">YOUR FEEDBACK:</label>
+      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>RATE YOUR EXPERIENCE:</label>
+      <div class="stars" id="star-rating">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <input type="hidden" id="rating" value="0">
+    </div>
+
+    <button id="submit-feedback">SUBMIT FEEDBACK</button>
+
+    <div id="feedback-list-container">
+      <h2>RECENT FEEDBACKS</h2>
+      </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const nameInput = document.getElementById('name');
+      const feedbackTextarea = document.getElementById('feedback');
+      const ratingInput = document.getElementById('rating');
+      const submitButton = document.getElementById('submit-feedback');
+      const feedbackListContainer = document.getElementById('feedback-list-container'); // Corrected ID
+      const stars = document.querySelectorAll('.star');
+      let currentSelectedRating = 0;
+
+      // ****** YAHAN TERE PHONE KA IP ADDRESS DAAL DIYA HAI ******
+      const PHONE_IP = '172.20.10.2'; // Tera IP address
+      const API_URL = `http://${PHONE_IP}:3000/api/feedback`; // Server par feedback submit karne ke liye
+      const FETCH_API_URL = `http://${PHONE_IP}:3000/api/feedbacks`; // Server se feedbacks fetch karne ke liye
+
+      function updateStarVisuals(ratingToShow) {
+        stars.forEach(star => {
+          const starValue = parseInt(star.getAttribute('data-value'));
+          if (starValue <= ratingToShow) star.classList.add('selected');
+          else star.classList.remove('selected');
+          star.classList.remove('highlighted');
+        });
+      }
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          currentSelectedRating = parseInt(star.getAttribute('data-value'));
+          ratingInput.value = currentSelectedRating;
+          updateStarVisuals(currentSelectedRating);
+        });
+
+        star.addEventListener('mouseenter', () => {
+          const hoverValue = parseInt(star.getAttribute('data-value'));
+          stars.forEach(s => {
+            const val = parseInt(s.getAttribute('data-value'));
+            if (val <= hoverValue) {
+              s.classList.add('highlighted');
+              s.classList.remove('selected');
+            } else {
+              s.classList.remove('highlighted');
+            }
+          });
+        });
+
+        star.addEventListener('mouseleave', () => {
+          updateStarVisuals(currentSelectedRating);
+        });
+      });
+
+      // Function to fetch and display feedbacks from the server
+      async function fetchFeedbacks() {
+        try {
+            const response = await fetch(FETCH_API_URL);
+            if (!response.ok) {
+                // Agar response ok nahi hai, toh error throw karo
+                const errorText = await response.text(); // Get raw text for better error debugging
+                throw new Error(`HTTP ERROR! STATUS: ${response.status} - ${errorText}`);
+            }
+            const feedbacks = await response.json();
+            feedbackListContainer.innerHTML = ''; // Clear existing feedbacks in DOM
+
+            if (feedbacks.length === 0) {
+              const noFeedbackMessage = document.createElement('p');
+              noFeedbackMessage.style.textAlign = 'center';
+              noFeedbackMessage.style.color = '#777';
+              noFeedbackMessage.style.marginTop = '20px';
+              noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
+              feedbackListContainer.append(noFeedbackMessage);
+            } else {
+              feedbacks.forEach(fb => {
+                  addFeedbackToDOM(fb.name, fb.feedback, fb.rating);
+              });
+            }
+            feedbackListContainer.scrollTop = 0; // Scroll to top after loading
+        } catch (error) {
+            console.error('FEEDBACK FETCH KARNE MEIN ERROR AAYA:', error);
+            alert(`FEEDBACK LOAD NAHI HO PAYE! SERVER CHECK KAR YA NETWORK. ERROR: ${error.message}`);
+        }
+      }
+
+      submitButton.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        const feedback = feedbackTextarea.value.trim();
+        const rating = ratingInput.value;
+
+        if (!name || !feedback || rating === '0') {
+          alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+          return;
+        }
+
+        const dataToSend = { name, feedback, rating };
+        console.log('FRONTEND SE YE DATA BHEJ RAHA HOON:', dataToSend); // Debugging log
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            if (!response.ok) {
+                // Agar server ne non-2xx status code bheja
+                const errorData = await response.json().catch(() => ({ message: 'SERVER SE RESPONSE PARSE NAHI HUA.' })); // Try parsing as JSON, fallback to generic
+                console.error('SERVER SE ERROR RESPONSE AAYA:', errorData);
+                throw new Error(errorData.message || `FEEDBACK SUBMIT KARNE MEIN LOHDA LAG GAYA! STATUS: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('SERVER SE SAFAL RESPONSE:', result); // Debugging log
+            alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
+
+            // Clear form and reset stars
+            nameInput.value = '';
+            feedbackTextarea.value = '';
+            ratingInput.value = '0';
+            currentSelectedRating = 0;
+            updateStarVisuals(0);
+
+            // Fetch and display updated feedbacks from server after successful submission
+            fetchFeedbacks();
+
+        } catch (error) {
+            console.error('FRONTEND MEIN FETCH ERROR:', error);
+            alert(`FEEDBACK SUBMIT NAHI HO PAYA: ${error.message}`);
+        }
+      });
+
+      // Helper function to add feedback to the DOM (for display only)
+      function addFeedbackToDOM(name, feedback, rating) {
+        const item = document.createElement('div');
+        item.classList.add('feedback-item');
+
+        const initial = name.charAt(0).toUpperCase();
+        const avatar = document.createElement('div');
+        avatar.classList.add('avatar');
+        avatar.textContent = initial;
+
+        const content = document.createElement('div');
+        const strong = document.createElement('strong');
+        strong.textContent = name.toUpperCase();
+
+        const starsDiv = document.createElement('div');
+        starsDiv.classList.add('feedback-stars');
+        for (let i = 0; i < rating; i++) starsDiv.textContent += '★';
+        for (let i = rating; i < 5; i++) starsDiv.textContent += '☆'; // Add empty stars
+
+        const p = document.createElement('p');
+        p.textContent = feedback;
+
+        content.append(strong, starsDiv, p);
+        item.append(avatar, content);
+
+        feedbackListContainer.prepend(item); // Add to the container
+      }
+
+      // Initial load of feedbacks when the page loads
+      fetchFeedbacks();
+    });
+  </script>
+</body>
+</html>
