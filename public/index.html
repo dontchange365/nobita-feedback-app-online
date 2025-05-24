@@ -187,7 +187,6 @@
     .avatar {
       width: 55px;
       height: 55px;
-      /* Background will be set by JS dynamically */
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -425,9 +424,7 @@
         const avatar = document.createElement('div');
         avatar.classList.add('avatar');
         avatar.textContent = initial;
-        // ***** YAHAN BADLAV KIYA HAI! AVATAR KA BACKGROUND COLOR DYNAMIC HOGA! *****
         avatar.style.backgroundColor = getColorForName(name); 
-        // **********************************************************************
 
         const content = document.createElement('div');
         const strong = document.createElement('strong');
