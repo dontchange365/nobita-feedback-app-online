@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // Environment variables ke liye
+const path = require('path'); // ***** YEH LINE MISSING THI! AB ADD KI HAI! *****
 
 // .env file se variables load karega (agar deployment pe use karna hai)
 dotenv.config();
@@ -74,6 +75,10 @@ const authenticateAdmin = (req, res, next) => {
         res.status(401).json({ message: 'UNAUTHORIZED: SAHI ADMIN CREDENTIALS NAHI HAIN, BHAI!' });
     }
 };
+
+// ***** YEH HAI WOH JAADUI LINE! *****
+// Serve static files from the 'public' directory, aur root '/' par 'index.html' ko serve kar
+app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
 
 // API Endpoint to get all feedbacks (Fetch from DB)
