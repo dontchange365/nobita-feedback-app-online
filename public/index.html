@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>✨ NOBITA'S FUTURISTIC FEEDBACK PORTAL ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --primary-color: #6a0dad; /* Deep Purple */
@@ -493,27 +494,200 @@
             margin-left: 10px;
         }
 
-        .edit-feedback-btn {
-            background-color: #5bc0de; /* Info blue */
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-top: 10px;
-            transition: background-color 0.3s ease, transform 0.2s;
+        /* Custom Popup Alert */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-
-        .edit-feedback-btn:hover {
-            background-color: #31b0d5;
+        .custom-alert-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-alert-box {
+            background: linear-gradient(135deg, #1A1A2E, #16213E);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(0,0,0,0.8);
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .custom-alert-overlay.show .custom-alert-box {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .custom-alert-box h3 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+        .custom-alert-box p {
+            color: #E0E0E0;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+        }
+        .custom-alert-box button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+            margin: 0 5px; /* For multiple buttons */
+        }
+        .custom-alert-box button:hover {
+            background-color: #0056b3;
             transform: translateY(-2px);
         }
+        .custom-alert-icon {
+            font-size: 3em;
+            color: #27AE60; /* Green for success */
+            margin-bottom: 15px;
+            animation: bounceIn 0.6s ease-out;
+        }
+        .custom-alert-icon.error {
+            color: #E74C3C; /* Red for error */
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
 
-        .edit-feedback-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
+        /* Edit Popup Styles */
+        .edit-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001; /* Higher than custom alert */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .edit-popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .edit-popup-box {
+            background: linear-gradient(135deg, #16213E, #1A1A2E);
+            border: 2px solid #3B82F6; /* Blue border */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 25px rgba(59,130,246,0.6), 0 0 50px rgba(0,0,0,0.8);
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .edit-popup-overlay.show .edit-popup-box {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .edit-popup-box h3 {
+            color: #3B82F6;
+            margin-bottom: 25px;
+            font-size: 2em;
+            text-shadow: 0 0 10px rgba(59,130,246,0.5);
+            text-align: center;
+        }
+        .edit-popup-box .input-group label {
+            color: #E0E0E0;
+            font-size: 1em;
+        }
+        .edit-popup-box .input-group input,
+        .edit-popup-box .input-group textarea {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #E0E0E0;
+        }
+        .edit-popup-box .stars .star {
+            font-size: 3em;
+        }
+        .edit-popup-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .edit-popup-actions button {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 10px;
+        }
+        .edit-popup-actions .save-btn {
+            background-color: #27AE60; /* Green */
+        }
+        .edit-popup-actions .save-btn:hover {
+            background-color: #229954;
+        }
+        .edit-popup-actions .cancel-btn {
+            background-color: #E74C3C; /* Red */
+        }
+        .edit-popup-actions .cancel-btn:hover {
+            background-color: #C0392B;
+        }
+
+        .edited-notice {
+            font-size: 0.8em;
+            color: #F1C40F; /* Yellow */
+            margin-top: 5px;
+            text-align: right;
+            font-style: italic;
+            font-weight: 600;
+        }
+        .edit-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+            z-index: 5; /* Ensure it's above other content */
+            display: none; /* Hidden by default, shown by JS */
+        }
+        .edit-icon:hover {
+            color: #3B82F6;
+            transform: scale(1.2);
+        }
+        .edited-flag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #F1C40F;
+            color: #2c3e50;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            z-index: 2;
         }
 
         /* Responsive Design */
@@ -548,6 +722,9 @@
             .feedback-details { align-items: center; }
             .admin-reply { text-align: left; } /* Keep reply text left-aligned */
             .admin-reply-content { text-align: left; }
+            .custom-alert-box, .edit-popup-box { padding: 20px; }
+            .custom-alert-box h3, .edit-popup-box h3 { font-size: 1.5em; }
+            .custom-alert-box p { font-size: 1em; }
         }
 
         @media (max-width: 480px) {
@@ -615,13 +792,52 @@
             </div>
             <input type="hidden" id="rating" value="0">
         </div>
-        
+
         <button id="submit-feedback">SUBMIT FEEDBACK</button>
     </div>
 
     <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
+    </div>
+
+    <div class="custom-alert-overlay" id="customAlertOverlay">
+        <div class="custom-alert-box">
+            <i class="fas custom-alert-icon" id="customAlertIcon"></i>
+            <h3 id="customAlertTitle"></h3>
+            <p id="customAlertMessage"></p>
+            <button id="customAlertCloseBtn">OK</button>
+        </div>
+    </div>
+
+    <div class="edit-popup-overlay" id="editPopupOverlay">
+        <div class="edit-popup-box">
+            <h3>EDIT YOUR FEEDBACK</h3>
+            <input type="hidden" id="editFeedbackId">
+            <div class="input-group">
+                <label for="editName">NAME:</label>
+                <input type="text" id="editName" required>
+            </div>
+            <div class="input-group">
+                <label for="editFeedbackText">FEEDBACK:</label>
+                <textarea id="editFeedbackText" required></textarea>
+            </div>
+            <div class="input-group">
+                <label>RATING:</label>
+                <div class="stars" id="edit-star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" id="editRating" value="0">
+            </div>
+            <div class="edit-popup-actions">
+                <button class="save-btn" id="saveEditBtn">SAVE CHANGES</button>
+                <button class="cancel-btn" id="cancelEditBtn">CANCEL</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
@@ -632,31 +848,38 @@
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
             const feedbackListContainer = document.getElementById('feedback-list-container');
-            const stars = document.querySelectorAll('.star');
+            const stars = document.querySelectorAll('#star-rating .star');
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
             let currentSelectedRating = 0;
-            let userIpAddress = ''; // To store the user's IP
 
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // REPLACE WITH YOUR DEPLOYED URL
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
 
-            // Function to get client IP address (using an external service)
-            async function getClientIp() {
-                try {
-                    const response = await fetch('https://api.ipify.org?format=json');
-                    const data = await response.json();
-                    userIpAddress = data.ip;
-                    console.log('User IP:', userIpAddress);
-                } catch (error) {
-                    console.error('IP address fetch karte waqt error aaya:', error);
-                    userIpAddress = 'UNKNOWN'; // Fallback if IP cannot be fetched
-                }
+            // Edit Popup Elements
+            const editPopupOverlay = document.getElementById('editPopupOverlay');
+            const editFeedbackIdInput = document.getElementById('editFeedbackId');
+            const editNameInput = document.getElementById('editName');
+            const editFeedbackTextarea = document.getElementById('editFeedbackText');
+            const editRatingInput = document.getElementById('editRating');
+            const editStars = document.querySelectorAll('#edit-star-rating .star');
+            const saveEditBtn = document.getElementById('saveEditBtn');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            let currentEditSelectedRating = 0; // For edit popup stars
+
+            // Store IP address (Client-side, for demo purposes as requested. Not secure for real authentication!)
+            // In a real application, you'd use user authentication (login sessions)
+            let userIP = localStorage.getItem('userIP') || generateRandomIP(); // Simulate IP for demo
+            localStorage.setItem('userIP', userIP); // Store simulated IP
+
+
+            function generateRandomIP() {
+                // This is a dummy function to simulate different IPs for testing edit feature.
+                // DO NOT USE FOR REAL IP TRACKING OR AUTHENTICATION.
+                return Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.');
             }
 
-            // Call getClientIp on load
-            getClientIp();
 
             // Typed.js for the main title
             const typedTitle = new Typed('#main-title', {
@@ -684,9 +907,9 @@
                 showCursor: false
             });
 
-            // Star rating microinteractions
-            function updateStarVisuals(ratingToShow) {
-                stars.forEach(star => {
+            // Star rating microinteractions for submit form
+            function updateStarVisuals(elements, ratingToShow) {
+                elements.forEach(star => {
                     const val = parseInt(star.getAttribute('data-value'));
                     star.classList.toggle('selected', val <= ratingToShow);
                     star.classList.remove('highlighted');
@@ -697,18 +920,31 @@
                 star.addEventListener('click', () => {
                     currentSelectedRating = parseInt(star.getAttribute('data-value'));
                     ratingInput.value = currentSelectedRating;
-                    updateStarVisuals(currentSelectedRating);
-                    // Add a small bounce animation on click
+                    updateStarVisuals(stars, currentSelectedRating);
                     star.style.transform = 'scale(1.3) rotateY(15deg)';
-                    setTimeout(() => {
-                        star.style.transform = 'scale(1.15) rotateY(10deg)';
-                    }, 150);
+                    setTimeout(() => { star.style.transform = 'scale(1.15) rotateY(10deg)'; }, 150);
                 });
                 star.addEventListener('mouseenter', () => {
                     const hoverVal = parseInt(star.getAttribute('data-value'));
                     stars.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));
                 });
-                star.addEventListener('mouseleave', () => updateStarVisuals(currentSelectedRating));
+                star.addEventListener('mouseleave', () => updateStarVisuals(stars, currentSelectedRating));
+            });
+
+            // Star rating microinteractions for edit popup
+            editStars.forEach(star => {
+                star.addEventListener('click', () => {
+                    currentEditSelectedRating = parseInt(star.getAttribute('data-value'));
+                    editRatingInput.value = currentEditSelectedRating;
+                    updateStarVisuals(editStars, currentEditSelectedRating);
+                    star.style.transform = 'scale(1.3) rotateY(15deg)';
+                    setTimeout(() => { star.style.transform = 'scale(1.15) rotateY(10deg)'; }, 150);
+                });
+                star.addEventListener('mouseenter', () => {
+                    const hoverVal = parseInt(star.getAttribute('data-value'));
+                    editStars.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));
+                });
+                star.addEventListener('mouseleave', () => updateStarVisuals(editStars, currentEditSelectedRating));
             });
 
             // Function to add a pulse effect to the submit button
@@ -720,6 +956,38 @@
                     submitButton.style.boxShadow = '0 5px 15px rgba(59,130,246,0.4)';
                 }, 300);
             }
+
+            // Custom Alert/Confirmation Popup logic
+            function showCustomAlert(type, message, callback = null) {
+                const overlay = document.getElementById('customAlertOverlay');
+                const icon = document.getElementById('customAlertIcon');
+                const title = document.getElementById('customAlertTitle');
+                const msg = document.getElementById('customAlertMessage');
+                const closeBtn = document.getElementById('customAlertCloseBtn');
+
+                overlay.classList.add('show');
+                
+                if (type === 'success') {
+                    icon.className = 'fas fa-check-circle custom-alert-icon';
+                    title.textContent = 'SAFALTA MILI!';
+                    msg.textContent = message;
+                } else if (type === 'error') {
+                    icon.className = 'fas fa-times-circle custom-alert-icon error';
+                    title.textContent = 'GADBAD HO GAYI!';
+                    msg.textContent = message;
+                } else if (type === 'info') {
+                    icon.className = 'fas fa-info-circle custom-alert-icon';
+                    icon.style.color = '#3B82F6'; // Blue for info
+                    title.textContent = 'JAANKARI!';
+                    msg.textContent = message;
+                }
+                
+                closeBtn.onclick = () => {
+                    overlay.classList.remove('show');
+                    if (callback) callback();
+                };
+            }
+
 
             async function fetchFeedbacks() {
                 try {
@@ -748,11 +1016,11 @@
                         updateAverageRating(averageRating, data.length);
 
                         // Add new feedbacks with animation
-                        data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, index));
+                        data.forEach((fb, index) => addFeedbackToDOM(fb, index));
                     }
                 } catch (err) {
                     console.error('FETCH FEEDBACKS ERROR:', err);
-                    alert(`FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
+                    showCustomAlert('error', `FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
                 }
             }
 
@@ -788,7 +1056,7 @@
                 const fbText = feedbackTextarea.value.trim();
                 const rating = ratingInput.value;
                 if (!name || !fbText || rating === '0') {
-                    alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI! MAZAK NAHI CHAL RAHA IDHAR.');
+                    showCustomAlert('error', 'BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI! MAZAK NAHI CHAL RAHA IDHAR.');
                     return;
                 }
                 
@@ -796,7 +1064,9 @@
                     name: name,
                     feedback: fbText,
                     rating: parseInt(rating),
-                    userIp: userIpAddress // Send the client's IP
+                    // In a real app, you'd send a user ID, not IP for "edit" functionality.
+                    // For demo, we are NOT sending IP to the server from here due to security/privacy.
+                    // The "edit" visibility on frontend is now simulated with a dummy local IP.
                 };
 
                 try {
@@ -814,10 +1084,10 @@
                         const errorData = await res.json();
                         throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
                     }
-                    alert('TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
+                    showCustomAlert('success', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     nameInput.value = ''; feedbackTextarea.value = '';
                     ratingInput.value = '0'; currentSelectedRating = 0;
-                    updateStarVisuals(0);
+                    updateStarVisuals(stars, 0);
                     fetchFeedbacks(); // Re-fetch to show new feedback
 
                     // Animate container back in after submission and fetch
@@ -827,121 +1097,83 @@
                     }, 500); // Delay to ensure fetch completes
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
-                    alert(`SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
+                    showCustomAlert('error', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
                     // Bring container back if error
                     document.querySelector('.container').style.opacity = '1';
                     document.querySelector('.container').style.transform = 'translateY(0)';
                 }
             });
 
-            function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, index) {
+            function addFeedbackToDOM(fb, index) {
                 const item = document.createElement('div'); 
                 item.className = 'feedback-item';
-                item.setAttribute('data-feedback-id', feedbackId);
-                
+                item.setAttribute('data-feedback-id', fb._id);
+                // For demo, we are associating a dummy IP with each feedback here.
+                // In a real app, you'd link feedback to a 'userId' from a proper auth system.
+                item.setAttribute('data-mock-ip', fb._id.slice(-5)); // Using part of ID as a mock IP
+
                 // Initial state for scroll animation
                 item.style.opacity = '0';
                 item.style.transform = 'translateY(30px)';
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
-                avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name.toLowerCase())}`;
-                avatarImg.alt = `${name.charAt(0).toUpperCase()}'s Avatar`;
+                avatarImg.src = fb.avatarUrl || `https://i.pravatar.cc/60?u=${encodeURIComponent(fb.name.toLowerCase())}`;
+                avatarImg.alt = `${fb.name.charAt(0).toUpperCase()}'s Avatar`;
                 avatarImg.onerror = function() {
-                    this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name.charAt(0).toUpperCase()}`;
-                    this.alt = name.charAt(0).toUpperCase();
+                    this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${fb.name.charAt(0).toUpperCase()}`;
+                    this.alt = fb.name.charAt(0).toUpperCase();
                 };
 
                 const feedbackDetailsDiv = document.createElement('div');
                 feedbackDetailsDiv.className = 'feedback-details';
 
                 const strongName = document.createElement('strong'); 
-                strongName.textContent = name;
+                strongName.textContent = fb.name;
                 
                 const starsDiv = document.createElement('div'); 
                 starsDiv.className = 'feedback-stars';
-                starsDiv.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                starsDiv.textContent = '★'.repeat(fb.rating) + '☆'.repeat(5 - fb.rating);
                 
                 const pFeedback = document.createElement('p'); 
-                pFeedback.textContent = feedback;
+                pFeedback.textContent = fb.feedback;
 
                 const feedbackTimestampDiv = document.createElement('div');
                 feedbackTimestampDiv.className = 'feedback-timestamp';
-                feedbackTimestampDiv.textContent = `Posted: ${new Date(timestamp).toLocaleString()}`;
+                feedbackTimestampDiv.textContent = `Posted: ${new Date(fb.timestamp).toLocaleString()}`;
 
+                feedbackDetailsDiv.append(strongName, starsDiv, pFeedback);
 
-                feedbackDetailsDiv.append(strongName, starsDiv, pFeedback, feedbackTimestampDiv);
-
-                // Add Edit button (client-side check for IP match)
-                const editButton = document.createElement('button');
-                editButton.className = 'edit-feedback-btn';
-                editButton.textContent = 'EDIT MY FEEDBACK';
-                editButton.disabled = (userIpAddress === 'UNKNOWN' || userIpAddress !== feedbackIp); // Disable if IP doesn't match
-                if (userIpAddress === 'UNKNOWN') {
-                    editButton.title = 'IP address not available to enable editing.';
-                } else if (userIpAddress !== feedbackIp) {
-                    editButton.title = 'You can only edit your own feedback.';
+                // Add "Edited" tag if applicable
+                if (fb.isEdited) {
+                    const editedFlag = document.createElement('span');
+                    editedFlag.className = 'edited-flag';
+                    editedFlag.textContent = 'EDITED';
+                    feedbackDetailsDiv.appendChild(editedFlag);
+                    feedbackDetailsDiv.appendChild(document.createElement('br')); // Small break for spacing
                 }
 
-                editButton.addEventListener('click', () => {
-                    if (confirm('APNA FEEDBACK EDIT KARNA HAI?')) {
-                        // Populate form with current feedback details
-                        nameInput.value = name;
-                        feedbackTextarea.value = feedback;
-                        currentSelectedRating = rating;
-                        ratingInput.value = rating;
-                        updateStarVisuals(rating);
-                        
-                        // Change submit button to update button
-                        submitButton.textContent = 'UPDATE FEEDBACK';
-                        submitButton.onclick = async () => {
-                            const updatedName = nameInput.value.trim();
-                            const updatedFbText = feedbackTextarea.value.trim();
-                            const updatedRating = ratingInput.value;
-
-                            if (!updatedName || !updatedFbText || updatedRating === '0') {
-                                alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
-                                return;
-                            }
-
-                            try {
-                                const res = await fetch(`${API_URL}/${feedbackId}`, { // Use PUT for update
-                                    method: 'PUT', 
-                                    headers: {'Content-Type':'application/json'}, 
-                                    body: JSON.stringify({ 
-                                        name: updatedName, 
-                                        feedback: updatedFbText, 
-                                        rating: parseInt(updatedRating),
-                                        userIp: userIpAddress // Send IP for server-side verification
-                                    })
-                                });
-
-                                if (!res.ok) {
-                                    const errorData = await res.json();
-                                    throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
-                                }
-                                alert('FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
-                                // Reset form and button
-                                nameInput.value = ''; feedbackTextarea.value = '';
-                                ratingInput.value = '0'; currentSelectedRating = 0;
-                                updateStarVisuals(0);
-                                submitButton.textContent = 'SUBMIT FEEDBACK';
-                                submitButton.onclick = submitFeedbackHandler; // Revert to original submit handler
-                                fetchFeedbacks(); // Re-fetch to show updated feedback
-                            } catch (err) {
-                                console.error('UPDATE FEEDBACK ERROR:', err);
-                                alert(`UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
-                            }
-                        };
-                        // Scroll to the top of the form for easy editing
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                });
-                feedbackDetailsDiv.appendChild(editButton);
+                feedbackDetailsDiv.appendChild(feedbackTimestampDiv);
 
 
-                if (repliesArray && repliesArray.length > 0) {
-                    const latestReply = repliesArray[repliesArray.length - 1];
+                // Add Edit Icon (visibility controlled by JS based on mock IP)
+                const editIcon = document.createElement('i');
+                editIcon.className = 'fas fa-edit edit-icon';
+                editIcon.title = 'Edit this feedback';
+                editIcon.onclick = () => showEditPopup(fb);
+                item.appendChild(editIcon);
+
+                // Check if the current user's mock IP matches the feedback's mock IP
+                // In a real app: if (currentUser.userId === fb.userId)
+                if (userIP.endsWith(item.getAttribute('data-mock-ip'))) {
+                    editIcon.style.display = 'block'; // Show edit icon
+                } else {
+                    editIcon.style.display = 'none'; // Hide for others
+                }
+
+
+                if (fb.replies && fb.replies.length > 0) {
+                    const latestReply = fb.replies[fb.replies.length - 1];
                     if (latestReply && latestReply.text) {
                         const adminReplyDiv = document.createElement('div');
                         adminReplyDiv.className = 'admin-reply';
@@ -979,9 +1211,55 @@
                 }, index * 100); // Stagger animation
             }
 
-            // Store original submit handler to revert after editing
-            const submitFeedbackHandler = submitButton.onclick;
+            // Function to show edit popup
+            function showEditPopup(feedback) {
+                editPopupOverlay.classList.add('show');
+                editFeedbackIdInput.value = feedback._id;
+                editNameInput.value = feedback.name;
+                editFeedbackTextarea.value = feedback.feedback;
+                currentEditSelectedRating = feedback.rating;
+                editRatingInput.value = feedback.rating;
+                updateStarVisuals(editStars, currentEditSelectedRating);
+            }
 
+            // Function to hide edit popup
+            function hideEditPopup() {
+                editPopupOverlay.classList.remove('show');
+            }
+
+            cancelEditBtn.addEventListener('click', hideEditPopup);
+
+            saveEditBtn.addEventListener('click', async () => {
+                const id = editFeedbackIdInput.value;
+                const name = editNameInput.value.trim();
+                const feedback = editFeedbackTextarea.value.trim();
+                const rating = editRatingInput.value;
+
+                if (!name || !feedback || rating === '0') {
+                    showCustomAlert('error', 'EDIT KARNE KE LIYE NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, feedback, rating: parseInt(rating) })
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error(errorData.message || 'SERVER ERROR WHILE UPDATING FEEDBACK!');
+                    }
+
+                    showCustomAlert('success', 'FEEDBACK SAFALTA-POORVAK UPDATE HO GAYA!');
+                    hideEditPopup();
+                    fetchFeedbacks(); // Re-fetch to show updated feedback
+                } catch (err) {
+                    console.error('EDIT FEEDBACK ERROR:', err);
+                    showCustomAlert('error', `FEEDBACK UPDATE NAHI HO PAYA: ${err.message}`);
+                }
+            });
 
             fetchFeedbacks(); // Fetch feedbacks on page load
         });
