@@ -115,7 +115,7 @@ app.get('/api/feedbacks', async (req, res) => {
 // API Endpoint to submit new feedback (Save to DB)
 app.post('/api/feedback', async (req, res) => {
     const { name, feedback, rating } = req.body;
-    const userIp = req.clientIp; // Get IP from middleware
+    const userIp = req.clientIp;
     if (!name || !feedback || rating === '0') {
         return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
     }
@@ -153,7 +153,7 @@ app.post('/api/feedback', async (req, res) => {
 app.put('/api/feedback/:id', async (req, res) => {
     const feedbackId = req.params.id;
     const { name, feedback, rating } = req.body;
-    const clientIp = req.clientIp; // Get IP from middleware
+    const clientIp = req.clientIp;
 
     if (!name || !feedback || rating === '0') {
         return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE UPDATE KE LIYE!' });
@@ -442,7 +442,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         color: #8E9A9D;
                         margin-left: 10px;
                     }
-                    .edited-admin-tag {
+                    .edited-admin-tag { /* */
                         background-color: #5cb85c; /* Greenish for admin edited */
                         color: white;
                         padding: 3px 8px;
@@ -501,7 +501,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         </div>
                         
                         <div class="reply-section">
-                            <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
+                            <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHan..."></textarea>
                             <button class="reply-btn" onclick="postReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
                             <div class="replies-display">
                                 ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
