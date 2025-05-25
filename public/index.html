@@ -396,7 +396,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         #custom-modal-overlay { 
-            position: absolute; 
+            position: fixed; /* Changed from absolute to fixed */
             top: 0;
             left: 0;
             width: 100%;
@@ -409,6 +409,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
+            overflow: auto; /* Allow scrolling if modal content overflows */
         }
         #custom-modal-overlay.show {
             opacity: 1;
@@ -434,6 +435,7 @@
             position: relative; 
             z-index: 101; 
             will-change: transform, opacity;
+            margin: auto; /* Center the modal within the overlay */
         }
 
         #custom-modal-overlay.show .custom-modal {
@@ -589,6 +591,7 @@
     </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('name');
@@ -617,6 +620,22 @@
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; 
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
+
+            // Initialize Socket.IO client
+            const socket = io(BASE_API_URL);
+
+            socket.on('connect', () => {
+                console.log('Socket.IO connected!');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Socket.IO disconnected!');
+            });
+
+            socket.on('feedbackUpdate', (updatedFeedback) => {
+                console.log('Received feedback update:', updatedFeedback);
+                fetchFeedbacks(); // Refetch all feedbacks on update
+            });
 
             async function getClientIp() {
                 try {
@@ -699,7 +718,7 @@
                     alert(`${title}\n${message}`);
                     return;
                 }
-                setFormContentVisibility(false); 
+                // We no longer hide form content, modal is fixed position
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
                 if (confettiContainer) confettiContainer.innerHTML = ''; 
@@ -727,7 +746,7 @@
             if(modalCloseBtn) { 
                 modalCloseBtn.addEventListener('click', () => {
                     if(customModalOverlay) customModalOverlay.classList.remove('show');
-                    setFormContentVisibility(true); 
+                    // No need to set form content visibility back to true, it was never hidden
                     if (isEditing) { 
                          if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
@@ -792,7 +811,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     resetForm(); 
-                    await fetchFeedbacks();
+                    // No need to call fetchFeedbacks() here, socket.io will handle it
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
@@ -813,7 +832,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
                     resetForm();
-                    await fetchFeedbacks();
+                    // No need to call fetchFeedbacks() here, socket.io will handle it
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
@@ -834,7 +853,7 @@
                 submitButton.addEventListener('click', handleOriginalSubmit);
                 isEditing = false;
                 currentEditFeedbackId = null;
-                setFormContentVisibility(true); 
+                // No need to set form content visibility back to true, it was never hidden
             }
 
             function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, isEdited, index) {
