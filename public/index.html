@@ -493,6 +493,29 @@
             margin-left: 10px;
         }
 
+        .edit-feedback-btn {
+            background-color: #5bc0de; /* Info blue */
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .edit-feedback-btn:hover {
+            background-color: #31b0d5;
+            transform: translateY(-2px);
+        }
+
+        .edit-feedback-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .owner-info { margin-bottom: 30px; }
@@ -592,7 +615,7 @@
             </div>
             <input type="hidden" id="rating" value="0">
         </div>
-
+        
         <button id="submit-feedback">SUBMIT FEEDBACK</button>
     </div>
 
@@ -613,10 +636,27 @@
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
             let currentSelectedRating = 0;
+            let userIpAddress = ''; // To store the user's IP
 
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // REPLACE WITH YOUR DEPLOYED URL
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
+
+            // Function to get client IP address (using an external service)
+            async function getClientIp() {
+                try {
+                    const response = await fetch('https://api.ipify.org?format=json');
+                    const data = await response.json();
+                    userIpAddress = data.ip;
+                    console.log('User IP:', userIpAddress);
+                } catch (error) {
+                    console.error('IP address fetch karte waqt error aaya:', error);
+                    userIpAddress = 'UNKNOWN'; // Fallback if IP cannot be fetched
+                }
+            }
+
+            // Call getClientIp on load
+            getClientIp();
 
             // Typed.js for the main title
             const typedTitle = new Typed('#main-title', {
@@ -708,7 +748,7 @@
                         updateAverageRating(averageRating, data.length);
 
                         // Add new feedbacks with animation
-                        data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, index));
+                        data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, index));
                     }
                 } catch (err) {
                     console.error('FETCH FEEDBACKS ERROR:', err);
@@ -755,7 +795,8 @@
                 const feedbackData = {
                     name: name,
                     feedback: fbText,
-                    rating: parseInt(rating)
+                    rating: parseInt(rating),
+                    userIp: userIpAddress // Send the client's IP
                 };
 
                 try {
@@ -793,7 +834,7 @@
                 }
             });
 
-            function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, index) {
+            function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, index) {
                 const item = document.createElement('div'); 
                 item.className = 'feedback-item';
                 item.setAttribute('data-feedback-id', feedbackId);
@@ -830,6 +871,74 @@
 
 
                 feedbackDetailsDiv.append(strongName, starsDiv, pFeedback, feedbackTimestampDiv);
+
+                // Add Edit button (client-side check for IP match)
+                const editButton = document.createElement('button');
+                editButton.className = 'edit-feedback-btn';
+                editButton.textContent = 'EDIT MY FEEDBACK';
+                editButton.disabled = (userIpAddress === 'UNKNOWN' || userIpAddress !== feedbackIp); // Disable if IP doesn't match
+                if (userIpAddress === 'UNKNOWN') {
+                    editButton.title = 'IP address not available to enable editing.';
+                } else if (userIpAddress !== feedbackIp) {
+                    editButton.title = 'You can only edit your own feedback.';
+                }
+
+                editButton.addEventListener('click', () => {
+                    if (confirm('APNA FEEDBACK EDIT KARNA HAI?')) {
+                        // Populate form with current feedback details
+                        nameInput.value = name;
+                        feedbackTextarea.value = feedback;
+                        currentSelectedRating = rating;
+                        ratingInput.value = rating;
+                        updateStarVisuals(rating);
+                        
+                        // Change submit button to update button
+                        submitButton.textContent = 'UPDATE FEEDBACK';
+                        submitButton.onclick = async () => {
+                            const updatedName = nameInput.value.trim();
+                            const updatedFbText = feedbackTextarea.value.trim();
+                            const updatedRating = ratingInput.value;
+
+                            if (!updatedName || !updatedFbText || updatedRating === '0') {
+                                alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+                                return;
+                            }
+
+                            try {
+                                const res = await fetch(`${API_URL}/${feedbackId}`, { // Use PUT for update
+                                    method: 'PUT', 
+                                    headers: {'Content-Type':'application/json'}, 
+                                    body: JSON.stringify({ 
+                                        name: updatedName, 
+                                        feedback: updatedFbText, 
+                                        rating: parseInt(updatedRating),
+                                        userIp: userIpAddress // Send IP for server-side verification
+                                    })
+                                });
+
+                                if (!res.ok) {
+                                    const errorData = await res.json();
+                                    throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
+                                }
+                                alert('FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
+                                // Reset form and button
+                                nameInput.value = ''; feedbackTextarea.value = '';
+                                ratingInput.value = '0'; currentSelectedRating = 0;
+                                updateStarVisuals(0);
+                                submitButton.textContent = 'SUBMIT FEEDBACK';
+                                submitButton.onclick = submitFeedbackHandler; // Revert to original submit handler
+                                fetchFeedbacks(); // Re-fetch to show updated feedback
+                            } catch (err) {
+                                console.error('UPDATE FEEDBACK ERROR:', err);
+                                alert(`UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
+                            }
+                        };
+                        // Scroll to the top of the form for easy editing
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+                feedbackDetailsDiv.appendChild(editButton);
+
 
                 if (repliesArray && repliesArray.length > 0) {
                     const latestReply = repliesArray[repliesArray.length - 1];
@@ -869,6 +978,10 @@
                     item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
                 }, index * 100); // Stagger animation
             }
+
+            // Store original submit handler to revert after editing
+            const submitFeedbackHandler = submitButton.onclick;
+
 
             fetchFeedbacks(); // Fetch feedbacks on page load
         });
