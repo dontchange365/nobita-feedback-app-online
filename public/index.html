@@ -380,7 +380,7 @@
             z-index: 10;
         }
         .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.1) rotate(5deg); opacity: 1; }
-        .edit-feedback-btn[disabled] { display: none; }
+        .edit-feedback-btn[disabled] { display: none; } /* This hides the button if disabled */
 
         .edited-tag {
             background-color: #f0ad4e;
@@ -613,7 +613,9 @@
             let userIpAddress = ''; 
             let isEditing = false; 
             let currentEditFeedbackId = null; 
-            let lastFetchedFeedbacks = []; 
+
+            // Track edited feedbacks to hide edit button permanently for that IP/feedback
+            let editedFeedbacksTracker = JSON.parse(localStorage.getItem('editedFeedbacks')) || {};
 
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; 
             const API_URL = `${BASE_API_URL}/api/feedback`;
@@ -742,21 +744,6 @@
                     const data = await res.json();
                     
                     const h2Title = feedbackListContainer.querySelector('h2');
-                    
-                    // Check for changes and update only if needed
-                    const currentFeedbackIds = lastFetchedFeedbacks.map(fb => fb._id);
-                    const newFeedbackIds = data.map(fb => fb._id);
-
-                    const hasChanges = data.length !== lastFetchedFeedbacks.length || 
-                                       !currentFeedbackIds.every(id => newFeedbackIds.includes(id)) ||
-                                       !newFeedbackIds.every(id => currentFeedbackIds.includes(id)) ||
-                                       JSON.stringify(data) !== JSON.stringify(lastFetchedFeedbacks); 
-                                    
-                    if (!hasChanges && feedbackListContainer.children.length > 2) { // 2 for average rating and h2 title
-                        // console.log("No new feedbacks or changes. Skipping DOM update.");
-                        return; 
-                    }
-
                     feedbackListContainer.innerHTML = ''; 
                     feedbackListContainer.appendChild(averageRatingDisplay); 
                     if(h2Title) feedbackListContainer.appendChild(h2Title); 
@@ -769,11 +756,10 @@
                         updateAverageRating(0, 0); 
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length);
+                        const averageRating = (totalRatings / data.length); // No toFixed(1) here, do it in display
                         updateAverageRating(averageRating, data.length);
                         data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
                     }
-                    lastFetchedFeedbacks = data; 
                 } catch (err) {
                     console.error('FETCH FEEDBACKS ERROR:', err);
                     showCustomModal('error', 'OH NO!', `FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
@@ -786,6 +772,7 @@
                 if (isNaN(avgRating) || avgRating <= 0) {
                     starsOutput = '☆☆☆☆☆';
                 } else {
+                    // Simple truncate logic: X.Y will show X full stars, rest empty
                     const fullStars = Math.floor(avgRating);
                     starsOutput = '★'.repeat(fullStars);
                     starsOutput += '☆'.repeat(5 - fullStars);
@@ -808,7 +795,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     resetForm(); 
-                    await fetchFeedbacks(); 
+                    await fetchFeedbacks();
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
@@ -816,7 +803,7 @@
             }
 
             async function handleUpdateSubmit() {
-                 pulseButton();
+                pulseButton();
                 const updatedName = nameInput.value.trim();
                 const updatedFbText = feedbackTextarea.value.trim();
                 const updatedRating = ratingInput.value;
@@ -827,9 +814,14 @@
                 try {
                     const res = await fetch(`${API_URL}/${currentEditFeedbackId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: updatedName, feedback: updatedFbText, rating: parseInt(updatedRating), userIp: userIpAddress }) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
+                    
+                    // Mark this feedback as edited in local storage
+                    editedFeedbacksTracker[currentEditFeedbackId] = true;
+                    localStorage.setItem('editedFeedbacks', JSON.stringify(editedFeedbacksTracker));
+
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
                     resetForm();
-                    await fetchFeedbacks(); 
+                    await fetchFeedbacks();
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
@@ -884,7 +876,13 @@
                 editButton.className = 'edit-feedback-btn';
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
-                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { editButton.disabled = false; } else { editButton.disabled = true; }
+                
+                // Logic to disable/hide edit button after one edit
+                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp && !editedFeedbacksTracker[feedbackId]) {
+                    editButton.disabled = false;
+                } else {
+                    editButton.disabled = true; // This will hide the button due to CSS [disabled] rule
+                }
                 
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation();
@@ -926,11 +924,7 @@
                 feedbackListContainer.appendChild(item);
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
             }
-            
-            // Initial fetch
             fetchFeedbacks();
-            // Fetch feedbacks every 5 seconds for live updates
-            setInterval(fetchFeedbacks, 5000); 
         });
     </script>
 </body>
