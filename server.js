@@ -24,10 +24,9 @@ mongoose.connect(MONGODB_URI)
   .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
 
 // Function to generate DiceBear Avatar URL (server side)
-// Added a more dynamic seed for better avatar variety on change
 function getDiceBearAvatarUrlServer(name, randomSeed = '') {
     const seed = encodeURIComponent(name.toLowerCase() + randomSeed);
-    return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&scale=90`;
+    return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`; // Added doodle for more variety
 }
 
 // Define a Schema for Feedback
@@ -37,7 +36,8 @@ const feedbackSchema = new mongoose.Schema({
   rating: { type: Number, required: true, min: 1, max: 5 },
   timestamp: { type: Date, default: Date.now },
   avatarUrl: { type: String },
-  userIp: { type: String }, // New field to store user's IP address
+  userIp: { type: String },
+  isEdited: { type: Boolean, default: false }, // New field to track edits
   replies: [
     {
       text: { type: String, required: true },
@@ -60,15 +60,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware to get client's IP address
-// This will get the IP from X-Forwarded-For header if behind a proxy (like Render)
-// or from req.connection.remoteAddress directly.
 app.use((req, res, next) => {
     req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    // For IPv6 addresses like '::1' (localhost), convert to '127.0.0.1' for consistency
     if (req.clientIp === '::1') {
         req.clientIp = '127.0.0.1';
     }
-    // If multiple IPs are present (e.g., "clientIp, proxyIp"), take the first one
     if (req.clientIp.includes(',')) {
         req.clientIp = req.clientIp.split(',')[0].trim();
     }
@@ -127,20 +123,20 @@ app.post('/api/feedback', async (req, res) => {
     try {
         let avatarUrlToSave;
 
-        // Check if an avatar already exists for this name (case-insensitive)
         const existingFeedback = await Feedback.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
         if (existingFeedback && existingFeedback.avatarUrl) {
             avatarUrlToSave = existingFeedback.avatarUrl;
         } else {
-            avatarUrlToSave = getDiceBearAvatarUrlServer(name); // Generate new if not found
+            avatarUrlToSave = getDiceBearAvatarUrlServer(name);
         }
 
         const newFeedback = new Feedback({
-            name: name, // Save as provided, display as capitalized in frontend
+            name: name,
             feedback: feedback,
             rating: parseInt(rating),
             avatarUrl: avatarUrlToSave,
-            userIp: userIp // Save the user's IP
+            userIp: userIp,
+            isEdited: false // Newly submitted feedback is not edited
         });
 
         await newFeedback.save();
@@ -179,7 +175,8 @@ app.put('/api/feedback/:id', async (req, res) => {
         existingFeedback.name = name;
         existingFeedback.feedback = feedback;
         existingFeedback.rating = parseInt(rating);
-        existingFeedback.timestamp = Date.now(); // Update timestamp on edit if desired
+        existingFeedback.timestamp = Date.now(); // Update timestamp on edit
+        existingFeedback.isEdited = true; // Mark as edited
 
         await existingFeedback.save();
         console.log('FEEDBACK SAFALTA-POORVAK UPDATE HUA:', existingFeedback);
@@ -192,14 +189,13 @@ app.put('/api/feedback/:id', async (req, res) => {
 });
 
 
-// ADMIN PANEL KA ROUTE - ***** YAHAN POORA BADLAV KIYA HAI DESIGN KE LIYE! *****
+// ADMIN PANEL KA ROUTE
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
         const feedbacks = await Feedback.find().sort({ timestamp: -1 });
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         
-        // Define Nobita's avatar URL for admin panel (same as owner avatar)
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `
@@ -272,6 +268,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         justify-content: space-between;
                         border: 1px solid #34495E;
                         transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        position: relative; /* For edited tag positioning */
                     }
                     .feedback-card:hover {
                         transform: translateY(-5px);
@@ -297,20 +294,29 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         height: 100%;
                         object-fit: cover;
                     }
+                    .feedback-info {
+                        flex-grow: 1; /* Allow info to take remaining space */
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
                     .feedback-info h4 {
                         margin: 0;
                         font-size: 1.4em;
                         color: #FFD700;
                         text-transform: uppercase;
+                        display: flex; /* For alignment with edited tag */
+                        align-items: center;
+                        gap: 8px; /* Space between name and tag */
                     }
                     .feedback-info .rating {
                         font-size: 1.1em;
                         color: #F39C12; /* Orange */
                         margin-top: 5px;
                     }
-                    .feedback-info .user-ip { /* Style for IP address */
+                    .feedback-info .user-ip {
                         font-size: 0.9em;
-                        color: #AAB7B8; /* Muted grey for IP */
+                        color: #AAB7B8;
                         margin-top: 5px;
                     }
                     .feedback-body p {
@@ -346,9 +352,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .action-buttons button:hover {
                         transform: translateY(-2px);
                     }
-                    .delete-btn { background-color: #E74C3C; color: white; } /* Red */
+                    .delete-btn { background-color: #E74C3C; color: white; }
                     .delete-btn:hover { background-color: #C0392B; }
-                    .change-avatar-btn { background-color: #3498DB; color: white; } /* Blue */
+                    .change-avatar-btn { background-color: #3498DB; color: white; }
                     .change-avatar-btn:hover { background-color: #2980B9; }
 
                     /* Reply Section */
@@ -436,6 +442,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         color: #8E9A9D;
                         margin-left: 10px;
                     }
+                    .edited-admin-tag {
+                        background-color: #5cb85c; /* Greenish for admin edited */
+                        color: white;
+                        padding: 3px 8px;
+                        border-radius: 5px;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                        margin-left: 10px;
+                        vertical-align: middle;
+                    }
 
                     @media (max-width: 768px) {
                         h1 { font-size: 2.2em; margin-bottom: 30px; }
@@ -465,7 +481,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 <img src="${fb.avatarUrl}" alt="${fb.name.charAt(0).toUpperCase()}">
                             </div>
                             <div class="feedback-info">
-                                <h4>${fb.name}</h4>
+                                <h4>
+                                    ${fb.name}
+                                    ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}
+                                </h4>
                                 <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
                                 <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
                             </div>
