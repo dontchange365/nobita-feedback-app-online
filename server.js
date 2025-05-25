@@ -37,6 +37,7 @@ const feedbackSchema = new mongoose.Schema({
   rating: { type: Number, required: true, min: 1, max: 5 },
   timestamp: { type: Date, default: Date.now },
   avatarUrl: { type: String },
+  userIp: { type: String }, // New field to store user's IP address
   replies: [
     {
       text: { type: String, required: true },
@@ -57,6 +58,22 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Middleware to get client's IP address
+// This will get the IP from X-Forwarded-For header if behind a proxy (like Render)
+// or from req.connection.remoteAddress directly.
+app.use((req, res, next) => {
+    req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    // For IPv6 addresses like '::1' (localhost), convert to '127.0.0.1' for consistency
+    if (req.clientIp === '::1') {
+        req.clientIp = '127.0.0.1';
+    }
+    // If multiple IPs are present (e.g., "clientIp, proxyIp"), take the first one
+    if (req.clientIp.includes(',')) {
+        req.clientIp = req.clientIp.split(',')[0].trim();
+    }
+    next();
+});
 
 // Middleware for Admin Authentication
 const authenticateAdmin = (req, res, next) => {
@@ -102,6 +119,7 @@ app.get('/api/feedbacks', async (req, res) => {
 // API Endpoint to submit new feedback (Save to DB)
 app.post('/api/feedback', async (req, res) => {
     const { name, feedback, rating } = req.body;
+    const userIp = req.clientIp; // Get IP from middleware
     if (!name || !feedback || rating === '0') {
         return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
     }
@@ -121,7 +139,8 @@ app.post('/api/feedback', async (req, res) => {
             name: name, // Save as provided, display as capitalized in frontend
             feedback: feedback,
             rating: parseInt(rating),
-            avatarUrl: avatarUrlToSave
+            avatarUrl: avatarUrlToSave,
+            userIp: userIp // Save the user's IP
         });
 
         await newFeedback.save();
@@ -133,6 +152,45 @@ app.post('/api/feedback', async (req, res) => {
         res.status(500).json({ message: 'FEEDBACK DATABASE MEIN SAVE NAHI HO PAYA.', error: error.message });
     }
 });
+
+// API Endpoint to update existing feedback (Allow editing based on IP)
+app.put('/api/feedback/:id', async (req, res) => {
+    const feedbackId = req.params.id;
+    const { name, feedback, rating } = req.body;
+    const clientIp = req.clientIp; // Get IP from middleware
+
+    if (!name || !feedback || rating === '0') {
+        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE UPDATE KE LIYE!' });
+    }
+
+    try {
+        const existingFeedback = await Feedback.findById(feedbackId);
+
+        if (!existingFeedback) {
+            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, UPDATE KISKO KARUN?' });
+        }
+
+        // IP address verification
+        if (existingFeedback.userIp !== clientIp) {
+            console.warn(`UNAUTHORIZED ATTEMPT TO EDIT FEEDBACK ID: ${feedbackId} FROM IP: ${clientIp}. ORIGINAL IP: ${existingFeedback.userIp}`);
+            return res.status(403).json({ message: 'TUM SIRF APNA FEEDBACK EDIT KAR SAKTE HO, DOOSRE KA NAHI!' });
+        }
+
+        existingFeedback.name = name;
+        existingFeedback.feedback = feedback;
+        existingFeedback.rating = parseInt(rating);
+        existingFeedback.timestamp = Date.now(); // Update timestamp on edit if desired
+
+        await existingFeedback.save();
+        console.log('FEEDBACK SAFALTA-POORVAK UPDATE HUA:', existingFeedback);
+        res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
+
+    } catch (error) {
+        console.error('FEEDBACK UPDATE KARTE WAQT ERROR AAYA:', error);
+        res.status(500).json({ message: 'FEEDBACK UPDATE NAHI HO PAYA.', error: error.message });
+    }
+});
+
 
 // ADMIN PANEL KA ROUTE - ***** YAHAN POORA BADLAV KIYA HAI DESIGN KE LIYE! *****
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
@@ -248,6 +306,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-info .rating {
                         font-size: 1.1em;
                         color: #F39C12; /* Orange */
+                        margin-top: 5px;
+                    }
+                    .feedback-info .user-ip { /* Style for IP address */
+                        font-size: 0.9em;
+                        color: #AAB7B8; /* Muted grey for IP */
                         margin-top: 5px;
                     }
                     .feedback-body p {
@@ -404,6 +467,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <div class="feedback-info">
                                 <h4>${fb.name}</h4>
                                 <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
+                                <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
                             </div>
                         </div>
                         <div class="feedback-body">
