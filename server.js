@@ -309,80 +309,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <div class="main-panel-btn-container">
                     <a href="/" class="main-panel-btn">← GO TO MAIN FEEDBACK PANEL</a>
                 </div>
-                <div class="feedback-grid">
-        `;
-
-        if (feedbacks.length === 0) {
-            html += `<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>`;
-        } else {
-            feedbacks.forEach(fb => {
-                const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
-                // Debugging: Check if fb.avatarUrl is undefined or null
-                const avatarSrc = fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous');
-                console.log(`Generating HTML for feedback ID: ${fb._id}, Avatar URL: ${avatarSrc}`); // Debugging line
-
-                html += `
-                    <div class="feedback-card" id="card-${fb._id}">
-                        <div class="feedback-card-inner">
-                            <div class="feedback-card-front">
-                                <div class="feedback-header">
-                                    <div class="feedback-avatar"><img src="${avatarSrc}" alt="${fbNameInitial}"></div>
-                                    <div class="feedback-info">
-                                        <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
-                                        <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
-                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
-                                    </div>
-                                </div>
-                                <div class="feedback-body"><p>${fb.feedback}</p></div>
-                                <div class="feedback-date">
-                                    ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
-                                    ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
-                                </div>
-                                <div class="action-buttons">
-                                    <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
-                                    <button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${fb.name || ''}')">AVATAR BADAL!</button>
-                                </div>
-                                <div class="reply-section">
-                                    <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
-                                    <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
-                                    <div class="replies-display">
-                                        ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
-                                        ${fb.replies.map(reply => `
-                                            <div class="single-reply">
-                                                <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
-                                                <div class="reply-content-wrapper">
-                                                    <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
-                                                    <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
-                                                </div>
-                                            </div>`).join('')}
-                                    </div>
-                                </div>
-                                ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIGINAL DEKH BHAI!</button>` : ''}
-                            </div>`;
-                if (fb.isEdited && fb.originalContent) {
-                    const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
-                    html += `
-                            <div class="feedback-card-back">
-                                <div class="feedback-header">
-                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="${originalNameInitial}"></div>
-                                    <div class="feedback-info">
-                                        <h4>ORIGINAL: ${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
-                                        <div class="rating">${'★'.repeat(fb.originalContent.rating || 0)}${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
-                                    </div>
-                                </div>
-                                <div class="feedback-body"><p>${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
-                                <div class="feedback-date">Originally Posted: ${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
-                                <div style="margin-top: auto;"> 
-                                   <button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED DEKH BHAI!</button>
-                                </div>
-                            </div>`;
-                }
-                html += `
-                        </div> 
-                    </div>`;
-            });
-        }
-        html += `
+                <div class="feedback-grid" id="feedbackGrid">
+                    <p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">LOADING FEEDBACKS...</p>
                 </div> 
 
                 <div id="adminModalOverlay" class="admin-modal-overlay">
@@ -399,6 +327,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
+                    const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Defined here for JS usage
+                    const feedbackGrid = document.getElementById('feedbackGrid');
                     const adminModalOverlay = document.getElementById('adminModalOverlay');
                     const adminModalTitle = document.getElementById('adminModalTitle');
                     const adminModalMessage = document.getElementById('adminModalMessage');
@@ -406,6 +336,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     const adminModalConfirmButton = document.getElementById('adminModalConfirmButton');
                     const adminModalCancelButton = document.getElementById('adminModalCancelButton');
                     let globalConfirmCallback = null;
+                    let currentFeedbacks = []; // To store the current state of feedbacks for comparison
 
                     function showAdminModal(type, title, message, confirmCallbackFn = null) {
                         adminModalTitle.textContent = title;
@@ -436,9 +367,122 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                     function flipCard(feedbackId) {
                         const card = document.getElementById(\`card-\${feedbackId}\`);
-                        card.classList.toggle('is-flipped');
+                        if (card) {
+                            card.classList.toggle('is-flipped');
+                        }
                     }
                     
+                    // Function to generate DiceBear Avatar URL (client side, same as server)
+                    function getDiceBearAvatarUrlClient(name, randomSeed = '') {
+                        const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
+                        const seed = encodeURIComponent(seedName + randomSeed);
+                        return \`https://api.dicebear.com/8.x/adventurer/svg?seed=\${seed}&flip=true&radius=50&doodle=true&scale=90\`;
+                    }
+
+                    function createFeedbackCard(fb) {
+                        const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
+                        const avatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.name || 'Anonymous');
+
+                        let cardHtml = `
+                            <div class="feedback-card" id="card-${fb._id}">
+                                <div class="feedback-card-inner">
+                                    <div class="feedback-card-front">
+                                        <div class="feedback-header">
+                                            <div class="feedback-avatar"><img src="${avatarSrc}" alt="${fbNameInitial}"></div>
+                                            <div class="feedback-info">
+                                                <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
+                                                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
+                                                <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-body"><p>${fb.feedback}</p></div>
+                                        <div class="feedback-date">
+                                            ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
+                                            ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                        </div>
+                                        <div class="action-buttons">
+                                            <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
+                                            <button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${fb.name || ''}')">AVATAR BADAL!</button>
+                                        </div>
+                                        <div class="reply-section">
+                                            <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
+                                            <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
+                                            <div class="replies-display">
+                                                ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
+                                                ${fb.replies.map(reply => `
+                                                    <div class="single-reply">
+                                                        <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
+                                                        <div class="reply-content-wrapper">
+                                                            <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+                                                            <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                                        </div>
+                                                    </div>`).join('')}
+                                            </div>
+                                        </div>
+                                        ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIGINAL DEKH BHAI!</button>` : ''}
+                                    </div>`;
+                        if (fb.isEdited && fb.originalContent) {
+                            const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
+                            const originalAvatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.originalContent.name || 'Anonymous'); // Use existing avatar for original too
+
+                            cardHtml += `
+                                    <div class="feedback-card-back">
+                                        <div class="feedback-header">
+                                            <div class="feedback-avatar"><img src="${originalAvatarSrc}" alt="${originalNameInitial}"></div>
+                                            <div class="feedback-info">
+                                                <h4>ORIGINAL: ${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
+                                                <div class="rating">${'★'.repeat(fb.originalContent.rating || 0)}${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-body"><p>${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
+                                        <div class="feedback-date">Originally Posted: ${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
+                                        <div style="margin-top: auto;"> 
+                                           <button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED DEKH BHAI!</button>
+                                        </div>
+                                    </div>`;
+                        }
+                        cardHtml += `
+                                </div> 
+                            </div>`;
+                        return cardHtml;
+                    }
+
+                    async function fetchAndRenderFeedbacks() {
+                        try {
+                            const response = await fetch('/api/feedbacks', {
+                                headers: { 'Authorization': AUTH_HEADER } // Assuming API requires auth too
+                            });
+                            if (!response.ok) throw new Error(`Failed to fetch feedbacks: ${response.statusText}`);
+                            const newFeedbacks = await response.json();
+
+                            // Compare current feedbacks with new ones
+                            const isSame = currentFeedbacks.length === newFeedbacks.length && 
+                                           currentFeedbacks.every((fb, index) => JSON.stringify(fb) === JSON.stringify(newFeedbacks[index]));
+
+                            if (!isSame) {
+                                currentFeedbacks = newFeedbacks; // Update current state
+                                feedbackGrid.innerHTML = ''; // Clear existing
+                                if (currentFeedbacks.length === 0) {
+                                    feedbackGrid.innerHTML = '<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>';
+                                } else {
+                                    currentFeedbacks.forEach(fb => {
+                                        feedbackGrid.insertAdjacentHTML('beforeend', createFeedbackCard(fb));
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error fetching feedbacks for admin panel:', error);
+                            // Only show modal if it's a critical error and not just temporary network glitch during polling
+                            // showAdminModal('alert', 'GADBAD!', 'FEEDBACKS LOAD KARNE MEIN PROBLEM HUI!');
+                        }
+                    }
+
+                    // Initial load
+                    fetchAndRenderFeedbacks();
+
+                    // Poll for new feedbacks every 5 seconds
+                    setInterval(fetchAndRenderFeedbacks, 5000); // Poll every 5 seconds
+
                     async function tryDeleteFeedback(id) {
                         showAdminModal('confirm', 'DHAYAN DE!', 'PAKKA UDHA DENA HAI? FIR WAPAS NAHI AAYEGA!', async (confirmed) => {
                             if (confirmed) {
@@ -446,7 +490,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     const response = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER } });
                                     if (response.ok) {
                                         showAdminModal('alert', 'SAFAL!', 'FEEDBACK UDHA DIYA!');
-                                        setTimeout(() => window.location.reload(), 1200);
+                                        // Update UI live after deletion
+                                        await fetchAndRenderFeedbacks();
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'GADBAD!', \`UDHANE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -473,7 +518,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'HO GAYA!', 'REPLY SAFALTA-POORVAK POST HUA!');
-                                        setTimeout(() => window.location.reload(), 1200);
+                                        replyTextarea.value = ''; // Clear textarea
+                                        // Update UI live after reply
+                                        await fetchAndRenderFeedbacks();
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'REPLY FAIL!', \`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -493,7 +540,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'BADAL GAYA!', 'AVATAR SAFALTA-POORVAK BADLA GAYA! NAYA IMAGE AB DIKHEGA!');
-                                        setTimeout(() => window.location.reload(), 1200);
+                                        // Update UI live after avatar change
+                                        await fetchAndRenderFeedbacks();
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'AVATAR FAIL!', \`AVATAR BADALNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -508,12 +556,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         `;
         res.send(html);
     } catch (error) { 
-        console.error('ERROR GENERATING ADMIN PANEL:', error); // Added more specific error logging
-        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`); // Include stack for better debugging
+        console.error('ERROR GENERATING ADMIN PANEL:', error); 
+        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`); 
     }
 });
 
-// ... (DELETE, POST-REPLY, PUT-CHANGE-AVATAR routes remain the same as previous full version)
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -557,7 +604,7 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
             return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
         }
         const userName = feedbackToUpdate.name;
-        if (typeof userName !== 'string' || !userName) { // Added safety check
+        if (typeof userName !== 'string' || !userName) { 
              console.error(`[AVATAR CHANGE ERROR] User name is invalid for feedback ID ${id}:`, userName);
              return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
         }
