@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>⭐ DYNAMIC FEEDBACK SYSTEM ⭐</title>
   <style>
+    /* CSS Code - Wahi Professional Feedback Wala Style */
     body {
       font-family: 'Arial', sans-serif;
       background-color: #F0F2F5;
@@ -12,7 +13,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       min-height: 100vh;
       margin: 0;
       padding: 20px;
@@ -27,6 +28,7 @@
       text-align: center;
       width: 90%;
       max-width: 700px;
+      transition: all 0.3s ease-in-out;
       border: 1px solid #E0E0E0;
     }
 
@@ -60,7 +62,15 @@
       background: #fdfdfd;
       color: #333;
       font-size: 1em;
+      outline: none;
+      transition: all 0.3s ease;
       box-sizing: border-box;
+    }
+
+    .input-group input:focus,
+    .input-group textarea:focus {
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
     }
 
     .input-group textarea {
@@ -75,16 +85,18 @@
       justify-content: center;
       gap: 8px;
     }
+
     .star {
-      font-size: 3.5em;
+      font-size: 2.8em;
       color: #D1D5DB;
       cursor: pointer;
-      transition: color 0.2s, transform 0.2s;
+      transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
     }
-    .star.highlighted,
+
     .star.selected {
       color: #F59E0B;
-      transform: scale(1.5);
+      transform: scale(1.2);
+      text-shadow: 0 0 15px rgba(245,158,11,0.7);
     }
 
     button {
@@ -96,24 +108,36 @@
       font-size: 1.1em;
       font-weight: bold;
       cursor: pointer;
+      transition: all 0.3s ease;
       box-shadow: 0 4px 10px rgba(59,130,246,0.3);
+      letter-spacing: 0.5px;
       margin-top: 25px;
-      transition: background-color 0.2s, transform 0.2s;
     }
+
     button:hover {
       background-color: #2563EB;
       transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(59,130,246,0.4);
     }
 
     #feedback-list-container {
-      margin-top: 20px;
-      width: 100%;
+      margin-top: 45px;
+      background: #F9F9F9;
+      border: 1px solid #E0E0E0;
+      border-radius: 10px;
+      padding: 25px;
+      max-height: 450px;
+      overflow-y: auto;
       text-align: left;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
+
     #feedback-list-container h2 {
       font-family: 'Verdana', sans-serif;
       color: #1E3A8A;
       margin-bottom: 20px;
+      border-bottom: 2px solid #E0E0E0;
+      padding-bottom: 10px;
       font-size: 1.8em;
       font-weight: 700;
     }
@@ -130,69 +154,118 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       transition: transform 0.3s ease;
     }
-    .feedback-item:hover { transform: translateY(-3px); }
-    .feedback-item:last-child { margin-bottom: 0; }
 
-    .avatar {
-      width: 55px; height: 55px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: #3B82F6; color: #fff;
-      font-weight: bold; font-size: 0.9em;
-      flex-shrink: 0;
-      border: 2px solid #2563EB;
+    .feedback-item:hover {
+      transform: translateY(-3px);
     }
 
-    .feedback-content {
-      flex: 1;
+    .feedback-item:last-child {
+      margin-bottom: 0;
     }
-    .feedback-content strong {
+
+    .feedback-item strong {
       color: #2D3748;
       font-size: 1.15em;
       display: block;
       margin-bottom: 5px;
     }
-    .feedback-content .feedback-stars {
-      color: #F59E0B;
-      font-size: 1.5em;
-      margin-bottom: 8px;
-    }
-    .feedback-content p {
+
+    .feedback-item p {
       color: #4A5568;
       line-height: 1.7;
+      margin-top: 8px;
+    }
+
+    .feedback-stars {
+      color: #F59E0B;
+      font-size: 1.3em;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    .avatar {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid #2563EB;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .replies-main-display {
-      margin-top: 12px;
-      border-top: 1px solid #E0E0E0;
-      padding-top: 10px;
-      background-color: #F0F2F5;
-      border-radius: 6px;
+        margin-top: 15px;
+        border-top: 1px solid #E0E0E0;
+        padding-top: 15px;
+        background-color: #F0F2F5;
+        border-radius: 8px;
+        padding: 10px;
     }
     .replies-main-display h4 {
-      color: #1E3A8A;
-      margin-bottom: 8px;
-      font-size: 1em;
-      font-weight: bold;
+        color: #1E3A8A;
+        margin-bottom: 10px;
+        font-size: 1em;
+        font-weight: bold;
     }
     .single-reply-main {
-      background-color: #E8EBF2;
-      border-left: 3px solid #3B82F6;
-      padding: 8px 12px;
-      margin-bottom: 8px;
-      border-radius: 4px;
-      font-size: 0.9em;
-      color: #4A5568;
+        background-color: #E8EBF2;
+        border-left: 3px solid #3B82F6;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #4A5568;
     }
-    .single-reply-main:last-child { margin-bottom: 0; }
+    .single-reply-main:last-child {
+        margin-bottom: 0;
+    }
     .reply-admin-name-main {
-      font-weight: bold;
-      color: #1E3A8A;
+        font-weight: bold;
+        color: #1E3A8A;
     }
     .reply-timestamp-main {
-      font-size: 0.8em;
-      color: #777;
-      margin-left: 8px;
+        font-size: 0.8em;
+        color: #777;
+        margin-left: 8px;
+    }
+
+    #feedback-list-container::-webkit-scrollbar {
+      width: 10px;
+    }
+    #feedback-list-container::-webkit-scrollbar-track {
+      background: #E2E8F0;
+      border-radius: 10px;
+    }
+    #feedback-list-container::-webkit-scrollbar-thumb {
+      background: #A0AEC0;
+      border-radius: 10px;
+      border: 2px solid #E2E8F0;
+    }
+    #feedback-list-container::-webkit-scrollbar-thumb:hover {
+      background: #718096;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 25px; }
+      h1 { font-size: 1.8em; }
+      button { padding: 12px 25px; font-size: 1em; }
+      .star { font-size: 2.2em; }
+      .feedback-item { flex-direction: column; align-items: center; text-align: center; }
+      .avatar { margin-bottom: 10px; }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5em; }
+      .input-group label { font-size: 0.95em; }
+      .star { font-size: 1.8em; }
     }
   </style>
 </head>
@@ -202,12 +275,12 @@
 
     <div class="input-group">
       <label for="name">YOUR NAME:</label>
-      <input type="text" id="name" placeholder="ENTER YOUR NAME">
+      <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
     </div>
 
     <div class="input-group">
       <label for="feedback">YOUR FEEDBACK:</label>
-      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..."></textarea>
+      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
     </div>
 
     <div class="input-group">
@@ -231,142 +304,141 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const BASE      = 'https://nobita-feedback-app-online.onrender.com';
-      const POST_URL  = `${BASE}/api/feedback`;
-      const FETCH_URL = `${BASE}/api/feedbacks`;
-
-      const nameInput   = document.getElementById('name');
-      const fbInput     = document.getElementById('feedback');
+      const nameInput = document.getElementById('name');
+      const feedbackTextarea = document.getElementById('feedback');
       const ratingInput = document.getElementById('rating');
-      const submitBtn   = document.getElementById('submit-feedback');
-      const listCont    = document.getElementById('feedback-list-container');
-      const stars       = document.querySelectorAll('.star');
-      let currentRating = 0;
+      const submitButton = document.getElementById('submit-feedback');
+      const feedbackListContainer = document.getElementById('feedback-list-container');
+      const stars = document.querySelectorAll('.star');
+      let currentSelectedRating = 0;
 
-      function updateStars(r) {
-        stars.forEach(s => {
-          const v = +s.dataset.value;
-          s.classList.toggle('selected', v <= r);
-          s.classList.remove('highlighted');
+      const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com';
+      const API_URL = `${BASE_API_URL}/api/feedback`;
+      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
+
+      // Star interaction
+      function updateStarVisuals(value) {
+        stars.forEach(star => {
+          const val = parseInt(star.getAttribute('data-value'));
+          if (val <= value) star.classList.add('selected');
+          else star.classList.remove('selected');
         });
       }
-      stars.forEach(s => {
-        s.addEventListener('click', () => {
-          currentRating = +s.dataset.value;
-          ratingInput.value = currentRating;
-          updateStars(currentRating);
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          currentSelectedRating = parseInt(star.getAttribute('data-value'));
+          ratingInput.value = currentSelectedRating;
+          updateStarVisuals(currentSelectedRating);
         });
-        s.addEventListener('mouseenter', () => {
-          const hv = +s.dataset.value;
-          stars.forEach(x => {
-            x.classList.toggle('highlighted', +x.dataset.value <= hv);
-            x.classList.remove('selected');
-          });
+        star.addEventListener('mouseenter', () => {
+          updateStarVisuals(parseInt(star.getAttribute('data-value')));
         });
-        s.addEventListener('mouseleave', () => updateStars(currentRating));
+        star.addEventListener('mouseleave', () => {
+          updateStarVisuals(currentSelectedRating);
+        });
       });
 
-      async function fetchAll() {
+      // Fetch and render
+      async function fetchAllFeedbacks() {
         try {
-          const res = await fetch(FETCH_URL, { mode:'cors', headers:{'Accept':'application/json'} });
-          if (!res.ok) throw new Error(await res.text());
+          const res = await fetch(FETCH_API_URL);
+          if (!res.ok) throw new Error(res.statusText);
           return await res.json();
-        } catch(e) {
-          alert(`FEEDBACK LOAD ERROR:\n${e.message}`);
+        } catch (e) {
+          console.error(e);
           return [];
         }
       }
-      async function postOne(name, fb, rating) {
-        const res = await fetch(POST_URL, {
-          method:'POST', mode:'cors',
-          headers:{'Content-Type':'application/json','Accept':'application/json'},
-          body: JSON.stringify({ name, feedback: fb, rating })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      }
 
-      function addItem(name, fb, rating, replies = []) {
+      function addFeedbackToDOM(name, feedback, rating, replies, avatarUrl) {
         const item = document.createElement('div');
-        item.className = 'feedback-item';
+        item.classList.add('feedback-item');
 
-        const av = document.createElement('div');
-        av.className = 'avatar';
-        av.textContent = 'BBI';
+        const avatar = document.createElement('div');
+        avatar.classList.add('avatar');
+        const img = document.createElement('img');
+        img.src = avatarUrl;
+        img.alt = name.charAt(0).toUpperCase();
+        avatar.appendChild(img);
 
         const content = document.createElement('div');
-        content.className = 'feedback-content';
-        content.innerHTML = `
-          <strong>${name.toUpperCase()}</strong>
-          <div class="feedback-stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</div>
-          <p>${fb}</p>
-        `;
+        const strong = document.createElement('strong');
+        strong.textContent = name.toUpperCase();
+        const starsDiv = document.createElement('div');
+        starsDiv.classList.add('feedback-stars');
+        starsDiv.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+        const p = document.createElement('p');
+        p.textContent = feedback;
 
-        item.append(av, content);
+        content.append(strong, starsDiv, p);
+        item.append(avatar, content);
 
-        if (replies.length) {
-          const repWrap = document.createElement('div');
-          repWrap.className = 'replies-main-display';
-          repWrap.innerHTML = '<h4>ADMIN REPLIES:</h4>';
-          replies
-            .sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))
-            .forEach(rp => {
-              const rDiv = document.createElement('div');
-              rDiv.className = 'single-reply-main';
-              rDiv.innerHTML = `
-                <span class="reply-admin-name-main">${rp.adminName}:</span>
-                ${rp.text}
-                <span class="reply-timestamp-main">(${new Date(rp.timestamp).toLocaleString()})</span>
-              `;
-              repWrap.append(rDiv);
+        if (replies && replies.length) {
+          const rd = document.createElement('div');
+          rd.classList.add('replies-main-display');
+          const h4 = document.createElement('h4');
+          h4.textContent = 'ADMIN REPLIES:';
+          rd.appendChild(h4);
+          replies.sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp))
+            .forEach(r => {
+              const d = document.createElement('div');
+              d.classList.add('single-reply-main');
+              d.innerHTML = `<span class="reply-admin-name-main">${r.adminName}:</span> ${r.text} <span class="reply-timestamp-main">(${new Date(r.timestamp).toLocaleString()})</span>`;
+              rd.appendChild(d);
             });
-          content.append(repWrap);
+          item.appendChild(rd);
         }
 
-        listCont.append(item);
+        feedbackListContainer.prepend(item);
       }
 
-      async function renderAll() {
-        listCont.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
-        const feedbacks = await fetchAll();
-        if (!feedbacks.length) {
+      async function renderFeedbacksToUI() {
+        feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
+        const fb = await fetchAllFeedbacks();
+        if (!fb.length) {
           const p = document.createElement('p');
-          p.style.color = '#777';
           p.style.textAlign = 'center';
+          p.style.color = '#777';
           p.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
-          listCont.append(p);
+          feedbackListContainer.appendChild(p);
         } else {
-          feedbacks
-            .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .forEach(fb => addItem(fb.name, fb.feedback, fb.rating, fb.replies));
+          fb.sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp))
+            .forEach(x => addFeedbackToDOM(x.name, x.feedback, x.rating, x.replies, x.avatarUrl));
         }
       }
 
-      submitBtn.addEventListener('click', async () => {
-        const n = nameInput.value.trim();
-        const f = fbInput.value.trim();
-        const r = +ratingInput.value;
-        if (!n || !f || r === 0) {
+      // Submit logic
+      submitButton.addEventListener('click', async e => {
+        e.preventDefault();
+        const name = nameInput.value.trim();
+        const text = feedbackTextarea.value.trim();
+        const rate = parseInt(ratingInput.value);
+        if (!name || !text || rate === 0) {
           return alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
         }
-        submitBtn.disabled = true;
         try {
-          await postOne(n, f, r);
-          alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({name,feedback:text,rating:rate})
+          });
+          if (!res.ok) throw new Error(res.statusText);
+          const data = await res.json();
+          addFeedbackToDOM(data.name, data.feedback, data.rating, data.replies, data.avatarUrl);
           nameInput.value = '';
-          fbInput.value = '';
+          feedbackTextarea.value = '';
           ratingInput.value = '0';
-          currentRating = 0;
-          updateStars(0);
-          await renderAll();
-        } catch(e) {
-          alert(`SUBMIT ERROR:\n${e.message}`);
-        } finally {
-          submitBtn.disabled = false;
+          currentSelectedRating = 0;
+          updateStarVisuals(0);
+        } catch (err) {
+          console.error(err);
+          alert('FEEDBACK SUBMIT NAHI HO PAYA!');
         }
       });
 
-      renderAll();
+      // initial load
+      renderFeedbacksToUI();
     });
   </script>
 </body>
