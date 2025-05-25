@@ -97,8 +97,10 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
+// Serve static files from the 'public' directory (assuming index.html is here)
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
+// API endpoint to fetch all feedbacks
 app.get('/api/feedbacks', async (req, res) => {
     try {
         const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
@@ -109,6 +111,7 @@ app.get('/api/feedbacks', async (req, res) => {
     }
 });
 
+// API endpoint to submit a new feedback
 app.post('/api/feedback', async (req, res) => {
     const { name, feedback, rating } = req.body;
     const userIp = req.clientIp;
@@ -140,6 +143,7 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
+// API endpoint to update an existing feedback
 app.put('/api/feedback/:id', async (req, res) => {
     const feedbackId = req.params.id;
     const { name, feedback, rating } = req.body;
@@ -200,9 +204,10 @@ app.put('/api/feedback/:id', async (req, res) => {
     }
 });
 
+// Admin Panel Route
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
-        const feedbacks = await Feedback.find().sort({ timestamp: -1 });
+        // Feedbacks will be fetched by client-side JS using polling
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
@@ -397,8 +402,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         </div>
                                         <div class="feedback-body"><p>${fb.feedback}</p></div>
                                         <div class="feedback-date">
-                                            ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
-                                            ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                            ${new Date(fb.timestamp).toLocaleString()}
+                                            ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
                                         </div>
                                         <div class="action-buttons">
                                             <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
@@ -423,7 +428,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     </div>`;
                         if (fb.isEdited && fb.originalContent) {
                             const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
-                            const originalAvatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.originalContent.name || 'Anonymous'); // Use existing avatar for original too
+                            const originalAvatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.originalContent.name || 'Anonymous'); 
 
                             cardHtml += `
                                     <div class="feedback-card-back">
@@ -450,16 +455,25 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     async function fetchAndRenderFeedbacks() {
                         try {
                             const response = await fetch('/api/feedbacks', {
-                                headers: { 'Authorization': AUTH_HEADER } // Assuming API requires auth too
+                                headers: { 'Authorization': AUTH_HEADER } // Ensure this API endpoint is also protected if needed
                             });
-                            if (!response.ok) throw new Error(`Failed to fetch feedbacks: ${response.statusText}`);
+                            if (!response.ok) {
+                                // If authentication fails for API call, it might be due to session expiration
+                                if (response.status === 401) {
+                                    console.error('Admin API authentication failed. Redirecting to login or showing error.');
+                                    // You might want to redirect to the login page or re-prompt for credentials
+                                    // window.location.reload(); // Or provide a specific login route
+                                }
+                                throw new Error(\`Failed to fetch feedbacks: \${response.statusText}\`);
+                            }
                             const newFeedbacks = await response.json();
 
                             // Compare current feedbacks with new ones
-                            const isSame = currentFeedbacks.length === newFeedbacks.length && 
-                                           currentFeedbacks.every((fb, index) => JSON.stringify(fb) === JSON.stringify(newFeedbacks[index]));
+                            // Convert arrays to JSON strings for easy comparison
+                            const newFeedbacksString = JSON.stringify(newFeedbacks);
+                            const currentFeedbacksString = JSON.stringify(currentFeedbacks);
 
-                            if (!isSame) {
+                            if (newFeedbacksString !== currentFeedbacksString) {
                                 currentFeedbacks = newFeedbacks; // Update current state
                                 feedbackGrid.innerHTML = ''; // Clear existing
                                 if (currentFeedbacks.length === 0) {
@@ -472,8 +486,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             }
                         } catch (error) {
                             console.error('Error fetching feedbacks for admin panel:', error);
-                            // Only show modal if it's a critical error and not just temporary network glitch during polling
-                            // showAdminModal('alert', 'GADBAD!', 'FEEDBACKS LOAD KARNE MEIN PROBLEM HUI!');
+                            // Optionally show a non-intrusive alert for network issues
+                            // showAdminModal('alert', 'GADBAD!', 'FEEDBACKS LOAD KARNE MEIN PROBLEM HUI! NETWORK ISSUE HO SAKTA HAI.');
                         }
                     }
 
@@ -481,7 +495,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     fetchAndRenderFeedbacks();
 
                     // Poll for new feedbacks every 5 seconds
-                    setInterval(fetchAndRenderFeedbacks, 5000); // Poll every 5 seconds
+                    setInterval(fetchAndRenderFeedbacks, 5000); // Poll every 5 seconds (adjust as needed)
 
                     async function tryDeleteFeedback(id) {
                         showAdminModal('confirm', 'DHAYAN DE!', 'PAKKA UDHA DENA HAI? FIR WAPAS NAHI AAYEGA!', async (confirmed) => {
@@ -561,6 +575,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
+// API endpoint to delete feedback (admin only)
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -576,6 +591,7 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
+// API endpoint to post a reply to a feedback (admin only)
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { replyText, adminName } = req.body;
@@ -596,6 +612,7 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
     }
 });
 
+// API endpoint to change avatar (admin only)
 app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     try {
@@ -609,7 +626,8 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
              return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
         }
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
-        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } }); // This updates all feedbacks by the same name
+        // Update all feedbacks by the same name with the new avatar
+        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
         console.log(`[AVATAR CHANGE] Avatar updated for user ${userName} (triggered by feedback ID ${id}) to ${newAvatarUrl}`);
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
@@ -618,7 +636,7 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
     }
 });
 
-
+// Start the server
 app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
     console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
