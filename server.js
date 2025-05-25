@@ -3,10 +3,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv'); // Environment variables ke liye
-const path = require('path'); // Static files serve karne ke liye
+const dotenv = require('dotenv');
+const path = require('path');
 
-// .env file se variables load karega (agar deployment pe use کرنا ہے)
 dotenv.config();
 
 const app = express();
@@ -15,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // ****** MongoDB Connection String ******
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
-// ****** Admin Credentials (SECURITY ALERT!) ******
+// ****** Admin Credentials (SECURITY ALERT! USE ENVIRONMENT VARIABLES IN PRODUCTION) ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
 
@@ -25,6 +24,7 @@ mongoose.connect(MONGODB_URI)
   .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
 
 // Function to generate DiceBear Avatar URL (server side)
+// Added a more dynamic seed for better avatar variety on change
 function getDiceBearAvatarUrlServer(name, randomSeed = '') {
     const seed = encodeURIComponent(name.toLowerCase() + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&scale=90`;
@@ -109,15 +109,16 @@ app.post('/api/feedback', async (req, res) => {
     try {
         let avatarUrlToSave;
 
-        const existingFeedback = await Feedback.findOne({ name: name.toUpperCase() });
+        // Check if an avatar already exists for this name (case-insensitive)
+        const existingFeedback = await Feedback.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
         if (existingFeedback && existingFeedback.avatarUrl) {
             avatarUrlToSave = existingFeedback.avatarUrl;
         } else {
-            avatarUrlToSave = getDiceBearAvatarUrlServer(name);
+            avatarUrlToSave = getDiceBearAvatarUrlServer(name); // Generate new if not found
         }
 
         const newFeedback = new Feedback({
-            name: name.toUpperCase(),
+            name: name, // Save as provided, display as capitalized in frontend
             feedback: feedback,
             rating: parseInt(rating),
             avatarUrl: avatarUrlToSave
@@ -440,7 +441,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 alert(\`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'KOI ANJAAN ERROR!'}\`);
                             }
                         } catch (error) {
-                            alert(\`NETWORK KI LAGG GAYI REPLY POST KARNE MEIN: \${error.message}\`);
+                                alert(\`NETWORK KI LAGG GAYI REPLY POST KARNE MEIN: \${error.message}\`);
                         }
                     }
 
@@ -479,7 +480,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
-// ADMIN DELETE API ENDPOINT (YE WAHI PURANA HAI)
+// ADMIN DELETE API ENDPOINT
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -495,7 +496,7 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-// ADMIN REPLY KARNE KA API ENDPOINT (YE WAHI PURANA HAI)
+// ADMIN REPLY KARNE KA API ENDPOINT
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { replyText, adminName } = req.body;
@@ -531,8 +532,10 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
         }
 
         const userName = feedbackToUpdate.name;
+        // Generate a new random seed using current timestamp for unique avatar each time
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
 
+        // Update all feedbacks with the same name to ensure consistent avatar
         await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
 
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
