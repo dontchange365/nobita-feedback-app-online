@@ -54,12 +54,14 @@
             text-align: center;
             width: 90%;
             max-width: 800px;
-            transition: all 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* Combined transitions */
             margin-bottom: 40px;
             opacity: 0;
             transform: translateY(50px);
             will-change: transform, opacity;
             -webkit-font-smoothing: antialiased;
+            position: relative; /* IMPORTANT: For positioning the modal overlay inside */
+            overflow: hidden; /* Optional: to contain the overlay if it ever bleeds */
         }
         .container.animate-in { opacity: 1; transform: translateY(0); }
 
@@ -393,59 +395,60 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
-        /* --- SUCCESS/ERROR MODAL STYLES --- */
-        .modal-overlay {
-            position: fixed;
+        /* --- UPDATED MODAL STYLES FOR LOCAL POSITIONING --- */
+        #custom-modal-overlay { /* NOW LOCAL TO .container */
+            position: absolute; 
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(26, 26, 46, 0.9); /* Darker dim for better contrast with modal */
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Ensure overlay is above other content but below modal box if it has separate z-index */
+            z-index: 100; 
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; /* Hide overlay after opacity transition */
         }
-        .modal-overlay.show {
+        #custom-modal-overlay.show {
             opacity: 1;
             visibility: visible;
             transition: opacity 0.4s ease-out, visibility 0s linear 0s; /* Show overlay immediately */
         }
 
-        .custom-modal {
+        .custom-modal { /* Modal box inside the local overlay */
             background: linear-gradient(135deg, #1f2a3a, #2c3e50);
-            border: 2px solid; /* Border color set by JS */
+            border: 2px solid; 
             border-radius: 20px;
-            padding: 40px 30px;
+            padding: 30px 25px; 
             text-align: center;
             color: var(--text-color-light);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 0, 0, 0.2) inset;
-            transform: scale(0.7) translateY(-50px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2) inset;
+            transform: scale(0.7) translateY(-30px); 
             opacity: 0;
-            visibility: hidden; /* Start hidden */
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s ease-out;
-            max-width: 90%;
-            width: 450px;
-            position: relative; /* Stacking context for children like confetti */
-            /* z-index: 1001; /* IF YOU WANT TO BE EXPLICITLY ABOVE OVERLAY (NEEDS OVERLAY TO BE 1000) */
-            will-change: transform, opacity; /* Performance hint */
+            visibility: hidden; 
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-out;
+            max-width: 85%; 
+            width: auto; 
+            min-width: 300px; 
+            position: relative; 
+            z-index: 101; 
+            will-change: transform, opacity;
         }
 
-        .modal-overlay.show .custom-modal {
+        #custom-modal-overlay.show .custom-modal {
             transform: scale(1) translateY(0);
             opacity: 1;
-            visibility: visible; /* Make visible when overlay is shown */
+            visibility: visible;
         }
 
         .modal-icon {
-            font-size: 6em;
+            font-size: 5em; 
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             animation: bounceIn 0.8s ease-out;
-            text-shadow: 0 0 20px;
+            text-shadow: 0 0 15px;
         }
         @keyframes bounceIn {
             0% { transform: scale(0.3); opacity: 0; }
@@ -455,32 +458,32 @@
         }
         .custom-modal h3 {
             font-family: 'Luckiest Guy', cursive;
-            font-size: 2.5em;
+            font-size: 2em; 
             color: var(--secondary-color);
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
-            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 8px rgba(255,215,0,0.5);
+            letter-spacing: 1px;
         }
-        .custom-modal p { font-size: 1.1em; line-height: 1.6; margin-bottom: 30px; color: #ccc; }
+        .custom-modal p { font-size: 1em; line-height: 1.5; margin-bottom: 20px; color: #ccc; }
         .modal-close-btn {
             background: linear-gradient(45deg, var(--accent-color), #2563EB);
             color: #fff;
             border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1.1em;
+            padding: 10px 20px; 
+            border-radius: 8px;
+            font-size: 1em; 
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(59,130,246,0.5);
+            box-shadow: 0 3px 10px rgba(59,130,246,0.4);
         }
         .modal-close-btn:hover {
             background: linear-gradient(45deg, #2563EB, var(--accent-color));
             transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 20px rgba(59,130,246,0.7);
+            box-shadow: 0 5px 15px rgba(59,130,246,0.6);
         }
 
-        .confetti-container {
+        .confetti-container { /* Ensure confetti is above modal content but within modal box */
             position: absolute;
             top: 0;
             left: 0;
@@ -488,7 +491,7 @@
             height: 100%;
             overflow: hidden;
             pointer-events: none;
-            z-index: 10; /* Above modal content, assuming modal content has lower/no z-index within its stacking context */
+            z-index: 1; /* Relative to .custom-modal stacking context */
         }
         .confetti {
             position: absolute;
@@ -526,10 +529,10 @@
             .feedback-details { align-items: center; }
             .admin-reply { text-align: left; }
             .admin-reply-content { text-align: left; }
-            .custom-modal h3 { font-size: 2em; }
-            .custom-modal p { font-size: 1em; }
-            .modal-close-btn { padding: 10px 20px; font-size: 1em; }
-            .modal-icon { font-size: 5em; }
+            .custom-modal h3 { font-size: 1.8em; } 
+            .custom-modal p { font-size: 0.95em; }
+            .modal-close-btn { padding: 10px 18px; font-size: 0.95em; }
+            .modal-icon { font-size: 4em; }
         }
         @media (max-width: 480px) {
             body { padding: 15px; }
@@ -552,6 +555,9 @@
             .feedback-details strong { font-size: 1.1em; }
             .feedback-stars { font-size: 1.5em; }
             .admin-reply-avatar { width: 30px; height: 30px; }
+             .custom-modal h3 { font-size: 1.6em; } 
+            .custom-modal p { font-size: 0.9em; }
+            .modal-icon { font-size: 3.5em; }
         }
     </style>
 </head>
@@ -561,7 +567,7 @@
         <span class="owner-text">Developed by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
     </div>
 
-    <div class="container animate-in">
+    <div class="container animate-in"> 
         <h1 id="main-title"></h1> 
         <div id="typed-output"></div>
 
@@ -588,27 +594,23 @@
         </div>
         
         <button id="submit-feedback">SUBMIT FEEDBACK</button>
-    </div>
 
-    <div id="feedback-list-container" class="animate-in">
+        <div id="custom-modal-overlay" class="modal-overlay">
+            <div class="custom-modal">
+                <div class="confetti-container"></div>
+                <div class="modal-icon"></div>
+                <h3 id="modal-title"></h3>
+                <p id="modal-message"></p>
+                <button class="modal-close-btn" id="modal-close-btn">OKAY!</button>
+            </div>
+        </div>
+    </div> <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
     </div>
 
-    <div id="custom-modal-overlay" class="modal-overlay">
-        <div class="custom-modal">
-            <div class="confetti-container"></div>
-            <div class="modal-icon"></div>
-            <h3 id="modal-title"></h3>
-            <p id="modal-message"></p>
-            <button class="modal-close-btn" id="modal-close-btn">OKAY!</button>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
-        // ISKA JAVASCRIPT CODE PEHLE JAISA HI HAI, KOI CHANGE NAHI KIYA YAHAN.
-        // AGAR MODAL KA ISSUE CSS SE SOLVE NA HO, TOH JAVASCRIPT CONSOLE MEIN ERRORS CHECK KARNA.
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('name');
             const feedbackTextarea = document.getElementById('feedback');
@@ -618,21 +620,22 @@
             const stars = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
+            const formContainer = document.querySelector('.container'); // Reference to the main form container
             
-            const customModalOverlay = document.getElementById('custom-modal-overlay');
-            const customModal = document.querySelector('.custom-modal');
-            const modalIcon = document.querySelector('.modal-icon');
-            const modalTitle = document.getElementById('modal-title');
-            const modalMessage = document.getElementById('modal-message');
-            const modalCloseBtn = document.getElementById('modal-close-btn');
-            const confettiContainer = document.querySelector('.confetti-container');
+            const customModalOverlay = document.getElementById('custom-modal-overlay'); // Should be unique
+            const customModal = customModalOverlay ? customModalOverlay.querySelector('.custom-modal') : null;
+            const modalIcon = customModalOverlay ? customModalOverlay.querySelector('.modal-icon') : null;
+            const modalTitle = customModalOverlay ? document.getElementById('modal-title') : null; // ID is global
+            const modalMessage = customModalOverlay ? document.getElementById('modal-message') : null; // ID is global
+            const modalCloseBtn = customModalOverlay ? document.getElementById('modal-close-btn') : null; // ID is global
+            const confettiContainer = customModalOverlay ? customModalOverlay.querySelector('.confetti-container') : null;
 
             let currentSelectedRating = 0;
-            let userIpAddress = '';
-            let isEditing = false;
-            let currentEditFeedbackId = null;
+            let userIpAddress = ''; 
+            let isEditing = false; 
+            let currentEditFeedbackId = null; 
 
-            const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // YEH URL CHECK KARLENA SAHI HAI YA NAHI
+            const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; 
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
 
@@ -644,13 +647,13 @@
                     console.log('User IP:', userIpAddress);
                 } catch (error) {
                     console.error('IP address fetch karte waqt error aaya:', error);
-                    userIpAddress = 'UNKNOWN';
+                    userIpAddress = 'UNKNOWN'; 
                 }
             }
             getClientIp();
 
-            const typedTitle = new Typed('#main-title', { strings: ['✨ NOBITA\'S FEEDBACK PORTAL ✨', '🚀 SHARE YOUR VALUABLE THOUGHTS 🚀', '💡 HELP US IMPROVE! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 1000, showCursor: true, cursorChar: '|', smartBackspace: true });
-            const typedOutput = new Typed('#typed-output', { strings: ['Your feedback helps us make amazing things happen!', 'We appreciate your honesty and suggestions.', 'Every star counts towards a better experience!'], typeSpeed: 40, backSpeed: 20, loop: true, startDelay: 2000, showCursor: false });
+            new Typed('#main-title', { strings: ['✨ NOBITA\'S FEEDBACK PORTAL ✨', '🚀 SHARE YOUR VALUABLE THOUGHTS 🚀', '💡 HELP US IMPROVE! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 1000, showCursor: true, cursorChar: '|', smartBackspace: true });
+            new Typed('#typed-output', { strings: ['Your feedback helps us make amazing things happen!', 'We appreciate your honesty and suggestions.', 'Every star counts towards a better experience!'], typeSpeed: 40, backSpeed: 20, loop: true, startDelay: 2000, showCursor: false });
 
             function updateStarVisuals(ratingToShow) {
                 stars.forEach(star => {
@@ -685,53 +688,79 @@
             }
 
             function launchConfetti() {
+                if (!confettiContainer) return; 
                 const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
-                confettiContainer.innerHTML = ''; // Clear previous confetti
+                confettiContainer.innerHTML = ''; 
                 for (let i = 0; i < 50; i++) {
                     const confetti = document.createElement('div');
                     confetti.classList.add('confetti');
                     confetti.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
                     confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.top = `${Math.random() * -20}px`;
+                    confetti.style.top = `${Math.random() * -20 - 10}px`; // Start slightly higher for local modal
                     confetti.style.animationDuration = `${2 + Math.random() * 1.5}s`;
                     confetti.style.animationDelay = `${Math.random() * 0.5}s`;
-                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`; 
                     confettiContainer.appendChild(confetti);
                     confetti.addEventListener('animationend', () => { confetti.remove(); });
                 }
             }
+            
+            function setFormContentVisibility(visible) {
+                if(formContainer) {
+                    Array.from(formContainer.children).forEach(child => {
+                        if(child.id !== 'custom-modal-overlay') { // Don't hide the modal overlay itself
+                            child.style.visibility = visible ? 'visible' : 'hidden';
+                        }
+                    });
+                }
+            }
 
             function showCustomModal(type, title, message) {
+                if (!customModalOverlay || !customModal || !modalIcon || !modalTitle || !modalMessage) {
+                    console.error("Modal elements not found! Check HTML structure and selectors.");
+                    alert(`${title}\n${message}`); // Fallback
+                    return;
+                }
+
+                setFormContentVisibility(false); // Hide form content when modal shows
+
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
-                confettiContainer.innerHTML = '';
+                
+                if (confettiContainer) confettiContainer.innerHTML = ''; 
 
                 if (type === 'success') {
                     modalIcon.innerHTML = '🎉';
                     customModal.style.borderColor = 'var(--success-color)';
-                    customModal.style.boxShadow = '0 15px 40px rgba(0, 255, 0, 0.3), 0 0 30px rgba(0, 255, 0, 0.2) inset';
                     modalIcon.style.color = 'var(--success-color)';
                     modalIcon.style.textShadow = '0 0 20px rgba(0, 255, 0, 0.7)';
-                    launchConfetti();
+                    launchConfetti(); 
                 } else if (type === 'error') {
                     modalIcon.innerHTML = '❌';
                     customModal.style.borderColor = 'var(--error-color)';
-                    customModal.style.boxShadow = '0 15px 40px rgba(255, 0, 0, 0.3), 0 0 30px rgba(255, 0, 0, 0.2) inset';
                     modalIcon.style.color = 'var(--error-color)';
                     modalIcon.style.textShadow = '0 0 20px rgba(255, 0, 0, 0.7)';
                 } else if (type === 'info') {
                     modalIcon.innerHTML = '💡';
                     customModal.style.borderColor = 'var(--accent-color)';
-                    customModal.style.boxShadow = '0 15px 40px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.2) inset';
                     modalIcon.style.color = 'var(--accent-color)';
                     modalIcon.style.textShadow = '0 0 20px rgba(59, 130, 246, 0.7)';
                 }
+                // Box shadow is set in CSS, no need to set it per type here unless desired
                 customModalOverlay.classList.add('show');
             }
 
-            modalCloseBtn.addEventListener('click', () => {
-                customModalOverlay.classList.remove('show');
-            });
+            if(modalCloseBtn) { 
+                modalCloseBtn.addEventListener('click', () => {
+                    if(customModalOverlay) customModalOverlay.classList.remove('show');
+                    setFormContentVisibility(true); // Show form content when modal closes
+                    if (isEditing) { // If was editing, scroll to top to ensure form is nicely in view.
+                         if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            } else {
+                console.error("Modal close button not found!");
+            }
 
             async function fetchFeedbacks() {
                 try {
@@ -740,16 +769,16 @@
                     const data = await res.json();
                     
                     const h2Title = feedbackListContainer.querySelector('h2');
-                    feedbackListContainer.innerHTML = '';
-                    feedbackListContainer.appendChild(averageRatingDisplay);
-                    feedbackListContainer.appendChild(h2Title);
+                    feedbackListContainer.innerHTML = ''; 
+                    feedbackListContainer.appendChild(averageRatingDisplay); 
+                    if(h2Title) feedbackListContainer.appendChild(h2Title); 
 
                     if (data.length === 0) {
                         const msg = document.createElement('p');
                         msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
                         msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
                         feedbackListContainer.append(msg);
-                        updateAverageRating(0, 0);
+                        updateAverageRating(0, 0); 
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
                         const averageRating = (totalRatings / data.length).toFixed(1);
@@ -762,13 +791,34 @@
                 }
             }
 
-            function updateAverageRating(avgRating, totalCount) {
-                let filledStars = '★'.repeat(Math.floor(avgRating));
-                const halfStar = avgRating % 1 >= 0.5 ? '★' : '';
-                filledStars += halfStar;
-                const emptyStars = '☆'.repeat(5 - filledStars.length);
-                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${avgRating}</div><div class="average-stars">${filledStars}${emptyStars}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
+            function updateAverageRating(avgRatingNum, totalCount) {
+                const avgRating = parseFloat(avgRatingNum); // Ensure it's a number
+                let filledStars = '';
+                if (isNaN(avgRating) || avgRating <= 0) { // Handle NaN or 0 rating
+                    filledStars = '☆☆☆☆☆';
+                } else {
+                    const fullStars = Math.floor(avgRating);
+                    const partialStarExists = avgRating % 1 >= 0.25; // Threshold for showing a "partial" (represented as full for now)
+                    
+                    filledStars = '★'.repeat(fullStars);
+                    if (fullStars < 5 && partialStarExists && avgRating % 1 >= 0.25 ) { // Only add if not already 5 stars from floor
+                         // For text representation, if it's 0.5 or more, show another full star.
+                         // Or, for more nuance with text, you'd need different characters or logic.
+                         // Current logic from before: adds a full star if decimal is >= 0.5
+                        if (avgRating % 1 >= 0.5) {
+                            filledStars += '★';
+                        } else {
+                             filledStars += '☆'; // If less than 0.5 but more than 0 (e.g. 0.25 up), show empty for now
+                        }
+                    }
+                    const emptyStarsCount = 5 - filledStars.length;
+                    if (emptyStarsCount > 0) {
+                       filledStars += '☆'.repeat(emptyStarsCount);
+                    }
+                }
+                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${isNaN(avgRating) ? '0.0' : avgRating.toFixed(1)}</div><div class="average-stars">${filledStars}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
             }
+
 
             async function handleOriginalSubmit() {
                 pulseButton();
@@ -780,21 +830,21 @@
                     return;
                 }
                 const feedbackData = { name: name, feedback: fbText, rating: parseInt(rating), userIp: userIpAddress };
+                
                 try {
-                    document.querySelector('.container').style.opacity = '0';
-                    document.querySelector('.container').style.transform = 'translateY(-50px)';
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    // Form content is hidden by showCustomModal now
                     const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(feedbackData) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
-                    resetForm();
+                    resetForm(); 
                     await fetchFeedbacks();
-                    setTimeout(() => { document.querySelector('.container').style.opacity = '1'; document.querySelector('.container').style.transform = 'translateY(0)'; }, 500);
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
-                    document.querySelector('.container').style.opacity = '1'; document.querySelector('.container').style.transform = 'translateY(0)';
+                    // setFormContentVisibility(true); // Ensure form is visible on error if modal doesn't auto-close
                 }
+                // No finally needed to show form as modal close button handles it. 
+                // If modal auto-closes or an error occurs before modal shown, resetForm will handle it.
             }
 
             async function handleUpdateSubmit() {
@@ -807,6 +857,7 @@
                     return;
                 }
                 try {
+                    // Form content is hidden by showCustomModal
                     const res = await fetch(`${API_URL}/${currentEditFeedbackId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: updatedName, feedback: updatedFbText, rating: parseInt(updatedRating), userIp: userIpAddress }) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
@@ -814,7 +865,8 @@
                     await fetchFeedbacks();
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
-                    showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
+                    showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
+                    // setFormContentVisibility(true); 
                 }
             }
 
@@ -828,10 +880,11 @@
                 updateStarVisuals(0);
                 submitButton.textContent = 'SUBMIT FEEDBACK';
                 submitButton.removeEventListener('click', handleUpdateSubmit);
-                submitButton.removeEventListener('click', handleOriginalSubmit);
+                submitButton.removeEventListener('click', handleOriginalSubmit); 
                 submitButton.addEventListener('click', handleOriginalSubmit);
                 isEditing = false;
                 currentEditFeedbackId = null;
+                setFormContentVisibility(true); // Ensure form is visible after reset
             }
 
             function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, isEdited, index) {
@@ -843,8 +896,8 @@
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
                 avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name.toLowerCase())}`;
-                avatarImg.alt = `${name.charAt(0).toUpperCase()}'s Avatar`;
-                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name.charAt(0).toUpperCase()}`; this.alt = name.charAt(0).toUpperCase(); };
+                avatarImg.alt = `${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}'s Avatar`;
+                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}`; this.alt = name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'; };
 
                 const feedbackDetailsDiv = document.createElement('div');
                 feedbackDetailsDiv.className = 'feedback-details';
@@ -866,9 +919,11 @@
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
                 if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { editButton.disabled = false; } else { editButton.disabled = true; }
+                
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation();
                     showCustomModal('info', 'EDIT FEEDBACK', 'APNA FEEDBACK EDIT KARNE KE LIYE FORM FILL KARO.');
+                    
                     nameInput.value = name;
                     feedbackTextarea.value = feedback;
                     currentSelectedRating = rating;
@@ -879,7 +934,9 @@
                     submitButton.addEventListener('click', handleUpdateSubmit);
                     isEditing = true;
                     currentEditFeedbackId = feedbackId;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
                 item.appendChild(editButton);
 
@@ -907,4 +964,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
