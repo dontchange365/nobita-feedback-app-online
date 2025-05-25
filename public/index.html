@@ -44,6 +44,10 @@
             -webkit-transform: translateZ(0);
         }
 
+        body.modal-open {
+            overflow: hidden; /* Prevent scrolling when modal is open */
+        }
+
         .container {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -380,7 +384,7 @@
             z-index: 10;
         }
         .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.1) rotate(5deg); opacity: 1; }
-        .edit-feedback-btn[disabled] { display: none; } /* This hides the button if disabled */
+        .edit-feedback-btn[disabled] { display: none; } /* Only hide, not show if IP doesn't match */
 
         .edited-tag {
             background-color: #f0ad4e;
@@ -396,7 +400,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         #custom-modal-overlay { 
-            position: fixed; /* Changed to fixed for viewport centering */
+            position: fixed; /* Changed to fixed */
             top: 0;
             left: 0;
             width: 100%;
@@ -405,7 +409,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100; 
+            z-index: 1000; /* High z-index to be on top */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
@@ -432,7 +436,7 @@
             width: auto; 
             min-width: 300px; 
             position: relative; 
-            z-index: 101; 
+            z-index: 1001; 
             will-change: transform, opacity;
         }
 
@@ -614,10 +618,6 @@
             let isEditing = false; 
             let currentEditFeedbackId = null; 
 
-            // Track edited feedbacks to hide edit button permanently for that IP/feedback
-            // Using localStorage to persist the state across sessions
-            let editedFeedbacksTracker = JSON.parse(localStorage.getItem('editedFeedbacks')) || {};
-
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; 
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
@@ -627,16 +627,11 @@
                     const response = await fetch('https://api.ipify.org?format=json');
                     const data = await response.json();
                     userIpAddress = data.ip;
-                    // Once IP is fetched, then fetch feedbacks to apply correct edit button logic
-                    fetchFeedbacks();
                 } catch (error) {
                     console.error('IP address fetch error:', error);
                     userIpAddress = 'UNKNOWN'; 
-                    // Even if IP fetch fails, try to load feedbacks, but edit buttons might not work correctly
-                    fetchFeedbacks();
                 }
             }
-            // Call getClientIp immediately on DOMContentLoaded
             getClientIp();
 
             new Typed('#main-title', { strings: ['✨ NOBITA\'S FEEDBACK PORTAL ✨', '🚀 SHARE YOUR VALUABLE THOUGHTS 🚀', '💡 HELP US IMPROVE! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 1000, showCursor: true, cursorChar: '|', smartBackspace: true });
@@ -708,6 +703,7 @@
                     alert(`${title}\n${message}`);
                     return;
                 }
+                document.body.classList.add('modal-open'); /* Add class to body to prevent scroll */
                 setFormContentVisibility(false); 
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
@@ -736,6 +732,7 @@
             if(modalCloseBtn) { 
                 modalCloseBtn.addEventListener('click', () => {
                     if(customModalOverlay) customModalOverlay.classList.remove('show');
+                    document.body.classList.remove('modal-open'); /* Remove class from body */
                     setFormContentVisibility(true); 
                     if (isEditing) { 
                          if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -749,20 +746,38 @@
                     if (!res.ok) throw new Error(`FAILED TO LOAD FEEDBACKS (STATUS: ${res.status}). SERVER SAID: ${await res.text()}`);
                     const data = await res.json();
                     
-                    const h2Title = feedbackListContainer.querySelector('h2');
-                    feedbackListContainer.innerHTML = ''; 
-                    feedbackListContainer.appendChild(averageRatingDisplay); 
-                    if(h2Title) feedbackListContainer.appendChild(h2Title); 
+                    // Clear only feedback items, preserve average rating and title
+                    const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
+                    existingFeedbackItems.forEach(item => item.remove());
+
+                    const h2Title = feedbackListContainer.querySelector('h2'); // Re-select after potential clearing
+                    if (!h2Title) { // If it was cleared, re-add it
+                        const newH2 = document.createElement('h2');
+                        newH2.textContent = 'RECENT FEEDBACKS';
+                        feedbackListContainer.appendChild(newH2);
+                    }
+                    
+                    // Always append averageRatingDisplay at the top
+                    if (averageRatingDisplay.parentNode !== feedbackListContainer) {
+                        feedbackListContainer.prepend(averageRatingDisplay);
+                    }
 
                     if (data.length === 0) {
-                        const msg = document.createElement('p');
-                        msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
-                        msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
-                        feedbackListContainer.append(msg);
+                        const existingNoFeedbackMsg = feedbackListContainer.querySelector('.no-feedback-message');
+                        if (!existingNoFeedbackMsg) { // Only add if not already present
+                            const msg = document.createElement('p');
+                            msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
+                            msg.className = 'no-feedback-message';
+                            msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
+                            feedbackListContainer.append(msg);
+                        }
                         updateAverageRating(0, 0); 
                     } else {
+                        const noFeedbackMsg = feedbackListContainer.querySelector('.no-feedback-message');
+                        if (noFeedbackMsg) noFeedbackMsg.remove(); // Remove if feedbacks exist
+
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length); // No toFixed(1) here, do it in display
+                        const averageRating = (totalRatings / data.length);
                         updateAverageRating(averageRating, data.length);
                         data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
                     }
@@ -772,13 +787,13 @@
                 }
             }
 
+
             function updateAverageRating(avgRatingNum, totalCount) {
                 const avgRating = parseFloat(avgRatingNum);
                 let starsOutput = '';
                 if (isNaN(avgRating) || avgRating <= 0) {
                     starsOutput = '☆☆☆☆☆';
                 } else {
-                    // Simple truncate logic: X.Y will show X full stars, rest empty
                     const fullStars = Math.floor(avgRating);
                     starsOutput = '★'.repeat(fullStars);
                     starsOutput += '☆'.repeat(5 - fullStars);
@@ -801,7 +816,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     resetForm(); 
-                    await fetchFeedbacks();
+                    await fetchFeedbacks(); // Live sync after submission
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
@@ -809,7 +824,7 @@
             }
 
             async function handleUpdateSubmit() {
-                pulseButton();
+                 pulseButton();
                 const updatedName = nameInput.value.trim();
                 const updatedFbText = feedbackTextarea.value.trim();
                 const updatedRating = ratingInput.value;
@@ -820,14 +835,9 @@
                 try {
                     const res = await fetch(`${API_URL}/${currentEditFeedbackId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: updatedName, feedback: updatedFbText, rating: parseInt(updatedRating), userIp: userIpAddress }) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
-                    
-                    // Mark this feedback as edited in local storage
-                    editedFeedbacksTracker[currentEditFeedbackId] = true;
-                    localStorage.setItem('editedFeedbacks', JSON.stringify(editedFeedbacksTracker));
-
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
                     resetForm();
-                    await fetchFeedbacks();
+                    await fetchFeedbacks(); // Live sync after update
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
@@ -843,8 +853,10 @@
                 currentSelectedRating = 0;
                 updateStarVisuals(0);
                 submitButton.textContent = 'SUBMIT FEEDBACK';
+                // Remove all previous event listeners to avoid duplicates
                 submitButton.removeEventListener('click', handleUpdateSubmit);
                 submitButton.removeEventListener('click', handleOriginalSubmit); 
+                // Add the original submit listener back
                 submitButton.addEventListener('click', handleOriginalSubmit);
                 isEditing = false;
                 currentEditFeedbackId = null;
@@ -882,14 +894,11 @@
                 editButton.className = 'edit-feedback-btn';
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
-                
-                // Logic to disable/hide edit button after one edit
-                // Button will be enabled only if it's the user's IP AND it hasn't been edited before (based on localStorage)
-                // And also check the `isEdited` flag from the database
-                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp && !editedFeedbacksTracker[feedbackId] && !isEdited) {
-                    editButton.disabled = false;
-                } else {
-                    editButton.disabled = true; // This will hide the button due to CSS [disabled] rule
+                // Enable/disable button based on userIpAddress (client side) and feedbackIp (from server)
+                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { 
+                    editButton.removeAttribute('disabled');
+                } else { 
+                    editButton.setAttribute('disabled', 'true');
                 }
                 
                 editButton.addEventListener('click', (event) => {
@@ -902,7 +911,9 @@
                     ratingInput.value = rating;
                     updateStarVisuals(rating);
                     submitButton.textContent = 'UPDATE FEEDBACK';
+                    // Remove all previous event listeners before adding the new one
                     submitButton.removeEventListener('click', handleOriginalSubmit);
+                    submitButton.removeEventListener('click', handleUpdateSubmit); // Ensure no old update listener is left
                     submitButton.addEventListener('click', handleUpdateSubmit);
                     isEditing = true;
                     currentEditFeedbackId = feedbackId;
@@ -932,7 +943,7 @@
                 feedbackListContainer.appendChild(item);
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
             }
-            // fetchFeedbacks() ko getClientIp() ke andar call kiya hai ab
+            fetchFeedbacks(); // Initial fetch on load
         });
     </script>
 </body>
