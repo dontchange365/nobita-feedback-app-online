@@ -587,7 +587,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
 
                     // WebSocket for live updates on Admin Panel
-                    const wsAdmin = new WebSocket(\`ws://\${window.location.hostname}:3000\`); // Use the same port as HTTP
+                    // Corrected to use string concatenation for dynamic port
+                    const wsAdmin = new WebSocket('ws://' + window.location.hostname + ':${PORT}'); 
                     wsAdmin.onopen = () => {
                         console.log('Admin WebSocket connected for live feedback updates!');
                     };
@@ -654,45 +655,45 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                                                         <span class="reply-timestamp">(\${new Date(reply.timestamp).toLocaleString()})</span>
                                                                     </div>
                                                                 </div>\`).join('')}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    \${fb.isEdited && fb.originalContent ? \`<button class="flip-btn" onclick="flipCard('\${fb._id}')">ORIGINAL DEKH BHAI!</button>\` : ''}
-                                                </div>`;
-                                    if (fb.isEdited && fb.originalContent) {
-                                        const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
+                                                        \${fb.isEdited && fb.originalContent ? \`<button class="flip-btn" onclick="flipCard('\${fb._id}')">ORIGINAL DEKH BHAI!</button>\` : ''}
+                                                    </div>`;
+                                        if (fb.isEdited && fb.originalContent) {
+                                            const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
+                                            cardHtml += \`
+                                                    <div class="feedback-card-back">
+                                                        <div class="feedback-header">
+                                                            <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="\${originalNameInitial}"></div>
+                                                            <div class="feedback-info">
+                                                                <h4>ORIGINAL: \${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
+                                                                <div class="rating">\${'★'.repeat(fb.originalContent.rating || 0)}\${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="feedback-body"><p>\${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
+                                                        <div class="feedback-date">Originally Posted: \${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
+                                                        <div style="margin-top: auto;"> 
+                                                           <button class="flip-btn" onclick="flipCard('\${fb._id}')">EDITED DEKH BHAI!</button>
+                                                        </div>
+                                                    </div>\`;
+                                        }
                                         cardHtml += \`
-                                                <div class="feedback-card-back">
-                                                    <div class="feedback-header">
-                                                        <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="\${originalNameInitial}"></div>
-                                                        <div class="feedback-info">
-                                                            <h4>ORIGINAL: \${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
-                                                            <div class="rating">\${'★'.repeat(fb.originalContent.rating || 0)}\${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="feedback-body"><p>\${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
-                                                    <div class="feedback-date">Originally Posted: \${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
-                                                    <div style="margin-top: auto;"> 
-                                                       <button class="flip-btn" onclick="flipCard('\${fb._id}')">EDITED DEKH BHAI!</button>
-                                                    </div>
-                                                </div>\`;
-                                    }
-                                    cardHtml += \`
-                                            </div> 
-                                        </div>\`;
-                                    feedbackGrid.insertAdjacentHTML('beforeend', cardHtml);
-                                });
+                                                </div> 
+                                            </div>\`;
+                                        feedbackGrid.insertAdjacentHTML('beforeend', cardHtml);
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error updating admin feedbacks live:', error);
+                                showAdminModal('alert', 'LIVE UPDATE FAIL!', \`FEEDBACKS RE-LOAD NAHI HO PAYE: \${error.message}\`);
                             }
-                        } catch (error) {
-                            console.error('Error updating admin feedbacks live:', error);
-                            showAdminModal('alert', 'LIVE UPDATE FAIL!', \`FEEDBACKS RE-LOAD NAHI HO PAYE: \${error.message}\`);
                         }
-                    }
-                    // Initial load on page load
-                    updateAdminFeedbacks();
-                </script>
-            </body>
-            </html>
-        `;
+                        // Initial load on page load
+                        updateAdminFeedbacks();
+                    </script>
+                </body>
+                </html>
+            `;
         res.send(html);
     } catch (error) { 
         console.error('ERROR GENERATING ADMIN PANEL:', error); 
