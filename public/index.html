@@ -61,6 +61,41 @@
             transform: translateY(0);
         }
 
+        .owner-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px; /* Increased margin for separation */
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transition-delay: 0.8s; /* Delay after main container animates in */
+        }
+
+        .owner-info.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .owner-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--secondary-color);
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+            object-fit: cover;
+        }
+
+        .owner-text {
+            color: var(--text-color-light);
+            font-size: 1.1em;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0,0,0,0.4);
+            font-family: 'Roboto', sans-serif; /* Using Roboto for Admin/Nobita name style */
+            font-weight: 700;
+            color: #9B59B6; /* Purple for Nobita's name */
+        }
 
         h1 {
             color: var(--secondary-color);
@@ -69,12 +104,12 @@
             font-weight: 700;
             text-shadow: 0 0 15px rgba(255,215,0,0.5);
             letter-spacing: 1px;
-            /* Fix for typing animation jump */
-            min-height: calc(2.8em * 2 * 1.2); /* Base font-size * max lines * line-height */
-            line-height: 1.2; /* Consistent line height */
+            line-height: 1.3em; /* Explicit line-height */
+            min-height: calc(2.8em * 1.3 * 2); /* Calculated for 2 lines */
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* Hide overflow if text temporarily exceeds */
             box-sizing: border-box; /* Include padding/border in height */
         }
 
@@ -83,33 +118,14 @@
             font-size: 1.2em;
             margin-top: -20px;
             margin-bottom: 30px;
-            /* Crucial Fix for typing animation jump */
-            /* Calculate min-height for 2 lines based on font-size and line-height */
-            min-height: calc(1.2em * 2 * 1.2 + 5px); /* Adjusted for potential cursor height */
-            line-height: 1.2; /* Consistent line height */
+            line-height: 1.4em; /* Explicit line-height */
+            min-height: calc(1.2em * 1.4 * 2); /* Calculated for 2 lines */
             display: flex;
-            align-items: center; /* Vertically center content */
-            justify-content: center; /* Horizontally center content */
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Hide overflow */
             box-sizing: border-box; /* Include padding/border in height */
-            white-space: normal; /* Allow text to wrap if it needs to */
-            overflow: hidden; /* Hide overflow if text somehow exceeds bounds */
-            text-align: center; /* Ensure text alignment is consistent */
         }
-        
-        /* Typed.js cursor styling - to ensure it doesn't affect layout much */
-        .typed-cursor {
-            opacity: 1;
-            animation: blink 0.7s infinite;
-            display: inline-block; /* Essential to keep it with text */
-            width: auto; /* Allow cursor to take natural width */
-            margin-left: 2px; /* Small space after text */
-            vertical-align: middle; /* Align with text baseline, helps with line-height issues */
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
 
         .input-group {
             margin-bottom: 25px;
@@ -231,9 +247,6 @@
             max-width: 800px;
             opacity: 0; /* For scroll animation */
             transform: translateY(50px); /* For scroll animation */
-            /* Add min-height to prevent jumping when content loads */
-            min-height: 200px; /* Adjust this value based on your expected content height */
-            box-sizing: border-box;
         }
         #feedback-list-container.animate-in {
             opacity: 1;
@@ -266,8 +279,6 @@
             flex-wrap: wrap;
             position: relative;
             overflow: hidden;
-            /* Consider min-height for individual items if content variability is high */
-            /* min-height: 120px;  Example: adjust as needed */
         }
 
         .feedback-item::before {
@@ -360,26 +371,43 @@
             color: var(--text-color-light);
             box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.05);
             transition: all 0.3s ease;
+            display: flex; /* Use flexbox for avatar and text */
+            align-items: flex-start;
+            gap: 10px;
         }
         .admin-reply:hover {
             background-color: rgba(255, 215, 0, 0.15);
             box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.1);
         }
 
-        .admin-reply strong {
-            color: var(--secondary-color);
-            font-size: 1.05em;
-            display: inline-block;
-            margin-right: 5px;
-            text-transform: uppercase;
+        .admin-reply-avatar { /* New style for admin avatar within reply */
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #9B59B6; /* Purple border */
+            flex-shrink: 0;
+            object-fit: cover;
+            box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
         }
-        .admin-reply p {
+
+        .admin-reply-content { /* New container for admin text */
+            flex-grow: 1;
+        }
+
+        .admin-reply-content strong {
+            color: #9B59B6; /* Purple for Nobita's name */
+            font-size: 1.05em;
+            display: inline; /* Keep on the same line as the text that follows */
+            margin-right: 5px;
+            text-transform: none; /* Don't uppercase Nobita's custom name */
+        }
+        .admin-reply-content p {
             margin: 0;
             padding: 0;
             color: var(--text-color-light);
             display: inline;
         }
-        .admin-reply .reply-timestamp {
+        .admin-reply-content .reply-timestamp {
             font-size: 0.75em;
             color: rgba(255, 255, 255, 0.5);
             margin-left: 10px;
@@ -387,57 +415,70 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .owner-info { margin-bottom: 30px; }
+            .owner-avatar { width: 60px; height: 60px; }
+            .owner-text { font-size: 1em; }
             .container { padding: 30px; }
             h1 { 
                 font-size: 2.2em; 
-                min-height: calc(2.2em * 2 * 1.2); /* Adjusted for smaller screens */ 
+                line-height: 1.3em;
+                min-height: calc(2.2em * 1.3 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 30px; 
             }
             #typed-output { 
                 font-size: 1em; 
-                min-height: calc(1em * 2 * 1.2 + 5px); /* Adjusted for smaller screens */ 
+                line-height: 1.4em;
+                min-height: calc(1em * 1.4 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 30px; 
             }
             .input-group input, .input-group textarea { padding: 12px 15px; font-size: 1em; }
             .star { font-size: 3em; }
             button#submit-feedback { padding: 12px 25px; font-size: 1.05em; }
-            #feedback-list-container { 
-                padding: 20px; 
-                min-height: 180px; /* Adjusted for smaller screens */
-            }
+            #feedback-list-container { padding: 20px; }
             #feedback-list-container h2 { font-size: 1.8em; }
             .feedback-item { flex-direction: column; align-items: center; text-align: center; }
             .avatar-img { margin-bottom: 10px; }
             .feedback-details { align-items: center; }
             .admin-reply { text-align: left; } /* Keep reply text left-aligned */
+            .admin-reply-content { text-align: left; }
         }
 
         @media (max-width: 480px) {
             body { padding: 15px; }
+            .owner-info { margin-bottom: 20px; flex-direction: column; text-align: center;}
+            .owner-avatar { width: 50px; height: 50px; }
+            .owner-text { font-size: 0.9em; }
             .container { padding: 20px; }
             h1 { 
                 font-size: 1.8em; 
-                min-height: calc(1.8em * 2 * 1.2); /* Adjusted for smaller screens */ 
+                line-height: 1.3em;
+                min-height: calc(1.8em * 1.3 * 2); /* Adjusted for smaller screens */
                 margin-bottom: 20px; 
             }
             #typed-output { 
                 font-size: 0.9em; 
-                min-height: calc(0.9em * 2 * 1.2 + 5px); /* Adjusted for smaller screens */ 
+                line-height: 1.4em;
+                min-height: calc(0.9em * 1.4 * 2); /* Adjusted for smaller screens */
                 margin-bottom: 20px; 
             }
             .input-group label { font-size: 0.95em; }
             .star { font-size: 2.5em; }
             button#submit-feedback { font-size: 0.95em; padding: 10px 20px; }
             #feedback-list-container h2 { font-size: 1.5em; }
-            #feedback-list-container { 
-                min-height: 150px; /* Adjusted for smaller screens */
-            }
             .feedback-item { padding: 15px; }
             .avatar-img { width: 50px; height: 50px; }
             .feedback-details strong { font-size: 1.1em; }
             .feedback-stars { font-size: 1.5em; }
+            .admin-reply-avatar { width: 30px; height: 30px; }
         }
     </style>
 </head>
 <body>
+    <div class="owner-info animate-in">
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
+        <span class="owner-text">Developed by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
+    </div>
+
     <div class="container animate-in">
         <h1 id="main-title"></h1> 
         <div id="typed-output"></div>
@@ -669,11 +710,21 @@
                         const adminReplyDiv = document.createElement('div');
                         adminReplyDiv.className = 'admin-reply';
                         
-                        adminReplyDiv.innerHTML = `
-                            <strong>ADMIN REPLY:</strong> 
-                            <p><strong>(${latestReply.adminName || 'Admin'}):</strong> ${latestReply.text} 
-                            <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString()})</span></p>
+                        // Admin Avatar within the reply
+                        const adminReplyAvatar = document.createElement('img');
+                        adminReplyAvatar.className = 'admin-reply-avatar';
+                        adminReplyAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's Avatar for admin replies
+                        adminReplyAvatar.alt = 'Nobita\'s Avatar';
+
+                        const adminReplyContent = document.createElement('div');
+                        adminReplyContent.className = 'admin-reply-content';
+
+                        adminReplyContent.innerHTML = `
+                            <strong>(${latestReply.adminName || 'Admin'}):</strong> ${latestReply.text} 
+                            <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString()})</span>
                         `;
+                        
+                        adminReplyDiv.append(adminReplyAvatar, adminReplyContent); // Append avatar and content div
                         
                         feedbackDetailsDiv.appendChild(adminReplyDiv);
                     }
