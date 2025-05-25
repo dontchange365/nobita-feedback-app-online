@@ -54,14 +54,14 @@
             text-align: center;
             width: 90%;
             max-width: 800px;
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* Combined transitions */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; 
             margin-bottom: 40px;
             opacity: 0;
             transform: translateY(50px);
             will-change: transform, opacity;
             -webkit-font-smoothing: antialiased;
-            position: relative; /* IMPORTANT: For positioning the modal overlay inside */
-            overflow: hidden; /* Optional: to contain the overlay if it ever bleeds */
+            position: relative; 
+            overflow: hidden; 
         }
         .container.animate-in { opacity: 1; transform: translateY(0); }
 
@@ -395,29 +395,28 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
-        /* --- UPDATED MODAL STYLES FOR LOCAL POSITIONING --- */
-        #custom-modal-overlay { /* NOW LOCAL TO .container */
+        #custom-modal-overlay { 
             position: absolute; 
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(26, 26, 46, 0.9); /* Darker dim for better contrast with modal */
+            background: rgba(26, 26, 46, 0.9); 
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100; 
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; /* Hide overlay after opacity transition */
+            transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
         }
         #custom-modal-overlay.show {
             opacity: 1;
             visibility: visible;
-            transition: opacity 0.4s ease-out, visibility 0s linear 0s; /* Show overlay immediately */
+            transition: opacity 0.4s ease-out, visibility 0s linear 0s; 
         }
 
-        .custom-modal { /* Modal box inside the local overlay */
+        .custom-modal { 
             background: linear-gradient(135deg, #1f2a3a, #2c3e50);
             border: 2px solid; 
             border-radius: 20px;
@@ -483,7 +482,7 @@
             box-shadow: 0 5px 15px rgba(59,130,246,0.6);
         }
 
-        .confetti-container { /* Ensure confetti is above modal content but within modal box */
+        .confetti-container { 
             position: absolute;
             top: 0;
             left: 0;
@@ -491,7 +490,7 @@
             height: 100%;
             overflow: hidden;
             pointer-events: none;
-            z-index: 1; /* Relative to .custom-modal stacking context */
+            z-index: 1; 
         }
         .confetti {
             position: absolute;
@@ -507,54 +506,35 @@
             100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .owner-info { margin-bottom: 30px; }
             .owner-avatar { width: 60px; height: 60px; }
             .owner-text { font-size: 1em; }
             .container { padding: 30px; }
-            h1 { font-size: 2.2em; line-height: 1.3em; min-height: calc(2.2em * 1.3 * 2); margin-bottom: 30px; }
-            #typed-output { font-size: 1em; line-height: 1.4em; min-height: calc(1em * 1.4 * 2); margin-bottom: 30px; }
-            .input-group input, .input-group textarea { padding: 12px 15px; font-size: 1em; }
+            h1 { font-size: 2.2em; }
+            #typed-output { font-size: 1em; }
+            .input-group input, .input-group textarea { font-size: 1em; }
             .star { font-size: 3em; }
-            button#submit-feedback { padding: 12px 25px; font-size: 1.05em; }
-            #feedback-list-container { padding: 20px; }
+            button#submit-feedback { font-size: 1.05em; }
             #feedback-list-container h2 { font-size: 1.8em; }
             .average-rating-container h3 { font-size: 1.5em; }
             .average-number { font-size: 3em; }
             .average-stars { font-size: 2em; }
-            .total-feedbacks-count { font-size: 1em; }
             .feedback-item { flex-direction: column; align-items: center; text-align: center; }
-            .avatar-img { margin-bottom: 10px; }
-            .feedback-details { align-items: center; }
-            .admin-reply { text-align: left; }
-            .admin-reply-content { text-align: left; }
             .custom-modal h3 { font-size: 1.8em; } 
             .custom-modal p { font-size: 0.95em; }
-            .modal-close-btn { padding: 10px 18px; font-size: 0.95em; }
             .modal-icon { font-size: 4em; }
         }
         @media (max-width: 480px) {
             body { padding: 15px; }
-            .owner-info { margin-bottom: 20px; flex-direction: column; text-align: center;}
-            .owner-avatar { width: 50px; height: 50px; }
-            .owner-text { font-size: 0.9em; }
-            .container { padding: 20px; }
-            h1 { font-size: 1.8em; line-height: 1.3em; min-height: calc(1.8em * 1.3 * 2); margin-bottom: 20px; }
-            #typed-output { font-size: 0.9em; line-height: 1.4em; min-height: calc(0.9em * 1.4 * 2); margin-bottom: 20px; }
-            .input-group label { font-size: 0.95em; }
+            .owner-info { flex-direction: column; text-align: center;}
+            h1 { font-size: 1.8em; }
+            #typed-output { font-size: 0.9em; }
             .star { font-size: 2.5em; }
-            button#submit-feedback { font-size: 0.95em; padding: 10px 20px; }
+            button#submit-feedback { font-size: 0.95em; }
             #feedback-list-container h2 { font-size: 1.5em; }
-            .average-rating-container h3 { font-size: 1.2em; }
             .average-number { font-size: 2.5em; }
             .average-stars { font-size: 1.8em; }
-            .total-feedbacks-count { font-size: 0.9em; }
-            .feedback-item { padding: 15px; }
-            .avatar-img { width: 50px; height: 50px; }
-            .feedback-details strong { font-size: 1.1em; }
-            .feedback-stars { font-size: 1.5em; }
-            .admin-reply-avatar { width: 30px; height: 30px; }
              .custom-modal h3 { font-size: 1.6em; } 
             .custom-modal p { font-size: 0.9em; }
             .modal-icon { font-size: 3.5em; }
@@ -575,12 +555,10 @@
             <label for="name">YOUR NAME:</label>
             <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
         </div>
-
         <div class="input-group">
             <label for="feedback">YOUR FEEDBACK:</label>
             <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
         </div>
-
         <div class="input-group">
             <label>RATE YOUR EXPERIENCE:</label>
             <div class="stars" id="star-rating">
@@ -592,7 +570,6 @@
             </div>
             <input type="hidden" id="rating" value="0">
         </div>
-        
         <button id="submit-feedback">SUBMIT FEEDBACK</button>
 
         <div id="custom-modal-overlay" class="modal-overlay">
@@ -604,7 +581,9 @@
                 <button class="modal-close-btn" id="modal-close-btn">OKAY!</button>
             </div>
         </div>
-    </div> <div id="feedback-list-container" class="animate-in">
+    </div> 
+
+    <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
     </div>
@@ -620,14 +599,14 @@
             const stars = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
-            const formContainer = document.querySelector('.container'); // Reference to the main form container
+            const formContainer = document.querySelector('.container'); 
             
-            const customModalOverlay = document.getElementById('custom-modal-overlay'); // Should be unique
+            const customModalOverlay = document.getElementById('custom-modal-overlay'); 
             const customModal = customModalOverlay ? customModalOverlay.querySelector('.custom-modal') : null;
             const modalIcon = customModalOverlay ? customModalOverlay.querySelector('.modal-icon') : null;
-            const modalTitle = customModalOverlay ? document.getElementById('modal-title') : null; // ID is global
-            const modalMessage = customModalOverlay ? document.getElementById('modal-message') : null; // ID is global
-            const modalCloseBtn = customModalOverlay ? document.getElementById('modal-close-btn') : null; // ID is global
+            const modalTitle = customModalOverlay ? document.getElementById('modal-title') : null; 
+            const modalMessage = customModalOverlay ? document.getElementById('modal-message') : null; 
+            const modalCloseBtn = customModalOverlay ? document.getElementById('modal-close-btn') : null; 
             const confettiContainer = customModalOverlay ? customModalOverlay.querySelector('.confetti-container') : null;
 
             let currentSelectedRating = 0;
@@ -644,9 +623,8 @@
                     const response = await fetch('https://api.ipify.org?format=json');
                     const data = await response.json();
                     userIpAddress = data.ip;
-                    console.log('User IP:', userIpAddress);
                 } catch (error) {
-                    console.error('IP address fetch karte waqt error aaya:', error);
+                    console.error('IP address fetch error:', error);
                     userIpAddress = 'UNKNOWN'; 
                 }
             }
@@ -677,7 +655,7 @@
                 });
                 star.addEventListener('mouseleave', () => updateStarVisuals(currentSelectedRating));
             });
-
+            
             function pulseButton() {
                 submitButton.style.transform = 'scale(1.05)';
                 submitButton.style.boxShadow = '0 0 25px rgba(59,130,246,0.8)';
@@ -696,7 +674,7 @@
                     confetti.classList.add('confetti');
                     confetti.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
                     confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.top = `${Math.random() * -20 - 10}px`; // Start slightly higher for local modal
+                    confetti.style.top = `${Math.random() * -20 - 10}px`; 
                     confetti.style.animationDuration = `${2 + Math.random() * 1.5}s`;
                     confetti.style.animationDelay = `${Math.random() * 0.5}s`;
                     confetti.style.transform = `rotate(${Math.random() * 360}deg)`; 
@@ -708,7 +686,7 @@
             function setFormContentVisibility(visible) {
                 if(formContainer) {
                     Array.from(formContainer.children).forEach(child => {
-                        if(child.id !== 'custom-modal-overlay') { // Don't hide the modal overlay itself
+                        if(child.id !== 'custom-modal-overlay') { 
                             child.style.visibility = visible ? 'visible' : 'hidden';
                         }
                     });
@@ -718,15 +696,12 @@
             function showCustomModal(type, title, message) {
                 if (!customModalOverlay || !customModal || !modalIcon || !modalTitle || !modalMessage) {
                     console.error("Modal elements not found! Check HTML structure and selectors.");
-                    alert(`${title}\n${message}`); // Fallback
+                    alert(`${title}\n${message}`);
                     return;
                 }
-
-                setFormContentVisibility(false); // Hide form content when modal shows
-
+                setFormContentVisibility(false); 
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
-                
                 if (confettiContainer) confettiContainer.innerHTML = ''; 
 
                 if (type === 'success') {
@@ -746,20 +721,17 @@
                     modalIcon.style.color = 'var(--accent-color)';
                     modalIcon.style.textShadow = '0 0 20px rgba(59, 130, 246, 0.7)';
                 }
-                // Box shadow is set in CSS, no need to set it per type here unless desired
                 customModalOverlay.classList.add('show');
             }
 
             if(modalCloseBtn) { 
                 modalCloseBtn.addEventListener('click', () => {
                     if(customModalOverlay) customModalOverlay.classList.remove('show');
-                    setFormContentVisibility(true); // Show form content when modal closes
-                    if (isEditing) { // If was editing, scroll to top to ensure form is nicely in view.
+                    setFormContentVisibility(true); 
+                    if (isEditing) { 
                          if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
-            } else {
-                console.error("Modal close button not found!");
             }
 
             async function fetchFeedbacks() {
@@ -781,7 +753,7 @@
                         updateAverageRating(0, 0); 
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length).toFixed(1);
+                        const averageRating = (totalRatings / data.length); // No toFixed(1) here, do it in display
                         updateAverageRating(averageRating, data.length);
                         data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
                     }
@@ -792,35 +764,20 @@
             }
 
             function updateAverageRating(avgRatingNum, totalCount) {
-                const avgRating = parseFloat(avgRatingNum); // Ensure it's a number
-                let filledStars = '';
-                if (isNaN(avgRating) || avgRating <= 0) { // Handle NaN or 0 rating
-                    filledStars = '☆☆☆☆☆';
+                const avgRating = parseFloat(avgRatingNum);
+                let starsOutput = '';
+                if (isNaN(avgRating) || avgRating <= 0) {
+                    starsOutput = '☆☆☆☆☆';
                 } else {
+                    // Simple truncate logic: X.Y will show X full stars, rest empty
                     const fullStars = Math.floor(avgRating);
-                    const partialStarExists = avgRating % 1 >= 0.25; // Threshold for showing a "partial" (represented as full for now)
-                    
-                    filledStars = '★'.repeat(fullStars);
-                    if (fullStars < 5 && partialStarExists && avgRating % 1 >= 0.25 ) { // Only add if not already 5 stars from floor
-                         // For text representation, if it's 0.5 or more, show another full star.
-                         // Or, for more nuance with text, you'd need different characters or logic.
-                         // Current logic from before: adds a full star if decimal is >= 0.5
-                        if (avgRating % 1 >= 0.5) {
-                            filledStars += '★';
-                        } else {
-                             filledStars += '☆'; // If less than 0.5 but more than 0 (e.g. 0.25 up), show empty for now
-                        }
-                    }
-                    const emptyStarsCount = 5 - filledStars.length;
-                    if (emptyStarsCount > 0) {
-                       filledStars += '☆'.repeat(emptyStarsCount);
-                    }
+                    starsOutput = '★'.repeat(fullStars);
+                    starsOutput += '☆'.repeat(5 - fullStars);
                 }
-                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${isNaN(avgRating) ? '0.0' : avgRating.toFixed(1)}</div><div class="average-stars">${filledStars}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
+                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${isNaN(avgRating) ? '0.0' : avgRating.toFixed(1)}</div><div class="average-stars">${starsOutput}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
             }
 
-
-            async function handleOriginalSubmit() {
+            async function handleOriginalSubmit() { 
                 pulseButton();
                 const name = nameInput.value.trim();
                 const fbText = feedbackTextarea.value.trim();
@@ -830,9 +787,7 @@
                     return;
                 }
                 const feedbackData = { name: name, feedback: fbText, rating: parseInt(rating), userIp: userIpAddress };
-                
                 try {
-                    // Form content is hidden by showCustomModal now
                     const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(feedbackData) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
@@ -841,14 +796,11 @@
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
-                    // setFormContentVisibility(true); // Ensure form is visible on error if modal doesn't auto-close
                 }
-                // No finally needed to show form as modal close button handles it. 
-                // If modal auto-closes or an error occurs before modal shown, resetForm will handle it.
             }
 
             async function handleUpdateSubmit() {
-                pulseButton();
+                 pulseButton();
                 const updatedName = nameInput.value.trim();
                 const updatedFbText = feedbackTextarea.value.trim();
                 const updatedRating = ratingInput.value;
@@ -857,7 +809,6 @@
                     return;
                 }
                 try {
-                    // Form content is hidden by showCustomModal
                     const res = await fetch(`${API_URL}/${currentEditFeedbackId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: updatedName, feedback: updatedFbText, rating: parseInt(updatedRating), userIp: userIpAddress }) });
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
@@ -866,7 +817,6 @@
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
-                    // setFormContentVisibility(true); 
                 }
             }
 
@@ -884,7 +834,7 @@
                 submitButton.addEventListener('click', handleOriginalSubmit);
                 isEditing = false;
                 currentEditFeedbackId = null;
-                setFormContentVisibility(true); // Ensure form is visible after reset
+                setFormContentVisibility(true); 
             }
 
             function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, isEdited, index) {
@@ -895,7 +845,7 @@
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
-                avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name.toLowerCase())}`;
+                avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name ? name.toLowerCase() : 'anonymous')}`;
                 avatarImg.alt = `${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}'s Avatar`;
                 avatarImg.onerror = function() { this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}`; this.alt = name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'; };
 
