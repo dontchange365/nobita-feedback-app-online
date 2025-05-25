@@ -34,7 +34,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Changed to flex-start */
             min-height: 100vh;
             margin: 0;
             padding: 30px 20px;
@@ -400,7 +400,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         #custom-modal-overlay { 
-            position: fixed; /* Changed to fixed */
+            position: fixed; 
             top: 0;
             left: 0;
             width: 100%;
@@ -409,7 +409,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* High z-index to be on top */
+            z-index: 1000; 
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
@@ -690,8 +690,11 @@
             function setFormContentVisibility(visible) {
                 if(formContainer) {
                     Array.from(formContainer.children).forEach(child => {
+                        // Exclude modal overlay from visibility changes
                         if(child.id !== 'custom-modal-overlay') { 
                             child.style.visibility = visible ? 'visible' : 'hidden';
+                            // Also adjust pointer events for interactions
+                            child.style.pointerEvents = visible ? 'auto' : 'none';
                         }
                     });
                 }
@@ -750,15 +753,20 @@
                     const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
                     existingFeedbackItems.forEach(item => item.remove());
 
-                    const h2Title = feedbackListContainer.querySelector('h2'); // Re-select after potential clearing
-                    if (!h2Title) { // If it was cleared, re-add it
-                        const newH2 = document.createElement('h2');
-                        newH2.textContent = 'RECENT FEEDBACKS';
-                        feedbackListContainer.appendChild(newH2);
+                    // Re-append h2 title if it was removed or if it's missing (ensure correct order)
+                    let h2Title = feedbackListContainer.querySelector('h2');
+                    if (!h2Title) {
+                        h2Title = document.createElement('h2');
+                        h2Title.textContent = 'RECENT FEEDBACKS';
+                        // Append it before other feedbacks
+                        feedbackListContainer.appendChild(h2Title); 
+                    } else {
+                        // Move it to the correct position if it exists but is misplaced
+                        feedbackListContainer.appendChild(h2Title);
                     }
                     
                     // Always append averageRatingDisplay at the top
-                    if (averageRatingDisplay.parentNode !== feedbackListContainer) {
+                    if (averageRatingDisplay.parentNode !== feedbackListContainer || feedbackListContainer.firstChild !== averageRatingDisplay) {
                         feedbackListContainer.prepend(averageRatingDisplay);
                     }
 
@@ -895,10 +903,13 @@
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
                 // Enable/disable button based on userIpAddress (client side) and feedbackIp (from server)
+                // This check is now robust as userIpAddress is fetched async on load.
                 if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { 
                     editButton.removeAttribute('disabled');
+                    editButton.style.display = 'block'; // Make sure it's visible if enabled
                 } else { 
                     editButton.setAttribute('disabled', 'true');
+                    editButton.style.display = 'none'; // Hide if disabled
                 }
                 
                 editButton.addEventListener('click', (event) => {
