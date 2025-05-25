@@ -17,12 +17,20 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUi
 
 // ****** Admin Credentials (SECURITY ALERT!) ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shammu@love';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('MONGODB SE CONNECTION SAFAL! DATABASE AB READY HAI!'))
   .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
+
+// Function to generate DiceBear Avatar URL (server side)
+// ***** YEH FUNCTION AB ALAG AVATAR BHI DE SAKTA HAI SAME NAAM KE LIYE! *****
+function getDiceBearAvatarUrlServer(name, randomSeed = '') { // randomSeed add kiya
+    const seed = encodeURIComponent(name.toLowerCase() + randomSeed); // Seed mein random part jod diya
+    return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&scale=90`;
+}
+// *************************************************************************
 
 // Define a Schema for Feedback
 const feedbackSchema = new mongoose.Schema({
@@ -30,6 +38,7 @@ const feedbackSchema = new mongoose.Schema({
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   timestamp: { type: Date, default: Date.now },
+  avatarUrl: { type: String },
   replies: [
     {
       text: { type: String, required: true },
@@ -45,7 +54,7 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 // Middleware
 app.use(cors({
     origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'], // PUT method bhi add kiya hai
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
@@ -98,13 +107,27 @@ app.post('/api/feedback', async (req, res) => {
     if (!name || !feedback || rating === '0') {
         return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
     }
+
     try {
+        let avatarUrlToSave;
+
+        // Check kar agar is naam ka user pehle se hai aur uska avatar hai
+        const existingFeedback = await Feedback.findOne({ name: name.toUpperCase() });
+        if (existingFeedback && existingFeedback.avatarUrl) {
+            avatarUrlToSave = existingFeedback.avatarUrl; // Purana avatar use kar
+        } else {
+            avatarUrlToSave = getDiceBearAvatarUrlServer(name); // Naya avatar generate kar
+        }
+
         const newFeedback = new Feedback({
             name: name.toUpperCase(),
             feedback: feedback,
-            rating: parseInt(rating)
+            rating: parseInt(rating),
+            avatarUrl: avatarUrlToSave
         });
+
         await newFeedback.save();
+
         console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
         res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
     } catch (error) {
@@ -147,21 +170,28 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-item p { margin: 5px 0; font-size: 0.95em; color: #ccc; }
                     .feedback-item .rating { font-size: 1.1em; color: #ffd700; }
                     .feedback-item .date { font-size: 0.75em; color: #aaa; margin-top: 10px; }
-                    .feedback-item button {
-                        background-color: #dc3545;
-                        color: white;
-                        border: none;
-                        padding: 10px 15px;
-                        border-radius: 5px;
-                        cursor: pointer;
+                    .feedback-item .action-buttons {
+                        display: flex;
+                        gap: 10px;
                         margin-top: 15px;
-                        transition: background-color 0.3s;
-                        font-weight: bold;
-                        width: 100%;
                     }
-                    .feedback-item button:hover {
+                    .feedback-item .action-buttons button {
+                        flex-grow: 1;
+                        margin-top: 0; /* Override default button margin-top */
+                    }
+                    .feedback-item button.delete-btn {
+                        background-color: #dc3545; /* Red for delete */
+                    }
+                    .feedback-item button.delete-btn:hover {
                         background-color: #c82333;
                     }
+                    .feedback-item button.change-avatar-btn {
+                        background-color: #007bff; /* Blue for change avatar */
+                    }
+                    .feedback-item button.change-avatar-btn:hover {
+                        background-color: #0056b3;
+                    }
+
                     /* Reply Section Styles */
                     .reply-section {
                         margin-top: 15px;
@@ -234,7 +264,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <p>FEEDBACK: ${fb.feedback}</p>
                             <p class="date">DATE: ${new Date(fb.timestamp).toLocaleString()}</p>
                         </div>
-                        <button onclick="deleteFeedback('${fb._id}')">UDHA DE!</button>
+                        <div class="action-buttons">
+                            <button class="delete-btn" onclick="deleteFeedback('${fb._id}')">UDHA DE!</button>
+                            <button class="change-avatar-btn" onclick="changeAvatar('${fb._id}', '${fb.name}')">AVATAR BADAL!</button>
+                        </div>
                         
                         <div class="reply-section">
                             <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
@@ -299,8 +332,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     'Content-Type': 'application/json',
                                     'Authorization': AUTH_HEADER
                                 },
-                                // ***** YAHAN BADLAV KIYA HAI! ADMIN NAME AB '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' JAYEGA! *****
-                                body: JSON.stringify({ replyText: replyText, adminName: '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' }) 
+                                body: JSON.stringify({ replyText: replyText, adminName: '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' })
                             });
 
                             if (response.ok) {
@@ -314,6 +346,35 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             alert(\`NETWORK KI LAGG GAYI REPLY POST KARNE MEIN: \${error.message}\`);
                         }
                     }
+
+                    // ***** NAYA FUNCTION: AVATAR BADALNE KE LIYE! *****
+                    async function changeAvatar(feedbackId, userName) {
+                        if (confirm(\`PAKKA \${userName} KA AVATAR BADALNA HAI? SARE \${userName} KE FEEDBACK MEIN BADAL JAYEGA!\`)) {
+                            try {
+                                const baseUrl = window.location.origin;
+                                const response = await fetch(\`\${baseUrl}/api/admin/feedback/\${feedbackId}/change-avatar\`, {
+                                    method: 'PUT', // PUT request to update
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': AUTH_HEADER
+                                    }
+                                    // Body me kuch bhej sakte ho agar server ko extra info chahiye
+                                });
+
+                                if (response.ok) {
+                                    alert('AVATAR SAFALTA-POORVAK BADLA GAYA! NAYA IMAGE AB DIKHEGA!');
+                                    window.location.reload(); // Page refresh kar de
+                                } else {
+                                    const errorData = await response.json();
+                                    alert(\`AVATAR BADALNE MEIN PHADDA HUA: \${errorData.message || 'KOI ANJAAN ERROR!'}\`);
+                                }
+                            } catch (error) {
+                                alert(\`NETWORK KI LAGG GAYI AVATAR BADALNE MEIN: \${error.message}\`);
+                            }
+                        }
+                    }
+                    // *************************************************
+
                 </script>
             </body>
             </html>
@@ -341,7 +402,7 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-// NAYA API ENDPOINT: ADMIN REPLY KARNE KE LIYE!
+// ADMIN REPLY KARNE KA API ENDPOINT (YE WAHI PURANA HAI)
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { replyText, adminName } = req.body;
@@ -365,6 +426,31 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
         res.status(500).json({ message: 'REPLY SAVE NAHI HO PAYA. SERVER KI GANDI HAALAT HAI!', error: error.message });
     }
 });
+
+// ***** NAYA API ENDPOINT: AVATAR BADALNE KE LIYE! *****
+app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, res) => {
+    const { id } = req.params; // Feedback ID jiska avatar badalna hai
+
+    try {
+        const feedbackToUpdate = await Feedback.findById(id);
+        if (!feedbackToUpdate) {
+            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
+        }
+
+        const userName = feedbackToUpdate.name;
+        // Naya avatar URL generate kar, random seed ke saath taki alag avatar mile
+        const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
+
+        // Us naam ke sare feedbacks ka avatar update kar de
+        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
+
+        res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
+    } catch (error) {
+        console.error('AVATAR BADALTE WAQT FATTI HAI:', error);
+        res.status(500).json({ message: 'AVATAR BADAL NAHI PAYA. SERVER KI GANDI HAALAT HAI!', error: error.message });
+    }
+});
+// *****************************************************
 
 
 // Start the server
