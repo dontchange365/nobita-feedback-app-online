@@ -19,11 +19,11 @@
             --input-bg: rgba(255, 255, 255, 0.08);
             --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
             --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
-            --neumorphic-bg: #eceff1;
-            --neumorphic-shadow-light: -7px -7px 15px rgba(255, 255, 255, 0.7), 
-                                       7px 7px 15px rgba(0, 0, 0, 0.1);
-            --neumorphic-shadow-deep: -5px -5px 10px rgba(255, 255, 255, 0.8), 
-                                      5px 5px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Smooth scrolling for the whole page */
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -39,6 +39,9 @@
             padding: 30px 20px;
             box-sizing: border-box;
             overflow-x: hidden; /* Prevent horizontal scroll for animations */
+            /* Performance improvement: Promote body to its own layer for smoother scrolling */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
         }
 
         .container {
@@ -55,6 +58,9 @@
             margin-bottom: 40px;
             opacity: 0; /* For scroll animation */
             transform: translateY(50px); /* For scroll animation */
+            /* Performance improvement: Promote to its own layer */
+            will-change: transform, opacity;
+            -webkit-font-smoothing: antialiased; /* Smoother fonts */
         }
         .container.animate-in {
             opacity: 1;
@@ -71,6 +77,7 @@
             transform: translateY(-20px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
             transition-delay: 0.8s; /* Delay after main container animates in */
+            will-change: transform, opacity;
         }
 
         .owner-info.animate-in {
@@ -85,6 +92,9 @@
             border: 3px solid var(--secondary-color);
             box-shadow: 0 0 15px rgba(255,215,0,0.6);
             object-fit: cover;
+            /* Performance improvement: Promote to its own layer */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
         }
 
         .owner-text {
@@ -207,6 +217,9 @@
             margin-top: 30px;
             position: relative;
             overflow: hidden;
+            /* Performance improvement: Promote to its own layer */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
         }
 
         button#submit-feedback::before {
@@ -221,6 +234,8 @@
             transition: all 0.6s ease-out;
             transform: translate(-50%, -50%) scale(0);
             opacity: 0;
+            /* Performance improvement: Promote to its own layer */
+            will-change: transform, opacity;
         }
 
         button#submit-feedback:hover::before {
@@ -247,6 +262,7 @@
             max-width: 800px;
             opacity: 0; /* For scroll animation */
             transform: translateY(50px); /* For scroll animation */
+            will-change: transform, opacity;
         }
         #feedback-list-container.animate-in {
             opacity: 1;
@@ -265,6 +281,64 @@
             text-shadow: 0 0 10px rgba(255,215,0,0.3);
         }
 
+        /* New styles for average rating display */
+        .average-rating-container {
+            background: rgba(255, 215, 0, 0.1); /* Light gold background */
+            border: 1px solid var(--secondary-color);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px; /* Space between this and recent feedbacks */
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px; /* Reduced gap for number to be closer to text */
+            color: var(--text-color-light);
+            transition: all 0.3s ease;
+            opacity: 0; /* For animation */
+            transform: translateY(30px); /* For animation */
+            will-change: transform, opacity;
+        }
+        .average-rating-container.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.4s;
+        }
+
+        .average-rating-container h3 {
+            color: var(--secondary-color);
+            font-size: 1.8em;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            margin-bottom: 10px; /* Space below title */
+        }
+
+        .average-number {
+            font-size: 4em; /* Make the number BIG */
+            font-weight: 700;
+            color: var(--secondary-color); /* Gold color */
+            text-shadow: 0 0 20px var(--secondary-color), 0 0 30px rgba(255,215,0,0.7);
+            line-height: 1; /* Prevent extra space */
+            margin-bottom: 10px; /* Space between number and stars */
+        }
+
+        .average-stars {
+            font-size: 2.5em;
+            color: var(--secondary-color);
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(255,215,0,0.7);
+        }
+
+        .total-feedbacks-count {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+            margin-top: 10px;
+        }
+
+
         .feedback-item {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -279,6 +353,7 @@
             flex-wrap: wrap;
             position: relative;
             overflow: hidden;
+            will-change: transform, opacity; /* Performance improvement */
         }
 
         .feedback-item::before {
@@ -316,6 +391,8 @@
             box-shadow: 0 0 10px rgba(59,130,246,0.5);
             object-fit: cover;
             transition: transform 0.3s ease;
+            transform: translateZ(0); /* Promote to its own layer */
+            -webkit-transform: translateZ(0);
         }
 
         .avatar-img:hover {
@@ -374,6 +451,7 @@
             display: flex; /* Use flexbox for avatar and text */
             align-items: flex-start;
             gap: 10px;
+            will-change: background-color, box-shadow; /* Performance improvement */
         }
         .admin-reply:hover {
             background-color: rgba(255, 215, 0, 0.15);
@@ -388,6 +466,8 @@
             flex-shrink: 0;
             object-fit: cover;
             box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
+            transform: translateZ(0); /* Promote to its own layer */
+            -webkit-transform: translateZ(0);
         }
 
         .admin-reply-content { /* New container for admin text */
@@ -436,6 +516,10 @@
             button#submit-feedback { padding: 12px 25px; font-size: 1.05em; }
             #feedback-list-container { padding: 20px; }
             #feedback-list-container h2 { font-size: 1.8em; }
+            .average-rating-container h3 { font-size: 1.5em; }
+            .average-number { font-size: 3em; } /* Adjusted for smaller screens */
+            .average-stars { font-size: 2em; }
+            .total-feedbacks-count { font-size: 1em; }
             .feedback-item { flex-direction: column; align-items: center; text-align: center; }
             .avatar-img { margin-bottom: 10px; }
             .feedback-details { align-items: center; }
@@ -465,6 +549,10 @@
             .star { font-size: 2.5em; }
             button#submit-feedback { font-size: 0.95em; padding: 10px 20px; }
             #feedback-list-container h2 { font-size: 1.5em; }
+            .average-rating-container h3 { font-size: 1.2em; }
+            .average-number { font-size: 2.5em; } /* Adjusted for smaller screens */
+            .average-stars { font-size: 1.8em; }
+            .total-feedbacks-count { font-size: 0.9em; }
             .feedback-item { padding: 15px; }
             .avatar-img { width: 50px; height: 50px; }
             .feedback-details strong { font-size: 1.1em; }
@@ -509,6 +597,7 @@
     </div>
 
     <div id="feedback-list-container" class="animate-in">
+        <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
     </div>
 
@@ -522,6 +611,7 @@
             const feedbackListContainer = document.getElementById('feedback-list-container');
             const stars = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
+            const averageRatingDisplay = document.getElementById('average-rating-display');
             let currentSelectedRating = 0;
 
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // REPLACE WITH YOUR DEPLOYED URL
@@ -596,7 +686,13 @@
                     const res = await fetch(FETCH_API_URL);
                     if (!res.ok) throw new Error(`FAILED TO LOAD FEEDBACKS (STATUS: ${res.status}). SERVER SAID: ${await res.text()}`);
                     const data = await res.json();
-                    feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>';
+                    
+                    // Clear previous feedbacks but keep the main title
+                    const h2Title = feedbackListContainer.querySelector('h2');
+                    feedbackListContainer.innerHTML = ''; // Clear all contents
+                    feedbackListContainer.appendChild(averageRatingDisplay); // Re-add the average rating display div
+                    feedbackListContainer.appendChild(h2Title); // Re-add the h2 title
+
                     if (data.length === 0) {
                         const msg = document.createElement('p');
                         msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
@@ -604,8 +700,14 @@
                         msg.style.color = 'var(--text-color-light)';
                         msg.style.opacity = '0.7';
                         feedbackListContainer.append(msg);
+                        updateAverageRating(0, 0); // Reset average if no feedbacks
                     } else {
-                        // Clear existing, then add new with animation
+                        // Calculate average rating
+                        const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                        const averageRating = (totalRatings / data.length).toFixed(1);
+                        updateAverageRating(averageRating, data.length);
+
+                        // Add new feedbacks with animation
                         data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, index));
                     }
                 } catch (err) {
@@ -613,6 +715,31 @@
                     alert(`FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
                 }
             }
+
+            function updateAverageRating(avgRating, totalCount) {
+                let filledStars = '';
+                let emptyStars = '';
+                const fullStars = Math.floor(avgRating);
+                const halfStar = avgRating % 1 >= 0.5 ? '★' : ''; // Use a full star for half to simplify
+                const remainingStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+                filledStars = '★'.repeat(fullStars);
+                if (halfStar) {
+                    filledStars += halfStar;
+                }
+                emptyStars = '☆'.repeat(remainingStars);
+
+
+                averageRatingDisplay.innerHTML = `
+                    <div class="average-rating-container animate-in">
+                        <h3>OVERALL RATING</h3>
+                        <div class="average-number">${avgRating}</div>
+                        <div class="average-stars">${filledStars}${emptyStars}</div>
+                        <div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div>
+                    </div>
+                `;
+            }
+
 
             submitButton.addEventListener('click', async () => {
                 pulseButton(); // Trigger pulse on click
@@ -732,13 +859,8 @@
                 
                 item.append(avatarImg, feedbackDetailsDiv);
                 
-                const h2Title = feedbackListContainer.querySelector('h2');
-                if (h2Title) {
-                    // Insert new items right after the h2 title
-                    feedbackListContainer.insertBefore(item, h2Title.nextSibling);
-                } else {
-                    feedbackListContainer.appendChild(item);
-                }
+                // Append the feedback item after the h2 title
+                feedbackListContainer.appendChild(item);
 
                 // Animate individual feedback items on load/add
                 setTimeout(() => {
