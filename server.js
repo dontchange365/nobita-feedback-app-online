@@ -25,7 +25,7 @@ mongoose.connect(MONGODB_URI)
 
 // Function to generate DiceBear Avatar URL (server side)
 function getDiceBearAvatarUrlServer(name, randomSeed = '') {
-    const seed = encodeURIComponent(name ? name.toLowerCase() : 'default' + randomSeed); // Added null check for name
+    const seed = encodeURIComponent(name.toLowerCase() + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
@@ -210,19 +210,52 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .main-panel-btn:hover { background-color: #0056b3; transform: translateY(-2px); }
                     .feedback-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; width: 100%; max-width: 1200px; }
                     
-                    .feedback-card { background-color: transparent; border-radius: 15px; perspective: 1000px; min-height: 450px; }
-                    .feedback-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s; transform-style: preserve-3d; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); border-radius: 15px; }
+                    .feedback-card {
+                        background-color: transparent; 
+                        border-radius: 15px;
+                        perspective: 1000px;
+                        min-height: 450px; 
+                    }
+                    .feedback-card-inner {
+                        position: relative;
+                        width: 100%;
+                        height: 100%; 
+                        transition: transform 0.7s;
+                        transform-style: preserve-3d;
+                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); 
+                        border-radius: 15px; 
+                    }
                     .feedback-card.is-flipped .feedback-card-inner { transform: rotateY(180deg); }
-                    .feedback-card-front, .feedback-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; background-color: #2C3E50; color: #E0E0E0; border-radius: 15px; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
-                    .feedback-card-back { transform: rotateY(180deg); background-color: #34495E; }
+                    
+                    .feedback-card-front, .feedback-card-back {
+                        position: absolute; 
+                        width: 100%;
+                        height: 100%;
+                        -webkit-backface-visibility: hidden;
+                        backface-visibility: hidden;
+                        background-color: #2C3E50; 
+                        color: #E0E0E0;
+                        border-radius: 15px;
+                        padding: 25px;
+                        box-sizing: border-box;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between; 
+                        overflow-y: auto; 
+                    }
+                    .feedback-card-back {
+                        transform: rotateY(180deg);
+                        background-color: #34495E; 
+                    }
+
                     .feedback-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
                     .feedback-avatar { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 3px solid #FFD700; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
                     .feedback-avatar img { width: 100%; height: 100%; object-fit: cover; }
                     .feedback-info { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; }
-                    .feedback-info h4 { margin: 0; font-size: 1.4em; color: #FFD700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; word-break: break-word; }
+                    .feedback-info h4 { margin: 0; font-size: 1.4em; color: #FFD700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
                     .feedback-info .rating { font-size: 1.1em; color: #F39C12; margin-top: 5px; }
                     .feedback-info .user-ip { font-size: 0.9em; color: #AAB7B8; margin-top: 5px; }
-                    .feedback-body { font-size: 1em; color: #BDC3C7; line-height: 1.6; margin-bottom: 15px; flex-grow: 1; overflow-y: auto; word-break: break-word; }
+                    .feedback-body { font-size: 1em; color: #BDC3C7; line-height: 1.6; margin-bottom: 15px; flex-grow: 1; overflow-y: auto; }
                     .feedback-date { font-size: 0.8em; color: #7F8C8D; text-align: right; margin-bottom: 10px; border-top: 1px solid #34495E; padding-top: 10px; flex-shrink: 0; }
                     .action-buttons { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0;}
                     .action-buttons button, .flip-btn { flex-grow: 1; padding: 10px 12px; border: none; border-radius: 8px; font-size: 0.9em; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s; text-transform: uppercase; }
@@ -230,6 +263,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .delete-btn { background-color: #E74C3C; color: white; } .delete-btn:hover { background-color: #C0392B; }
                     .change-avatar-btn { background-color: #3498DB; color: white; } .change-avatar-btn:hover { background-color: #2980B9; }
                     .flip-btn { background-color: #fd7e14; color: white; margin-top:10px; flex-grow:0; width:100%;} .flip-btn:hover { background-color: #e66800; }
+
                     .reply-section { border-top: 1px solid #34495E; padding-top: 15px; margin-top:10px; flex-shrink: 0;}
                     .reply-section textarea { width: calc(100% - 20px); padding: 10px; border: 1px solid #4A6070; border-radius: 8px; background-color: #34495E; color: #ECF0F1; resize: vertical; min-height: 50px; margin-bottom: 10px; font-size: 0.95em; }
                     .reply-section textarea::placeholder { color: #A9B7C0; }
@@ -240,18 +274,20 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .single-reply { border-bottom: 1px solid #2C3E50; padding-bottom: 10px; margin-bottom: 10px; font-size: 0.9em; color: #D5DBDB; display: flex; align-items: flex-start; gap: 10px; }
                     .single-reply:last-child { border-bottom: none; margin-bottom: 0; }
                     .admin-reply-avatar-sm { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #9B59B6; flex-shrink: 0; object-fit: cover; box-shadow: 0 0 5px rgba(155, 89, 182, 0.5); }
-                    .reply-content-wrapper { flex-grow: 1; word-break: break-word; } .reply-admin-name { font-weight: bold; color: #9B59B6; display: inline; margin-right: 5px; }
+                    .reply-content-wrapper { flex-grow: 1; } .reply-admin-name { font-weight: bold; color: #9B59B6; display: inline; margin-right: 5px; }
                     .reply-timestamp { font-size: 0.75em; color: #8E9A9D; margin-left: 10px; }
                     .edited-admin-tag { background-color: #5cb85c; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; font-weight: bold; vertical-align: middle; }
+                    
                     .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 2000; }
                     .admin-custom-modal { background: #222a35; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; color: #f0f0f0; width: 90%; max-width: 480px; border: 1px solid #445; }
                     .admin-custom-modal h3 { color: #FFD700; margin-top: 0; margin-bottom: 15px; font-size: 1.8em; }
-                    .admin-custom-modal p { margin-bottom: 25px; font-size: 1.1em; line-height: 1.6; color: #ccc; word-break: break-word; }
+                    .admin-custom-modal p { margin-bottom: 25px; font-size: 1.1em; line-height: 1.6; color: #ccc;}
                     .admin-modal-buttons button { background-color: #007bff; color: white; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 5px; transition: background-color 0.3s, transform 0.2s; font-weight: bold; }
                     .admin-modal-buttons button:hover { transform: translateY(-2px); }
                     #adminModalOkButton:hover { background-color: #0056b3; }
                     #adminModalConfirmButton { background-color: #28a745; } #adminModalConfirmButton:hover { background-color: #1e7e34; }
                     #adminModalCancelButton { background-color: #dc3545; } #adminModalCancelButton:hover { background-color: #b02a37; }
+
                     @media (max-width: 768px) { h1 { font-size: 2.2em; } .feedback-grid { grid-template-columns: 1fr; } .main-panel-btn-container { justify-content: center; } }
                 </style>
             </head>
@@ -267,23 +303,17 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             html += `<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>`;
         } else {
             feedbacks.forEach(fb => {
-                // Null/undefined checks for names before using charAt or displaying
-                const displayName = (fb.name && typeof fb.name === 'string') ? fb.name : 'Anonymous';
-                const displayAvatarAlt = (fb.name && typeof fb.name === 'string') ? displayName.charAt(0).toUpperCase() : 'A';
+                // FIX FOR charAt ERROR: Provide a default character if name is missing or empty
+                const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
                 
-                const originalDisplayName = (fb.originalContent && fb.originalContent.name && typeof fb.originalContent.name === 'string') ? fb.originalContent.name : 'N/A';
-                // Avatar for original content usually uses the same current avatar, alt might change if name changed
-                // const originalAvatarAlt = (fb.originalContent && fb.originalContent.name && typeof fb.originalContent.name === 'string') ? originalDisplayName.charAt(0).toUpperCase() : 'A';
-
-
                 html += `
                     <div class="feedback-card" id="card-${fb._id}">
                         <div class="feedback-card-inner">
                             <div class="feedback-card-front">
                                 <div class="feedback-header">
-                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(displayName)}" alt="${displayAvatarAlt}"></div>
+                                    <div class="feedback-avatar"><img src="${fb.avatarUrl}" alt="${fbNameInitial}"></div>
                                     <div class="feedback-info">
-                                        <h4>${displayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
+                                        <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
                                         <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
                                     </div>
@@ -291,11 +321,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 <div class="feedback-body"><p>${fb.feedback}</p></div>
                                 <div class="feedback-date">
                                     ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
-                                    ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                    ${fb.isEdited && fb.originalContent ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
                                 </div>
                                 <div class="action-buttons">
                                     <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
-                                    <button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${displayName}')">AVATAR BADAL!</button>
+                                    <button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${fb.name || ''}')">AVATAR BADAL!</button>
                                 </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
@@ -315,17 +345,19 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIGINAL DEKH BHAI!</button>` : ''}
                             </div>`;
                 if (fb.isEdited && fb.originalContent) {
+                    // FIX FOR charAt ERROR on originalContent:
+                    const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
                     html += `
                             <div class="feedback-card-back">
                                 <div class="feedback-header">
-                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(originalDisplayName)}" alt="${(originalDisplayName !== 'N/A') ? originalDisplayName.charAt(0).toUpperCase() : 'A'}"></div>
+                                    <div class="feedback-avatar"><img src="${fb.avatarUrl}" alt="${originalNameInitial}"></div>
                                     <div class="feedback-info">
-                                        <h4>ORIGINAL: ${originalDisplayName}</h4>
-                                        <div class="rating">${'★'.repeat(fb.originalContent.rating || 0)}${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
+                                        <h4>ORIGINAL: ${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
+                                        <div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div>
                                     </div>
                                 </div>
-                                <div class="feedback-body"><p>${fb.originalContent.feedback || 'N/A'}</p></div>
-                                <div class="feedback-date">Posted: ${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
+                                <div class="feedback-body"><p>${fb.originalContent.feedback}</p></div>
+                                <div class="feedback-date">Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div>
                                 <div style="margin-top: auto;"> 
                                    <button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED DEKH BHAI!</button>
                                 </div>
@@ -417,7 +449,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             showAdminModal('alert', 'AREY BHAI!', 'REPLY KUCH LIKH TOH DE!');
                             return;
                         }
-                        showAdminModal('confirm', 'PAKKA BHEJNA HAI?', \`REPLY (shuru ke 100 अक्षर): "\${replyText.substring(0,100)}..."\`, async (confirmed) => {
+                        showAdminModal('confirm', 'PAKKA BHEJNA HAI?', \`REPLY: "\${replyText.substring(0,100)}..."\`, async (confirmed) => { 
                             if (confirmed) {
                                 try {
                                     const response = await fetch(\`/api/admin/feedback/\${feedbackId}/reply\`, {
@@ -438,7 +470,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
 
                     async function tryChangeAvatar(feedbackId, userName) {
-                        showAdminModal('confirm', 'AVATAR BADLEGA?', \`PAKKA \${userName} KA AVATAR BADALNA HAI? SARE \${userName} KE FEEDBACK MEIN BADAL JAYEGA!\`, async (confirmed) => {
+                        showAdminModal('confirm', 'AVATAR BADLEGA?', \`PAKKA \${userName || 'ISKA'} KA AVATAR BADALNA HAI? SARE FEEDBACK MEIN BADAL JAYEGA!\`, async (confirmed) => { // Added fallback for userName
                             if (confirmed) {
                                 try {
                                     const response = await fetch(\`/api/admin/feedback/\${feedbackId}/change-avatar\`, {
@@ -461,13 +493,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             </html>
         `;
         res.send(html);
-    } catch (error) { // Yeh error ab upar wale try-catch mein ayega agar HTML generation mein problem hui
-        console.error('SAALA! ADMIN PANEL GENERATE KARTE WAQT FAT GAYI:', error); // Specific error log
-        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR: ${error.message}`); // User-friendly error
+    } catch (error) { // YEH CATCH BLOCK AB WOH 'charAt' WALA ERROR NAHI DEGA AGAR NAME MISSING HUA TOH
+        console.error('ERROR GENERATING ADMIN PANEL:', error);
+        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}`);
     }
 });
-
-// ... BAAKI ROUTES (DELETE, REPLY, CHANGE-AVATAR, LISTEN) PEHLE JAISE HI HAIN ...
 
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
@@ -511,15 +541,13 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
         if (!feedbackToUpdate) {
             return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
         }
-        const userName = feedbackToUpdate.name; // Use existing name for consistency
+        const userName = feedbackToUpdate.name;
+        // Make sure userName is a string before calling toLowerCase on it for getDiceBearAvatarUrlServer
+        if (typeof userName !== 'string' || !userName) {
+             return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
+        }
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
-        // Update all feedbacks with the same name to ensure consistent avatar, or just this one.
-        // For now, updating all feedbacks by this user:
         await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
-        // If only this one:
-        // feedbackToUpdate.avatarUrl = newAvatarUrl;
-        // await feedbackToUpdate.save();
-
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
         console.error('AVATAR BADALTE WAQT FATTI HAI:', error);
@@ -531,3 +559,4 @@ app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
     console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
+
