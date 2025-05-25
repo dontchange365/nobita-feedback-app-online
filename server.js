@@ -5,22 +5,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
-const http = require('http'); // Import http module
-const { Server } = require('socket.io'); // Import Server from socket.io
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
-const io = new Server(server, { // Initialize Socket.IO with the HTTP server
-    cors: {
-        origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000', 'http://localhost:4000'], // Add your client origins
-        methods: ['GET', 'POST', 'DELETE', 'PUT'],
-        credentials: true
-    }
-});
-
-const PORT = process.env.PORT || 4000; // Changed port to 4000 to avoid conflict with default client 3000
+const PORT = process.env.PORT || 3000;
 
 // ****** MongoDB Connection String ******
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
@@ -144,7 +133,6 @@ app.post('/api/feedback', async (req, res) => {
         });
         await newFeedback.save();
         console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
-        io.emit('feedbackUpdate', newFeedback); // Emit update to all connected clients
         res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
     } catch (error) {
         console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
@@ -204,7 +192,6 @@ app.put('/api/feedback/:id', async (req, res) => {
 
         await existingFeedback.save();
         console.log('[EDIT ACTION] Feedback saved successfully.');
-        io.emit('feedbackUpdate', existingFeedback); // Emit update to all connected clients
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
 
     } catch (error) {
@@ -304,32 +291,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .reply-timestamp { font-size: 0.75em; color: #8E9A9D; margin-left: 10px; }
                     .edited-admin-tag { background-color: #5cb85c; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; font-weight: bold; vertical-align: middle; }
                     
-                    .admin-modal-overlay { 
-                        position: fixed; 
-                        top: 0; 
-                        left: 0; 
-                        width: 100%; 
-                        height: 100%; 
-                        background: rgba(0,0,0,0.75); 
-                        display: flex; 
-                        justify-content: center; 
-                        align-items: center; 
-                        z-index: 2000; 
-                        overflow: auto; /* Allow scrolling if modal content overflows */
-                        display: none; /* Initially hidden */
-                    }
-                    .admin-custom-modal { 
-                        background: #222a35; 
-                        padding: 30px; 
-                        border-radius: 15px; 
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-                        text-align: center; 
-                        color: #f0f0f0; 
-                        width: 90%; 
-                        max-width: 480px; 
-                        border: 1px solid #445; 
-                        margin: auto; /* Center the modal within the overlay */
-                    }
+                    .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 2000; }
+                    .admin-custom-modal { background: #222a35; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; color: #f0f0f0; width: 90%; max-width: 480px; border: 1px solid #445; }
                     .admin-custom-modal h3 { color: #FFD700; margin-top: 0; margin-bottom: 15px; font-size: 1.8em; }
                     .admin-custom-modal p { margin-bottom: 25px; font-size: 1.1em; line-height: 1.6; color: #ccc; word-wrap: break-word;}
                     .admin-modal-buttons button { background-color: #007bff; color: white; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 5px; transition: background-color 0.3s, transform 0.2s; font-weight: bold; }
@@ -346,20 +309,24 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <div class="main-panel-btn-container">
                     <a href="/" class="main-panel-btn">← GO TO MAIN FEEDBACK PANEL</a>
                 </div>
-                <div class="feedback-grid" id="feedback-grid"> `;
+                <div class="feedback-grid">
+        `;
 
         if (feedbacks.length === 0) {
             html += `<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>`;
         } else {
             feedbacks.forEach(fb => {
                 const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
-                
+                // Debugging: Check if fb.avatarUrl is undefined or null
+                const avatarSrc = fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous');
+                console.log(`Generating HTML for feedback ID: ${fb._id}, Avatar URL: ${avatarSrc}`); // Debugging line
+
                 html += `
                     <div class="feedback-card" id="card-${fb._id}">
                         <div class="feedback-card-inner">
                             <div class="feedback-card-front">
                                 <div class="feedback-header">
-                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous')}" alt="${fbNameInitial}"></div>
+                                    <div class="feedback-avatar"><img src="${avatarSrc}" alt="${fbNameInitial}"></div>
                                     <div class="feedback-info">
                                         <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
@@ -378,7 +345,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
                                     <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
-                                    <div class="replies-display" id="replies-display-${fb._id}"> ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
+                                    <div class="replies-display">
+                                        ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
                                         ${fb.replies.map(reply => `
                                             <div class="single-reply">
                                                 <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
@@ -429,7 +397,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     </div>
                 </div>
 
-                <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
                     const adminModalOverlay = document.getElementById('adminModalOverlay');
@@ -439,21 +406,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     const adminModalConfirmButton = document.getElementById('adminModalConfirmButton');
                     const adminModalCancelButton = document.getElementById('adminModalCancelButton');
                     let globalConfirmCallback = null;
-
-                    const socket = io('${process.env.BASE_API_URL || 'https://nobita-feedback-app-online.onrender.com'}'); // Connect socket for admin panel too
-
-                    socket.on('connect', () => {
-                        console.log('Admin Socket.IO connected!');
-                    });
-
-                    socket.on('disconnect', () => {
-                        console.log('Admin Socket.IO disconnected!');
-                    });
-
-                    socket.on('feedbackUpdate', () => {
-                        console.log('Admin panel received feedback update, reloading feedbacks...');
-                        fetchAdminFeedbacks(); // Refresh feedbacks in admin panel
-                    });
 
                     function showAdminModal(type, title, message, confirmCallbackFn = null) {
                         adminModalTitle.textContent = title;
@@ -494,7 +446,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     const response = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER } });
                                     if (response.ok) {
                                         showAdminModal('alert', 'SAFAL!', 'FEEDBACK UDHA DIYA!');
-                                        // No explicit reload, socket.io will handle it
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'GADBAD!', \`UDHANE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -521,8 +473,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'HO GAYA!', 'REPLY SAFALTA-POORVAK POST HUA!');
-                                        replyTextarea.value = ''; // Clear textarea after successful reply
-                                        // No explicit reload, socket.io will handle it
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'REPLY FAIL!', \`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -542,7 +493,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'BADAL GAYA!', 'AVATAR SAFALTA-POORVAK BADLA GAYA! NAYA IMAGE AB DIKHEGA!');
-                                        // No explicit reload, socket.io will handle it
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'AVATAR FAIL!', \`AVATAR BADALNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -551,87 +502,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             }
                         });
                     }
-
-                    // Function to dynamically update the feedback list in the admin panel
-                    async function fetchAdminFeedbacks() {
-                        try {
-                            const res = await fetch('/api/feedbacks');
-                            if (!res.ok) throw new Error(\`FAILED TO LOAD FEEDBACKS (STATUS: \${res.status})\`);
-                            const feedbacks = await res.json();
-                            const feedbackGrid = document.getElementById('feedback-grid');
-                            feedbackGrid.innerHTML = ''; // Clear existing feedbacks
-
-                            if (feedbacks.length === 0) {
-                                feedbackGrid.innerHTML = \`<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>\`;
-                            } else {
-                                feedbacks.forEach(fb => {
-                                    const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
-                                    const cardHtml = \`
-                                        <div class="feedback-card" id="card-\${fb._id}">
-                                            <div class="feedback-card-inner">
-                                                <div class="feedback-card-front">
-                                                    <div class="feedback-header">
-                                                        <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous')}" alt="\${fbNameInitial}"></div>
-                                                        <div class="feedback-info">
-                                                            <h4>\${fb.name || 'NAAM NAHI HAI'} \${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
-                                                            <div class="rating">\${'★'.repeat(fb.rating)}\${'☆'.repeat(5 - fb.rating)}</div>
-                                                            <div class="user-ip">IP: \${fb.userIp || 'N/A'}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="feedback-body"><p>\${fb.feedback}</p></div>
-                                                    <div class="feedback-date">
-                                                        \${fb.isEdited ? 'Last Edited' : 'Posted'}: \${new Date(fb.timestamp).toLocaleString()}
-                                                        \${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? \`<br><small>Original Post: \${new Date(fb.originalContent.timestamp).toLocaleString()}</small>\` : ''}
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="delete-btn" onclick="tryDeleteFeedback('\${fb._id}')">UDHA DE!</button>
-                                                        <button class="change-avatar-btn" onclick="tryChangeAvatar('\${fb._id}', '\${fb.name || ''}')">AVATAR BADAL!</button>
-                                                    </div>
-                                                    <div class="reply-section">
-                                                        <textarea id="reply-text-\${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
-                                                        <button class="reply-btn" onclick="tryPostReply('\${fb._id}', 'reply-text-\${fb._id}')">REPLY FEK!</button>
-                                                        <div class="replies-display" id="replies-display-\${fb._id}">
-                                                            \${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
-                                                            \${fb.replies.map(reply => \`
-                                                                <div class="single-reply">
-                                                                    <img src="\${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
-                                                                    <div class="reply-content-wrapper">
-                                                                        <span class="reply-admin-name">\${reply.adminName}:</span> \${reply.text}
-                                                                        <span class="reply-timestamp">(\${new Date(reply.timestamp).toLocaleString()})</span>
-                                                                    </div>
-                                                                </div>\`).join('')}
-                                                        </div>
-                                                    </div>
-                                                    \${fb.isEdited && fb.originalContent ? \`<button class="flip-btn" onclick="flipCard('\${fb._id}')">ORIGINAL DEKH BHAI!</button>\` : ''}
-                                                </div>
-                                                \${fb.isEdited && fb.originalContent ? \`
-                                                <div class="feedback-card-back">
-                                                    <div class="feedback-header">
-                                                        <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="\${originalNameInitial}"></div>
-                                                        <div class="feedback-info">
-                                                            <h4>ORIGINAL: \${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
-                                                            <div class="rating">\${'★'.repeat(fb.originalContent.rating || 0)}\${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="feedback-body"><p>\${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
-                                                    <div class="feedback-date">Originally Posted: \${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
-                                                    <div style="margin-top: auto;"> 
-                                                       <button class="flip-btn" onclick="flipCard('\${fb._id}')">EDITED DEKH BHAI!</button>
-                                                    </div>
-                                                </div>\` : ''}
-                                            </div> 
-                                        </div>
-                                    \`;
-                                    feedbackGrid.insertAdjacentHTML('beforeend', cardHtml);
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error fetching admin feedbacks:', error);
-                            showAdminModal('alert', 'GADBAD!', \`ADMIN FEEDBACKS LOAD NAHI HO PAYE: \${error.message}\`);
-                        }
-                    }
-                    // Initial load for admin panel
-                    fetchAdminFeedbacks();
                 </script>
             </body>
             </html>
@@ -652,7 +522,6 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
             return res.status(404).json({ message: 'FEEDBACK NAHI MILA, BHAI. DELETE KISKO KARUN?' });
         }
         console.log('FEEDBACK DELETE KIYA GAYA:', deletedFeedback);
-        io.emit('feedbackUpdate', deletedFeedback); // Emit update
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK DELETE HUA!', deletedFeedback });
     } catch (error) {
         console.error('FEEDBACK DELETE KARTE WAQT ERROR AAYA:', error);
@@ -673,7 +542,6 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
         }
         feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
         await feedback.save();
-        io.emit('feedbackUpdate', feedback); // Emit update
         res.status(200).json({ message: 'REPLY SAFALTA-POORVAK JAMA HUA!', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) {
         console.error('REPLY SAVE KARTE WAQT FATTI HAI:', error);
@@ -696,7 +564,6 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
         await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } }); // This updates all feedbacks by the same name
         console.log(`[AVATAR CHANGE] Avatar updated for user ${userName} (triggered by feedback ID ${id}) to ${newAvatarUrl}`);
-        io.emit('feedbackUpdate', { changedAvatarFor: userName, newAvatarUrl: newAvatarUrl }); // Emit update
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
         console.error(`AVATAR BADALTE WAQT FATTI HAI (ID: ${id}):`, error);
@@ -705,7 +572,8 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
 });
 
 
-server.listen(PORT, () => { // Use server.listen instead of app.listen
+app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
     console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
+
