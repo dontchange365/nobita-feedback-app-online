@@ -5,7 +5,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
-const WebSocket = require('ws'); // Import WebSocket module
 
 dotenv.config();
 
@@ -68,10 +67,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
-    // Correctly get client IP address including for proxies like Render
-    req.clientIp = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : req.connection.remoteAddress;
+    req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (req.clientIp === '::1' || req.clientIp === '::ffff:127.0.0.1') { 
         req.clientIp = '127.0.0.1';
+    }
+    if (req.clientIp && req.clientIp.includes(',')) {
+        req.clientIp = req.clientIp.split(',')[0].trim();
     }
     next();
 });
@@ -97,25 +98,6 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
-
-// WebSocket Server Setup
-const wss = new WebSocket.Server({ noServer: true });
-
-wss.on('connection', ws => {
-    console.log('Client connected to WebSocket!');
-    ws.on('close', () => console.log('Client disconnected from WebSocket.'));
-    ws.on('error', error => console.error('WebSocket error:', error));
-});
-
-// Function to broadcast messages to all connected WebSocket clients
-function broadcastFeedbackUpdate(type, payload = {}) {
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type, ...payload }));
-        }
-    });
-}
-
 
 app.get('/api/feedbacks', async (req, res) => {
     try {
@@ -151,7 +133,6 @@ app.post('/api/feedback', async (req, res) => {
         });
         await newFeedback.save();
         console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
-        broadcastFeedbackUpdate('feedback_added', { feedback: newFeedback }); // Broadcast update
         res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
     } catch (error) {
         console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
@@ -181,26 +162,36 @@ app.put('/api/feedback/:id', async (req, res) => {
         const parsedRating = parseInt(rating);
         const contentActuallyChanged = existingFeedback.name !== name || existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
 
+        console.log(`[EDIT CHECK] Feedback ID: ${feedbackId}`);
+        console.log(`[EDIT CHECK] Content Actually Changed: ${contentActuallyChanged}`);
+        console.log(`[EDIT CHECK] Existing originalContent:`, existingFeedback.originalContent ? 'Present' : 'Not Present');
+
+
         if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent || (existingFeedback.originalContent && existingFeedback.isEdited === false)) { 
-                // Only save originalContent if it's the first edit or if it was marked as not edited before
+            if (!existingFeedback.originalContent) { 
                 existingFeedback.originalContent = {
                     name: existingFeedback.name,
                     feedback: existingFeedback.feedback,
                     rating: existingFeedback.rating,
                     timestamp: existingFeedback.timestamp 
                 };
+                console.log(`[EDIT ACTION] Storing NEW original content for feedback ID ${feedbackId}:`, existingFeedback.originalContent);
+            } else {
+                console.log(`[EDIT INFO] Original content already exists for feedback ID ${feedbackId}. Not overwriting.`);
             }
             
             existingFeedback.name = name;
             existingFeedback.feedback = feedback;
             existingFeedback.rating = parsedRating;
             existingFeedback.timestamp = Date.now(); 
-            existingFeedback.isEdited = true; // Mark as edited after the first actual change
+            existingFeedback.isEdited = true;
+            console.log(`[EDIT ACTION] Feedback ID ${feedbackId} marked as edited. New content saved.`);
+        } else {
+            console.log(`[EDIT INFO] No actual content change detected for feedback ID ${feedbackId}. Not marking as edited or changing originalContent.`);
         }
 
         await existingFeedback.save();
-        broadcastFeedbackUpdate('feedback_updated', { feedback: existingFeedback }); // Broadcast update
+        console.log('[EDIT ACTION] Feedback saved successfully.');
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
 
     } catch (error) {
@@ -298,93 +289,17 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .admin-reply-avatar-sm { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #9B59B6; flex-shrink: 0; object-fit: cover; box-shadow: 0 0 5px rgba(155, 89, 182, 0.5); }
                     .reply-content-wrapper { flex-grow: 1; word-wrap: break-word; } .reply-admin-name { font-weight: bold; color: #9B59B6; display: inline; margin-right: 5px; }
                     .reply-timestamp { font-size: 0.75em; color: #8E9A9D; margin-left: 10px; }
-                    .edited-admin-tag { background-color: #f0ad4e; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; font-weight: bold; vertical-align: middle; }
+                    .edited-admin-tag { background-color: #5cb85c; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; font-weight: bold; vertical-align: middle; }
                     
-                    /* Admin Modal Styles - Similar to client side for consistency */
-                    .admin-modal-overlay { 
-                        position: fixed; 
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.75); 
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 2000; 
-                        opacity: 0;
-                        visibility: hidden;
-                        transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
-                    }
-                    .admin-modal-overlay.show {
-                        opacity: 1;
-                        visibility: visible;
-                        transition: opacity 0.4s ease-out, visibility 0s linear 0s; 
-                    }
-
-                    .admin-custom-modal { 
-                        background: linear-gradient(135deg, #1f2a3a, #2c3e50); /* Darker background */
-                        border: 2px solid #FFD700; /* Gold border */
-                        border-radius: 20px;
-                        padding: 30px 25px; 
-                        text-align: center;
-                        color: #f4f4f9; /* Light text */
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2) inset;
-                        transform: scale(0.7) translateY(-30px); 
-                        opacity: 0;
-                        visibility: hidden; 
-                        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-out;
-                        max-width: 85%; 
-                        width: auto; 
-                        min-width: 300px; 
-                        position: relative; 
-                        z-index: 2001; 
-                        will-change: transform, opacity;
-                    }
-                    .admin-modal-overlay.show .admin-custom-modal {
-                        transform: scale(1) translateY(0);
-                        opacity: 1;
-                        visibility: visible;
-                    }
-
-                    .admin-custom-modal h3 {
-                        font-family: 'Luckiest Guy', cursive; /* Fancy font */
-                        font-size: 2em; 
-                        color: #FFD700;
-                        margin-bottom: 10px;
-                        text-shadow: 0 0 8px rgba(255,215,0,0.5);
-                        letter-spacing: 1px;
-                    }
-                    .admin-custom-modal p { 
-                        font-size: 1em; 
-                        line-height: 1.5; 
-                        margin-bottom: 20px; 
-                        color: #ccc; 
-                        word-wrap: break-word;
-                    }
-                    .admin-modal-buttons button { 
-                        background: linear-gradient(45deg, #3B82F6, #2563EB); /* Blue gradient */
-                        color: #fff;
-                        border: none;
-                        padding: 12px 22px; 
-                        border-radius: 8px;
-                        cursor: pointer;
-                        font-size: 1em; 
-                        margin: 5px;
-                        transition: all 0.3s ease;
-                        font-weight: bold; 
-                        box-shadow: 0 3px 10px rgba(59,130,246,0.4);
-                    }
-                    .admin-modal-buttons button:hover { 
-                        background: linear-gradient(45deg, #2563EB, #3B82F6); 
-                        transform: translateY(-2px) scale(1.02);
-                        box-shadow: 0 5px 15px rgba(59,130,246,0.6);
-                    }
-                    #adminModalConfirmButton { background: linear-gradient(45deg, #28a745, #218838); } 
-                    #adminModalConfirmButton:hover { background: linear-gradient(45deg, #218838, #28a745); }
-                    #adminModalCancelButton { background: linear-gradient(45deg, #dc3545, #c82333); } 
-                    #adminModalCancelButton:hover { background: linear-gradient(45deg, #c82333, #dc3545); }
-
+                    .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 2000; }
+                    .admin-custom-modal { background: #222a35; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; color: #f0f0f0; width: 90%; max-width: 480px; border: 1px solid #445; }
+                    .admin-custom-modal h3 { color: #FFD700; margin-top: 0; margin-bottom: 15px; font-size: 1.8em; }
+                    .admin-custom-modal p { margin-bottom: 25px; font-size: 1.1em; line-height: 1.6; color: #ccc; word-wrap: break-word;}
+                    .admin-modal-buttons button { background-color: #007bff; color: white; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 5px; transition: background-color 0.3s, transform 0.2s; font-weight: bold; }
+                    .admin-modal-buttons button:hover { transform: translateY(-2px); }
+                    #adminModalOkButton:hover { background-color: #0056b3; }
+                    #adminModalConfirmButton { background-color: #28a745; } #adminModalConfirmButton:hover { background-color: #1e7e34; }
+                    #adminModalCancelButton { background-color: #dc3545; } #adminModalCancelButton:hover { background-color: #b02a37; }
 
                     @media (max-width: 768px) { h1 { font-size: 2.2em; } .feedback-grid { grid-template-columns: 1fr; } .main-panel-btn-container { justify-content: center; } }
                 </style>
@@ -394,7 +309,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <div class="main-panel-btn-container">
                     <a href="/" class="main-panel-btn">← GO TO MAIN FEEDBACK PANEL</a>
                 </div>
-                <div class="feedback-grid" id="feedback-grid">
+                <div class="feedback-grid">
         `;
 
         if (feedbacks.length === 0) {
@@ -414,10 +329,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
                                         <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
                                     </div>
-                                </div>
+                                }
                                 <div class="feedback-body"><p>${fb.feedback}</p></div>
                                 <div class="feedback-date">
                                     ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
+                                    ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
                                 </div>
                                 <div class="action-buttons">
                                     <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
@@ -486,7 +402,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     const adminModalOkButton = document.getElementById('adminModalOkButton');
                     const adminModalConfirmButton = document.getElementById('adminModalConfirmButton');
                     const adminModalCancelButton = document.getElementById('adminModalCancelButton');
-                    const feedbackGrid = document.getElementById('feedback-grid');
                     let globalConfirmCallback = null;
 
                     function showAdminModal(type, title, message, confirmCallbackFn = null) {
@@ -503,16 +418,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             adminModalConfirmButton.style.display = 'none';
                             adminModalCancelButton.style.display = 'none';
                         }
-                        adminModalOverlay.classList.add('show');
+                        adminModalOverlay.style.display = 'flex';
                     }
 
-                    adminModalOkButton.addEventListener('click', () => { adminModalOverlay.classList.remove('show'); });
+                    adminModalOkButton.addEventListener('click', () => { adminModalOverlay.style.display = 'none'; });
                     adminModalConfirmButton.addEventListener('click', () => {
-                        adminModalOverlay.classList.remove('show');
+                        adminModalOverlay.style.display = 'none';
                         if (globalConfirmCallback) globalConfirmCallback(true);
                     });
                     adminModalCancelButton.addEventListener('click', () => {
-                        adminModalOverlay.classList.remove('show');
+                        adminModalOverlay.style.display = 'none';
                         if (globalConfirmCallback) globalConfirmCallback(false);
                     });
 
@@ -528,7 +443,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     const response = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER } });
                                     if (response.ok) {
                                         showAdminModal('alert', 'SAFAL!', 'FEEDBACK UDHA DIYA!');
-                                        // No reload, WebSocket will handle
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'GADBAD!', \`UDHANE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -555,8 +470,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'HO GAYA!', 'REPLY SAFALTA-POORVAK POST HUA!');
-                                        replyTextarea.value = ''; // Clear textarea
-                                        // No reload, WebSocket will handle
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'REPLY FAIL!', \`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -576,7 +490,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'BADAL GAYA!', 'AVATAR SAFALTA-POORVAK BADLA GAYA! NAYA IMAGE AB DIKHEGA!');
-                                        // No reload, WebSocket will handle
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'AVATAR FAIL!', \`AVATAR BADALNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -585,122 +499,18 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             }
                         });
                     }
-
-                    // WebSocket for live updates on Admin Panel
-                    // Corrected to use string concatenation for dynamic port
-                    const wsAdmin = new WebSocket('ws://' + window.location.hostname + ':${PORT}'); 
-                    wsAdmin.onopen = () => {
-                        console.log('Admin WebSocket connected for live feedback updates!');
-                    };
-
-                    wsAdmin.onmessage = (event) => {
-                        const data = JSON.parse(event.data);
-                        if (data.type === 'feedback_updated' || data.type === 'feedback_added' || data.type === 'feedback_deleted') {
-                            console.log('Live update received in Admin Panel:', data);
-                            updateAdminFeedbacks(); // Re-render feedbacks
-                        }
-                    };
-
-                    wsAdmin.onclose = () => {
-                        console.log('Admin WebSocket disconnected.');
-                    };
-
-                    wsAdmin.onerror = (error) => {
-                        console.error('Admin WebSocket error:', error);
-                    };
-
-                    // Function to re-render feedbacks in admin panel
-                    async function updateAdminFeedbacks() {
-                        try {
-                            const res = await fetch('/api/feedbacks', { headers: { 'Authorization': AUTH_HEADER } });
-                            if (!res.ok) throw new Error(\`Failed to fetch feedbacks: \${res.status}\`);
-                            const feedbacks = await res.json();
-                            feedbackGrid.innerHTML = ''; // Clear current feedbacks
-
-                            if (feedbacks.length === 0) {
-                                feedbackGrid.innerHTML = \`<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>\`;
-                            } else {
-                                feedbacks.forEach(fb => {
-                                    const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
-                                    let cardHtml = \`
-                                        <div class="feedback-card" id="card-\${fb._id}">
-                                            <div class="feedback-card-inner">
-                                                <div class="feedback-card-front">
-                                                    <div class="feedback-header">
-                                                        <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous')}" alt="\${fbNameInitial}"></div>
-                                                        <div class="feedback-info">
-                                                            <h4>\${fb.name || 'NAAM NAHI HAI'} \${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
-                                                            <div class="rating">\${'★'.repeat(fb.rating)}\${'☆'.repeat(5 - fb.rating)}</div>
-                                                            <div class="user-ip">IP: \${fb.userIp || 'N/A'}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="feedback-body"><p>\${fb.feedback}</p></div>
-                                                    <div class="feedback-date">
-                                                        \${fb.isEdited ? 'Last Edited' : 'Posted'}: \${new Date(fb.timestamp).toLocaleString()}
-                                                    </div>
-                                                    <div class="action-buttons">
-                                                        <button class="delete-btn" onclick="tryDeleteFeedback('\${fb._id}')">UDHA DE!</button>
-                                                        <button class="change-avatar-btn" onclick="tryChangeAvatar('\${fb._id}', '\${fb.name || ''}')">AVATAR BADAL!</button>
-                                                    </div>
-                                                    <div class="reply-section">
-                                                        <textarea id="reply-text-\${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
-                                                        <button class="reply-btn" onclick="tryPostReply('\${fb._id}', 'reply-text-\${fb._id}')">REPLY FEK!</button>
-                                                        <div class="replies-display">
-                                                            \${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
-                                                            \${fb.replies.map(reply => \`
-                                                                <div class="single-reply">
-                                                                    <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
-                                                                    <div class="reply-content-wrapper">
-                                                                        <span class="reply-admin-name">\${reply.adminName}:</span> \${reply.text}
-                                                                        <span class="reply-timestamp">(\${new Date(reply.timestamp).toLocaleString()})</span>
-                                                                    </div>
-                                                                </div>\`).join('')}
-                                                            </div>
-                                                        </div>
-                                                        \${fb.isEdited && fb.originalContent ? \`<button class="flip-btn" onclick="flipCard('\${fb._id}')">ORIGINAL DEKH BHAI!</button>\` : ''}
-                                                    </div>`;
-                                        if (fb.isEdited && fb.originalContent) {
-                                            const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
-                                            cardHtml += \`
-                                                    <div class="feedback-card-back">
-                                                        <div class="feedback-header">
-                                                            <div class="feedback-avatar"><img src="\${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="\${originalNameInitial}"></div>
-                                                            <div class="feedback-info">
-                                                                <h4>ORIGINAL: \${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
-                                                                <div class="rating">\${'★'.repeat(fb.originalContent.rating || 0)}\${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="feedback-body"><p>\${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
-                                                        <div class="feedback-date">Originally Posted: \${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
-                                                        <div style="margin-top: auto;"> 
-                                                           <button class="flip-btn" onclick="flipCard('\${fb._id}')">EDITED DEKH BHAI!</button>
-                                                        </div>
-                                                    </div>\`;
-                                        }
-                                        cardHtml += \`
-                                                </div> 
-                                            </div>\`;
-                                        feedbackGrid.insertAdjacentHTML('beforeend', cardHtml);
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Error updating admin feedbacks live:', error);
-                                showAdminModal('alert', 'LIVE UPDATE FAIL!', \`FEEDBACKS RE-LOAD NAHI HO PAYE: \${error.message}\`);
-                            }
-                        }
-                        // Initial load on page load
-                        updateAdminFeedbacks();
-                    </script>
-                </body>
-                </html>
-            `;
+                </script>
+            </body>
+            </html>
+        `;
         res.send(html);
     } catch (error) { 
-        console.error('ERROR GENERATING ADMIN PANEL:', error); 
-        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`); 
+        console.error('ERROR GENERATING ADMIN PANEL:', error); // Added more specific error logging
+        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`); // Include stack for better debugging
     }
 });
 
+// ... (DELETE, POST-REPLY, PUT-CHANGE-AVATAR routes remain the same as previous full version)
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -709,7 +519,6 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
             return res.status(404).json({ message: 'FEEDBACK NAHI MILA, BHAI. DELETE KISKO KARUN?' });
         }
         console.log('FEEDBACK DELETE KIYA GAYA:', deletedFeedback);
-        broadcastFeedbackUpdate('feedback_deleted', { feedbackId: feedbackId }); // Broadcast update
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK DELETE HUA!', deletedFeedback });
     } catch (error) {
         console.error('FEEDBACK DELETE KARTE WAQT ERROR AAYA:', error);
@@ -730,7 +539,6 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
         }
         feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
         await feedback.save();
-        broadcastFeedbackUpdate('feedback_updated', { feedback: feedback }); // Broadcast update
         res.status(200).json({ message: 'REPLY SAFALTA-POORVAK JAMA HUA!', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) {
         console.error('REPLY SAVE KARTE WAQT FATTI HAI:', error);
@@ -746,17 +554,13 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
             return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
         }
         const userName = feedbackToUpdate.name;
-        if (typeof userName !== 'string' || !userName) { 
+        if (typeof userName !== 'string' || !userName) { // Added safety check
              console.error(`[AVATAR CHANGE ERROR] User name is invalid for feedback ID ${id}:`, userName);
              return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
         }
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
-        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
+        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } }); // This updates all feedbacks by the same name
         console.log(`[AVATAR CHANGE] Avatar updated for user ${userName} (triggered by feedback ID ${id}) to ${newAvatarUrl}`);
-
-        // Fetch all feedbacks again to get the updated avatars for all related entries
-        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
-        broadcastFeedbackUpdate('feedback_updated', { feedbacks: allFeedbacks }); // Broadcast all feedbacks
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
         console.error(`AVATAR BADALTE WAQT FATTI HAI (ID: ${id}):`, error);
@@ -764,15 +568,9 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
     }
 });
 
-// Create HTTP server
-const server = app.listen(PORT, () => {
+
+app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
     console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
 
-// Integrate WebSocket with the existing HTTP server
-server.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, ws => {
-        wss.emit('connection', ws, request);
-    });
-});
