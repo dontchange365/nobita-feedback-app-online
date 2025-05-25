@@ -380,7 +380,7 @@
             z-index: 10;
         }
         .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.1) rotate(5deg); opacity: 1; }
-        .edit-feedback-btn[disabled] { display: none; } /* THIS HIDES THE BUTTON AFTER EDITING */
+        .edit-feedback-btn[disabled] { display: none; }
 
         .edited-tag {
             background-color: #f0ad4e;
@@ -396,7 +396,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         #custom-modal-overlay { 
-            position: fixed; /* Changed to fixed for central positioning */
+            position: absolute; 
             top: 0;
             left: 0;
             width: 100%;
@@ -405,7 +405,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Increased z-index to be on top of everything */
+            z-index: 100; 
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
@@ -586,7 +586,7 @@
     <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
-        <div id="feedbacks-wrapper"></div> </div>
+    </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
@@ -596,7 +596,6 @@
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
             const feedbackListContainer = document.getElementById('feedback-list-container');
-            const feedbacksWrapper = document.getElementById('feedbacks-wrapper'); // Get the new wrapper
             const stars = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
@@ -742,17 +741,19 @@
                     const data = await res.json();
                     
                     const h2Title = feedbackListContainer.querySelector('h2');
-                    feedbacksWrapper.innerHTML = ''; // Clear the wrapper, not the whole container
-                    
+                    feedbackListContainer.innerHTML = ''; 
+                    feedbackListContainer.appendChild(averageRatingDisplay); 
+                    if(h2Title) feedbackListContainer.appendChild(h2Title); 
+
                     if (data.length === 0) {
                         const msg = document.createElement('p');
                         msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
                         msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
-                        feedbacksWrapper.append(msg); // Append to wrapper
+                        feedbackListContainer.append(msg);
                         updateAverageRating(0, 0); 
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length);
+                        const averageRating = (totalRatings / data.length); // No toFixed(1) here, do it in display
                         updateAverageRating(averageRating, data.length);
                         data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
                     }
@@ -768,6 +769,7 @@
                 if (isNaN(avgRating) || avgRating <= 0) {
                     starsOutput = '☆☆☆☆☆';
                 } else {
+                    // Simple truncate logic: X.Y will show X full stars, rest empty
                     const fullStars = Math.floor(avgRating);
                     starsOutput = '★'.repeat(fullStars);
                     starsOutput += '☆'.repeat(5 - fullStars);
@@ -790,7 +792,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     resetForm(); 
-                    // No need to call fetchFeedbacks() here, WebSocket will update
+                    await fetchFeedbacks();
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
@@ -811,7 +813,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
                     resetForm();
-                    // No need to call fetchFeedbacks() here, WebSocket will update
+                    await fetchFeedbacks();
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
@@ -836,17 +838,10 @@
             }
 
             function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, isEdited, index) {
-                let item = document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`);
-                const isNew = !item;
-
-                if (isNew) {
-                    item = document.createElement('div'); 
-                    item.className = 'feedback-item';
-                    item.setAttribute('data-feedback-id', feedbackId);
-                    item.style.opacity = '0'; item.style.transform = 'translateY(30px)';
-                } else {
-                    item.innerHTML = ''; // Clear existing content for update
-                }
+                const item = document.createElement('div'); 
+                item.className = 'feedback-item';
+                item.setAttribute('data-feedback-id', feedbackId);
+                item.style.opacity = '0'; item.style.transform = 'translateY(30px)';
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
@@ -873,11 +868,7 @@
                 editButton.className = 'edit-feedback-btn';
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
-                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp && !isEdited) { // Hides after one edit
-                    editButton.disabled = false;
-                } else {
-                    editButton.disabled = true;
-                }
+                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { editButton.disabled = false; } else { editButton.disabled = true; }
                 
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation();
@@ -916,37 +907,10 @@
                     }
                 }
                 item.append(avatarImg, feedbackDetailsDiv);
-                
-                if (isNew) {
-                    feedbacksWrapper.prepend(item); // Prepend new items to show latest at top
-                    setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
-                }
+                feedbackListContainer.appendChild(item);
+                setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
             }
             fetchFeedbacks();
-
-
-            // WebSocket for live updates
-            const ws = new WebSocket(`ws://${window.location.hostname}:3000`); // Use the same port as HTTP
-            ws.onopen = () => {
-                console.log('WebSocket connected for live feedback updates!');
-            };
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'feedback_updated' || data.type === 'feedback_added' || data.type === 'feedback_deleted') {
-                    console.log('Live update received:', data);
-                    fetchFeedbacks(); // Re-fetch all feedbacks on any update
-                }
-            };
-
-            ws.onclose = () => {
-                console.log('WebSocket disconnected.');
-            };
-
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-
         });
     </script>
 </body>
