@@ -140,6 +140,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         const feedbacks = await Feedback.find().sort({ timestamp: -1 });
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
+        
+        // Define Nobita's avatar URL for admin panel (same as owner avatar)
+        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `
             <!DOCTYPE html>
@@ -167,6 +170,32 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         margin-bottom: 40px;
                         font-size: 2.8em;
                         text-shadow: 0 0 15px rgba(255,215,0,0.5);
+                    }
+                    .main-panel-btn-container {
+                        width: 100%;
+                        max-width: 1200px;
+                        display: flex;
+                        justify-content: flex-start; /* Align button to the left */
+                        margin-bottom: 20px;
+                        padding: 0 10px; /* Add some padding if grid has padding */
+                    }
+                    .main-panel-btn {
+                        background-color: #007bff; /* Blue */
+                        color: white;
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 1em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: background-color 0.3s ease, transform 0.2s;
+                        text-decoration: none; /* For anchor tag */
+                        display: inline-block; /* For anchor tag */
+                        text-transform: uppercase;
+                    }
+                    .main-panel-btn:hover {
+                        background-color: #0056b3;
+                        transform: translateY(-2px);
                     }
                     .feedback-grid {
                         display: grid;
@@ -313,14 +342,31 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         margin-bottom: 10px;
                         font-size: 0.9em;
                         color: #D5DBDB;
+                        display: flex; /* For avatar and text */
+                        align-items: flex-start;
+                        gap: 10px;
                     }
                     .single-reply:last-child {
                         border-bottom: none;
                         margin-bottom: 0;
                     }
+                    .admin-reply-avatar-sm { /* Small avatar for replies */
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        border: 2px solid #9B59B6; /* Purple border */
+                        flex-shrink: 0;
+                        object-fit: cover;
+                        box-shadow: 0 0 5px rgba(155, 89, 182, 0.5);
+                    }
+                    .reply-content-wrapper { /* Wrapper for reply text and timestamp */
+                        flex-grow: 1;
+                    }
                     .reply-admin-name {
                         font-weight: bold;
                         color: #9B59B6; /* Purple */
+                        display: inline; /* Keep on same line as text */
+                        margin-right: 5px;
                     }
                     .reply-timestamp {
                         font-size: 0.75em;
@@ -333,11 +379,15 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         .feedback-grid { grid-template-columns: 1fr; }
                         .feedback-card { padding: 20px; }
                         .action-buttons { flex-direction: column; }
+                        .main-panel-btn-container { justify-content: center; } /* Center button on smaller screens */
                     }
                 </style>
             </head>
             <body>
                 <h1>NOBITA'S FEEDBACK COMMAND CENTER</h1>
+                <div class="main-panel-btn-container">
+                    <a href="/" class="main-panel-btn">← GO TO MAIN FEEDBACK PANEL</a>
+                </div>
                 <div class="feedback-grid">
         `;
 
@@ -374,8 +424,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
                                 ${fb.replies && fb.replies.map(reply => `
                                     <div class="single-reply">
-                                        <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
-                                        <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                        <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
+                                        <div class="reply-content-wrapper">
+                                            <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+                                            <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
