@@ -1,430 +1,990 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>⭐ PROFESSIONAL FEEDBACK ⭐</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #F0F2F5;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ NOBITA'S FUTURISTIC FEEDBACK PORTAL ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6a0dad; /* Deep Purple */
+            --secondary-color: #FFD700; /* Gold */
+            --accent-color: #3B82F6; /* Blue */
+            --text-color-light: #f4f4f9;
+            --text-color-dark: #2c3e50;
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
+            --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
 
-    .container {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      padding: 35px;
-      text-align: center;
-      width: 90%;
-      max-width: 700px;
-      transition: all 0.3s ease-in-out;
-      border: 1px solid #E0E0E0;
-    }
+        /* Smooth scrolling for the whole page */
+        html {
+            scroll-behavior: smooth;
+        }
 
-    h1 {
-      font-family: 'Verdana', sans-serif;
-      color: #1E3A8A;
-      margin-bottom: 30px;
-      font-size: 2.2em;
-      font-weight: 700;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-color-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            overflow-x: hidden; /* Prevent horizontal scroll for animations */
+            /* Performance improvement: Promote body to its own layer for smoother scrolling */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
+        }
 
-    .input-group {
-      margin-bottom: 25px;
-      text-align: left;
-    }
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-deep);
+            padding: 40px;
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            transition: all 0.5s ease-in-out;
+            margin-bottom: 40px;
+            opacity: 0; /* For scroll animation */
+            transform: translateY(50px); /* For scroll animation */
+            /* Performance improvement: Promote to its own layer */
+            will-change: transform, opacity;
+            -webkit-font-smoothing: antialiased; /* Smoother fonts */
+        }
+        .container.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-    .input-group label {
-      display: block;
-      margin-bottom: 10px;
-      color: #555;
-      font-weight: bold;
-      font-size: 1.05em;
-    }
+        .owner-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px; /* Increased margin for separation */
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transition-delay: 0.8s; /* Delay after main container animates in */
+            will-change: transform, opacity;
+        }
 
-    .input-group input,
-    .input-group textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fdfdfd;
-      color: #333;
-      font-size: 1em;
-      outline: none;
-      transition: all 0.3s ease;
-      box-sizing: border-box;
-    }
+        .owner-info.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-    .input-group input:focus,
-    .input-group textarea:focus {
-      border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
-    }
+        .owner-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--secondary-color);
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+            object-fit: cover;
+            /* Performance improvement: Promote to its own layer */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
+        }
 
-    .input-group textarea {
-      resize: vertical;
-      min-height: 120px;
-      max-height: 300px;
-    }
+        .owner-text {
+            color: var(--text-color-light);
+            font-size: 1.1em;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0,0,0,0.4);
+            font-family: 'Roboto', sans-serif; /* Using Roboto for Admin/Nobita name style */
+            font-weight: 700;
+            color: #9B59B6; /* Purple for Nobita's name */
+        }
 
-    .stars {
-      margin-top: 15px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            font-size: 2.8em;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(255,215,0,0.5);
+            letter-spacing: 1px;
+            line-height: 1.3em; /* Explicit line-height */
+            min-height: calc(2.8em * 1.3 * 2); /* Calculated for 2 lines */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Hide overflow if text temporarily exceeds */
+            box-sizing: border-box; /* Include padding/border in height */
+        }
 
-    .star {
-      font-size: 2.8em;
-      color: #D1D5DB;
-      cursor: pointer;
-      transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
-    }
+        #typed-output {
+            color: var(--accent-color);
+            font-size: 1.2em;
+            margin-top: -20px;
+            margin-bottom: 30px;
+            line-height: 1.4em; /* Explicit line-height */
+            min-height: calc(1.2em * 1.4 * 2); /* Calculated for 2 lines */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Hide overflow */
+            box-sizing: border-box; /* Include padding/border in height */
+        }
 
-    .star.highlighted,
-    .star.selected {
-      color: #F59E0B;
-      transform: scale(1.2);
-      text-shadow: 0 0 15px rgba(245,158,11,0.7);
-    }
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+            position: relative;
+        }
 
-    button {
-      background-color: #3B82F6;
-      color: #fff;
-      border: none;
-      padding: 14px 30px;
-      border-radius: 8px;
-      font-size: 1.1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(59,130,246,0.3);
-      letter-spacing: 0.5px;
-      margin-top: 25px;
-    }
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-color-light);
+            font-weight: 600;
+            font-size: 1.1em;
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
 
-    button:hover {
-      background-color: #2563EB;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(59,130,246,0.4);
-    }
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-color-light);
+            font-size: 1.05em;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+        }
 
-    #feedback-list-container {
-      margin-top: 45px;
-      background: #F9F9F9;
-      border: 1px solid #E0E0E0;
-      border-radius: 10px;
-      padding: 25px;
-      max-height: 450px;
-      overflow-y: auto;
-      text-align: left;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-    }
+        .input-group input:focus,
+        .input-group textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.3), inset 2px 2px 8px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
 
-    #feedback-list-container h2 {
-      font-family: 'Verdana', sans-serif;
-      color: #1E3A8A;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #E0E0E0;
-      padding-bottom: 10px;
-      font-size: 1.8em;
-      font-weight: 700;
-    }
+        .input-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            max-height: 300px;
+        }
 
-    .feedback-item {
-      background: #fff;
-      border: 1px solid #EEE;
-      border-radius: 8px;
-      margin-bottom: 18px;
-      padding: 18px;
-      display: flex;
-      align-items: flex-start;
-      gap: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: transform 0.3s ease;
-    }
+        .stars {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
 
-    .feedback-item:hover {
-      transform: translateY(-3px);
-    }
+        .star {
+            font-size: 3.5em; /* Adjusted size */
+            color: rgba(255, 255, 255, 0.4); /* Muted white */
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.2s ease, text-shadow 0.3s ease;
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
 
-    .feedback-item:last-child {
-      margin-bottom: 0;
-    }
+        .star.highlighted,
+        .star.selected {
+            color: var(--secondary-color); /* Gold */
+            transform: scale(1.15) rotateY(10deg);
+            text-shadow: 0 0 20px var(--secondary-color), 0 0 30px rgba(255,215,0,0.5);
+        }
 
-    .feedback-item strong {
-      color: #2D3748;
-      font-size: 1.15em;
-      display: block;
-      margin-bottom: 5px;
-    }
+        button#submit-feedback {
+            background: linear-gradient(45deg, var(--accent-color), #2563EB);
+            color: #fff;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(59,130,246,0.4);
+            letter-spacing: 0.8px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            /* Performance improvement: Promote to its own layer */
+            transform: translateZ(0); 
+            -webkit-transform: translateZ(0);
+        }
 
-    .feedback-item p {
-      color: #4A5568;
-      line-height: 1.7;
-      margin-top: 8px;
-    }
+        button#submit-feedback::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            transition: all 0.6s ease-out;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            /* Performance improvement: Promote to its own layer */
+            will-change: transform, opacity;
+        }
 
-    .feedback-stars {
-      color: #F59E0B;
-      font-size: 1.3em;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
-    }
+        button#submit-feedback:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
 
-    .avatar {
-      width: 55px;
-      height: 55px;
-      background: #3B82F6;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2em;
-      color: #fff;
-      flex-shrink: 0;
-      font-weight: bold;
-      border: 2px solid #2563EB;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
+        button#submit-feedback:hover {
+            background: linear-gradient(45deg, #2563EB, var(--accent-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(59,130,246,0.6);
+        }
 
-    #feedback-list-container::-webkit-scrollbar {
-      width: 10px;
-    }
-    #feedback-list-container::-webkit-scrollbar-track {
-      background: #E2E8F0;
-      border-radius: 10px;
-    }
-    #feedback-list-container::-webkit-scrollbar-thumb {
-      background: #A0AEC0;
-      border-radius: 10px;
-      border: 2px solid #E2E8F0;
-    }
-    #feedback-list-container::-webkit-scrollbar-thumb:hover {
-      background: #718096;
-    }
+        #feedback-list-container {
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            padding: 30px;
+            text-align: left;
+            box-shadow: var(--shadow-deep);
+            width: 90%;
+            max-width: 800px;
+            opacity: 0; /* For scroll animation */
+            transform: translateY(50px); /* For scroll animation */
+            will-change: transform, opacity;
+        }
+        #feedback-list-container.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.2s; /* Delay after main container */
+        }
 
-    @media (max-width: 768px) {
-      .container { padding: 25px; }
-      h1 { font-size: 1.8em; }
-      button { padding: 12px 25px; font-size: 1em; }
-      .star { font-size: 2.2em; }
-      .feedback-item { flex-direction: column; align-items: center; text-align: center; }
-      .avatar { margin-bottom: 10px; }
-    }
 
-    @media (max-width: 480px) {
-      h1 { font-size: 1.5em; }
-      .input-group label { font-size: 0.95em; }
-      .star { font-size: 1.8em; }
-    }
-  </style>
+        #feedback-list-container h2 {
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+            font-size: 2.2em;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+
+        /* New styles for average rating display */
+        .average-rating-container {
+            background: rgba(255, 215, 0, 0.1); /* Light gold background */
+            border: 1px solid var(--secondary-color);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px; /* Space between this and recent feedbacks */
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px; /* Reduced gap for number to be closer to text */
+            color: var(--text-color-light);
+            transition: all 0.3s ease;
+            opacity: 0; /* For animation */
+            transform: translateY(30px); /* For animation */
+            will-change: transform, opacity;
+        }
+        .average-rating-container.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.4s;
+        }
+
+        .average-rating-container h3 {
+            color: var(--secondary-color);
+            font-size: 1.8em;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            margin-bottom: 10px; /* Space below title */
+        }
+
+        .average-number {
+            font-size: 4em; /* Make the number BIG */
+            font-weight: 700;
+            color: var(--secondary-color); /* Gold color */
+            text-shadow: 0 0 20px var(--secondary-color), 0 0 30px rgba(255,215,0,0.7);
+            line-height: 1; /* Prevent extra space */
+            margin-bottom: 10px; /* Space between number and stars */
+        }
+
+        .average-stars {
+            font-size: 2.5em;
+            color: var(--secondary-color);
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(255,215,0,0.7);
+        }
+
+        .total-feedbacks-count {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+            margin-top: 10px;
+        }
+
+
+        .feedback-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            will-change: transform, opacity; /* Performance improvement */
+        }
+
+        .feedback-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(106, 13, 173, 0.05), rgba(255, 215, 0, 0.02));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback-item:hover::before {
+            opacity: 1;
+        }
+
+        .feedback-item:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .feedback-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .avatar-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 10px rgba(59,130,246,0.5);
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            transform: translateZ(0); /* Promote to its own layer */
+            -webkit-transform: translateZ(0);
+        }
+
+        .avatar-img:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feedback-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-details strong {
+            color: var(--secondary-color);
+            font-size: 1.25em;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+        }
+
+        .feedback-stars {
+            color: var(--secondary-color);
+            font-size: 1.8em;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px rgba(255,215,0,0.5);
+        }
+        
+        .feedback-details p {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            color: var(--text-color-light);
+            line-height: 1.6;
+        }
+
+        .feedback-timestamp {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .admin-reply {
+            margin-top: 15px;
+            padding: 12px 15px;
+            background-color: rgba(255, 215, 0, 0.1); 
+            border-left: 5px solid var(--secondary-color); 
+            border-radius: 8px;
+            font-size: 0.95em;
+            color: var(--text-color-light);
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.05);
+            transition: all 0.3s ease;
+            display: flex; /* Use flexbox for avatar and text */
+            align-items: flex-start;
+            gap: 10px;
+            will-change: background-color, box-shadow; /* Performance improvement */
+        }
+        .admin-reply:hover {
+            background-color: rgba(255, 215, 0, 0.15);
+            box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.1);
+        }
+
+        .admin-reply-avatar { /* New style for admin avatar within reply */
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #9B59B6; /* Purple border */
+            flex-shrink: 0;
+            object-fit: cover;
+            box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
+            transform: translateZ(0); /* Promote to its own layer */
+            -webkit-transform: translateZ(0);
+        }
+
+        .admin-reply-content { /* New container for admin text */
+            flex-grow: 1;
+        }
+
+        .admin-reply-content strong {
+            color: #9B59B6; /* Purple for Nobita's name */
+            font-size: 1.05em;
+            display: inline; /* Keep on the same line as the text that follows */
+            margin-right: 5px;
+            text-transform: none; /* Don't uppercase Nobita's custom name */
+        }
+        .admin-reply-content p {
+            margin: 0;
+            padding: 0;
+            color: var(--text-color-light);
+            display: inline;
+        }
+        .admin-reply-content .reply-timestamp {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: 10px;
+        }
+
+        .edit-feedback-btn {
+            background-color: #5bc0de; /* Info blue */
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .edit-feedback-btn:hover {
+            background-color: #31b0d5;
+            transform: translateY(-2px);
+        }
+
+        .edit-feedback-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .owner-info { margin-bottom: 30px; }
+            .owner-avatar { width: 60px; height: 60px; }
+            .owner-text { font-size: 1em; }
+            .container { padding: 30px; }
+            h1 { 
+                font-size: 2.2em; 
+                line-height: 1.3em;
+                min-height: calc(2.2em * 1.3 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 30px; 
+            }
+            #typed-output { 
+                font-size: 1em; 
+                line-height: 1.4em;
+                min-height: calc(1em * 1.4 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 30px; 
+            }
+            .input-group input, .input-group textarea { padding: 12px 15px; font-size: 1em; }
+            .star { font-size: 3em; }
+            button#submit-feedback { padding: 12px 25px; font-size: 1.05em; }
+            #feedback-list-container { padding: 20px; }
+            #feedback-list-container h2 { font-size: 1.8em; }
+            .average-rating-container h3 { font-size: 1.5em; }
+            .average-number { font-size: 3em; } /* Adjusted for smaller screens */
+            .average-stars { font-size: 2em; }
+            .total-feedbacks-count { font-size: 1em; }
+            .feedback-item { flex-direction: column; align-items: center; text-align: center; }
+            .avatar-img { margin-bottom: 10px; }
+            .feedback-details { align-items: center; }
+            .admin-reply { text-align: left; } /* Keep reply text left-aligned */
+            .admin-reply-content { text-align: left; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 15px; }
+            .owner-info { margin-bottom: 20px; flex-direction: column; text-align: center;}
+            .owner-avatar { width: 50px; height: 50px; }
+            .owner-text { font-size: 0.9em; }
+            .container { padding: 20px; }
+            h1 { 
+                font-size: 1.8em; 
+                line-height: 1.3em;
+                min-height: calc(1.8em * 1.3 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 20px; 
+            }
+            #typed-output { 
+                font-size: 0.9em; 
+                line-height: 1.4em;
+                min-height: calc(0.9em * 1.4 * 2); /* Adjusted for smaller screens */
+                margin-bottom: 20px; 
+            }
+            .input-group label { font-size: 0.95em; }
+            .star { font-size: 2.5em; }
+            button#submit-feedback { font-size: 0.95em; padding: 10px 20px; }
+            #feedback-list-container h2 { font-size: 1.5em; }
+            .average-rating-container h3 { font-size: 1.2em; }
+            .average-number { font-size: 2.5em; } /* Adjusted for smaller screens */
+            .average-stars { font-size: 1.8em; }
+            .total-feedbacks-count { font-size: 0.9em; }
+            .feedback-item { padding: 15px; }
+            .avatar-img { width: 50px; height: 50px; }
+            .feedback-details strong { font-size: 1.1em; }
+            .feedback-stars { font-size: 1.5em; }
+            .admin-reply-avatar { width: 30px; height: 30px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>⭐ SHARE YOUR VALUABLE FEEDBACK ⭐</h1>
-
-    <div class="input-group">
-      <label for="name">YOUR NAME:</label>
-      <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
+    <div class="owner-info animate-in">
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
+        <span class="owner-text">Developed by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
     </div>
 
-    <div class="input-group">
-      <label for="feedback">YOUR FEEDBACK:</label>
-      <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
+    <div class="container animate-in">
+        <h1 id="main-title"></h1> 
+        <div id="typed-output"></div>
+
+        <div class="input-group">
+            <label for="name">YOUR NAME:</label>
+            <input type="text" id="name" placeholder="ENTER YOUR NAME" required>
+        </div>
+
+        <div class="input-group">
+            <label for="feedback">YOUR FEEDBACK:</label>
+            <textarea id="feedback" placeholder="SHARE YOUR THOUGHTS HERE..." required></textarea>
+        </div>
+
+        <div class="input-group">
+            <label>RATE YOUR EXPERIENCE:</label>
+            <div class="stars" id="star-rating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+            <input type="hidden" id="rating" value="0">
+        </div>
+        
+        <button id="submit-feedback">SUBMIT FEEDBACK</button>
     </div>
 
-    <div class="input-group">
-      <label>RATE YOUR EXPERIENCE:</label>
-      <div class="stars" id="star-rating">
-        <span class="star" data-value="1">★</span>
-        <span class="star" data-value="2">★</span>
-        <span class="star" data-value="3">★</span>
-        <span class="star" data-value="4">★</span>
-        <span class="star" data-value="5">★</span>
-      </div>
-      <input type="hidden" id="rating" value="0">
+    <div id="feedback-list-container" class="animate-in">
+        <div id="average-rating-display"></div>
+        <h2>RECENT FEEDBACKS</h2>
     </div>
 
-    <button id="submit-feedback">SUBMIT FEEDBACK</button>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('name');
+            const feedbackTextarea = document.getElementById('feedback');
+            const ratingInput = document.getElementById('rating');
+            const submitButton = document.getElementById('submit-feedback');
+            const feedbackListContainer = document.getElementById('feedback-list-container');
+            const stars = document.querySelectorAll('.star');
+            const mainTitle = document.getElementById('main-title');
+            const averageRatingDisplay = document.getElementById('average-rating-display');
+            let currentSelectedRating = 0;
+            let userIpAddress = ''; // To store the user's IP
 
-    <div id="feedback-list-container">
-      <h2>RECENT FEEDBACKS</h2>
-      </div>
-  </div>
+            const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // REPLACE WITH YOUR DEPLOYED URL
+            const API_URL = `${BASE_API_URL}/api/feedback`;
+            const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const nameInput = document.getElementById('name');
-      const feedbackTextarea = document.getElementById('feedback');
-      const ratingInput = document.getElementById('rating');
-      const submitButton = document.getElementById('submit-feedback');
-      const feedbackListContainer = document.getElementById('feedback-list-container');
-      const stars = document.querySelectorAll('.star');
-      let currentSelectedRating = 0;
-
-      // ****** BASE URL AB AUTOMATICALLY SET HOGA ******
-      // JAB TU LOCALHOST PE CHALAYEGA TOH YE 'http://localhost:3000' HOGA
-      // JAB TU RENDER PE DEPLOY KAREGA TOH YE 'https://nobita-feedback-app-online.onrender.com' HOGA
-      const BASE_API_URL = window.location.origin;
-      const API_URL = `${BASE_API_URL}/api/feedback`; // Server par feedback submit karne ke liye
-      const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`; // Server se feedbacks fetch karne ke liye
-
-      function updateStarVisuals(ratingToShow) {
-        stars.forEach(star => {
-          const starValue = parseInt(star.getAttribute('data-value'));
-          if (starValue <= ratingToShow) star.classList.add('selected');
-          else star.classList.remove('selected');
-          star.classList.remove('highlighted');
-        });
-      }
-
-      stars.forEach(star => {
-        star.addEventListener('click', () => {
-          currentSelectedRating = parseInt(star.getAttribute('data-value'));
-          ratingInput.value = currentSelectedRating;
-          updateStarVisuals(currentSelectedRating);
-        });
-
-        star.addEventListener('mouseenter', () => {
-          const hoverValue = parseInt(star.getAttribute('data-value'));
-          stars.forEach(s => {
-            const val = parseInt(s.getAttribute('data-value'));
-            if (val <= hoverValue) {
-              s.classList.add('highlighted');
-              s.classList.remove('selected');
-            } else {
-              s.classList.remove('highlighted');
+            // Function to get client IP address (using an external service)
+            async function getClientIp() {
+                try {
+                    const response = await fetch('https://api.ipify.org?format=json');
+                    const data = await response.json();
+                    userIpAddress = data.ip;
+                    console.log('User IP:', userIpAddress);
+                } catch (error) {
+                    console.error('IP address fetch karte waqt error aaya:', error);
+                    userIpAddress = 'UNKNOWN'; // Fallback if IP cannot be fetched
+                }
             }
-          });
-        });
 
-        star.addEventListener('mouseleave', () => {
-          updateStarVisuals(currentSelectedRating);
-        });
-      });
+            // Call getClientIp on load
+            getClientIp();
 
-      // Function to fetch and display feedbacks from the server
-      async function fetchFeedbacks() {
-        try {
-            const response = await fetch(FETCH_API_URL);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ERROR! STATUS: ${response.status} - ${errorText}`);
-            }
-            const feedbacks = await response.json();
-            feedbackListContainer.innerHTML = '<h2>RECENT FEEDBACKS</h2>'; // Clear existing feedbacks and add heading back
-
-            if (feedbacks.length === 0) {
-              const noFeedbackMessage = document.createElement('p');
-              noFeedbackMessage.style.textAlign = 'center';
-              noFeedbackMessage.style.color = '#777';
-              noFeedbackMessage.style.marginTop = '20px';
-              noFeedbackMessage.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI!';
-              feedbackListContainer.append(noFeedbackMessage);
-            } else {
-              // Sort feedbacks by timestamp (newest first) before displaying
-              feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-              feedbacks.forEach(fb => {
-                  addFeedbackToDOM(fb.name, fb.feedback, fb.rating);
-              });
-            }
-            feedbackListContainer.scrollTop = 0; // Scroll to top after loading
-        } catch (error) {
-            console.error('FEEDBACK FETCH KARNE MEIN ERROR AAYA:', error);
-            alert(`FEEDBACK LOAD NAHI HO PAYE! SERVER CHECK KAR YA NETWORK. ERROR: ${error.message}`);
-        }
-      }
-
-      submitButton.addEventListener('click', async () => {
-        const name = nameInput.value.trim();
-        const feedback = feedbackTextarea.value.trim();
-        const rating = ratingInput.value; // ratingInput.value already gives string, will be parsed to int by server
-
-        if (!name || !feedback || rating === '0') {
-          alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
-          return;
-        }
-
-        const dataToSend = { name, feedback, rating };
-        console.log('FRONTEND SE YE DATA BHEJ RAHA HOON:', dataToSend);
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dataToSend)
+            // Typed.js for the main title
+            const typedTitle = new Typed('#main-title', {
+                strings: ['✨ NOBITA\'S FEEDBACK PORTAL ✨', '🚀 SHARE YOUR VALUABLE THOUGHTS 🚀', '💡 HELP US IMPROVE! 💡'],
+                typeSpeed: 50,
+                backSpeed: 25,
+                loop: true,
+                startDelay: 1000,
+                showCursor: true,
+                cursorChar: '|',
+                smartBackspace: true,
             });
 
-            if (!response.ok) {
-                // Try to parse error message from server
-                const errorData = await response.json().catch(() => ({ message: 'SERVER SE RESPONSE PARSE NAHI HUA YA KOI ANJAAN ERROR.' }));
-                console.error('SERVER SE ERROR RESPONSE AAYA:', errorData);
-                throw new Error(errorData.message || `FEEDBACK SUBMIT KARNE MEIN LOHDA LAG GAYA! STATUS: ${response.status}`);
+            // Typed.js for the output text
+            const typedOutput = new Typed('#typed-output', {
+                strings: [
+                    'Your feedback helps us make amazing things happen!',
+                    'We appreciate your honesty and suggestions.',
+                    'Every star counts towards a better experience!'
+                ],
+                typeSpeed: 40,
+                backSpeed: 20,
+                loop: true,
+                startDelay: 2000,
+                showCursor: false
+            });
+
+            // Star rating microinteractions
+            function updateStarVisuals(ratingToShow) {
+                stars.forEach(star => {
+                    const val = parseInt(star.getAttribute('data-value'));
+                    star.classList.toggle('selected', val <= ratingToShow);
+                    star.classList.remove('highlighted');
+                });
             }
 
-            const result = await response.json();
-            console.log('SERVER SE SAFAL RESPONSE:', result);
-            alert('FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    currentSelectedRating = parseInt(star.getAttribute('data-value'));
+                    ratingInput.value = currentSelectedRating;
+                    updateStarVisuals(currentSelectedRating);
+                    // Add a small bounce animation on click
+                    star.style.transform = 'scale(1.3) rotateY(15deg)';
+                    setTimeout(() => {
+                        star.style.transform = 'scale(1.15) rotateY(10deg)';
+                    }, 150);
+                });
+                star.addEventListener('mouseenter', () => {
+                    const hoverVal = parseInt(star.getAttribute('data-value'));
+                    stars.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));
+                });
+                star.addEventListener('mouseleave', () => updateStarVisuals(currentSelectedRating));
+            });
 
-            // Clear form
-            nameInput.value = '';
-            feedbackTextarea.value = '';
-            ratingInput.value = '0';
-            currentSelectedRating = 0;
-            updateStarVisuals(0);
+            // Function to add a pulse effect to the submit button
+            function pulseButton() {
+                submitButton.style.transform = 'scale(1.05)';
+                submitButton.style.boxShadow = '0 0 25px rgba(59,130,246,0.8)';
+                setTimeout(() => {
+                    submitButton.style.transform = 'scale(1)';
+                    submitButton.style.boxShadow = '0 5px 15px rgba(59,130,246,0.4)';
+                }, 300);
+            }
 
-            fetchFeedbacks(); // Refresh list after successful submission
+            async function fetchFeedbacks() {
+                try {
+                    const res = await fetch(FETCH_API_URL);
+                    if (!res.ok) throw new Error(`FAILED TO LOAD FEEDBACKS (STATUS: ${res.status}). SERVER SAID: ${await res.text()}`);
+                    const data = await res.json();
+                    
+                    // Clear previous feedbacks but keep the main title
+                    const h2Title = feedbackListContainer.querySelector('h2');
+                    feedbackListContainer.innerHTML = ''; // Clear all contents
+                    feedbackListContainer.appendChild(averageRatingDisplay); // Re-add the average rating display div
+                    feedbackListContainer.appendChild(h2Title); // Re-add the h2 title
 
-        } catch (error) {
-            console.error('FRONTEND MEIN FETCH ERROR:', error);
-            alert(`FEEDBACK SUBMIT NAHI HO PAYA: ${error.message}`);
-        }
-      });
+                    if (data.length === 0) {
+                        const msg = document.createElement('p');
+                        msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
+                        msg.style.textAlign = 'center';
+                        msg.style.color = 'var(--text-color-light)';
+                        msg.style.opacity = '0.7';
+                        feedbackListContainer.append(msg);
+                        updateAverageRating(0, 0); // Reset average if no feedbacks
+                    } else {
+                        // Calculate average rating
+                        const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                        const averageRating = (totalRatings / data.length).toFixed(1);
+                        updateAverageRating(averageRating, data.length);
 
-      // Helper function to add feedback to the DOM (for display only)
-      function addFeedbackToDOM(name, feedback, rating) {
-        const item = document.createElement('div');
-        item.classList.add('feedback-item');
+                        // Add new feedbacks with animation
+                        data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, index));
+                    }
+                } catch (err) {
+                    console.error('FETCH FEEDBACKS ERROR:', err);
+                    alert(`FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
+                }
+            }
 
-        const initial = name.charAt(0).toUpperCase();
-        const avatar = document.createElement('div');
-        avatar.classList.add('avatar');
-        avatar.textContent = initial;
+            function updateAverageRating(avgRating, totalCount) {
+                let filledStars = '';
+                let emptyStars = '';
+                const fullStars = Math.floor(avgRating);
+                const halfStar = avgRating % 1 >= 0.5 ? '★' : ''; // Use a full star for half to simplify
+                const remainingStars = 5 - fullStars - (halfStar ? 1 : 0);
 
-        const content = document.createElement('div');
-        const strong = document.createElement('strong');
-        strong.textContent = name.toUpperCase();
+                filledStars = '★'.repeat(fullStars);
+                if (halfStar) {
+                    filledStars += halfStar;
+                }
+                emptyStars = '☆'.repeat(remainingStars);
 
-        const starsDiv = document.createElement('div');
-        starsDiv.classList.add('feedback-stars');
-        for (let i = 0; i < rating; i++) starsDiv.textContent += '★';
-        for (let i = rating; i < 5; i++) starsDiv.textContent += '☆';
 
-        const p = document.createElement('p');
-        p.textContent = feedback;
+                averageRatingDisplay.innerHTML = `
+                    <div class="average-rating-container animate-in">
+                        <h3>OVERALL RATING</h3>
+                        <div class="average-number">${avgRating}</div>
+                        <div class="average-stars">${filledStars}${emptyStars}</div>
+                        <div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div>
+                    </div>
+                `;
+            }
 
-        content.append(strong, starsDiv, p);
-        item.append(avatar, content);
 
-        feedbackListContainer.prepend(item); // Prepend to add new feedback at the top
-      }
+            submitButton.addEventListener('click', async () => {
+                pulseButton(); // Trigger pulse on click
 
-      fetchFeedbacks(); // Initial load of feedbacks when the page loads
-    });
-  </script>
+                const name = nameInput.value.trim();
+                const fbText = feedbackTextarea.value.trim();
+                const rating = ratingInput.value;
+                if (!name || !fbText || rating === '0') {
+                    alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI! MAZAK NAHI CHAL RAHA IDHAR.');
+                    return;
+                }
+                
+                const feedbackData = {
+                    name: name,
+                    feedback: fbText,
+                    rating: parseInt(rating),
+                    userIp: userIpAddress // Send the client's IP
+                };
+
+                try {
+                    // Animate container out before submission
+                    document.querySelector('.container').style.opacity = '0';
+                    document.querySelector('.container').style.transform = 'translateY(-50px)';
+                    await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for animation
+
+                    const res = await fetch(API_URL, {
+                        method: 'POST', 
+                        headers: {'Content-Type':'application/json'}, 
+                        body: JSON.stringify(feedbackData)
+                    });
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
+                    }
+                    alert('TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
+                    nameInput.value = ''; feedbackTextarea.value = '';
+                    ratingInput.value = '0'; currentSelectedRating = 0;
+                    updateStarVisuals(0);
+                    fetchFeedbacks(); // Re-fetch to show new feedback
+
+                    // Animate container back in after submission and fetch
+                    setTimeout(() => {
+                        document.querySelector('.container').style.opacity = '1';
+                        document.querySelector('.container').style.transform = 'translateY(0)';
+                    }, 500); // Delay to ensure fetch completes
+                } catch (err) { 
+                    console.error('SUBMIT FEEDBACK ERROR:', err);
+                    alert(`SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
+                    // Bring container back if error
+                    document.querySelector('.container').style.opacity = '1';
+                    document.querySelector('.container').style.transform = 'translateY(0)';
+                }
+            });
+
+            function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, index) {
+                const item = document.createElement('div'); 
+                item.className = 'feedback-item';
+                item.setAttribute('data-feedback-id', feedbackId);
+                
+                // Initial state for scroll animation
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(30px)';
+
+                const avatarImg = document.createElement('img');
+                avatarImg.className = 'avatar-img';
+                avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name.toLowerCase())}`;
+                avatarImg.alt = `${name.charAt(0).toUpperCase()}'s Avatar`;
+                avatarImg.onerror = function() {
+                    this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name.charAt(0).toUpperCase()}`;
+                    this.alt = name.charAt(0).toUpperCase();
+                };
+
+                const feedbackDetailsDiv = document.createElement('div');
+                feedbackDetailsDiv.className = 'feedback-details';
+
+                const strongName = document.createElement('strong'); 
+                strongName.textContent = name;
+                
+                const starsDiv = document.createElement('div'); 
+                starsDiv.className = 'feedback-stars';
+                starsDiv.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                
+                const pFeedback = document.createElement('p'); 
+                pFeedback.textContent = feedback;
+
+                const feedbackTimestampDiv = document.createElement('div');
+                feedbackTimestampDiv.className = 'feedback-timestamp';
+                feedbackTimestampDiv.textContent = `Posted: ${new Date(timestamp).toLocaleString()}`;
+
+
+                feedbackDetailsDiv.append(strongName, starsDiv, pFeedback, feedbackTimestampDiv);
+
+                // Add Edit button (client-side check for IP match)
+                const editButton = document.createElement('button');
+                editButton.className = 'edit-feedback-btn';
+                editButton.textContent = 'EDIT MY FEEDBACK';
+                editButton.disabled = (userIpAddress === 'UNKNOWN' || userIpAddress !== feedbackIp); // Disable if IP doesn't match
+                if (userIpAddress === 'UNKNOWN') {
+                    editButton.title = 'IP address not available to enable editing.';
+                } else if (userIpAddress !== feedbackIp) {
+                    editButton.title = 'You can only edit your own feedback.';
+                }
+
+                editButton.addEventListener('click', () => {
+                    if (confirm('APNA FEEDBACK EDIT KARNA HAI?')) {
+                        // Populate form with current feedback details
+                        nameInput.value = name;
+                        feedbackTextarea.value = feedback;
+                        currentSelectedRating = rating;
+                        ratingInput.value = rating;
+                        updateStarVisuals(rating);
+                        
+                        // Change submit button to update button
+                        submitButton.textContent = 'UPDATE FEEDBACK';
+                        submitButton.onclick = async () => {
+                            const updatedName = nameInput.value.trim();
+                            const updatedFbText = feedbackTextarea.value.trim();
+                            const updatedRating = ratingInput.value;
+
+                            if (!updatedName || !updatedFbText || updatedRating === '0') {
+                                alert('BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+                                return;
+                            }
+
+                            try {
+                                const res = await fetch(`${API_URL}/${feedbackId}`, { // Use PUT for update
+                                    method: 'PUT', 
+                                    headers: {'Content-Type':'application/json'}, 
+                                    body: JSON.stringify({ 
+                                        name: updatedName, 
+                                        feedback: updatedFbText, 
+                                        rating: parseInt(updatedRating),
+                                        userIp: userIpAddress // Send IP for server-side verification
+                                    })
+                                });
+
+                                if (!res.ok) {
+                                    const errorData = await res.json();
+                                    throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
+                                }
+                                alert('FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
+                                // Reset form and button
+                                nameInput.value = ''; feedbackTextarea.value = '';
+                                ratingInput.value = '0'; currentSelectedRating = 0;
+                                updateStarVisuals(0);
+                                submitButton.textContent = 'SUBMIT FEEDBACK';
+                                submitButton.onclick = submitFeedbackHandler; // Revert to original submit handler
+                                fetchFeedbacks(); // Re-fetch to show updated feedback
+                            } catch (err) {
+                                console.error('UPDATE FEEDBACK ERROR:', err);
+                                alert(`UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
+                            }
+                        };
+                        // Scroll to the top of the form for easy editing
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+                feedbackDetailsDiv.appendChild(editButton);
+
+
+                if (repliesArray && repliesArray.length > 0) {
+                    const latestReply = repliesArray[repliesArray.length - 1];
+                    if (latestReply && latestReply.text) {
+                        const adminReplyDiv = document.createElement('div');
+                        adminReplyDiv.className = 'admin-reply';
+                        
+                        // Admin Avatar within the reply
+                        const adminReplyAvatar = document.createElement('img');
+                        adminReplyAvatar.className = 'admin-reply-avatar';
+                        adminReplyAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's Avatar for admin replies
+                        adminReplyAvatar.alt = 'Nobita\'s Avatar';
+
+                        const adminReplyContent = document.createElement('div');
+                        adminReplyContent.className = 'admin-reply-content';
+
+                        adminReplyContent.innerHTML = `
+                            <strong>(${latestReply.adminName || 'Admin'}):</strong> ${latestReply.text} 
+                            <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString()})</span>
+                        `;
+                        
+                        adminReplyDiv.append(adminReplyAvatar, adminReplyContent); // Append avatar and content div
+                        
+                        feedbackDetailsDiv.appendChild(adminReplyDiv);
+                    }
+                }
+                
+                item.append(avatarImg, feedbackDetailsDiv);
+                
+                // Append the feedback item after the h2 title
+                feedbackListContainer.appendChild(item);
+
+                // Animate individual feedback items on load/add
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                    item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                }, index * 100); // Stagger animation
+            }
+
+            // Store original submit handler to revert after editing
+            const submitFeedbackHandler = submitButton.onclick;
+
+
+            fetchFeedbacks(); // Fetch feedbacks on page load
+        });
+    </script>
 </body>
 </html>
