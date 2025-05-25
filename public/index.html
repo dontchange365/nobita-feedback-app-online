@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+    <script src="/socket.io/socket.io.js"></script> <style>
         :root {
             --primary-color: #6a0dad; /* Deep Purple */
             --secondary-color: #FFD700; /* Gold */
@@ -34,7 +34,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Changed to flex-start */
+            justify-content: center;
             min-height: 100vh;
             margin: 0;
             padding: 30px 20px;
@@ -42,10 +42,6 @@
             overflow-x: hidden;
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
-        }
-
-        body.modal-open {
-            overflow: hidden; /* Prevent scrolling when modal is open */
         }
 
         .container {
@@ -384,7 +380,9 @@
             z-index: 10;
         }
         .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.1) rotate(5deg); opacity: 1; }
-        .edit-feedback-btn[disabled] { display: none; } /* Only hide, not show if IP doesn't match */
+        /* .edit-feedback-btn[disabled] { display: none; } REMOVED FOR DYNAMIC HIDE/SHOW */
+        .edit-feedback-btn.hidden { display: none; } /* NEW CLASS */
+
 
         .edited-tag {
             background-color: #f0ad4e;
@@ -399,8 +397,9 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
+        /* Custom Modal Styles - CENTRALIZED */
         #custom-modal-overlay { 
-            position: fixed; 
+            position: fixed; /* Changed to fixed */
             top: 0;
             left: 0;
             width: 100%;
@@ -409,7 +408,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; 
+            z-index: 100; 
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease-out, visibility 0s linear 0.4s; 
@@ -436,8 +435,10 @@
             width: auto; 
             min-width: 300px; 
             position: relative; 
-            z-index: 1001; 
+            z-index: 101; 
             will-change: transform, opacity;
+            top: 0; left: 0; right: 0; bottom: 0; /* Ensures it stays centered visually */
+            margin: auto;
         }
 
         #custom-modal-overlay.show .custom-modal {
@@ -590,7 +591,7 @@
     <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
         <h2>RECENT FEEDBACKS</h2>
-    </div>
+        </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
@@ -621,6 +622,51 @@
             const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; 
             const API_URL = `${BASE_API_URL}/api/feedback`;
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
+            const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
+
+            // Socket.IO client setup
+            const socket = io(BASE_API_URL); // Connect to your server
+
+            socket.on('connect', () => {
+                console.log('Connected to Socket.IO server from Frontend!');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from Socket.IO server!');
+            });
+
+            socket.on('newFeedback', (newFb) => {
+                console.log('Received new feedback via socket:', newFb);
+                addFeedbackToDOM(newFb._id, newFb.name, newFb.feedback, newFb.rating, newFb.replies, newFb.avatarUrl, newFb.timestamp, newFb.userIp, newFb.isEdited, 0); // Add at the top
+                updateAverageRatingDisplay();
+            });
+
+            socket.on('updatedFeedback', (updatedFb) => {
+                console.log('Received updated feedback via socket:', updatedFb);
+                const existingItem = document.querySelector(`.feedback-item[data-feedback-id="${updatedFb._id}"]`);
+                if (existingItem) {
+                    // Remove old item and add new one to ensure correct order/animation
+                    existingItem.remove();
+                    addFeedbackToDOM(updatedFb._id, updatedFb.name, updatedFb.feedback, updatedFb.rating, updatedFb.replies, updatedFb.avatarUrl, updatedFb.timestamp, updatedFb.userIp, updatedFb.isEdited, 0); // Add at the top
+                    updateAverageRatingDisplay();
+                }
+            });
+
+            socket.on('deletedFeedback', (data) => {
+                console.log('Received deleted feedback via socket:', data.feedbackId);
+                const itemToRemove = document.querySelector(`.feedback-item[data-feedback-id="${data.feedbackId}"]`);
+                if (itemToRemove) {
+                    itemToRemove.remove();
+                    updateAverageRatingDisplay();
+                }
+            });
+
+            socket.on('allFeedbacksUpdate', (allFeedbacks) => {
+                console.log('Received all feedbacks update via socket:', allFeedbacks);
+                // Re-render the entire list to ensure consistency, especially after avatar changes
+                renderFeedbacks(allFeedbacks);
+            });
+
 
             async function getClientIp() {
                 try {
@@ -690,11 +736,8 @@
             function setFormContentVisibility(visible) {
                 if(formContainer) {
                     Array.from(formContainer.children).forEach(child => {
-                        // Exclude modal overlay from visibility changes
                         if(child.id !== 'custom-modal-overlay') { 
                             child.style.visibility = visible ? 'visible' : 'hidden';
-                            // Also adjust pointer events for interactions
-                            child.style.pointerEvents = visible ? 'auto' : 'none';
                         }
                     });
                 }
@@ -706,7 +749,6 @@
                     alert(`${title}\n${message}`);
                     return;
                 }
-                document.body.classList.add('modal-open'); /* Add class to body to prevent scroll */
                 setFormContentVisibility(false); 
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
@@ -735,7 +777,6 @@
             if(modalCloseBtn) { 
                 modalCloseBtn.addEventListener('click', () => {
                     if(customModalOverlay) customModalOverlay.classList.remove('show');
-                    document.body.classList.remove('modal-open'); /* Remove class from body */
                     setFormContentVisibility(true); 
                     if (isEditing) { 
                          if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -743,71 +784,67 @@
                 });
             }
 
-            async function fetchFeedbacks() {
+            // Function to generate DiceBear Avatar URL (client side)
+            function getDiceBearAvatarUrlClient(name) {
+                const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
+                const seed = encodeURIComponent(seedName); // Use the provided name as a base seed
+                return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
+            }
+
+            async function updateAverageRatingDisplay() {
+                try {
+                    const res = await fetch(FETCH_API_URL);
+                    if (!res.ok) throw new Error(`FAILED TO LOAD FEEDBACKS FOR AVG (STATUS: ${res.status}).`);
+                    const data = await res.json();
+                    
+                    const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                    const averageRating = (data.length > 0) ? (totalRatings / data.length) : 0; 
+
+                    let starsOutput = '';
+                    if (averageRating <= 0) {
+                        starsOutput = '☆☆☆☆☆';
+                    } else {
+                        const fullStars = Math.floor(averageRating);
+                        starsOutput = '★'.repeat(fullStars);
+                        starsOutput += '☆'.repeat(5 - fullStars);
+                    }
+                    averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${averageRating.toFixed(1)}</div><div class="average-stars">${starsOutput}</div><div class="total-feedbacks-count">(${data.length} FEEDBACKS)</div></div>`;
+                } catch (err) {
+                    console.error('FETCH AVERAGE RATING ERROR:', err);
+                }
+            }
+
+
+            function renderFeedbacks(feedbacks) {
+                const h2Title = feedbackListContainer.querySelector('h2');
+                feedbackListContainer.innerHTML = ''; 
+                feedbackListContainer.appendChild(averageRatingDisplay); 
+                if(h2Title) feedbackListContainer.appendChild(h2Title); 
+
+                if (feedbacks.length === 0) {
+                    const msg = document.createElement('p');
+                    msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
+                    msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
+                    feedbackListContainer.append(msg);
+                } else {
+                    feedbacks.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
+                }
+                updateAverageRatingDisplay();
+            }
+
+
+            async function fetchAndRenderAllFeedbacks() {
                 try {
                     const res = await fetch(FETCH_API_URL);
                     if (!res.ok) throw new Error(`FAILED TO LOAD FEEDBACKS (STATUS: ${res.status}). SERVER SAID: ${await res.text()}`);
                     const data = await res.json();
-                    
-                    // Clear only feedback items, preserve average rating and title
-                    const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
-                    existingFeedbackItems.forEach(item => item.remove());
-
-                    // Re-append h2 title if it was removed or if it's missing (ensure correct order)
-                    let h2Title = feedbackListContainer.querySelector('h2');
-                    if (!h2Title) {
-                        h2Title = document.createElement('h2');
-                        h2Title.textContent = 'RECENT FEEDBACKS';
-                        // Append it before other feedbacks
-                        feedbackListContainer.appendChild(h2Title); 
-                    } else {
-                        // Move it to the correct position if it exists but is misplaced
-                        feedbackListContainer.appendChild(h2Title);
-                    }
-                    
-                    // Always append averageRatingDisplay at the top
-                    if (averageRatingDisplay.parentNode !== feedbackListContainer || feedbackListContainer.firstChild !== averageRatingDisplay) {
-                        feedbackListContainer.prepend(averageRatingDisplay);
-                    }
-
-                    if (data.length === 0) {
-                        const existingNoFeedbackMsg = feedbackListContainer.querySelector('.no-feedback-message');
-                        if (!existingNoFeedbackMsg) { // Only add if not already present
-                            const msg = document.createElement('p');
-                            msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
-                            msg.className = 'no-feedback-message';
-                            msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
-                            feedbackListContainer.append(msg);
-                        }
-                        updateAverageRating(0, 0); 
-                    } else {
-                        const noFeedbackMsg = feedbackListContainer.querySelector('.no-feedback-message');
-                        if (noFeedbackMsg) noFeedbackMsg.remove(); // Remove if feedbacks exist
-
-                        const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length);
-                        updateAverageRating(averageRating, data.length);
-                        data.forEach((fb, index) => addFeedbackToDOM(fb._id, fb.name, fb.feedback, fb.rating, fb.replies, fb.avatarUrl, fb.timestamp, fb.userIp, fb.isEdited, index));
-                    }
+                    renderFeedbacks(data);
                 } catch (err) {
                     console.error('FETCH FEEDBACKS ERROR:', err);
                     showCustomModal('error', 'OH NO!', `FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
                 }
             }
 
-
-            function updateAverageRating(avgRatingNum, totalCount) {
-                const avgRating = parseFloat(avgRatingNum);
-                let starsOutput = '';
-                if (isNaN(avgRating) || avgRating <= 0) {
-                    starsOutput = '☆☆☆☆☆';
-                } else {
-                    const fullStars = Math.floor(avgRating);
-                    starsOutput = '★'.repeat(fullStars);
-                    starsOutput += '☆'.repeat(5 - fullStars);
-                }
-                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${isNaN(avgRating) ? '0.0' : avgRating.toFixed(1)}</div><div class="average-stars">${starsOutput}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
-            }
 
             async function handleOriginalSubmit() { 
                 pulseButton();
@@ -824,7 +861,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK SUBMITTED!', 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!');
                     resetForm(); 
-                    await fetchFeedbacks(); // Live sync after submission
+                    // Feedbacks will be updated via Socket.IO
                 } catch (err) { 
                     console.error('SUBMIT FEEDBACK ERROR:', err);
                     showCustomModal('error', 'SUBMISSION FAILED!', `SUBMIT NAHI HO PAYA BHAI! PROBLEM: ${err.message}`); 
@@ -845,7 +882,7 @@
                     if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`); }
                     showCustomModal('success', 'FEEDBACK UPDATED!', 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!');
                     resetForm();
-                    await fetchFeedbacks(); // Live sync after update
+                    // Feedbacks will be updated via Socket.IO
                 } catch (err) {
                     console.error('UPDATE FEEDBACK ERROR:', err);
                     showCustomModal('error', 'UPDATE FAILED!', `UPDATE NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
@@ -861,10 +898,8 @@
                 currentSelectedRating = 0;
                 updateStarVisuals(0);
                 submitButton.textContent = 'SUBMIT FEEDBACK';
-                // Remove all previous event listeners to avoid duplicates
                 submitButton.removeEventListener('click', handleUpdateSubmit);
                 submitButton.removeEventListener('click', handleOriginalSubmit); 
-                // Add the original submit listener back
                 submitButton.addEventListener('click', handleOriginalSubmit);
                 isEditing = false;
                 currentEditFeedbackId = null;
@@ -872,6 +907,11 @@
             }
 
             function addFeedbackToDOM(feedbackId, name, feedback, rating, repliesArray, avatarUrlFromServer, timestamp, feedbackIp, isEdited, index) {
+                // Check if feedback already exists to prevent duplicates on socket updates
+                if (document.querySelector(`.feedback-item[data-feedback-id="${feedbackId}"]`)) {
+                    return; 
+                }
+
                 const item = document.createElement('div'); 
                 item.className = 'feedback-item';
                 item.setAttribute('data-feedback-id', feedbackId);
@@ -879,7 +919,7 @@
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
-                avatarImg.src = avatarUrlFromServer || `https://i.pravatar.cc/60?u=${encodeURIComponent(name ? name.toLowerCase() : 'anonymous')}`;
+                avatarImg.src = avatarUrlFromServer || getDiceBearAvatarUrlClient(name); // Use client-side generator as fallback
                 avatarImg.alt = `${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}'s Avatar`;
                 avatarImg.onerror = function() { this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'}`; this.alt = name && name.length > 0 ? name.charAt(0).toUpperCase() : 'X'; };
 
@@ -902,14 +942,11 @@
                 editButton.className = 'edit-feedback-btn';
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
-                // Enable/disable button based on userIpAddress (client side) and feedbackIp (from server)
-                // This check is now robust as userIpAddress is fetched async on load.
-                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp) { 
-                    editButton.removeAttribute('disabled');
-                    editButton.style.display = 'block'; // Make sure it's visible if enabled
+                // Initially hide if not eligible or if already edited (as per new req)
+                if (userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === feedbackIp && !isEdited) { 
+                    editButton.classList.remove('hidden'); 
                 } else { 
-                    editButton.setAttribute('disabled', 'true');
-                    editButton.style.display = 'none'; // Hide if disabled
+                    editButton.classList.add('hidden'); 
                 }
                 
                 editButton.addEventListener('click', (event) => {
@@ -922,9 +959,7 @@
                     ratingInput.value = rating;
                     updateStarVisuals(rating);
                     submitButton.textContent = 'UPDATE FEEDBACK';
-                    // Remove all previous event listeners before adding the new one
                     submitButton.removeEventListener('click', handleOriginalSubmit);
-                    submitButton.removeEventListener('click', handleUpdateSubmit); // Ensure no old update listener is left
                     submitButton.addEventListener('click', handleUpdateSubmit);
                     isEditing = true;
                     currentEditFeedbackId = feedbackId;
@@ -941,7 +976,7 @@
                         adminReplyDiv.className = 'admin-reply';
                         const adminReplyAvatar = document.createElement('img');
                         adminReplyAvatar.className = 'admin-reply-avatar';
-                        adminReplyAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+                        adminReplyAvatar.src = nobitaAvatarUrl; // Use specific Nobita avatar
                         adminReplyAvatar.alt = 'Nobita\'s Avatar';
                         const adminReplyContent = document.createElement('div');
                         adminReplyContent.className = 'admin-reply-content';
@@ -951,10 +986,25 @@
                     }
                 }
                 item.append(avatarImg, feedbackDetailsDiv);
-                feedbackListContainer.appendChild(item);
+                
+                // Prepend new item to the list for "live" effect
+                const existingFeedbacks = feedbackListContainer.querySelectorAll('.feedback-item');
+                if (existingFeedbacks.length > 0) {
+                    feedbackListContainer.insertBefore(item, existingFeedbacks[0]);
+                } else {
+                    feedbackListContainer.appendChild(item);
+                }
+
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
+
+                // Remove "no feedback" message if present
+                const noFeedbackMessage = feedbackListContainer.querySelector('p[style*="ABHI TAK KOI FEEDBACK"]');
+                if (noFeedbackMessage) {
+                    noFeedbackMessage.remove();
+                }
             }
-            fetchFeedbacks(); // Initial fetch on load
+            
+            fetchAndRenderAllFeedbacks(); // Initial fetch
         });
     </script>
 </body>
