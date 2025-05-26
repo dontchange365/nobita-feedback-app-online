@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,8 +17,9 @@
             --card-bg-popup: #272c3a;
             --card-bg: rgba(44, 62, 80, 0.85);
             --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0,0,0,0.5);
+            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
             --success-color: #28a745; --error-color: #dc3545; --info-color: var(--accent-color); --confirm-color: #fd7e14;
+            --google-blue: #4285F4; /* Added for consistency */
         }
         html { scroll-behavior: smooth; }
         body {
@@ -60,7 +62,6 @@
             transition: opacity 0.25s ease-out;
         }
         .auth-modal-overlay.active { display: flex; opacity: 1; pointer-events: all; }
-        /* ... (Baaki Auth Modal CSS pehle jaisi, ensure no issues) ... */
         .auth-modal-content { background: var(--bg-gradient-end); border: 1px solid var(--card-border); border-radius: 10px; padding: 25px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light); transform: scale(0.95); opacity:0; transition: transform 0.25s ease-out, opacity 0.2s ease-out;}
         .auth-modal-overlay.active .auth-modal-content { transform: scale(1); opacity: 1; }
         .auth-modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.6em; font-family: 'Poppins', sans-serif; font-weight:600; color: var(--secondary-color); text-align: center; }
@@ -91,7 +92,6 @@
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
         .user-profile-menu.active { display: block; opacity: 1; transform: translateY(0) scale(1); pointer-events:all; }
-        /* ... (User Menu content styles pehle jaise) ... */
         .user-profile-menu .menu-content { padding: 0; }
         .user-profile-menu .menu-header {display: flex; flex-direction: column; align-items: center; padding: 20px 15px; border-bottom: 1px solid var(--card-border);}
         .user-profile-menu .menu-header img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: 2px solid var(--secondary-color);}
@@ -100,39 +100,16 @@
         .user-profile-menu ul li a {color: var(--text-color-light); text-decoration: none; font-size: 0.95em; display: block; padding: 10px 20px; border-radius: 0; transition: background-color 0.2s, color 0.2s;}
         .user-profile-menu ul li a:hover { background: var(--primary-color); color: var(--secondary-color);}
         .user-profile-menu ul li a .fas { margin-right: 10px; width: 16px; text-align: center;}
-
-        /* New styles for file upload in menu */
-        .user-profile-menu ul li .file-upload-wrapper {
-            display: flex; flex-direction: column; align-items: flex-start; padding: 10px 20px;
-            border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;
+        .user-profile-menu ul li label {
+            color: var(--text-color-light); text-decoration: none; font-size: 0.95em; display: flex; align-items: center; padding: 10px 20px; border-radius: 0; transition: background-color 0.2s, color 0.2s; cursor: pointer;
         }
-        .user-profile-menu ul li .file-upload-wrapper label {
-            display: block; font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px; font-weight: 500;
+        .user-profile-menu ul li label:hover {
+            background: var(--primary-color); color: var(--secondary-color);
         }
-        .user-profile-menu ul li .file-upload-wrapper input[type="file"] {
-            width: 100%; border: 1px solid var(--card-border); border-radius: 6px;
-            background: var(--input-bg); color: var(--text-color-light); font-size: 0.85em;
-            padding: 8px 10px; box-sizing: border-box; margin-bottom: 10px;
+        .user-profile-menu ul li label .fas { margin-right: 10px; width: 16px; text-align: center;}
+        .user-profile-menu ul li label input[type="file"] {
+            display: none;
         }
-        .user-profile-menu ul li .file-upload-wrapper input[type="file"]::-webkit-file-upload-button {
-            background: var(--accent-color); color: #fff; border: none; padding: 6px 12px;
-            border-radius: 5px; cursor: pointer; transition: background-color 0.2s; margin-right: 10px;
-        }
-        .user-profile-menu ul li .file-upload-wrapper input[type="file"]::-webkit-file-upload-button:hover {
-            background: #3578e0;
-        }
-        .user-profile-menu ul li .file-upload-wrapper button {
-            width: 100%; padding: 8px 15px; border: none; border-radius: 6px;
-            background: var(--primary-color); color: var(--secondary-color); font-weight: 500;
-            cursor: pointer; transition: background-color 0.2s, transform 0.1s; font-size: 0.9em;
-        }
-        .user-profile-menu ul li .file-upload-wrapper button:hover {
-            background: #5a0b94; transform: translateY(-1px);
-        }
-        .user-profile-menu ul li .file-upload-wrapper button:disabled {
-            background: #555; cursor: not-allowed; opacity: 0.7;
-        }
-
 
         /* --- STYLISH UNIVERSAL POPUP --- */
         .stylish-popup-overlay {
@@ -165,7 +142,6 @@
             color: var(--text-color-light);
         }
         .stylish-popup-overlay.active .stylish-popup-card { transform: translateY(0) scale(1); opacity: 1; }
-        /* ... (Baaki stylish popup CSS (icon, title, message, buttons) pehle jaisi) ... */
         .stylish-popup-card .popup-icon-area { font-size: 2.8em; margin-bottom: 18px; line-height: 1; }
         .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
         .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
@@ -189,7 +165,6 @@
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
 
         .page-content-wrapper { width: 100%; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
-        /* ... (Baaki saare purane CSS styles jaise owner-info, main-container, feedback form, list, etc. waise hi rakhe hain, ensure no accidental deletions) ... */
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
@@ -244,8 +219,8 @@
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { /* ... (media queries pehle jaisi, ensure corner trigger styles are consistent) ... */ .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{width:45px; padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
-        @media (max-width: 480px) { /* ... (media queries pehle jaisi) ... */ #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{width:45px; padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
+        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
     </style>
 </head>
 <body>
@@ -303,12 +278,13 @@
           <span class="username" id="menu-username">User Name</span>
         </div>
         <ul>
-          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
-          <li class="file-upload-wrapper">
-            <label for="avatar-upload-input">Change Profile Picture:</label>
-            <input type="file" id="avatar-upload-input" accept="image/*">
-            <button id="upload-avatar-btn">Upload Avatar</button>
+          <li>
+            <label for="avatar-upload-input">
+                <i class="fas fa-camera"></i> Upload Avatar
+                <input type="file" id="avatar-upload-input" accept="image/*">
+            </label>
           </li>
+          <li><a href="#" id="menu-edit-profile"><i class="fas fa-user-edit"></i> Edit Profile</a></li>
           <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
@@ -386,15 +362,13 @@
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
-            const menuViewProfileLink = document.getElementById('menu-view-profile');
+            const menuEditProfileLink = document.getElementById('menu-edit-profile'); // Changed from View Profile
             const menuLogoutLink = document.getElementById('menu-logout');
             const avatarUploadInput = document.getElementById('avatar-upload-input'); // New
-            const uploadAvatarBtn = document.getElementById('upload-avatar-btn');     // New
-
 
             // Universal Stylish Popup Elements
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-            const stylishPopupCard = document.getElementById('stylishPopupCard'); // For overlay click check
+            const stylishPopupCard = document.getElementById('stylishPopupCard');
             const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
             const stylishPopupIcon = document.getElementById('stylishPopupIcon');
             const stylishPopupTitle = document.getElementById('stylishPopupTitle');
@@ -428,11 +402,11 @@
             const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
-            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint
+            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
-                console.log("[showStylishPopup] Called. Type:", type, "Title:", title); // DEBUG log
+                console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
                 if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
                     console.error("Stylish popup core HTML elements not found!");
                     alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`);
@@ -448,7 +422,7 @@
                 }
 
                 stylishPopupTitle.textContent = title;
-                stylishPopupMessage.innerHTML = `<p>${message}</p>`; // Ensure message is wrapped in p for styling
+                stylishPopupMessage.innerHTML = `<p>${message}</p>`;
 
                 if (options.formHTML) {
                     stylishPopupFormArea.innerHTML = options.formHTML;
@@ -474,11 +448,10 @@
                     confirmBtn.className = 'popup-button primary';
                     confirmBtn.id = 'stylishPopupPrimaryActionBtn';
                     confirmBtn.onclick = () => {
-                        // Let onConfirm decide if popup should be closed or if it handles it
                         if (options.onConfirm) {
                             options.onConfirm();
                         } else {
-                           stylishPopupOverlay.classList.remove('active'); // Default close if no onConfirm
+                           stylishPopupOverlay.classList.remove('active');
                         }
                     };
                     stylishPopupButtonContainer.appendChild(confirmBtn);
@@ -494,7 +467,7 @@
                 }
 
                 stylishPopupOverlay.classList.add('active');
-                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display); // DEBUG log
+                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
             }
 
             if(closeStylishPopupBtn) {
@@ -540,20 +513,28 @@
                 }
             });
 
-            async function apiRequest(url, method, body = null, isFormData = false) { // Added isFormData parameter
+            async function apiRequest(url, method, body = null, isFormData = false) {
                 const headers = {};
-                if (!isFormData) {
-                    headers['Content-Type'] = 'application/json';
-                }
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                let reqOptions = { method, headers };
+                if (body) {
+                    if (isFormData) {
+                        delete headers['Content-Type']; // FormData sets its own Content-Type
+                        reqOptions.body = body;
+                    } else {
+                        headers['Content-Type'] = 'application/json';
+                        reqOptions.body = JSON.stringify(body);
+                    }
+                }
+
                 let submitBtn;
                 if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
                 if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-                if(url.includes('/api/user/upload-avatar')) submitBtn = uploadAvatarBtn; // For avatar upload
 
                 try {
-                    const response = await fetch(url, { method, headers: isFormData ? headers : headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) }); // Conditionally stringify body
+                    const response = await fetch(url, reqOptions);
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || `Server error (${response.status})`);
                     return data;
@@ -566,7 +547,6 @@
                         submitBtn.disabled = false;
                         if(url.includes('login')) submitBtn.textContent = "Login";
                         else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
-                        else if(url.includes('upload-avatar')) submitBtn.textContent = "Upload Avatar"; // For avatar upload
                     }
                     throw error;
                 }
@@ -641,7 +621,6 @@
                             onConfirm: async () => {
                                 const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                                 if (!forgotEmailVal) {
-                                    // Update message in current popup
                                     stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' +
                                                                     'Enter your registered email address. We will send you a link to reset your password.';
                                     document.getElementById('popup-forgot-email').focus();
@@ -654,11 +633,7 @@
                                     stylishPopupOverlay.classList.remove('active');
                                     showStylishPopup('success', 'Link Sent!', data.message);
                                 } catch (error) {
-                                    // Error already shown by apiRequest, just re-enable button if it exists
                                     if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
-                                    // Optionally, to keep the forgot password dialog open on API error:
-                                    // Do not call stylishPopupOverlay.classList.remove('active');
-                                    // showStyledPopup was already called by apiRequest for the error.
                                 }
                             }
                         }
@@ -701,7 +676,6 @@
                 if (currentUser) {
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
                     if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
-                    // Use currentUser.avatarUrl if available, otherwise fallback to DiceBear
                     if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
@@ -711,6 +685,14 @@
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
                     if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+
+                    // Hide avatar upload for Google users as they cannot change it here
+                    if (avatarUploadInput && currentUser.loginMethod === 'google') {
+                        avatarUploadInput.parentElement.style.display = 'none';
+                    } else if (avatarUploadInput) {
+                        avatarUploadInput.parentElement.style.display = 'flex'; // Show for email users
+                    }
+
                 }
             }
 
@@ -726,6 +708,7 @@
                     nameInputInFeedbackForm.disabled = false;
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
+                if (avatarUploadInput) avatarUploadInput.parentElement.style.display = 'none'; // Hide upload for logged out users
             }
 
             if(menuLogoutLink) {
@@ -744,57 +727,72 @@
                     });
                 });
             }
-            if(menuViewProfileLink) {
-                menuViewProfileLink.addEventListener('click', (e) => {
+
+            if(menuEditProfileLink) {
+                menuEditProfileLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userMenu) userMenu.classList.remove('active');
-                    showStylishPopup('info', 'Profile Feature', 'Your profile editing section will be available here soon!');
+                    if (currentUser && currentUser.loginMethod === 'google') {
+                        showStylishPopup('info', 'Google Profile', 'You are logged in with Google. Your profile information is managed by your Google account.');
+                    } else {
+                        showStylishPopup('info', 'Profile Editing', 'Profile editing options (like changing name or password) will be available here soon for email-based accounts!');
+                    }
                 });
             }
 
-            // New: Avatar Upload Logic
-            if (uploadAvatarBtn) {
-                uploadAvatarBtn.addEventListener('click', async () => {
-                    if (!currentUser) {
-                        showStylishPopup('error', 'Login Required', 'Please login to upload a profile picture.');
-                        return;
-                    }
-                    const file = avatarUploadInput.files[0];
+            // New: Avatar Upload functionality
+            if (avatarUploadInput) {
+                avatarUploadInput.addEventListener('change', async (event) => {
+                    const file = event.target.files[0];
                     if (!file) {
-                        showStylishPopup('error', 'No File Selected', 'Please select an image file to upload.');
+                        showStylishPopup('warning', 'No File Selected', 'Please choose an image file to upload.');
                         return;
                     }
 
                     if (!file.type.startsWith('image/')) {
-                        showStylishPopup('error', 'Invalid File Type', 'Only image files are allowed (e.g., JPEG, PNG, GIF).');
+                        showStylishPopup('error', 'Invalid File Type', 'Please upload an image file (e.g., JPEG, PNG, GIF).');
                         return;
                     }
 
                     if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                        showStylishPopup('error', 'File Too Large', 'Image size cannot exceed 2MB.');
+                        showStylishPopup('error', 'File Too Large', 'Please upload an image smaller than 2MB.');
+                        return;
+                    }
+
+                    if (!currentUser || currentUser.loginMethod === 'google') {
+                        showStylishPopup('error', 'Permission Denied', 'Avatar upload is only for email-based accounts.');
                         return;
                     }
 
                     const formData = new FormData();
                     formData.append('avatar', file);
 
-                    uploadAvatarBtn.disabled = true;
-                    uploadAvatarBtn.textContent = 'Uploading...';
+                    // Show a confirmation popup
+                    showStylishPopup('confirm', 'Confirm Avatar Upload', `Are you sure you want to upload "${file.name}" as your new avatar?`, {
+                        isConfirm: true,
+                        confirmText: 'Upload',
+                        cancelText: 'Cancel',
+                        onConfirm: async () => {
+                            const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                            if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
+                            try {
+                                const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true); // true for FormData
+                                currentUser.avatarUrl = data.newAvatarUrl; // Update current user object
+                                updateUIAfterLogin(); // Re-render avatar in UI
+                                await fetchFeedbacks(); // Refresh feedbacks to show updated avatar in old posts
 
-                    try {
-                        const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true); // Send as FormData
-                        showStylishPopup('success', 'Avatar Updated!', data.message);
-                        currentUser.avatarUrl = data.newAvatarUrl; // Update currentUser object
-                        updateUIAfterLogin(); // Update UI with new avatar
-                        avatarUploadInput.value = ''; // Clear file input
-                        if (userMenu) userMenu.classList.remove('active'); // Close menu after upload
-                        await fetchFeedbacks(); // Refresh feedbacks to show updated avatar if user has posted
-                    } catch (error) {
-                        // Error is already shown by apiRequest
-                    } finally {
-                        uploadAvatarBtn.disabled = false;
-                        uploadAvatarBtn.textContent = 'Upload Avatar';
-                    }
+                                showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been successfully uploaded and updated across your feedbacks!');
+                            } catch (error) {
+                                // Error handling already in apiRequest
+                            } finally {
+                                if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Upload";}
+                                event.target.value = ''; // Clear file input
+                            }
+                        },
+                        onCancel: () => {
+                            event.target.value = ''; // Clear file input if cancelled
+                        }
+                    });
                 });
             }
 
@@ -807,7 +805,7 @@
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
 
             async function fetchFeedbacks() {
-                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
+                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* handled */ }
@@ -845,7 +843,11 @@
             }
             function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
-                const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'); avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
+                const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
+                // Use fbData.avatarUrl directly for feedback items as it holds the actual avatar for that specific feedback
+                avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
+                avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
+                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong');
                 let nameContent = fbData.name; let userTypeTag = '';
                 if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
@@ -858,11 +860,12 @@
                 try {
                     timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
                 } catch(e) {
-                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
+                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
                 }
 
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
                 const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Edit this feedback';
+                // Only show edit button if current user is logged in AND is the author of the feedback
                 editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
