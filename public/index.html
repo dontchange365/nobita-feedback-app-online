@@ -106,7 +106,6 @@
         .user-profile-menu ul li label:hover {
             background: var(--primary-color); color: var(--secondary-color);
         }
-        .user-profile-menu ul li label .fas { margin-right: 10px; width: 16px; text-align: center;}
         .user-profile-menu ul li label input[type="file"] {
             display: none;
         }
@@ -148,10 +147,11 @@
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-        .stylish-popup-card .popup-icon-area.profile { color: var(--primary-color); } /* New icon color for profile */
+        .stylish-popup-card .popup-icon-area.profile { color: var(--accent-color); } /* New color for profile */
+        .stylish-popup-card .popup-icon-area.change_password { color: var(--primary-color); } /* New color for password change */
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
-        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; position: relative;} /* Added position relative */
+        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
         .stylish-popup-card .popup-form-input-group label { display:block; margin-bottom:5px; font-size:0.9em;}
         .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
         .stylish-popup-card .popup-form-input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
@@ -164,19 +164,6 @@
         .stylish-popup-card .popup-button.secondary:hover { background-color: #495057; }
         .stylish-popup-card .close-popup-btn-styled { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s; padding: 5px; line-height: 1; }
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
-        .password-toggle-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(5px); /* Adjusted to align with input text vertically */
-            cursor: pointer;
-            color: #888;
-            font-size: 1em;
-            transition: color 0.2s;
-        }
-        .password-toggle-icon:hover {
-            color: var(--secondary-color);
-        }
 
         .page-content-wrapper { width: 100%; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
@@ -411,7 +398,7 @@
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
             const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
             const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`; // New API endpoint for profile update
-            const API_RESET_PASSWORD_URL = `${BASE_API_URL}/api/auth/reset-password`; // API endpoint for password reset
+            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New API endpoint for password change
 
 
             // --- Stylish Popup Functionality ---
@@ -425,7 +412,16 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>'};
+                const iconsFA = {
+                    'success': '<i class="fas fa-check-circle"></i>',
+                    'error': '<i class="fas fa-times-circle"></i>',
+                    'info': '<i class="fas fa-info-circle"></i>',
+                    'warning':'<i class="fas fa-exclamation-triangle"></i>',
+                    'confirm': '<i class="fas fa-question-circle"></i>',
+                    'forgot_password': '<i class="fas fa-key"></i>',
+                    'profile': '<i class="fas fa-user-circle"></i>',
+                    'change_password': '<i class="fas fa-fingerprint"></i>' // New icon for password change
+                };
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
@@ -750,6 +746,7 @@
                     <p><strong>Name:</strong> ${currentUser.name}</p>
                     <p><strong>Email:</strong> ${currentUser.email}</p>
                     <p><strong>Login Method:</strong> ${currentUser.loginMethod}</p>
+                    ${currentUser.loginMethod === 'email' ? `<button id="change-password-btn" class="popup-button primary" style="width:100%; margin-top:20px;">Change Password</button>` : ''}
                 `;
 
                 showStylishPopup('profile', 'Your Profile Details', profileDetailHTML, {
@@ -763,6 +760,16 @@
                         // Popup will close by default
                     }
                 });
+
+                if (currentUser.loginMethod === 'email') {
+                    const changePasswordBtn = document.getElementById('change-password-btn');
+                    if (changePasswordBtn) {
+                        changePasswordBtn.addEventListener('click', () => {
+                            stylishPopupOverlay.classList.remove('active'); // Close current popup
+                            showChangePasswordPopup();
+                        });
+                    }
+                }
             }
 
             function showEditProfilePopup() {
@@ -776,52 +783,22 @@
                         <input type="file" id="popup-avatar-file" accept="image/*">
                         <button type="button" id="upload-avatar-btn" class="popup-button primary" style="width:100%; margin-top:10px;">Upload Photo</button>
                     </div>
-                    ${currentUser.loginMethod === 'email' ? `
-                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:25px 0;">
-                    <h3 style="color:var(--accent-color); font-size:1.2em; margin-bottom:15px;">Change Password</h3>
-                    <div class="popup-form-input-group">
-                        <label for="popup-current-password">Current Password:</label>
-                        <input type="password" id="popup-current-password" required>
-                        <span class="password-toggle-icon" onclick="togglePasswordVisibility('popup-current-password', this)"><i class="fas fa-eye"></i></span>
-                    </div>
-                    <div class="popup-form-input-group">
-                        <label for="popup-new-password">New Password (min. 6 characters):</label>
-                        <input type="password" id="popup-new-password" required minlength="6">
-                        <span class="password-toggle-icon" onclick="togglePasswordVisibility('popup-new-password', this)"><i class="fas fa-eye"></i></span>
-                    </div>
-                    <div class="popup-form-input-group">
-                        <label for="popup-confirm-new-password">Confirm New Password:</label>
-                        <input type="password" id="popup-confirm-new-password" required minlength="6">
-                        <span class="password-toggle-icon" onclick="togglePasswordVisibility('popup-confirm-new-password', this)"><i class="fas fa-eye"></i></span>
-                    </div>
-                    <button type="button" id="change-password-btn" class="popup-button primary" style="width:100%; margin-top:10px; background-color:#6a0dad;">Change Password</button>
-                    ` : ''}
                 `;
 
                 showStylishPopup('profile', 'Edit Your Profile', '', {
                     formHTML: editProfileHTML,
                     isConfirm: true,
-                    confirmText: 'Save Name Changes',
+                    confirmText: 'Save Changes',
                     cancelText: 'Cancel',
                     onConfirm: async () => {
                         const newName = document.getElementById('popup-edit-name').value.trim();
                         if (!newName) {
-                            showStylishPopup('error', 'Name Required', 'Name cannot be empty.').then(() => {
-                                showEditProfilePopup(); // Re-open the edit profile popup
-                            });
+                            showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
                             return;
                         }
+                        // Check if name actually changed
                         if (newName === currentUser.name) {
-                            showStylishPopup('info', 'No Changes', 'No changes detected in name.').then(() => {
-                                showStylishPopup('profile', 'Edit Your Profile', '', {
-                                    formHTML: editProfileHTML, // Re-inject form if no changes to name
-                                    isConfirm: true,
-                                    confirmText: 'Save Name Changes',
-                                    cancelText: 'Cancel',
-                                    onConfirm: async () => {}, // empty handler to keep original popup state
-                                    onCancel: () => {}
-                                });
-                            });
+                            showStylishPopup('info', 'No Changes', 'No changes detected in name. Please upload an avatar or change name.');
                             return;
                         }
 
@@ -833,12 +810,12 @@
                             currentUser.name = data.user.name; // Update current user name
                             localStorage.setItem('authToken', data.token); // Update token if it was re-issued
                             updateUIAfterLogin(); // Re-render UI with new name
-                            await fetchFeedbacks(); // Refresh feedbacks if needed
+                            await fetchFeedbacks(); // Refresh feedbacks to show updated name
                             showStylishPopup('success', 'Profile Updated!', 'Your name has been updated.');
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Name Changes";} // Re-enable save button
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
                         }
                     },
                     onCancel: () => {
@@ -848,7 +825,6 @@
 
                 const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
                 const popupAvatarFile = document.getElementById('popup-avatar-file');
-                const changePasswordBtn = document.getElementById('change-password-btn');
 
                 if (uploadAvatarBtn && popupAvatarFile) {
                     uploadAvatarBtn.addEventListener('click', async () => {
@@ -875,7 +851,6 @@
                         formData.append('avatar', file);
 
                         const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                        const originalBtnText = primaryBtn.textContent;
                         if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
 
                         try {
@@ -888,14 +863,35 @@
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = originalBtnText;} // Re-enable save button
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
                             popupAvatarFile.value = ''; // Clear file input
                         }
                     });
                 }
+            }
 
-                if (changePasswordBtn) {
-                    changePasswordBtn.addEventListener('click', async () => {
+            function showChangePasswordPopup() {
+                const changePasswordHTML = `
+                    <div class="popup-form-input-group">
+                        <label for="popup-current-password">Current Password:</label>
+                        <input type="password" id="popup-current-password" required>
+                    </div>
+                    <div class="popup-form-input-group">
+                        <label for="popup-new-password">New Password (min. 6 characters):</label>
+                        <input type="password" id="popup-new-password" required minlength="6">
+                    </div>
+                    <div class="popup-form-input-group">
+                        <label for="popup-confirm-new-password">Confirm New Password:</label>
+                        <input type="password" id="popup-confirm-new-password" required minlength="6">
+                    </div>
+                `;
+
+                showStylishPopup('change_password', 'Change Password', '', {
+                    formHTML: changePasswordHTML,
+                    isConfirm: true,
+                    confirmText: 'Change Password',
+                    cancelText: 'Cancel',
+                    onConfirm: async () => {
                         const currentPassword = document.getElementById('popup-current-password').value;
                         const newPassword = document.getElementById('popup-new-password').value;
                         const confirmNewPassword = document.getElementById('popup-confirm-new-password').value;
@@ -913,79 +909,29 @@
                             return;
                         }
 
-                        const btn = document.getElementById('change-password-btn');
-                        btn.disabled = true;
-                        btn.textContent = 'Changing...';
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Changing...";}
 
                         try {
-                            // Reuse the reset-password API for changing password if current password is provided
-                            // This would ideally be a separate API for 'change-password' on the server
-                            // For this setup, we'll mimic a reset but pass current password for validation
-                            // NOTE: The server's /api/auth/reset-password endpoint requires a token,
-                            // which is designed for *forgot* password flow, not *change* password.
-                            // A dedicated /api/user/change-password endpoint would be better.
-                            // For now, we'll send current password with a dummy token or user ID,
-                            // assuming server validates current password and user ID from JWT for 'change password' logic.
-                            // Since the server.js currently uses /api/auth/reset-password only with a reset token,
-                            // we need a new route /api/auth/change-password or modify reset-password to accept current password.
-                            // Given the existing `reset-password.html` uses a `token` from URL params,
-                            // directly calling `reset-password` API here with just `password` and `confirmPassword` won't work
-                            // without a valid `token` that server expects.
-                            // The `API_UPDATE_PROFILE_URL` is for name/avatar.
-                            // Let's assume for this exercise, we will create a fake token just to call the existing API_RESET_PASSWORD_URL
-                            // and add current password for client-side validation logic.
-                            // ***THIS IS NOT SECURE FOR A REAL APPLICATION AND REQUIRES SERVER-SIDE IMPLEMENTATION.***
-                            // For a proper 'change password', a new API endpoint like `/api/auth/change-password`
-                            // should be created on the server that takes current_password, new_password, confirm_password
-                            // and validates current_password against the user's stored hashed password.
-
-                            // Simulating a call to a hypothetical change password API:
-                            // If `API_RESET_PASSWORD_URL` were designed for 'change password' flow.
-                            // For the purpose of this client-side demo, we'll try to use it with JWT token.
-                            // However, server's `reset-password` endpoint expects a *reset token*, not JWT.
-
-                            // Let's create a *mock* call for client-side demo purposes
-                            // If the server has a /api/user/change-password route that accepts:
-                            // Headers: Authorization: Bearer <JWT>
-                            // Body: { currentPassword, newPassword }
-                            const response = await apiRequest(`${BASE_API_URL}/api/auth/change-password`, 'POST', {
-                                currentPassword: currentPassword,
-                                newPassword: newPassword,
-                                confirmPassword: confirmNewPassword // Server might need this for double check
+                            const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', {
+                                currentPassword,
+                                newPassword,
+                                confirmNewPassword
                             });
-
-                            showStylishPopup('success', 'Password Changed!', response.message);
-                            document.getElementById('popup-current-password').value = '';
-                            document.getElementById('popup-new-password').value = '';
-                            document.getElementById('popup-confirm-new-password').value = '';
-                            // Auto-logout for security after password change, forcing re-login
-                            setTimeout(() => {
-                                localStorage.removeItem('authToken');
-                                currentUser = null;
-                                updateUIAfterLogout();
-                                showStylishPopup('info', 'Re-login Required', 'Please login with your new password.');
-                            }, 3000);
-
+                            showStylishPopup('success', 'Password Changed!', data.message);
+                            // Optionally, force re-login or update token if needed
+                            // localStorage.setItem('authToken', data.token); // If server sends new token
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            btn.disabled = false;
-                            btn.textContent = 'Change Password';
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Change Password";}
                         }
-                    });
-                }
+                    },
+                    onCancel: () => {
+                        // Popup will close by default
+                    }
+                });
             }
-
-            window.togglePasswordVisibility = function(id, iconElement) {
-                const input = document.getElementById(id);
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    iconElement.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                } else {
-                    input.type = 'password';
-                    iconElement.innerHTML = '<i class="fas fa-eye"></i>';
-                }
-            };
 
 
             if (mainTitle) {
@@ -996,10 +942,30 @@
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
 
             async function fetchFeedbacks() {
-                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
-                if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
-                } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
-                } catch (err) { /* handled */ }
+                 try {
+                     const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);
+                     const h2Title = feedbackListContainer.querySelector('h2');
+                     feedbackListContainer.innerHTML = ''; // Clear existing feedbacks
+                     feedbackListContainer.appendChild(averageRatingDisplayEl);
+                     if(h2Title) feedbackListContainer.appendChild(h2Title);
+
+                     if (data.length === 0) {
+                         const msgP = document.createElement('p');
+                         msgP.textContent = 'No feedback yet. Be the first one!';
+                         msgP.style.textAlign='center';
+                         msgP.style.padding='20px';
+                         feedbackListContainer.appendChild(msgP);
+                         updateAverageRating(0, 0);
+                     } else {
+                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                         const average = totalRatings / data.length;
+                         updateAverageRating(average, data.length);
+                         // Clear only existing feedback items before adding new ones
+                         const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
+                         existingFeedbackItems.forEach(item => item.remove());
+                         data.forEach((fb, index) => addFeedbackToDOM(fb, index));
+                     }
+                 } catch (err) { /* handled */ }
             }
             function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
 
