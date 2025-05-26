@@ -71,13 +71,13 @@ mongoose.connect(MONGODB_URI)
     process.exit(1); 
 });
 
-function getDiceBearAvatarUrl(name, randomSeed = '') { /* ... (pehle jaisa) ... */ 
+function getDiceBearAvatarUrl(name, randomSeed = '') { 
     const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
     const seed = encodeURIComponent(seedName + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
-const userSchema = new mongoose.Schema({ /* ... (pehle jaisa) ... */
+const userSchema = new mongoose.Schema({ 
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String }, 
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema({ /* ... (pehle jaisa) ... */
 });
 const User = mongoose.model('User', userSchema);
 
-const feedbackSchema = new mongoose.Schema({ /* ... (pehle jaisa) ... */
+const feedbackSchema = new mongoose.Schema({ 
   name: { type: String, required: true }, 
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
@@ -105,7 +105,7 @@ const feedbackSchema = new mongoose.Schema({ /* ... (pehle jaisa) ... */
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-app.use(cors({ /* ... (pehle jaisa, FRONTEND_URL use karega) ... */
+app.use(cors({ 
     origin: [FRONTEND_URL, `http://localhost:${PORT}`, 'https://accounts.google.com', 'https://*.google.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -113,7 +113,7 @@ app.use(cors({ /* ... (pehle jaisa, FRONTEND_URL use karega) ... */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => { /* ... (IP address logic pehle jaisa) ... */ 
+app.use((req, res, next) => { 
     let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (clientIp) {
         if (clientIp.substr(0, 7) === "::ffff:") clientIp = clientIp.substr(7);
@@ -124,7 +124,7 @@ app.use((req, res, next) => { /* ... (IP address logic pehle jaisa) ... */
     next();
 });
 
-const authenticateToken = (req, res, next) => { /* ... (pehle jaisa) ... */ 
+const authenticateToken = (req, res, next) => { 
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) return res.status(401).json({ message: "Authentication token nahi mila." });
@@ -135,7 +135,7 @@ const authenticateToken = (req, res, next) => { /* ... (pehle jaisa) ... */
     });
 };
 
-async function sendEmail(options) { /* ... (pehle jaisa) ... */ 
+async function sendEmail(options) { 
     if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
         console.error("Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain.");
         throw new Error("Email service theek se configure nahi hai. Administrator se contact karein.");
@@ -151,7 +151,7 @@ async function sendEmail(options) { /* ... (pehle jaisa) ... */
 }
 
 // Auth Routes
-app.post('/api/auth/signup', async (req, res) => { /* ... (pehle jaisa) ... */ 
+app.post('/api/auth/signup', async (req, res) => { 
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Naam, email, aur password zaroori hai." });
     if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
@@ -162,12 +162,13 @@ app.post('/api/auth/signup', async (req, res) => { /* ... (pehle jaisa) ... */
         const userAvatar = getDiceBearAvatarUrl(name);
         const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email' });
         await newUser.save();
+        console.log(`User ${newUser.email} created successfully with ID: ${newUser._id}`); // DEBUG LOG
         const userForToken = { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email' };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Signup mein error:', error); res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });}
 });
-app.post('/api/auth/login', async (req, res) => { /* ... (pehle jaisa) ... */
+app.post('/api/auth/login', async (req, res) => { 
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email aur password zaroori hai." });
     try {
@@ -182,7 +183,7 @@ app.post('/api/auth/login', async (req, res) => { /* ... (pehle jaisa) ... */
         res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch dikkat aa gayi.", error: error.message });}
 });
-app.post('/api/auth/google-signin', async (req, res) => { /* ... (pehle jaisa) ... */
+app.post('/api/auth/google-signin', async (req, res) => { 
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
     try {
@@ -210,7 +211,7 @@ app.post('/api/auth/google-signin', async (req, res) => { /* ... (pehle jaisa) .
 app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
 // Password Reset Routes
-app.post('/api/auth/request-password-reset', async (req, res) => { /* ... (pehle jaisa, error handling update) ... */
+app.post('/api/auth/request-password-reset', async (req, res) => { 
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
     if (!FRONTEND_URL) { console.error("CRITICAL: FRONTEND_URL .env file mein set nahi hai. Password reset link nahi banega."); return res.status(500).json({ message: "Server configuration mein error hai (FRONTEND_URL missing)." });}
@@ -233,7 +234,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => { /* ... (pehle
         }
     }
 });
-app.post('/api/auth/reset-password', async (req, res) => { /* ... (pehle jaisa) ... */
+app.post('/api/auth/reset-password', async (req, res) => { 
     const { token, password, confirmPassword } = req.body; console.log(`Password reset attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
     if (!token) return res.status(400).json({ message: "Password reset token nahi mila." });
     if (!password || !confirmPassword) return res.status(400).json({ message: "Naya password aur confirmation password zaroori hai." });
@@ -254,11 +255,11 @@ app.post('/api/auth/reset-password', async (req, res) => { /* ... (pehle jaisa) 
 
 // Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/api/feedbacks', async (req, res) => { /* ... (pehle jaisa) ... */ 
+app.get('/api/feedbacks', async (req, res) => { 
     try { const allFeedbacks = await Feedback.find().sort({ timestamp: -1 }); res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
-app.post('/api/feedback', authenticateToken, async (req, res) => { /* ... (pehle jaisa) ... */ 
+app.post('/api/feedback', authenticateToken, async (req, res) => { 
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." }); 
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
@@ -267,7 +268,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => { /* ... (pehle
     try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
-app.put('/api/feedback/:id', authenticateToken, async (req, res) => { /* ... (pehle jaisa) ... */
+app.put('/api/feedback/:id', authenticateToken, async (req, res) => { 
     const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user; 
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
     try {
@@ -286,14 +287,14 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => { /* ... (pe
 });
 
 // Admin Panel Routes
-const authenticateAdmin = (req, res, next) => { /* ... (pehle jaisa) ... */
+const authenticateAdmin = (req, res, next) => { 
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0');
     const authHeader = req.headers.authorization; if (!authHeader) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: AUTH HEADER MISSING.' });}
     const [scheme, credentials] = authHeader.split(' '); if (scheme !== 'Basic' || !credentials) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTH SCHEME.' });}
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });}
 };
-app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => { /* ... (Pehle jaisa Admin Panel HTML/JS generation code, yahaan poora code hai) ... */ 
+app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => { 
     console.log("Admin panel access attempt.");
     try {
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email' }).sort({ timestamp: -1 });
@@ -331,19 +332,19 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => { /* ... (
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
 });
-app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => { /* ... (Pehle jaisa code) ... */
+app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => { 
     console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
     try { const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id); if (!deletedFeedback) { console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });} console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`); res.status(200).json({ message: 'Feedback delete ho gaya.' });
     } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
  });
-app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => { /* ... (Pehle jaisa code) ... */
+app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => { 
     const feedbackId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
     if (!replyText) { console.log(`ADMIN: Reply text missing for feedback ID: ${feedbackId}`); return res.status(400).json({ message: 'Reply text daalo.' });}
     try { const feedback = await Feedback.findById(feedbackId); if (!feedback) { console.log(`ADMIN: Feedback ID ${feedbackId} not found for replying.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });}
     feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await feedback.save(); console.log(`ADMIN: Reply added successfully to feedback ID: ${feedbackId}`); res.status(200).json({ message: 'Reply post ho gaya.', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) { console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error); res.status(500).json({ message: 'Reply save nahi ho paya.', error: error.message });}
 });
-app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => { /* ... (Pehle jaisa code) ... */
+app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => { 
     const userId = req.params.userId; console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
     if (userToUpdate.loginMethod === 'google') { console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`); return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });}
