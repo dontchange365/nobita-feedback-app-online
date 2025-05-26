@@ -10,10 +10,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const cloudinary = require('cloudinary').v2; // New
-const multer = require('multer'); // New
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
 
-dotenv.config(); // Yeh local .env file ke liye hai, Render isko ignore karega
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,9 +29,9 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dyv7xav3e'; // New: Cloudinary credentials
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '973787665916358'; // New
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'TmLVqNVkBiS8mRxU9SLStjmcOF8'; // New
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dyv7xav3e';
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '973787665916358';
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'TmLVqNVkBiS8mRxU9SLStjmcOF8';
 
 // --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
@@ -46,9 +46,9 @@ console.log("EMAIL_USER (loaded):", EMAIL_USER ? "SET" : "NOT SET");
 console.log("EMAIL_PASS (loaded):", EMAIL_PASS ? "SET (value hidden)" : "NOT SET");
 console.log("EMAIL_HOST (loaded):", EMAIL_HOST ? "SET" : "NOT SET");
 console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
-console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET"); // New
-console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET"); // New
-console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET"); // New
+console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
 // Zaroori environment variables check karna
@@ -67,7 +67,7 @@ if (!GOOGLE_CLIENT_ID) {
 if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
     console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Password reset email kaam nahi karega.");
 }
-if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) { // New
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
     console.warn("WARNING: Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) poori tarah set nahi hain. Profile picture upload kaam nahi karega.");
 }
 
@@ -310,8 +310,88 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
     }
 });
 
+// New: User Profile Update (for name)
+app.put('/api/user/update-profile', authenticateToken, async (req, res) => {
+    const { name } = req.body;
 
-// Password Reset Routes
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ message: 'Naam khaali nahi ho sakta.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User nahi mila.' });
+        }
+
+        user.name = name.trim();
+        await user.save();
+
+        // Regenerate token with updated name
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
+        const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({
+            message: 'Profile name safaltapoorvak update ho gaya!',
+            user: userForToken,
+            token: appToken
+        });
+
+    } catch (error) {
+        console.error('Profile update (name) mein error:', error);
+        res.status(500).json({ message: 'Profile name update karne mein dikkat aa gayi.', error: error.message });
+    }
+});
+
+
+// New: Change Password for logged-in email users
+app.post('/api/user/change-password', authenticateToken, async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (req.user.loginMethod === 'google') {
+        return res.status(400).json({ message: 'Google login users apna password सीधे Google se manage karein.' });
+    }
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        return res.status(400).json({ message: 'Sabhi password fields bharna zaroori hai.' });
+    }
+    if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: 'Naye passwords match nahi ho rahe.' });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'Naya password kam se kam 6 characters ka hona chahiye.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User nahi mila.' });
+        }
+        if (!user.password) {
+            // This case should ideally not happen for email users
+            return res.status(400).json({ message: 'Aapka account email/password login ke liye set nahi hai.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Current password galat hai.' });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 12);
+        await user.save();
+
+        res.status(200).json({ message: 'Password safaltapoorvak badal gaya hai. Kripya naye password se login karein.' });
+
+    } catch (error) {
+        console.error('Change password mein error:', error);
+        res.status(500).json({ message: 'Password badalne mein dikkat aa gayi.', error: error.message });
+    }
+});
+
+
+// Password Reset Routes (for forgotten passwords, uses token)
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
@@ -351,7 +431,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
-    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
+    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
 });
 
 // Static Files & Feedback Routes
