@@ -22,7 +22,8 @@
             font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: var(--text-color-light); display: flex; flex-direction: column; align-items: center;
             justify-content: flex-start; min-height: 100vh; margin: 0;
-            padding: 25px 15px; padding-top: 80px; /* Added padding-top for fixed user hub */
+            padding: 25px 15px; 
+            /* padding-top: 80px; User Hub fixed hai, isliye content ko alag se manage karenge */
             box-sizing: border-box; overflow-x: hidden;
         }
 
@@ -34,40 +35,39 @@
             z-index: 1001; 
         }
         #user-hub-trigger {
-            background-color: var(--secondary-color); /* Yellow background */
+            background-color: var(--secondary-color); 
             color: var(--bg-gradient-start);
-            border: none;
+            border: 2px solid var(--bg-gradient-start); /* Added border for better definition */
             border-radius: 50%; 
-            width: 50px;  /* Ensure square for perfect circle */
-            height: 50px; /* Ensure square for perfect circle */
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-            overflow: hidden; /* Important: ensures image stays within circle */
-            padding: 0; /* Remove any default padding */
+            overflow: hidden; 
+            padding: 0; 
         }
         #user-hub-trigger:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 15px rgba(0,0,0,0.4);
         }
         #user-hub-avatar { 
-            width: 100%; /* Fill the button */
-            height: 100%; /* Fill the button */
-            border-radius: 50%; /* Already circular due to parent, but good to have */
-            object-fit: cover; /* Crucial for making non-square images look good in a circle */
-            display: none; /* Initially hidden */
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Important for non-square images to fill circle correctly */
+            display: none; 
         }
-        #user-hub-login-text { /* Placeholder text/icon if avatar not shown */
-            font-size: 1.8em; /* Size of the 👤 icon */
-            line-height: 1; /* Adjust line height for better centering of icon */
-            display: inline; /* Show by default */
+        #user-hub-login-text { 
+            font-size: 1.8em; 
+            line-height: 1; 
+            display: inline; 
         }
         .user-hub-dropdown {
             position: absolute;
-            top: 65px; /* Trigger button ke neeche (50px button height + 15px gap) */
+            top: 65px; 
             right: 0;
             background: var(--bg-gradient-end);
             border: 1px solid var(--card-border);
@@ -75,7 +75,7 @@
             box-shadow: var(--shadow-deep);
             width: 320px; 
             max-width: 90vw;
-            padding: 0; /* Padding ab inner content mein manage karenge */
+            padding: 0; 
             z-index: 1000;
             display: none; 
             opacity: 0;
@@ -87,15 +87,10 @@
             opacity: 1;
             transform: translateY(0) scale(1);
         }
-        .user-hub-dropdown .auth-container { /* Auth forms inside dropdown */
-            padding: 20px 15px 15px 15px; 
-            margin: 0;
-            box-shadow: none; 
-            border: none;
-            background: transparent; 
-            width: 100%;
-            max-width: 100%;
-            border-radius: 0 0 12px 12px; /* Match dropdown corners if it's the only content */
+        .user-hub-dropdown .auth-container { 
+            padding: 20px 15px 15px 15px; margin: 0; box-shadow: none; border: none;
+            background: transparent; width: 100%; max-width: 100%;
+            border-radius: 0 0 12px 12px; 
         }
         .user-hub-dropdown .auth-container h2 { font-size: 1.6em; margin-bottom: 15px; }
         .user-hub-dropdown .auth-input-group { margin-bottom: 12px; }
@@ -106,33 +101,22 @@
         .user-hub-dropdown .auth-toggle-link, 
         .user-hub-dropdown .forgot-password-link { font-size: 0.8em; margin-top: 12px; }
         
-        .user-hub-dropdown #user-info-display-content { /* Naya wrapper for user info content in dropdown */
-            display: flex;
-            flex-direction: column; 
-            align-items: center; /* Center items */
-            gap: 10px;
-            padding: 20px 15px;
-            width: 100%;
+        .user-hub-dropdown #user-info-display-content { 
+            display: flex; flex-direction: column; align-items: center; 
+            gap: 10px; padding: 20px 15px; width: 100%;
         }
-        .user-hub-dropdown #user-info-display-content #user-profile-pic-dropdown { /* Avatar in dropdown */
-            width: 70px; 
-            height: 70px; 
-            border-radius: 50%; 
+        .user-hub-dropdown #user-info-display-content #user-profile-pic-dropdown { 
+            width: 70px; height: 70px; border-radius: 50%; 
             border: 2px solid var(--secondary-color);
-            margin-bottom: 10px; 
-            object-fit: cover;
+            margin-bottom: 10px; object-fit: cover;
         }
-        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown { /* Greeting in dropdown */
-            font-size: 1.1em; 
-            margin-bottom: 8px; 
-            text-align: center;
+        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown { 
+            font-size: 1.1em; margin-bottom: 8px; text-align: center;
             color: var(--text-color-light);
         }
-        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown strong {
-            color: var(--secondary-color);
-        }
+        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown strong { color: var(--secondary-color); }
         .user-hub-dropdown .profile-link-btn,
-        .user-hub-dropdown #logout-button-dropdown { /* Buttons in dropdown */
+        .user-hub-dropdown #logout-button-dropdown { 
              background: var(--accent-color); color: white; border: none;
              padding: 10px; border-radius: 8px; font-size: 0.95em;
              cursor: pointer; transition: background-color 0.2s; width: 100%;
@@ -142,16 +126,65 @@
         .user-hub-dropdown .profile-link-btn:hover { background: var(--primary-color); }
         .user-hub-dropdown #logout-button-dropdown:hover { background-color: #c82333; }
 
-
-        /* Original containers ko hide rakhein */
-        #auth-section-original-container, #user-info-display-original-container {
-            display: none !important; 
-        }
+        #auth-section-original-container, #user-info-display-original-container { display: none !important; }
         /* --- End Compact User Hub Styles --- */
 
-        /* === START: Feedback Section and Other Page Styles (Yahaan se purane styles daalein) === */
-        .main-container h1 { color: var(--secondary-color); margin-bottom: 18px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -12px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        /* General Page Content Wrapper - User Hub ke neeche se shuru hoga */
+        .page-content-wrapper {
+            width: 100%;
+            margin-top: 70px; /* User Hub ke liye space (50px height + 20px gap) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Owner Info and Main Container (Feedback Form) Styles */
+        .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; transition-delay: 0.5s;}
+        .owner-info.animate-in { opacity: 1; transform: translateY(0); }
+        .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
+        .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
+        
+        .main-container { /* Feedback form container */
+            background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
+            border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
+            width: 90%; max-width: 750px; margin-bottom: 35px; 
+            /* opacity and transform for animation handled by JS/initial state */
+        }
+        
+        /* Auth Container (Original - ab User Hub mein jayega, isliye default styles yahan rakhe hain) */
+        .auth-container { 
+            background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px; width: 100%; /* width 100% for dropdown */ max-width: 480px; /* max-width agar direct use ho */ margin: 0 auto; /* Center if direct */
+        }
+        .auth-container h2 { color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
+        .auth-form { display: none; } .auth-form.active { display: block; }
+        .auth-input-group { margin-bottom: 18px; text-align: left; }
+        .auth-input-group label { display: block; margin-bottom: 6px; color: var(--text-color-light); font-weight: 500; font-size: 0.9em; }
+        .auth-input-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none; transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); }
+        .auth-input-group input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59,130,246,0.2), inset 1px 1px 4px rgba(0,0,0,0.15); background: rgba(255, 255, 255, 0.12); }
+        .auth-button { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; width: 100%; padding: 11px 20px; border-radius: 8px; font-size: 1em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 3px 10px rgba(59,130,246,0.3); margin-top: 10px; }
+        .auth-button:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59,130,246,0.45); }
+        .auth-toggle-link, .forgot-password-link { display: block; text-align: center; margin-top: 15px; color: var(--secondary-color); text-decoration: none; font-size: 0.85em; cursor: pointer; transition: color 0.2s; }
+        .auth-toggle-link:hover, .forgot-password-link:hover { color: #ffd700b3; text-decoration: underline; }
+        .login-options { margin-top: 5px; }
+        .divider-or { text-align: center; color: rgba(255,255,255,0.5); font-size: 0.85em; margin: 20px 0; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+        .divider-or::before, .divider-or::after { content: ''; flex-grow: 1; height: 1px; background-color: rgba(255,255,255,0.2); }
+        .custom-google-btn { background-color: #fff; color: #757575; border: 1px solid #DCDCDC; border-radius: 8px; padding: 10px 24px; font-size: 1em; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25); transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-out; width: 100%; box-sizing: border-box; }
+        .custom-google-btn:hover { background-color: #f8f8f8; box-shadow: 0 3px 6px 0 rgba(0,0,0,0.25); transform: translateY(-1px); }
+        .custom-google-btn .google-icon { width: 20px; height: 20px; }
+                
+        /* Feedback Form & List Styles */
+        #feedback-form-container h1 { /* Specific for feedback form title */
+            color: var(--secondary-color); margin-bottom: 10px; font-size: 2.3em; font-weight: 700; 
+            text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; 
+            min-height: calc(1.2em * 1.25 * 2); /* Adjusted min-height for two lines of h1 */
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        #typed-output { /* For subtitle text */
+            color: var(--accent-color); font-size: 1.05em; margin-top: -15px; margin-bottom: 22px; 
+            line-height: 1.35; 
+            min-height: calc(1em * 1.35 * 2); /* Adjusted min-height for two lines of subtitle */
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
         .input-group label { display: block; margin-bottom: 7px; color: var(--text-color-light); font-weight: 500; font-size: 0.95em; }
         .input-group input, .input-group textarea { width: 100%; padding: 11px 16px; border: 1px solid var(--card-border); border-radius: 9px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none; transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15); }
@@ -166,11 +199,9 @@
         button#submit-feedback:hover::before { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         button#submit-feedback:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2.5px) scale(1.015); box-shadow: 0 7px 18px rgba(59,130,246,0.55); }
         
-        #feedback-list-container { margin-top: 35px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; transition-delay: 0.1s;}
-        #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); }
+        #feedback-list-container { margin-top: 35px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 1; transform: translateY(0); /* No initial animation for feedback list if always shown */ }
         #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); }
-        .average-rating-container { background: rgba(255, 215, 0, 0.09); border: 1px solid var(--secondary-color); border-radius: 13px; padding: 16px 22px; margin-bottom: 22px; text-align: center; box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-color-light); transition: all 0.25s ease; opacity: 0; transform: translateY(25px); }
-        .average-rating-container.animate-in { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+        .average-rating-container { background: rgba(255, 215, 0, 0.09); border: 1px solid var(--secondary-color); border-radius: 13px; padding: 16px 22px; margin-bottom: 22px; text-align: center; box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-color-light); opacity: 1; transform: translateY(0); }
         .average-rating-container h3 { color: var(--secondary-color); font-size: 1.5em; margin: 0; margin-bottom: 7px; }
         .average-number { font-size: 3.2em; font-weight: 600; color: var(--secondary-color); text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.65); line-height: 1; margin-bottom: 7px; }
         .average-stars { font-size: 2em; color: var(--secondary-color); letter-spacing: 4px; text-shadow: 0 0 13px rgba(255,215,0,0.65); }
@@ -195,6 +226,7 @@
         .edited-tag { background-color: #f0ad4e; color: white; padding: 2.5px 7px; border-radius: 4.5px; font-size: 0.65em; font-weight: bold; margin-left: 7px; vertical-align: middle; animation: fadeIn 0.45s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
         
+        /* Custom Modal Styles (General and Forgot Password) */
         .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.92); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.35s ease-out, visibility 0s linear 0.35s; }
         .custom-modal-overlay.show { display: flex; opacity: 1; visibility: visible; transition: opacity 0.35s ease-out, visibility 0s linear 0s; }
         .custom-modal { background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid; border-radius: 18px; padding: 28px 22px; text-align: center; color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28); transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden; transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out; max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;}
@@ -208,105 +240,105 @@
         .modal-action-btn:hover, .modal-close-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
         .modal-cancel-btn { background: #6c757d; } .modal-cancel-btn:hover { background: #5a6268; }
         #forgotPasswordModal .auth-input-group input { margin-bottom: 10px; }
+        
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } .main-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; } .auth-container h2 {font-size: 1.8em;} .compact-user-hub{right:10px; top:10px;} #user-hub-trigger{width:45px; height:45px;} #user-hub-trigger .user-icon-placeholder{font-size:1.5em;} .user-hub-dropdown{width:280px;} }
-        @media (max-width: 480px) { .main-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} .auth-container {padding: 25px 20px; max-width: 100%;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px;} .user-hub-dropdown{width:calc(100vw - 40px); right:0; margin-right:20px;} }
-        /* === END: Feedback Section and Other Page Styles === */
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; } .auth-container h2 {font-size: 1.8em;} .compact-user-hub{right:10px; top:10px;} #user-hub-trigger{width:45px; height:45px;} #user-hub-trigger #user-hub-login-text{font-size:1.5em;} .user-hub-dropdown{width:280px;} }
+        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} .auth-container {padding: 25px 20px; max-width: 100%;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px;} .user-hub-dropdown{width:calc(100vw - 40px); right:0; margin-right:20px;} }
     </style>
 </head>
 <body>
     <div id="compact-user-hub" class="compact-user-hub">
         <button id="user-hub-trigger">
-            <img id="user-hub-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User" style="display:none;">
+            <img id="user-hub-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User">
             <span id="user-hub-login-text" class="user-icon-placeholder">👤</span>
         </button>
         <div id="user-hub-dropdown" class="user-hub-dropdown">
             </div>
     </div>
 
-    <div class="owner-info animate-in">
-        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita ka Avatar" class="owner-avatar">
-        <span class="owner-text">Banaya gaya: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 dwara</span>
-    </div>
-
-    <div id="auth-section-original-container" style="display: none !important;">
-        <div id="auth-section" class="auth-container">
-            <form id="signup-form" class="auth-form">
-                <h2>Naya Account Banayein</h2>
-                <div class="auth-input-group"> <label for="signup-name">Aapka Naam:</label> <input type="text" id="signup-name" required> </div>
-                <div class="auth-input-group"> <label for="signup-email">Email:</label> <input type="email" id="signup-email" required> </div>
-                <div class="auth-input-group"> <label for="signup-password">Password (min. 6 characters):</label> <input type="password" id="signup-password" required minlength="6"> </div>
-                <div class="auth-input-group"> <label for="signup-confirm-password">Password Dobara Daalein:</label> <input type="password" id="signup-confirm-password" required minlength="6"> </div>
-                <button type="submit" class="auth-button">SIGN UP</button>
-                <div class="divider-or"><span>Ya</span></div>
-                <button type="button" id="custom-google-signin-signup" class="custom-google-btn"> <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg> Google Se Sign Up Karein </button>
-                <a class="auth-toggle-link" id="show-login-link">Pehle se account hai? Login Karein</a>
-            </form>
-
-            <form id="login-form" class="auth-form">
-                <h2>Login Karein</h2>
-                <div class="auth-input-group"> <label for="login-email">Email:</label> <input type="email" id="login-email" required> </div>
-                <div class="auth-input-group"> <label for="login-password">Password:</label> <input type="password" id="login-password" required> </div>
-                <button type="submit" class="auth-button">LOGIN</button>
-                <div class="login-options"> <a class="forgot-password-link" id="forgot-password-link">Password Bhool Gaye?</a> </div>
-                <div class="divider-or"><span>Ya</span></div>
-                <button type="button" id="custom-google-signin-login" class="custom-google-btn"> <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg> Google Se Login Karein </button>
-                <a class="auth-toggle-link" id="show-signup-link">Naya account banayein</a>
-            </form>
+    <div class="page-content-wrapper">
+        <div class="owner-info animate-in">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita ka Avatar" class="owner-avatar">
+            <span class="owner-text">Banaya gaya: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 dwara</span>
         </div>
-    </div>
 
-    <div id="user-info-display-original-container" style="display: none !important;">
-        <div id="user-info-display-content-template"> <img id="user-profile-pic-dropdown" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP"> 
-            <span id="user-greeting-dropdown">Swagat, <strong></strong>!</span> 
-            <a href="#" class="profile-link-btn" id="view-profile-link-dropdown">View Profile</a>
-            <button id="logout-button-dropdown">LOGOUT</button> 
-        </div>
-    </div>
-    
-    <div id="feedback-form-container" class="main-container animate-in" style="display:none;"> 
-        <h1 id="main-title"></h1> <div id="typed-output"></div>
-        <form id="feedback-form">
-            <div class="input-group"> <label for="name">Aapka Naam: (Logged in as <span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Apna naam yahaan likhein..." required disabled> </div>
-            <div class="input-group"> <label for="feedback">Aapka Feedback:</label> <textarea id="feedback" placeholder="Apne anmol vichar yahaan likhein..." required></textarea> </div>
-            <div class="input-group"> <label>Apne anubhav ko rate karein:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
-            <button type="button" id="submit-feedback">FEEDBACK JAMA KAREIN</button>
-        </form>
-    </div>
+        <div id="auth-section-original-container" style="display: none !important;">
+            <div id="auth-section" class="auth-container"> 
+                <form id="signup-form" class="auth-form">
+                    <h2>Naya Account Banayein</h2>
+                    <div class="auth-input-group"> <label for="signup-name">Aapka Naam:</label> <input type="text" id="signup-name" required> </div>
+                    <div class="auth-input-group"> <label for="signup-email">Email:</label> <input type="email" id="signup-email" required> </div>
+                    <div class="auth-input-group"> <label for="signup-password">Password (min. 6 characters):</label> <input type="password" id="signup-password" required minlength="6"> </div>
+                    <div class="auth-input-group"> <label for="signup-confirm-password">Password Dobara Daalein:</label> <input type="password" id="signup-confirm-password" required minlength="6"> </div>
+                    <button type="submit" class="auth-button">SIGN UP</button>
+                    <div class="divider-or"><span>Ya</span></div>
+                    <button type="button" id="custom-google-signin-signup" class="custom-google-btn"> <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg> Google Se Sign Up Karein </button>
+                    <a class="auth-toggle-link" id="show-login-link">Pehle se account hai? Login Karein</a>
+                </form>
 
-    <div id="custom-modal-overlay" class="custom-modal-overlay">
-        <div class="custom-modal">
-            <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p>
-            <div class="modal-button-container">
-                <button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
+                <form id="login-form" class="auth-form">
+                    <h2>Login Karein</h2>
+                    <div class="auth-input-group"> <label for="login-email">Email:</label> <input type="email" id="login-email" required> </div>
+                    <div class="auth-input-group"> <label for="login-password">Password:</label> <input type="password" id="login-password" required> </div>
+                    <button type="submit" class="auth-button">LOGIN</button>
+                    <div class="login-options"> <a class="forgot-password-link" id="forgot-password-link">Password Bhool Gaye?</a> </div>
+                    <div class="divider-or"><span>Ya</span></div>
+                    <button type="button" id="custom-google-signin-login" class="custom-google-btn"> <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg> Google Se Login Karein </button>
+                    <a class="auth-toggle-link" id="show-signup-link">Naya account banayein</a>
+                </form>
             </div>
         </div>
-    </div>
 
-    <div id="forgotPasswordModalOverlay" class="custom-modal-overlay">
-        <div id="forgotPasswordModal" class="custom-modal" style="border-color: var(--accent-color);">
-            <div class="modal-icon" style="font-size: 3em;">🔑</div>
-            <h3>Password Bhool Gaye?</h3>
-            <p>Apna registered email address daalein. Hum aapko password reset karne ke liye link bhejenge.</p>
-            <form id="forgot-password-form">
-                <div class="auth-input-group">
-                    <label for="forgot-email">Email Address:</label>
-                    <input type="email" id="forgot-email" required placeholder="email@example.com">
-                </div>
-                <div class="modal-button-container">
-                    <button type="button" id="cancel-forgot-password" class="modal-action-btn modal-cancel-btn">Cancel</button>
-                    <button type="submit" class="modal-action-btn">Reset Link Bhejein</button>
-                </div>
+        <div id="user-info-display-original-container" style="display: none !important;">
+            <div id="user-info-display-content-template"> 
+                <img id="user-profile-pic-dropdown" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP"> 
+                <span id="user-greeting-dropdown">Swagat, <strong></strong>!</span> 
+                <a href="#" class="profile-link-btn" id="view-profile-link-dropdown">View Profile</a>
+                <button id="logout-button-dropdown" class="auth-button" style="background: var(--error-color);">LOGOUT</button> 
+            </div>
+        </div>
+        
+        <div id="feedback-form-container" class="main-container animate-in"> <h1 id="main-title"></h1> <div id="typed-output"></div>
+            <form id="feedback-form">
+                <div class="input-group"> <label for="name">Aapka Naam: (<span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Login karke naam apne aap aa jayega..." required disabled> </div>
+                <div class="input-group"> <label for="feedback">Aapka Feedback:</label> <textarea id="feedback" placeholder="Apne anmol vichar yahaan likhein..." required></textarea> </div>
+                <div class="input-group"> <label>Apne anubhav ko rate karein:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
+                <button type="button" id="submit-feedback">FEEDBACK JAMA KAREIN</button>
             </form>
         </div>
-    </div>
 
-    <div id="feedback-list-container" class="animate-in"> <div id="average-rating-display"></div> <h2>Haal Hi Ke Feedbacks</h2> </div>
+        <div id="custom-modal-overlay" class="custom-modal-overlay">
+            <div class="custom-modal">
+                <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p>
+                <div class="modal-button-container">
+                    <button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
+                </div>
+            </div>
+        </div>
+        <div id="forgotPasswordModalOverlay" class="custom-modal-overlay">
+            <div id="forgotPasswordModal" class="custom-modal" style="border-color: var(--accent-color);">
+                <div class="modal-icon" style="font-size: 3em;">🔑</div>
+                <h3>Password Bhool Gaye?</h3>
+                <p>Apna registered email address daalein. Hum aapko password reset karne ke liye link bhejenge.</p>
+                <form id="forgot-password-form">
+                    <div class="auth-input-group">
+                        <label for="forgot-email">Email Address:</label>
+                        <input type="email" id="forgot-email" required placeholder="email@example.com">
+                    </div>
+                    <div class="modal-button-container">
+                        <button type="button" id="cancel-forgot-password" class="modal-action-btn modal-cancel-btn">Cancel</button>
+                        <button type="submit" class="modal-action-btn">Reset Link Bhejein</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+        <div id="feedback-list-container" class="animate-in"> <div id="average-rating-display"></div> <h2>Haal Hi Ke Feedbacks</h2> </div>
+    </div> <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
+        // === START: JavaScript Code ===
         document.addEventListener('DOMContentLoaded', async () => {
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
             
@@ -316,23 +348,14 @@
             const userHubLoginText = document.getElementById('user-hub-login-text');
             const userHubDropdown = document.getElementById('user-hub-dropdown');
 
-            // Original Auth and User Info Elements (templates for cloning)
+            // Templates for cloning
             const authSectionTemplate = document.getElementById('auth-section'); 
             const userInfoDisplayTemplate = document.getElementById('user-info-display-content-template'); 
             
-            // Form elements (these will be from the cloned content in the dropdown)
-            // We need to get these AFTER cloning and appending to dropdown, or use event delegation.
-            // For simplicity, we'll re-select them if needed inside functions that operate on dropdown content.
-            let signupForm, loginForm, showLoginLink, showSignupLink, 
-                customGoogleSigninSignupBtn, customGoogleSigninLoginBtn, forgotPasswordLink;
-
-            // User Info Display Elements (for the original hidden one, primarily for logout button reference)
-            // const logoutButtonOriginal = document.getElementById('logout-button'); // This ID will be on the cloned element
-
             // Feedback Form Elements
             const feedbackFormContainer = document.getElementById('feedback-form-container');
-            const nameInput = document.getElementById('name'); 
-            const feedbackFormUsername = document.getElementById('feedback-form-username');
+            const nameInputInFeedbackForm = document.getElementById('name'); // Renamed for clarity
+            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Renamed
             const feedbackTextarea = document.getElementById('feedback');
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
@@ -370,7 +393,7 @@
             // --- User Hub Logic ---
             if (userHubTrigger) {
                 userHubTrigger.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent click from immediately closing due to document listener
+                    e.stopPropagation(); 
                     userHubDropdown.classList.toggle('show');
                 });
             }
@@ -381,85 +404,84 @@
                         userHubDropdown.classList.remove('show');
                     }
                 }
-                // Close forgot password modal if click is outside it
                 if (forgotPasswordModalOverlay && forgotPasswordModalOverlay.classList.contains('show')) {
                     const forgotModal = document.getElementById('forgotPasswordModal');
-                    if (forgotModal && !forgotModal.contains(event.target) && event.target !== forgotPasswordLink ) { // also check if the click was on the link that opens it
-                         // Check if the click target is NOT the forgotPasswordLink itself
-                        const isClickOnLink = forgotPasswordLink && forgotPasswordLink.contains(event.target);
-                        if(!isClickOnLink){
-                             forgotPasswordModalOverlay.classList.remove('show');
-                        }
+                    const linkThatOpenedIt = document.querySelector('#user-hub-dropdown .forgot-password-link'); // More specific selector
+                    
+                    let clickedOnLink = false;
+                    if(linkThatOpenedIt && linkThatOpenedIt.contains(event.target)){
+                        clickedOnLink = true;
+                    }
+
+                    if (forgotModal && !forgotModal.contains(event.target) && !clickedOnLink) {
+                         forgotPasswordModalOverlay.classList.remove('show');
                     }
                 }
             });
 
             function setupDropdownAuthForms(authSectionClone) {
-                signupForm = authSectionClone.querySelector('#signup-form');
-                loginForm = authSectionClone.querySelector('#login-form');
-                showLoginLink = authSectionClone.querySelector('#show-login-link');
-                showSignupLink = authSectionClone.querySelector('#show-signup-link');
-                customGoogleSigninSignupBtn = authSectionClone.querySelector('#custom-google-signin-signup');
-                customGoogleSigninLoginBtn = authSectionClone.querySelector('#custom-google-signin-login');
-                forgotPasswordLink = authSectionClone.querySelector('#forgot-password-link');
+                const signupFormInDropdown = authSectionClone.querySelector('#signup-form');
+                const loginFormInDropdown = authSectionClone.querySelector('#login-form');
+                const showLoginLinkInDropdown = authSectionClone.querySelector('#show-login-link');
+                const showSignupLinkInDropdown = authSectionClone.querySelector('#show-signup-link');
+                const googleSignupBtnInDropdown = authSectionClone.querySelector('#custom-google-signin-signup');
+                const googleLoginBtnInDropdown = authSectionClone.querySelector('#custom-google-signin-login');
+                const forgotPasswordLinkInDropdown = authSectionClone.querySelector('#forgot-password-link');
 
-                if(showLoginLink) showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showFormInDropdown('login', authSectionClone); });
-                if(showSignupLink) showSignupLink.addEventListener('click', (e) => { e.preventDefault(); showFormInDropdown('signup', authSectionClone); });
+                const showFormFn = (formName) => {
+                    if(signupFormInDropdown) signupFormInDropdown.classList.remove('active');
+                    if(loginFormInDropdown) loginFormInDropdown.classList.remove('active');
+                    if(formName === 'signup' && signupFormInDropdown) signupFormInDropdown.classList.add('active');
+                    else if(loginFormInDropdown) loginFormInDropdown.classList.add('active');
+                };
+
+                if(showLoginLinkInDropdown) showLoginLinkInDropdown.addEventListener('click', (e) => { e.preventDefault(); showFormFn('login'); });
+                if(showSignupLinkInDropdown) showSignupLinkInDropdown.addEventListener('click', (e) => { e.preventDefault(); showFormFn('signup'); });
                 
-                const triggerGooglePromptFromClone = () => {
+                const triggerGooglePrompt = () => {
                     if (userHubDropdown) userHubDropdown.classList.remove('show');
                     google.accounts.id.prompt((notification) => { if (notification.isNotDisplayed() || notification.isSkippedMoment()) console.warn('Google Sign-In prompt was not displayed/skipped.');}); 
                 };
-                if(customGoogleSigninSignupBtn) customGoogleSigninSignupBtn.onclick = triggerGooglePromptFromClone;
-                if(customGoogleSigninLoginBtn) customGoogleSigninLoginBtn.onclick = triggerGooglePromptFromClone;
+                if(googleSignupBtnInDropdown) googleSignupBtnInDropdown.onclick = triggerGooglePrompt;
+                if(googleLoginBtnInDropdown) googleLoginBtnInDropdown.onclick = triggerGooglePrompt;
                 
-                if(forgotPasswordLink && forgotPasswordModalOverlay) {
-                     forgotPasswordLink.addEventListener('click', (e) => {
+                if(forgotPasswordLinkInDropdown && forgotPasswordModalOverlay) {
+                     forgotPasswordLinkInDropdown.addEventListener('click', (e) => {
                         e.preventDefault(); 
                         if (userHubDropdown) userHubDropdown.classList.remove('show'); 
                         forgotPasswordModalOverlay.classList.add('show'); 
                     });
                 }
 
-                if(signupForm) signupForm.addEventListener('submit', async (ev) => {
+                if(signupFormInDropdown) signupFormInDropdown.addEventListener('submit', async (ev) => {
                     ev.preventDefault();
-                    const nameVal = signupForm.querySelector('#signup-name').value.trim();
-                    const emailVal = signupForm.querySelector('#signup-email').value.trim();
-                    const passwordVal = signupForm.querySelector('#signup-password').value;
-                    const confirmPasswordVal = signupForm.querySelector('#signup-confirm-password').value;
+                    const nameVal = signupFormInDropdown.querySelector('#signup-name').value.trim();
+                    const emailVal = signupFormInDropdown.querySelector('#signup-email').value.trim();
+                    const passwordVal = signupFormInDropdown.querySelector('#signup-password').value;
+                    const confirmPasswordVal = signupFormInDropdown.querySelector('#signup-confirm-password').value;
                     if (!nameVal || !emailVal || !passwordVal || !confirmPasswordVal) return showCustomModal('error', 'Khali Fields!', 'Sabhi fields bharna zaroori hai.');
                     if (passwordVal !== confirmPasswordVal) return showCustomModal('error', 'Password Match Nahi Hua!', 'Dono password fields same hone chahiye.');
                     if (passwordVal.length < 6) return showCustomModal('error', 'Kamzor Password!', 'Password kam se kam 6 characters ka hona chahiye.');
-                    const submitBtn = signupForm.querySelector('button[type="submit"]');
+                    const submitBtn = signupFormInDropdown.querySelector('button[type="submit"]');
                     if(submitBtn) submitBtn.disabled = true;
                     try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name: nameVal, email: emailVal, password: passwordVal }); handleAuthResponse(data); } 
-                    catch (error) { /* handled by apiRequest */ }
+                    catch (error) { /* handled */ }
                     finally { if(submitBtn) submitBtn.disabled = false; }
                 });
 
-                if(loginForm) loginForm.addEventListener('submit', async (ev) => {
+                if(loginFormInDropdown) loginFormInDropdown.addEventListener('submit', async (ev) => {
                     ev.preventDefault();
-                    const emailVal = loginForm.querySelector('#login-email').value.trim();
-                    const passwordVal = loginForm.querySelector('#login-password').value;
+                    const emailVal = loginFormInDropdown.querySelector('#login-email').value.trim();
+                    const passwordVal = loginFormInDropdown.querySelector('#login-password').value;
                     if (!emailVal || !passwordVal) return showCustomModal('error', 'Khali Fields!', 'Email aur password daalna zaroori hai.');
-                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    const submitBtn = loginFormInDropdown.querySelector('button[type="submit"]');
                     if(submitBtn) submitBtn.disabled = true;
                     try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email: emailVal, password: passwordVal }); handleAuthResponse(data); } 
-                    catch (error) { /* handled by apiRequest */ }
+                    catch (error) { /* handled */ }
                     finally { if(submitBtn) submitBtn.disabled = false; }
                 });
+                showFormFn('login'); // Default to login form in dropdown
             }
-
-            function showFormInDropdown(formToShow, parentAuthSectionClone) {
-                const signupFormClone = parentAuthSectionClone.querySelector('#signup-form');
-                const loginFormClone = parentAuthSectionClone.querySelector('#login-form');
-                if(signupFormClone) signupFormClone.classList.remove('active');
-                if(loginFormClone) loginFormClone.classList.remove('active');
-
-                if (formToShow === 'signup' && signupFormClone) signupFormClone.classList.add('active');
-                else if (loginFormClone) loginFormClone.classList.add('active');
-            }
-
 
             async function apiRequest(url, method, body = null, isAuthOptional = false) { /* ... (same as before) ... */
                 const headers = { 'Content-Type': 'application/json' };
@@ -514,39 +536,46 @@
             window.onload = function () {
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse });
-                    // Google button click handlers will be attached when forms are cloned into dropdown
                 } else console.error("Google Identity Services script abhi load nahi hua hai.");
-                checkLoginStatus();
+                checkLoginStatus(); // Initial check
+                // Animate owner info
                 setTimeout(() => { const ownerInfoEl = document.querySelector('.owner-info'); if(ownerInfoEl) ownerInfoEl.classList.add('animate-in');}, 50);
+                 // Animate feedback form container (now always visible)
+                if (feedbackFormContainer) {
+                    feedbackFormContainer.style.opacity = '0'; // Start hidden for animation
+                    feedbackFormContainer.style.transform = 'translateY(40px)';
+                    setTimeout(() => {
+                         feedbackFormContainer.classList.add('animate-in');
+                    }, 100); // Slight delay after page content wrapper
+                }
             };
 
             async function handleGoogleCredentialResponse(response) {
-                try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) { /* handled by apiRequest */ }
+                try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) { /* handled */ }
             }
+
+            // Logout button event listener will be attached dynamically when user info is cloned into dropdown
 
             async function checkLoginStatus() {
                 const token = localStorage.getItem('authToken');
                 if (token) {
                     try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); }
-                    catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); console.warn("Session token invalid/expired."); }
+                    catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); }
                 } else updateUIAfterLogout();
                 await fetchFeedbacks();
             }
 
             function updateUIAfterLogin() {
                 if (currentUser) {
-                    // Update User Hub Trigger
                     if (userHubAvatar) {
                         userHubAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/40/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                         userHubAvatar.style.display = 'block';
                     }
                     if (userHubLoginText) userHubLoginText.style.display = 'none';
 
-                    // Populate User Hub Dropdown for logged-in state
                     if (userHubDropdown && userInfoDisplayTemplate) {
-                        userHubDropdown.innerHTML = ''; // Clear previous content
+                        userHubDropdown.innerHTML = ''; 
                         const userInfoContent = userInfoDisplayTemplate.cloneNode(true);
-                        
                         const avatarInDropdown = userInfoContent.querySelector('#user-profile-pic-dropdown');
                         const greetingInDropdown = userInfoContent.querySelector('#user-greeting-dropdown strong');
                         const logoutBtnInDropdown = userInfoContent.querySelector('#logout-button-dropdown');
@@ -563,60 +592,49 @@
                             showCustomModal('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.'); 
                             fetchFeedbacks(); 
                         });
-
-                        if(viewProfileLink) viewProfileLink.onclick = (e) => { 
-                            e.preventDefault(); 
-                            userHubDropdown.classList.remove('show');
-                            // TODO: Implement showing profile section
-                            showCustomModal('info', 'Profile Feature', 'Aapka profile section jald hi yahaan dikhega!');
-                        };
-
+                        if(viewProfileLink) viewProfileLink.onclick = (e) => { e.preventDefault(); userHubDropdown.classList.remove('show'); showCustomModal('info', 'Profile Feature', 'Aapka profile section jald hi yahaan dikhega!'); };
                         userHubDropdown.appendChild(userInfoContent);
                     }
                     
-                    // Show feedback form and update its details
-                    if(feedbackFormContainer) {
-                        feedbackFormContainer.style.display = 'block'; 
-                        feedbackFormContainer.classList.add('animate-in');
-                    }
-                    if(nameInput) nameInput.value = currentUser.name; 
-                    if(feedbackFormUsername) feedbackFormUsername.textContent = currentUser.name; 
-                    if(nameInput) nameInput.disabled = true;
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name; 
+                    if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name; 
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
+                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure feedback form is visible
                 }
             }
 
             function updateUIAfterLogout() {
-                // Update User Hub Trigger
                 if (userHubAvatar) userHubAvatar.style.display = 'none';
                 if (userHubLoginText) {
                     userHubLoginText.innerHTML = '👤'; 
                     userHubLoginText.style.display = 'inline';
                 }
 
-                // Populate User Hub Dropdown for logged-out state
                 if (userHubDropdown && authSectionTemplate) {
-                    userHubDropdown.innerHTML = ''; // Clear previous content
+                    userHubDropdown.innerHTML = ''; 
                     const authSectionClone = authSectionTemplate.cloneNode(true);
                     userHubDropdown.appendChild(authSectionClone);
-                    setupDropdownAuthForms(authSectionClone); // Attach event listeners to cloned forms
-                    showFormInDropdown('login', authSectionClone); // Default to login form
+                    setupDropdownAuthForms(authSectionClone); 
                 }
                 
-                if(feedbackFormContainer) feedbackFormContainer.style.display = 'none'; 
-                if(nameInput) nameInput.value = ''; 
-                if(feedbackFormUsername) feedbackFormUsername.textContent = 'User'; 
-                if(nameInput) nameInput.disabled = true; 
+                // Feedback form changes for logged out state
+                if(nameInputInFeedbackForm) {
+                    nameInputInFeedbackForm.value = ''; 
+                    nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';
+                    nameInputInFeedbackForm.disabled = false; // Allow typing name if not logged in
+                }
+                if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest'; 
+                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure feedback form is visible
             }
             
-            // --- Baaki saare functions (Typed.js, star rating, modals, feedback handling etc.) pehle jaise hi ---
-            if (mainTitle) {
+            if (mainTitle) { /* ... (Typed.js) ... */
                  new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
                  new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
             }
             function updateStarVisuals(ratingToShow) { starsElements.forEach(star => { const val = parseInt(star.getAttribute('data-value')); star.classList.toggle('selected', val <= ratingToShow); star.classList.remove('highlighted'); });}
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
             
-            function showCustomModal(type, title, message) {
+            function showCustomModal(type, title, message) { /* ... (same as before) ... */
                 if(!customModalOverlay || !modalTitleEl || !modalMessageEl || !modalIconEl || !modalButtonContainer) { console.error("Custom modal elements not found!"); alert(`${title}: ${message}`); return; }
                 modalTitleEl.textContent = title; modalMessageEl.innerHTML = `<p>${message}</p>`;
                 if (confettiContainer) confettiContainer.innerHTML = '';
@@ -632,32 +650,70 @@
                 if (type === 'success' && confettiContainer) launchConfetti();
                 customModalOverlay.classList.add('show');
             }
-            function launchConfetti() { if (!confettiContainer) return; const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722']; confettiContainer.innerHTML = ''; for (let i = 0; i < 50; i++) { const c = document.createElement('div'); c.classList.add('confetti'); c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]); c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`; confettiContainer.appendChild(c); c.addEventListener('animationend', () => c.remove()); }}
-            async function fetchFeedbacks() {
+            function launchConfetti() { /* ... (same as before) ... */ if (!confettiContainer) return; const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722']; confettiContainer.innerHTML = ''; for (let i = 0; i < 50; i++) { const c = document.createElement('div'); c.classList.add('confetti'); c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]); c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`; confettiContainer.appendChild(c); c.addEventListener('animationend', () => c.remove()); }}
+            async function fetchFeedbacks() { /* ... (same as before) ... */
                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplay); if(h2Title) feedbackListContainer.appendChild(h2Title); 
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'Abhi tak koi feedback nahi aaya hai. Aap pehle ho sakte hain!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
-                } catch (err) { /* apiRequest handles modal */ }
+                } catch (err) { /* handled */ }
             }
-            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplay.querySelector('.average-rating-container'); if (avgContainer) avgContainer.classList.add('animate-in'); }, 50);}
+            function updateAverageRating(avg, count) { /* ... (same as before) ... */ const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplay.querySelector('.average-rating-container'); if (avgContainer) avgContainer.classList.add('animate-in'); }, 50);}
             if(submitButton) submitButton.addEventListener('click', async () => {
-                if (!currentUser) return showCustomModal('warning', 'Login Zaroori', 'Feedback dene ke liye kripya login karein.');
-                const feedbackContent = feedbackTextarea.value.trim(); const ratingValue = ratingInput.value;
-                if (!feedbackContent || ratingValue === '0') return showCustomModal('error', 'Khali Fields!', 'Feedback aur rating, sab kuch daalna zaroori hai!');
+                const feedbackContent = feedbackTextarea.value.trim(); 
+                const ratingValue = ratingInput.value;
+                let nameValue = nameInputInFeedbackForm.value.trim();
+
+                if (!currentUser && !nameValue) { // Agar login nahi hai aur naam bhi nahi daala
+                    return showCustomModal('error', 'Naam Zaroori!', 'Agar aap login nahi hain, toh kripya apna naam daalein.');
+                }
+                if (!feedbackContent || ratingValue === '0') {
+                    return showCustomModal('error', 'Khali Fields!', 'Feedback aur rating, sab kuch daalna zaroori hai!');
+                }
+
                 let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
+                if (currentUser) {
+                    // Naam JWT se aayega, server par req.user.name use hoga
+                } else {
+                    feedbackPayload.name = nameValue; // Anonymous user ka naam form se
+                }
+
+                // Backend abhi authenticateToken middleware use kar raha hai,
+                // toh agar user logged in nahi hai, toh request fail ho jayegi.
+                // Agar anonymous feedback allow karna hai, toh backend /api/feedback route ko
+                // authenticateTokenOptional karna hoga aur wahaan handle karna hoga.
+                // Abhi ke liye, agar user logged in nahi hai, toh modal dikhega.
+                if (!currentUser) {
+                    return showCustomModal('warning', 'Login Zaroori', 'Feedback jama karne ke liye kripya login karein.');
+                }
+
                 const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
                 const method = isEditing ? 'PUT' : 'POST';
                 submitButton.disabled = true;
                 try { const data = await apiRequest(url, method, feedbackPayload); showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } 
-                catch (error) { /* apiRequest handles modal */ }
+                catch (error) { /* handled */ }
                 finally { submitButton.disabled = false; }
             });
-            function resetFeedbackForm() { if (currentUser) { nameInput.value = currentUser.name; feedbackFormUsername.textContent = currentUser.name; nameInput.disabled = true; } else { nameInput.value = ''; feedbackFormUsername.textContent = 'User'; nameInput.disabled = true; } feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); submitButton.textContent = 'FEEDBACK JAMA KAREIN'; isEditing = false; currentEditFeedbackId = null; }
-            function addFeedbackToDOM(fbData, index) {
+            function resetFeedbackForm() { 
+                if (currentUser) { 
+                    nameInputInFeedbackForm.value = currentUser.name; 
+                    feedbackFormUsernameSpan.textContent = currentUser.name; 
+                    nameInputInFeedbackForm.disabled = true; 
+                } else { 
+                    nameInputInFeedbackForm.value = ''; 
+                    feedbackFormUsernameSpan.textContent = 'Guest'; 
+                    nameInputInFeedbackForm.disabled = false; 
+                    nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';
+                } 
+                feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); 
+                submitButton.textContent = 'FEEDBACK JAMA KAREIN'; isEditing = false; currentEditFeedbackId = null; 
+            }
+            function addFeedbackToDOM(fbData, index) { /* ... (same as before) ... */
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'); avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong'); 
                 let nameContent = fbData.name; let userTypeTag = '';
+                // User type indicator logic (assuming fbData.userId.loginMethod or fbData.googleIdSubmitter is available from backend)
+                // For now, using googleIdSubmitter as a simple check
                 if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
                 strongName.innerHTML = `${nameContent} ${userTypeTag}`;
@@ -671,7 +727,7 @@
                 editButton.addEventListener('click', (event) => { 
                     event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showCustomModal('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
                     showCustomModal('info', 'FEEDBACK EDIT KAREIN', 'Neeche form mein apna feedback edit karein.');
-                    nameInput.value = fbData.name; feedbackFormUsername.textContent = fbData.name; nameInput.disabled = true; 
+                    nameInputInFeedbackForm.value = fbData.name; feedbackFormUsernameSpan.textContent = fbData.name; nameInputInFeedbackForm.disabled = true; 
                     feedbackTextarea.value = fbData.feedback; currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
                     submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
                     if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -683,7 +739,12 @@
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out'; }, index * 70);
             }
             setTimeout(() => { const fbListEl = document.querySelector('#feedback-list-container'); if(fbListEl) fbListEl.classList.add('animate-in'); }, 300);
+
+            // Initial UI setup
+            updateUIAfterLogout(); // Start with logged-out UI for User Hub
+            checkLoginStatus(); // Then check actual login status
         });
+        // === END: JavaScript Code ===
     </script>
 </body>
 </html>
