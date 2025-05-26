@@ -1,581 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✨ NOBITA'S FUTURISTIC FEEDBACK PORTAL ✨</title>
+    <title>✨ NOBITA Ka Feedback Portal ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --primary-color: #6a0dad; /* Deep Purple */
-            --secondary-color: #FFD700; /* Gold */
-            --accent-color: #3B82F6; /* Blue */
+            --primary-color: #6a0dad; /* गहरा बैंगनी */
+            --secondary-color: #FFD700; /* सोना */
+            --accent-color: #3B82F6; /* नीला */
             --text-color-light: #f4f4f9;
             --text-color-dark: #2c3e50;
-            --bg-gradient-start: #1a1a2e;
-            --bg-gradient-end: #16213e;
-            --card-bg: rgba(255, 255, 255, 0.1);
+            --bg-gradient-start: #1a1a2e; /* गहरा नीला-काला */
+            --bg-gradient-end: #16213e; /* थोड़ा हल्का नीला-काला */
+            --card-bg: rgba(255, 255, 255, 0.1); /* हल्का पारदर्शी सफेद */
             --card-border: rgba(255, 255, 255, 0.2);
             --input-bg: rgba(255, 255, 255, 0.08);
-            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
             --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
-            --success-color: #28a745; /* Green for success */
-            --error-color: #dc3545; /* Red for error */
+            --success-color: #28a745; /* हरा */
+            --error-color: #dc3545; /* लाल */
         }
-
         html { scroll-behavior: smooth; }
-
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: var(--text-color-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            overflow-x: hidden;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; margin: 0;
+            padding: 25px 15px; box-sizing: border-box; overflow-x: hidden;
         }
-
         .container {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            box-shadow: var(--shadow-deep);
-            padding: 40px;
-            text-align: center;
-            width: 90%;
-            max-width: 800px;
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-            margin-bottom: 40px;
-            opacity: 0;
-            transform: translateY(50px);
-            will-change: transform, opacity;
-            -webkit-font-smoothing: antialiased;
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
+            border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
+            width: 90%; max-width: 750px; margin-bottom: 35px; opacity: 0; transform: translateY(40px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out; position: relative; overflow: hidden;
         }
         .container.animate-in { opacity: 1; transform: translateY(0); }
-
         .owner-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px; /* Reduced margin */
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-            transition-delay: 0.8s;
-            will-change: transform, opacity;
+            display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px;
+            opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; transition-delay: 0.5s;
         }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
-        .owner-avatar {
-            width: 70px; /* Slightly smaller */
-            height: 70px;
-            border-radius: 50%;
-            border: 3px solid var(--secondary-color);
-            box-shadow: 0 0 15px rgba(255,215,0,0.6);
-            object-fit: cover;
-        }
-        .owner-text {
-            color: var(--text-color-light);
-            font-size: 1em; /* Slightly smaller */
-            font-weight: 600;
-            text-shadow: 0 0 8px rgba(0,0,0,0.4);
-            font-family: 'Roboto', sans-serif; /* Consistent font */
-            color: #9B59B6;
-        }
-
-        #google-auth-container {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        #google-signin-button-container { /* For Google's button */
-             height: 45px; /* Ensure space for button */
-        }
-        #user-info {
-            color: var(--secondary-color);
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        #google-logout-button {
-            background-color: var(--error-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        #google-logout-button:hover { background-color: #c82333; }
-
-
-        h1 {
-            color: var(--secondary-color);
-            margin-bottom: 20px; /* Reduced margin */
-            font-size: 2.5em; /* Slightly smaller */
-            font-weight: 700;
-            text-shadow: 0 0 15px rgba(255,215,0,0.5);
-            letter-spacing: 1px;
-            line-height: 1.3em;
-            min-height: calc(2.5em * 1.3 * 2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        #typed-output {
-            color: var(--accent-color);
-            font-size: 1.1em; /* Slightly smaller */
-            margin-top: -15px; /* Adjusted */
-            margin-bottom: 25px;
-            line-height: 1.4em;
-            min-height: calc(1.1em * 1.4 * 2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        .input-group { margin-bottom: 20px; text-align: left; position: relative; }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-color-light);
-            font-weight: 600;
-            font-size: 1em;
-            text-shadow: 0 0 5px rgba(0,0,0,0.3);
-        }
+        .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
+        .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
+        #google-auth-container { margin-bottom: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        #google-signin-button-container { min-height: 40px; /* Google button ke liye jagah */ }
+        #user-info { color: var(--secondary-color); font-weight: 500; font-size: 1em; padding: 5px 0;}
+        #google-logout-button { background-color: var(--error-color); color: white; border: none; padding: 7px 14px; border-radius: 7px; font-size: 0.85em; cursor: pointer; transition: background-color 0.25s ease, transform 0.2s ease; }
+        #google-logout-button:hover { background-color: #c82333; transform: translateY(-1px); }
+        h1 { color: var(--secondary-color); margin-bottom: 18px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -12px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .input-group { margin-bottom: 18px; text-align: left; position: relative; }
+        .input-group label { display: block; margin-bottom: 7px; color: var(--text-color-light); font-weight: 500; font-size: 0.95em; }
         .input-group input, .input-group textarea {
-            width: 100%;
-            padding: 12px 18px;
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            background: var(--input-bg);
-            color: var(--text-color-light);
-            font-size: 1em;
-            outline: none;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+            width: 100%; padding: 11px 16px; border: 1px solid var(--card-border); border-radius: 9px;
+            background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none;
+            transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15);
         }
-        .input-group input:disabled {
-            background: rgba(255, 255, 255, 0.05);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .input-group input:focus, .input-group textarea:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.3), inset 2px 2px 8px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.12);
-        }
-        .input-group textarea { resize: vertical; min-height: 90px; max-height: 250px; }
-
-        .stars { margin-top: 12px; display: flex; justify-content: center; gap: 8px; }
-        .star {
-            font-size: 3em; /* Slightly smaller */
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            transition: color 0.3s ease, transform 0.2s ease, text-shadow 0.3s ease;
-            text-shadow: 0 0 5px rgba(0,0,0,0.3);
-        }
-        .star.highlighted, .star.selected {
-            color: var(--secondary-color);
-            transform: scale(1.15) rotateY(10deg);
-            text-shadow: 0 0 20px var(--secondary-color), 0 0 30px rgba(255,215,0,0.5);
-        }
-
+        .input-group input:disabled { background: rgba(255, 255, 255, 0.04); cursor: not-allowed; opacity: 0.65; }
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3.5px rgba(59,130,246,0.25), inset 1px 1px 6px rgba(0,0,0,0.2); background: rgba(255, 255, 255, 0.1); }
+        .input-group textarea { resize: vertical; min-height: 85px; max-height: 220px; }
+        .stars { margin-top: 10px; display: flex; justify-content: center; gap: 7px; }
+        .star { font-size: 2.8em; color: rgba(255, 255, 255, 0.35); cursor: pointer; transition: color 0.25s ease, transform 0.15s ease, text-shadow 0.25s ease; }
+        .star.highlighted, .star.selected { color: var(--secondary-color); transform: scale(1.12) rotateY(8deg); text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.45); }
         button#submit-feedback {
-            background: linear-gradient(45deg, var(--accent-color), #2563EB);
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(59,130,246,0.4);
-            letter-spacing: 0.8px;
-            margin-top: 25px;
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none;
+            padding: 11px 28px; border-radius: 9px; font-size: 1.05em; font-weight: 500; cursor: pointer;
+            transition: all 0.25s ease; box-shadow: 0 4px 12px rgba(59,130,246,0.35); letter-spacing: 0.7px; margin-top: 22px; position: relative; overflow: hidden;
         }
-        button#submit-feedback::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
-            transition: all 0.6s ease-out;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-        }
+        button#submit-feedback::before { content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; background: rgba(255,255,255,0.12); border-radius: 50%; transition: all 0.5s ease-out; transform: translate(-50%, -50%) scale(0); opacity: 0; }
         button#submit-feedback:hover::before { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        button#submit-feedback:hover {
-            background: linear-gradient(45deg, #2563EB, var(--accent-color));
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(59,130,246,0.6);
-        }
-
-        #feedback-list-container {
-            margin-top: 40px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 18px;
-            padding: 25px;
-            text-align: left;
-            box-shadow: var(--shadow-deep);
-            width: 90%;
-            max-width: 800px;
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
-        #feedback-list-container h2 {
-            color: var(--secondary-color);
-            margin-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 12px;
-            font-size: 2em;
-            font-weight: 600;
-            text-shadow: 0 0 10px rgba(255,215,0,0.3);
-        }
-
-        .average-rating-container {
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid var(--secondary-color);
-            border-radius: 15px;
-            padding: 18px 25px;
-            margin-bottom: 25px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            color: var(--text-color-light);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        .average-rating-container.animate-in { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
-        .average-rating-container h3 {
-            color: var(--secondary-color);
-            font-size: 1.6em;
-            margin: 0;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
-            margin-bottom: 8px;
-        }
-        .average-number {
-            font-size: 3.5em;
-            font-weight: 700;
-            color: var(--secondary-color);
-            text-shadow: 0 0 20px var(--secondary-color), 0 0 30px rgba(255,215,0,0.7);
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-        .average-stars { font-size: 2.2em; color: var(--secondary-color); letter-spacing: 5px; text-shadow: 0 0 15px rgba(255,215,0,0.7); }
-        .total-feedbacks-count { font-size: 1em; color: rgba(255, 255, 255, 0.8); font-weight: 400; margin-top: 8px; }
-
-        .feedback-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            margin-bottom: 18px;
-            padding: 18px;
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            flex-wrap: wrap;
-            position: relative;
-            overflow: hidden;
-        }
-        .feedback-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(106, 13, 173, 0.05), rgba(255, 215, 0, 0.02));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .feedback-item:hover::before { opacity: 1; }
-        .feedback-item:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .feedback-item:last-child { margin-bottom: 0; }
-
-        .avatar-img {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            border: 3px solid var(--accent-color);
-            box-shadow: 0 0 10px rgba(59,130,246,0.5);
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        .avatar-img:hover { transform: scale(1.1) rotate(5deg); }
-
+        button#submit-feedback:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2.5px) scale(1.015); box-shadow: 0 7px 18px rgba(59,130,246,0.55); }
+        #feedback-list-container { margin-top: 35px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; transition-delay: 0.1s;}
+        #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); }
+        #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); }
+        .average-rating-container { background: rgba(255, 215, 0, 0.09); border: 1px solid var(--secondary-color); border-radius: 13px; padding: 16px 22px; margin-bottom: 22px; text-align: center; box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-color-light); transition: all 0.25s ease; opacity: 0; transform: translateY(25px); }
+        .average-rating-container.animate-in { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+        .average-rating-container h3 { color: var(--secondary-color); font-size: 1.5em; margin: 0; margin-bottom: 7px; }
+        .average-number { font-size: 3.2em; font-weight: 600; color: var(--secondary-color); text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.65); line-height: 1; margin-bottom: 7px; }
+        .average-stars { font-size: 2em; color: var(--secondary-color); letter-spacing: 4px; text-shadow: 0 0 13px rgba(255,215,0,0.65); }
+        .total-feedbacks-count { font-size: 0.95em; color: rgba(255, 255, 255, 0.75); font-weight: 300; margin-top: 7px; }
+        .feedback-item { background: rgba(255, 255, 255, 0.045); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 13px; margin-bottom: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 3.5px 9px rgba(0,0,0,0.18); transition: transform 0.25s ease, box-shadow 0.25s ease; position: relative; overflow: hidden; }
+        .feedback-item:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 7px 18px rgba(0,0,0,0.28); }
+        .avatar-img { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; border: 2.5px solid var(--accent-color); box-shadow: 0 0 9px rgba(59,130,246,0.45); object-fit: cover; }
         .feedback-details { flex-grow: 1; display: flex; flex-direction: column; }
-        .feedback-details strong {
-            color: var(--secondary-color);
-            font-size: 1.15em;
-            display: block;
-            margin-bottom: 5px;
-            text-transform: capitalize;
-            letter-spacing: 0.5px;
-        }
-        .google-user-indicator {
-            font-size: 0.7em;
-            background-color: #4285F4; /* Google Blue */
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 8px;
-            vertical-align: middle;
-            font-weight: normal;
-        }
-        .feedback-stars { color: var(--secondary-color); font-size: 1.6em; letter-spacing: 3px; margin-bottom: 6px; text-shadow: 0 0 8px rgba(255,215,0,0.5); }
-        .feedback-details p { margin-top: 5px; margin-bottom: 8px; word-wrap: break-word; white-space: pre-wrap; color: var(--text-color-light); line-height: 1.6; }
-        .feedback-timestamp { font-size: 0.75em; color: rgba(255, 255, 255, 0.6); margin-top: 5px; text-align: right; }
-
-        .admin-reply {
-            margin-top: 12px;
-            padding: 10px 12px;
-            background-color: rgba(255, 215, 0, 0.1);
-            border-left: 4px solid var(--secondary-color);
-            border-radius: 8px;
-            font-size: 0.9em;
-            color: var(--text-color-light);
-            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.05);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .admin-reply:hover { background-color: rgba(255, 215, 0, 0.15); box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.1); }
-        .admin-reply-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid #9B59B6;
-            flex-shrink: 0;
-            object-fit: cover;
-            box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
-        }
-        .admin-reply-content { flex-grow: 1; }
-        .admin-reply-content strong { color: #9B59B6; font-size: 1em; display: inline; margin-right: 5px; text-transform: none; }
-        .admin-reply-content p { margin: 0; padding: 0; color: var(--text-color-light); display: inline; }
-        .admin-reply-content .reply-timestamp { font-size: 0.7em; color: rgba(255, 255, 255, 0.5); margin-left: 8px; }
-
-        .edit-feedback-btn {
-            background: none;
-            border: none;
-            color: #5bc0de;
-            cursor: pointer;
-            font-size: 1.3em;
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            transition: color 0.3s ease, transform 0.2s;
-            padding: 5px;
-            opacity: 0.8;
-            z-index: 10;
-        }
-        .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.1) rotate(5deg); opacity: 1; }
-        .edit-feedback-btn[disabled] { display: none !important; } /* Ensure it's hidden */
-
-
-        .edited-tag {
-            background-color: #f0ad4e;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.7em;
-            font-weight: bold;
-            margin-left: 8px;
-            vertical-align: middle;
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-
-        #custom-modal-overlay {
-            position: fixed; /* Changed to fixed for full viewport coverage */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(26, 26, 46, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000; /* Ensure it's on top */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease-out, visibility 0s linear 0.4s;
-        }
-        #custom-modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.4s ease-out, visibility 0s linear 0s;
-        }
-
-        .custom-modal {
-            background: linear-gradient(135deg, #1f2a3a, #2c3e50);
-            border: 2px solid;
-            border-radius: 20px;
-            padding: 30px 25px;
-            text-align: center;
-            color: var(--text-color-light);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2) inset;
-            transform: scale(0.7) translateY(-30px);
-            opacity: 0;
-            visibility: hidden;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-out;
-            max-width: 90%; /* Max width for responsiveness */
-            width: 450px; /* Default width */
-            min-width: 300px;
-            position: relative;
-            z-index: 1001; /* Above overlay */
-        }
-
-        #custom-modal-overlay.show .custom-modal {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-icon {
-            font-size: 4.5em;
-            color: white;
-            margin-bottom: 15px;
-            animation: bounceIn 0.8s ease-out;
-            text-shadow: 0 0 15px;
-        }
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
-        .custom-modal h3 {
-            font-family: 'Luckiest Guy', cursive;
-            font-size: 1.8em;
-            color: var(--secondary-color);
-            margin-bottom: 10px;
-            text-shadow: 0 0 8px rgba(255,215,0,0.5);
-            letter-spacing: 1px;
-        }
-        .custom-modal p { font-size: 1em; line-height: 1.5; margin-bottom: 20px; color: #ccc; }
-        .modal-close-btn {
-            background: linear-gradient(45deg, var(--accent-color), #2563EB);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(59,130,246,0.4);
-        }
-        .modal-close-btn:hover {
-            background: linear-gradient(45deg, #2563EB, var(--accent-color));
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 5px 15px rgba(59,130,246,0.6);
-        }
-
-        .confetti-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: var(--confetti-color);
-            border-radius: 50%;
-            opacity: 0;
-            animation: confetti-fall 3s ease-out forwards;
-        }
-        @keyframes confetti-fall {
-            0% { transform: translateY(-100px) rotateZ(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
-        }
-
-        @media (max-width: 768px) {
-            .owner-info { margin-bottom: 25px; }
-            .owner-avatar { width: 60px; height: 60px; }
-            .owner-text { font-size: 0.9em; }
-            .container { padding: 30px; }
-            h1 { font-size: 2em; }
-            #typed-output { font-size: 1em; }
-            .input-group input, .input-group textarea { font-size: 0.95em; }
-            .star { font-size: 2.8em; }
-            button#submit-feedback { font-size: 1em; }
-            #feedback-list-container h2 { font-size: 1.6em; }
-            .average-rating-container h3 { font-size: 1.4em; }
-            .average-number { font-size: 3em; }
-            .average-stars { font-size: 1.8em; }
-            .feedback-item { flex-direction: column; align-items: center; text-align: center; }
-            .custom-modal h3 { font-size: 1.6em; }
-            .custom-modal p { font-size: 0.9em; }
-            .modal-icon { font-size: 4em; }
-        }
-        @media (max-width: 480px) {
-            body { padding: 15px; }
-            .owner-info { flex-direction: column; text-align: center;}
-            h1 { font-size: 1.6em; }
-            #typed-output { font-size: 0.85em; }
-            .star { font-size: 2.2em; }
-            button#submit-feedback { font-size: 0.9em; }
-            #feedback-list-container h2 { font-size: 1.4em; }
-            .average-number { font-size: 2.2em; }
-            .average-stars { font-size: 1.6em; }
-             .custom-modal { width: 95%; padding: 20px 15px;}
-             .custom-modal h3 { font-size: 1.4em; }
-            .custom-modal p { font-size: 0.85em; }
-            .modal-icon { font-size: 3em; }
-        }
+        .feedback-details strong { color: var(--secondary-color); font-size: 1.1em; display: block; margin-bottom: 4px; text-transform: capitalize; }
+        .google-user-indicator { font-size: 0.65em; background-color: #4285F4; color: white; padding: 1.5px 5.5px; border-radius: 3.5px; margin-left: 7px; vertical-align: middle; font-weight: normal; }
+        .feedback-stars { color: var(--secondary-color); font-size: 1.5em; letter-spacing: 2.5px; margin-bottom: 5.5px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
+        .feedback-details p { margin-top: 4px; margin-bottom: 7px; word-wrap: break-word; white-space: pre-wrap; color: var(--text-color-light); line-height: 1.55; font-size: 0.95em;}
+        .feedback-timestamp { font-size: 0.7em; color: rgba(255, 255, 255, 0.55); margin-top: 4px; text-align: right; }
+        .admin-reply { margin-top: 10px; padding: 9px 11px; background-color: rgba(255, 215, 0, 0.09); border-left: 3.5px solid var(--secondary-color); border-radius: 7px; font-size: 0.85em; display: flex; align-items: flex-start; gap: 7px; }
+        .admin-reply-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #9B59B6; flex-shrink: 0; object-fit: cover; }
+        .admin-reply-content strong { color: #9B59B6; font-size: 0.95em; display: inline; }
+        .admin-reply-content .reply-timestamp { font-size: 0.65em; color: rgba(255, 255, 255, 0.45); margin-left: 7px; }
+        .edit-feedback-btn { background: none; border: none; color: #5bc0de; cursor: pointer; font-size: 1.25em; position: absolute; top: 10px; right: 10px; padding: 4px; opacity: 0.75; z-index: 10; transition: color 0.25s ease, transform 0.15s; }
+        .edit-feedback-btn:hover { color: #31b0d5; transform: scale(1.08) rotate(4deg); opacity: 1; }
+        .edit-feedback-btn[disabled] { display: none !important; }
+        .edited-tag { background-color: #f0ad4e; color: white; padding: 2.5px 7px; border-radius: 4.5px; font-size: 0.65em; font-weight: bold; margin-left: 7px; vertical-align: middle; animation: fadeIn 0.45s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+        #custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.92); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.35s ease-out, visibility 0s linear 0.35s; }
+        #custom-modal-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.35s ease-out, visibility 0s linear 0s; }
+        .custom-modal { background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid; border-radius: 18px; padding: 28px 22px; text-align: center; color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28); transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden; transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out; max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;}
+        #custom-modal-overlay.show .custom-modal { transform: scale(1) translateY(0); opacity: 1; visibility: visible; }
+        .modal-icon { font-size: 4.2em; color: white; margin-bottom: 13px; animation: bounceIn 0.75s ease-out; text-shadow: 0 0 13px; }
+        @keyframes bounceIn { 0% {transform: scale(0.35);opacity: 0;} 50% {transform: scale(1.15);opacity: 1;} 70% {transform: scale(0.92);} 100% {transform: scale(1);} }
+        .custom-modal h3 { font-family: 'Luckiest Guy', cursive; font-size: 1.7em; color: var(--secondary-color); margin-bottom: 9px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
+        .custom-modal p { font-size: 0.95em; line-height: 1.45; margin-bottom: 18px; color: #bbb; }
+        .modal-close-btn { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; padding: 9px 18px; border-radius: 7px; font-size: 0.95em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2.5px 9px rgba(59,130,246,0.35); }
+        .modal-close-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
+        .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
+        .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
+        @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } h1 { font-size: 2em; } .star { font-size: 2.8em; } }
+        @media (max-width: 480px) { h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} #google-auth-container{margin-bottom: 15px;} }
     </style>
 </head>
 <body>
     <div class="owner-info animate-in">
-        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
-        <span class="owner-text">Developed by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita ka Avatar" class="owner-avatar">
+        <span class="owner-text">Banaya gaya: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 dwara</span>
     </div>
 
     <div class="container animate-in">
@@ -583,179 +130,203 @@
             <div id="google-signin-button-container">
                 </div>
             <div id="user-info" style="display:none;"></div>
-            <button id="google-logout-button" style="display:none;">LOGOUT KARO</button>
+            <button id="google-logout-button" style="display:none;">LOGOUT</button>
         </div>
 
         <h1 id="main-title"></h1>
         <div id="typed-output"></div>
 
-        <div class="input-group">
-            <label for="name">AAPKA NAAM:</label>
-            <input type="text" id="name" placeholder="APNA NAAM DAALO" required>
-        </div>
-        <div class="input-group">
-            <label for="feedback">AAPKA FEEDBACK:</label>
-            <textarea id="feedback" placeholder="APNE VICHAR YAHAN LIKHO..." required></textarea>
-        </div>
-        <div class="input-group">
-            <label>APNA ANUBHAV RATE KARO:</label>
-            <div class="stars" id="star-rating">
-                <span class="star" data-value="1">★</span>
-                <span class="star" data-value="2">★</span>
-                <span class="star" data-value="3">★</span>
-                <span class="star" data-value="4">★</span>
-                <span class="star" data-value="5">★</span>
+        <form id="feedback-form">
+            <div class="input-group">
+                <label for="name">Aapka Naam:</label>
+                <input type="text" id="name" placeholder="Apna naam yahaan likhein..." required>
             </div>
-            <input type="hidden" id="rating" value="0">
-        </div>
-        <button id="submit-feedback">FEEDBACK JAMA KARO</button>
+            <div class="input-group">
+                <label for="feedback">Aapka Feedback:</label>
+                <textarea id="feedback" placeholder="Apne anmol vichar yahaan likhein..." required></textarea>
+            </div>
+            <div class="input-group">
+                <label>Apne anubhav ko rate karein:</label>
+                <div class="stars" id="star-rating">
+                    <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" id="rating" value="0">
+            </div>
+            <button type="button" id="submit-feedback">FEEDBACK JAMA KAREIN</button>
+        </form>
 
         <div id="custom-modal-overlay" class="modal-overlay">
             <div class="custom-modal">
-                <div class="confetti-container"></div>
-                <div class="modal-icon"></div>
-                <h3 id="modal-title"></h3>
-                <p id="modal-message"></p>
-                <button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
+                <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p><button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
             </div>
         </div>
     </div>
 
     <div id="feedback-list-container" class="animate-in">
         <div id="average-rating-display"></div>
-        <h2>HAL HI KE FEEDBACKS</h2>
+        <h2>Haal Hi Ke Feedbacks</h2>
     </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com'; // AAPKA CLIENT ID
+        document.addEventListener('DOMContentLoaded', async () => {
+            const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
 
             const nameInput = document.getElementById('name');
             const feedbackTextarea = document.getElementById('feedback');
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
             const feedbackListContainer = document.getElementById('feedback-list-container');
-            const starsElements = document.querySelectorAll('.star'); // Renamed from 'stars' to avoid conflict
+            const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
             const averageRatingDisplay = document.getElementById('average-rating-display');
-            const formContainer = document.querySelector('.container');
+            const formContainer = document.querySelector('.container'); // Feedback form ka container
 
             const customModalOverlay = document.getElementById('custom-modal-overlay');
-            const customModal = customModalOverlay ? customModalOverlay.querySelector('.custom-modal') : null;
-            const modalIcon = customModalOverlay ? customModalOverlay.querySelector('.modal-icon') : null;
-            const modalTitle = customModalOverlay ? document.getElementById('modal-title') : null;
-            const modalMessage = customModalOverlay ? document.getElementById('modal-message') : null;
-            const modalCloseBtn = customModalOverlay ? document.getElementById('modal-close-btn') : null;
-            const confettiContainer = customModalOverlay ? customModalOverlay.querySelector('.confetti-container') : null;
+            const modalIcon = customModalOverlay.querySelector('.modal-icon');
+            const modalTitleEl = document.getElementById('modal-title'); // Renamed to avoid conflict
+            const modalMessageEl = document.getElementById('modal-message'); // Renamed
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const confettiContainer = customModalOverlay.querySelector('.confetti-container');
 
-            // Google Auth elements
             const googleSigninButtonContainer = document.getElementById('google-signin-button-container');
             const userInfoDiv = document.getElementById('user-info');
             const googleLogoutButton = document.getElementById('google-logout-button');
 
             let currentSelectedRating = 0;
-            let userIpAddress = '';
             let isEditing = false;
             let currentEditFeedbackId = null;
-            let currentGoogleUser = null; // To store Google user info { sub, name, email, picture }
+            let currentGoogleUser = null; // Stores { googleId, name, email, picture }
 
-            const BASE_API_URL = 'https://nobita-feedback-app-online.onrender.com'; // Replace if self-hosting
-            const API_URL = `${BASE_API_URL}/api/feedback`;
+            const BASE_API_URL = window.location.origin; // Auto-detect base URL
+            const API_URL_FEEDBACK = `${BASE_API_URL}/api/feedback`; // Corrected variable name
             const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
             const GOOGLE_AUTH_URL = `${BASE_API_URL}/api/auth/google-signin`;
+            const VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
 
-
-            async function getClientIp() {
-                try {
-                    const response = await fetch('https://api.ipify.org?format=json');
-                    const data = await response.json();
-                    userIpAddress = data.ip;
-                } catch (error) {
-                    console.error('IP address fetch error:', error);
-                    userIpAddress = 'UNKNOWN';
+            async function checkLoginStatus() {
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    try {
+                        const res = await fetch(VALIDATE_TOKEN_URL, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (res.ok) {
+                            currentGoogleUser = await res.json(); // Server se user data milega
+                            updateUIAfterLogin();
+                        } else { // Token invalid ya expired
+                            localStorage.removeItem('authToken');
+                            updateUIAfterLogout();
+                            if(res.status === 403 || res.status === 401) console.warn("Session token invalid/expired. Please login again.");
+                        }
+                    } catch (err) {
+                        console.error("Token validate karte waqt error:", err);
+                        localStorage.removeItem('authToken'); // Error hone par token remove karo
+                        updateUIAfterLogout();
+                    }
+                } else {
+                    updateUIAfterLogout(); // Koi token nahi hai
                 }
+                await fetchFeedbacks(); // Login status check karne ke baad feedbacks load karo
             }
-            getClientIp();
 
-            // Initialize Google Sign-In
-            window.onload = function () {
-                if (typeof google !== 'undefined') {
+            // Google Sign-In Initialize karna
+            window.onload = function () { // Yeh DOMContentLoaded ke baad chalega
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.initialize({
                         client_id: GOOGLE_CLIENT_ID,
                         callback: handleCredentialResponse
                     });
+                    // Login status check karne ke baad hi Google button render karo
+                    if (!localStorage.getItem('authToken')) { // Agar pehle se login nahi hai
+                         renderGoogleButton();
+                    }
+                } else {
+                    console.error("Google Identity Services script abhi load nahi hua hai ya aage load hoga.");
+                    // Fallback ya retry logic yahaan daal sakte hain
+                }
+                checkLoginStatus(); // Page load par login status check karo
+            };
+
+            function renderGoogleButton() {
+                 if (googleSigninButtonContainer && typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.renderButton(
                         googleSigninButtonContainer,
-                        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular" }
+                        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular", width: "250px" }
                     );
-                   // google.accounts.id.prompt(); // Optional: One Tap Sign-In
-                } else {
-                    console.error("Google Identity Services script not loaded yet.");
+                    googleSigninButtonContainer.style.display = 'flex'; // Ensure container is visible
+                    googleSigninButtonContainer.style.justifyContent = 'center';
+
                 }
-            };
+            }
 
             async function handleCredentialResponse(response) {
                 try {
                     const res = await fetch(GOOGLE_AUTH_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: response.credential })
+                        body: JSON.stringify({ token: response.credential }) // Google se mila ID token
                     });
                     if (!res.ok) {
                         const errorData = await res.json();
-                        throw new Error(errorData.message || `Google Sign-In Error: ${res.status}`);
+                        throw new Error(errorData.message || `Google Sign-In Error Status: ${res.status}`);
                     }
-                    currentGoogleUser = await res.json();
+                    const { token, user } = await res.json(); // Backend se app ka JWT aur user info milega
+                    localStorage.setItem('authToken', token); // JWT ko localStorage mein save karo
+                    currentGoogleUser = user; // User data set karo { googleId, name, email, picture }
                     updateUIAfterLogin();
-                    showCustomModal('success', `WELCOME ${currentGoogleUser.name}!`, 'Aap Google se login ho gaye ho!');
+                    showCustomModal('success', `SWAGAT HAI ${currentGoogleUser.name}!`, 'Aap Google se सफलतापूर्वक login ho gaye hain!');
+                    await fetchFeedbacks(); // Login ke baad feedbacks refresh karo
                 } catch (err) {
-                    console.error('Google Sign-In failed:', err);
-                    showCustomModal('error', 'LOGIN FAIL!', `Google se login nahi ho paya: ${err.message}`);
+                    localStorage.removeItem('authToken'); // Error par token remove karo
                     currentGoogleUser = null;
-                    updateUIAfterLogout();
+                    updateUIAfterLogout(); // Logout UI update
+                    showCustomModal('error', 'LOGIN FAIL!', `Google se login nahi ho paya: ${err.message}`);
                 }
             }
 
             function updateUIAfterLogin() {
                 if (currentGoogleUser) {
-                    googleSigninButtonContainer.style.display = 'none';
-                    googleLogoutButton.style.display = 'block';
+                    googleSigninButtonContainer.style.display = 'none'; // Google login button chhupao
+                    googleLogoutButton.style.display = 'inline-block'; // Logout button dikhao
                     userInfoDiv.textContent = `Logged in as: ${currentGoogleUser.name}`;
                     userInfoDiv.style.display = 'block';
-                    nameInput.value = currentGoogleUser.name;
-                    nameInput.disabled = true;
+                    nameInput.value = currentGoogleUser.name; // Naam prefill karo
+                    nameInput.disabled = true; // Naam field disable karo
                 }
             }
 
             function handleLogout() {
-                if (typeof google !== 'undefined' && currentGoogleUser) {
-                     google.accounts.id.disableAutoSelect();
-                     // To truly sign out from Google session, you might need more complex handling or redirect.
-                     // For this app, we'll clear local state.
+                localStorage.removeItem('authToken'); // Token remove karo
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id && currentGoogleUser) {
+                     google.accounts.id.disableAutoSelect(); // Google ka auto-select disable karo
+                     // google.accounts.id.revoke(currentGoogleUser.email, done => { console.log('Google session revoked.'); }); // Optional: Google session revoke
                 }
-                currentGoogleUser = null;
-                updateUIAfterLogout();
-                showCustomModal('info', 'LOGGED OUT!', 'Aap Google se logout ho gaye ho.');
+                currentGoogleUser = null; // Current user data clear karo
+                updateUIAfterLogout(); // Logout UI update
+                showCustomModal('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.');
+                renderGoogleButton(); // Logout ke baad Google button phir se dikhao
+                fetchFeedbacks(); // Feedbacks refresh karo
             }
             googleLogoutButton.addEventListener('click', handleLogout);
 
-
             function updateUIAfterLogout() {
-                googleSigninButtonContainer.style.display = 'block';
-                googleLogoutButton.style.display = 'none';
+                // googleSigninButtonContainer.style.display = 'block'; // Google button dikhao (renderGoogleButton handle karega)
+                renderGoogleButton();
+                googleLogoutButton.style.display = 'none'; // Logout button chhupao
                 userInfoDiv.textContent = '';
                 userInfoDiv.style.display = 'none';
-                if (!isEditing) { // Only enable if not in edit mode for someone else
+                if (!isEditing) { // Agar edit mode mein nahi hai, toh naam field clear aur enable karo
                     nameInput.value = '';
                     nameInput.disabled = false;
                 }
             }
 
+            // Typed.js
+            new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
+            new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
 
-            new Typed('#main-title', { strings: ['✨ NOBITA\'S FEEDBACK PORTAL ✨', '🚀 APNE KEEMTI VICHAR SHARE KARO 🚀', '💡 BEHTAR BANANE MEIN MADAD KARO! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 1000, showCursor: true, cursorChar: '|', smartBackspace: true });
-            new Typed('#typed-output', { strings: ['Aapka feedback hamein kamaal ki cheezein banane mein madad karta hai!', 'Aapki imaandari aur sujhavon ki hum qadr karte hain.', 'Har star ek behtar anubhav ki taraf ek kadam hai!'], typeSpeed: 40, backSpeed: 20, loop: true, startDelay: 2000, showCursor: false });
-
+            // Star Rating Logic
             function updateStarVisuals(ratingToShow) {
                 starsElements.forEach(star => {
                     const val = parseInt(star.getAttribute('data-value'));
@@ -763,315 +334,211 @@
                     star.classList.remove('highlighted');
                 });
             }
-
             starsElements.forEach(star => {
-                star.addEventListener('click', () => {
-                    currentSelectedRating = parseInt(star.getAttribute('data-value'));
-                    ratingInput.value = currentSelectedRating;
-                    updateStarVisuals(currentSelectedRating);
-                    star.style.transform = 'scale(1.3) rotateY(15deg)';
-                    setTimeout(() => { star.style.transform = 'scale(1.15) rotateY(10deg)'; }, 150);
-                });
-                star.addEventListener('mouseenter', () => {
-                    const hoverVal = parseInt(star.getAttribute('data-value'));
-                    starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));
-                });
-                star.addEventListener('mouseleave', () => updateStarVisuals(currentSelectedRating));
+                star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); });
+                star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));});
+                star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); });
             });
 
-            function pulseButton() {
-                submitButton.style.transform = 'scale(1.05)';
-                submitButton.style.boxShadow = '0 0 25px rgba(59,130,246,0.8)';
-                setTimeout(() => {
-                    submitButton.style.transform = 'scale(1)';
-                    submitButton.style.boxShadow = '0 5px 15px rgba(59,130,246,0.4)';
-                }, 300);
-            }
-
-            function launchConfetti() {
-                if (!confettiContainer) return;
-                const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
-                confettiContainer.innerHTML = '';
-                for (let i = 0; i < 50; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.classList.add('confetti');
-                    confetti.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
-                    confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.top = `${Math.random() * -20 - 10}px`;
-                    confetti.style.animationDuration = `${2 + Math.random() * 1.5}s`;
-                    confetti.style.animationDelay = `${Math.random() * 0.5}s`;
-                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                    confettiContainer.appendChild(confetti);
-                    confetti.addEventListener('animationend', () => { confetti.remove(); });
-                }
-            }
-
-            function setFormContentVisibility(visible) {
-                if(formContainer) {
-                    Array.from(formContainer.children).forEach(child => {
-                        if(child.id !== 'custom-modal-overlay' && child.id !== 'google-auth-container' && child.id !== 'main-title' && child.id !== 'typed-output') { // Keep auth and titles visible
-                            child.style.visibility = visible ? 'visible' : 'hidden';
-                        }
-                    });
-                }
-            }
-
-
+            // Custom Modal Logic
             function showCustomModal(type, title, message) {
-                if (!customModalOverlay || !customModal || !modalIcon || !modalTitle || !modalMessage) {
-                    alert(`${title}\n${message}`); // Fallback
-                    return;
-                }
-                // Temporarily hide form elements other than the modal itself
-                // setFormContentVisibility(false); (Decided against hiding whole form for modal)
-
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                if (confettiContainer) confettiContainer.innerHTML = '';
-
-                if (type === 'success') {
-                    modalIcon.innerHTML = '🎉';
-                    customModal.style.borderColor = 'var(--success-color)';
-                    modalIcon.style.color = 'var(--success-color)';
-                    modalIcon.style.textShadow = '0 0 20px rgba(0, 255, 0, 0.7)';
-                    launchConfetti();
-                } else if (type === 'error') {
-                    modalIcon.innerHTML = '❌';
-                    customModal.style.borderColor = 'var(--error-color)';
-                    modalIcon.style.color = 'var(--error-color)';
-                    modalIcon.style.textShadow = '0 0 20px rgba(255, 0, 0, 0.7)';
-                } else if (type === 'info') {
-                    modalIcon.innerHTML = '💡';
-                    customModal.style.borderColor = 'var(--accent-color)';
-                    modalIcon.style.color = 'var(--accent-color)';
-                    modalIcon.style.textShadow = '0 0 20px rgba(59, 130, 246, 0.7)';
-                }
+                modalTitleEl.textContent = title; modalMessageEl.textContent = message;
+                if (confettiContainer) confettiContainer.innerHTML = ''; // Clear old confetti
+                const icons = {'success': '🎉', 'error': '❌', 'info': '💡'};
+                const borderColors = {'success': 'var(--success-color)', 'error': 'var(--error-color)', 'info': 'var(--accent-color)'};
+                modalIcon.innerHTML = icons[type] || '💡';
+                customModalOverlay.querySelector('.custom-modal').style.borderColor = borderColors[type] || 'var(--accent-color)';
+                modalIcon.style.color = borderColors[type] || 'var(--accent-color)';
+                if (type === 'success') launchConfetti();
                 customModalOverlay.classList.add('show');
             }
+            modalCloseBtn.addEventListener('click', () => customModalOverlay.classList.remove('show'));
 
-            if(modalCloseBtn) {
-                modalCloseBtn.addEventListener('click', () => {
-                    if(customModalOverlay) customModalOverlay.classList.remove('show');
-                    // setFormContentVisibility(true);
-                    if (isEditing) {
-                         if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
+            function launchConfetti() { /* ... (Pehle jaisa confetti logic) ... */
+                if (!confettiContainer) return;
+                const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722'];
+                confettiContainer.innerHTML = '';
+                for (let i = 0; i < 50; i++) {
+                    const c = document.createElement('div'); c.classList.add('confetti');
+                    c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
+                    c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`;
+                    confettiContainer.appendChild(c);
+                    c.addEventListener('animationend', () => c.remove());
+                }
             }
 
+            // Fetch and Display Feedbacks
             async function fetchFeedbacks() {
                 try {
                     const res = await fetch(FETCH_API_URL);
-                    if (!res.ok) throw new Error(`FEEDBACK LOAD NAHI HO PAYE (STATUS: ${res.status}). SERVER NE KAHA: ${await res.text()}`);
+                    if (!res.ok) throw new Error(`Server se response theek nahi (${res.status})`);
                     const data = await res.json();
-
-                    const h2Title = feedbackListContainer.querySelector('h2');
-                    feedbackListContainer.innerHTML = '';
-                    feedbackListContainer.appendChild(averageRatingDisplay);
-                    if(h2Title) feedbackListContainer.appendChild(h2Title);
+                    const h2Title = feedbackListContainer.querySelector('h2'); // Title ko bachao
+                    feedbackListContainer.innerHTML = ''; // Clear karo
+                    feedbackListContainer.appendChild(averageRatingDisplay); // Average rating display wapas daalo
+                    if(h2Title) feedbackListContainer.appendChild(h2Title); // Title wapas daalo
 
                     if (data.length === 0) {
-                        const msg = document.createElement('p');
-                        msg.textContent = 'ABHI TAK KOI FEEDBACK NAHI AAYA HAI! PEHLA TU HI DE DE BHAI!';
-                        msg.style.textAlign = 'center'; msg.style.color = 'var(--text-color-light)'; msg.style.opacity = '0.7';
-                        feedbackListContainer.append(msg);
+                        const msgP = document.createElement('p'); msgP.textContent = 'Abhi tak koi feedback nahi aaya hai. Aap pehle ho sakte hain!';
+                        msgP.style.textAlign='center'; msgP.style.padding='20px';
+                        feedbackListContainer.appendChild(msgP);
                         updateAverageRating(0, 0);
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                        const averageRating = (totalRatings / data.length);
-                        updateAverageRating(averageRating, data.length);
-                        data.forEach((fb, index) => addFeedbackToDOM(fb, index)); // Pass whole fb object
+                        const average = totalRatings / data.length;
+                        updateAverageRating(average, data.length);
+                        data.forEach((fb, index) => addFeedbackToDOM(fb, index));
                     }
                 } catch (err) {
-                    console.error('FETCH FEEDBACKS ERROR:', err);
-                    showCustomModal('error', 'OH NO!', `FEEDBACK LOAD NAHI HO PAYE! ERROR: ${err.message}`);
+                    console.error('Feedbacks fetch karte waqt error:', err);
+                    showCustomModal('error', 'Fetch Error!', `Feedbacks load nahi ho paye: ${err.message}`);
                 }
             }
 
-            function updateAverageRating(avgRatingNum, totalCount) {
-                const avgRating = parseFloat(avgRatingNum);
-                let starsOutput = '';
-                if (isNaN(avgRating) || avgRating <= 0) {
-                    starsOutput = '☆☆☆☆☆';
-                } else {
-                    const fullStars = Math.floor(avgRating);
-                    starsOutput = '★'.repeat(fullStars);
-                    starsOutput += '☆'.repeat(5 - fullStars);
+            function updateAverageRating(avg, count) {
+                const avgNum = parseFloat(avg);
+                let starsHtml = '☆☆☆☆☆';
+                if (!isNaN(avgNum) && avgNum > 0) {
+                    const fullStars = Math.floor(avgNum);
+                    starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
                 }
-                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>OVERALL RATING</h3><div class="average-number">${isNaN(avgRating) ? '0.0' : avgRating.toFixed(1)}</div><div class="average-stars">${starsOutput}</div><div class="total-feedbacks-count">(${totalCount} FEEDBACKS)</div></div>`;
+                averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`;
+                 // Trigger animation for average rating display
+                setTimeout(() => {
+                    const avgContainer = averageRatingDisplay.querySelector('.average-rating-container');
+                    if (avgContainer) avgContainer.classList.add('animate-in');
+                }, 50);
             }
 
-             async function handleSubmitOrUpdate() {
-                pulseButton();
-                const name = nameInput.value.trim();
-                const fbText = feedbackTextarea.value.trim();
-                const rating = ratingInput.value;
+            // Submit or Update Feedback
+            async function handleSubmitOrUpdate() {
+                const feedbackContent = feedbackTextarea.value.trim();
+                const ratingValue = ratingInput.value;
+                let nameValue = nameInput.value.trim();
 
-                if (!name || !fbText || rating === '0') {
-                    showCustomModal('error', 'OOPS!', 'BHAI, NAAM, FEEDBACK AUR RATING BHARNA ZAROORI HAI!');
+                if (currentGoogleUser && nameInput.disabled) { // Logged in user ka naam Google se
+                    nameValue = currentGoogleUser.name;
+                }
+
+                if (!nameValue || !feedbackContent || ratingValue === '0') {
+                    showCustomModal('error', 'Khali Fields!', 'Naam, feedback aur rating, sab kuch daalna zaroori hai!');
                     return;
                 }
 
-                let feedbackData = {
-                    name: name,
-                    feedback: fbText,
-                    rating: parseInt(rating),
-                    userIp: userIpAddress
+                let feedbackPayload = {
+                    name: nameValue,
+                    feedback: feedbackContent,
+                    rating: parseInt(ratingValue)
+                    // userIp backend add karega
+                    // googleId aur avatarUrl (agar JWT se authenticated hai) backend add karega
                 };
 
-                if (currentGoogleUser) {
-                    feedbackData.googleId = currentGoogleUser.sub;
-                    feedbackData.googleUserPicture = currentGoogleUser.picture;
-                     // name is already set from currentGoogleUser.name and disabled
+                const token = localStorage.getItem('authToken');
+                const headers = { 'Content-Type':'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`; // Agar token hai toh header mein bhejo
                 }
 
-
-                const url = isEditing ? `${API_URL}/${currentEditFeedbackId}` : API_URL;
+                const url = isEditing ? `${API_URL_FEEDBACK}/${currentEditFeedbackId}` : API_URL_FEEDBACK;
                 const method = isEditing ? 'PUT' : 'POST';
-                 if (isEditing && currentGoogleUser) { // When editing, also send current Google user's ID for verification
-                    feedbackData.googleIdFromCurrentUser = currentGoogleUser.sub;
-                }
-
 
                 try {
-                    const res = await fetch(url, {
-                        method: method,
-                        headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify(feedbackData)
-                    });
-
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(errorData.message || `SERVER ERROR (STATUS: ${res.status})`);
-                    }
-                    const successMessage = isEditing ? 'TERA FEEDBACK SAFALTA-POORVAK UPDATE HUA!' : 'TERA FEEDBACK SAFALTA-POORVAK JAMA HO GAYA! SHABASH!';
-                    showCustomModal('success', isEditing ? 'FEEDBACK UPDATED!' : 'FEEDBACK SUBMITTED!', successMessage);
-                    resetForm();
-                    await fetchFeedbacks();
+                    const res = await fetch(url, { method, headers, body: JSON.stringify(feedbackPayload) });
+                    if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `Server Error Status: ${res.status}`); }
+                    
+                    const successMsg = isEditing ? 'Aapka feedback सफलतापूर्वक update ho gaya!' : 'Aapka feedback सफलतापूर्वक jama ho gaya!';
+                    showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', successMsg);
+                    resetForm(); // Form reset karo
+                    await fetchFeedbacks(); // Feedbacks refresh karo
                 } catch (err) {
-                    console.error(`${isEditing ? 'UPDATE' : 'SUBMIT'} FEEDBACK ERROR:`, err);
-                    showCustomModal('error', `${isEditing ? 'UPDATE' : 'SUBMISSION'} FAILED!`, `${isEditing ? 'UPDATE' : 'SUBMIT'} NAHI HO PAYA BHAI! PROBLEM: ${err.message}`);
+                    console.error(`${isEditing ? 'Update' : 'Submit'} karte waqt error:`, err);
+                    showCustomModal('error', `${isEditing ? 'UPDATE' : 'SUBMISSION'} FAIL!`, `Kuch gadbad ho gayi: ${err.message}`);
                 }
             }
             submitButton.addEventListener('click', handleSubmitOrUpdate);
 
-
             function resetForm() {
-                if (currentGoogleUser) {
+                if (currentGoogleUser) { // Agar user logged in hai
                     nameInput.value = currentGoogleUser.name;
                     nameInput.disabled = true;
-                } else {
+                } else { // Agar logged in nahi hai
                     nameInput.value = '';
                     nameInput.disabled = false;
                 }
                 feedbackTextarea.value = '';
                 ratingInput.value = '0';
                 currentSelectedRating = 0;
-                updateStarVisuals(0);
-                submitButton.textContent = 'FEEDBACK JAMA KARO';
+                updateStarVisuals(0); // Stars reset karo
+                submitButton.textContent = 'FEEDBACK JAMA KAREIN';
                 isEditing = false;
                 currentEditFeedbackId = null;
             }
 
-            function addFeedbackToDOM(fbData, index) { // fbData is the full feedback object
-                const item = document.createElement('div');
-                item.className = 'feedback-item';
-                item.setAttribute('data-feedback-id', fbData._id);
-                item.style.opacity = '0'; item.style.transform = 'translateY(30px)';
+            // Add Feedback to DOM
+            function addFeedbackToDOM(fbData, index) {
+                const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
+                
+                const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
+                avatarImg.src = fbData.avatarUrl || `https://i.pravatar.cc/50?u=${encodeURIComponent(fbData.name.toLowerCase() || 'anon')}`;
+                avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
+                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
 
-                const avatarImg = document.createElement('img');
-                avatarImg.className = 'avatar-img';
-                // Use fbData.avatarUrl (which could be Google's or DiceBear's)
-                avatarImg.src = fbData.avatarUrl || `https://i.pravatar.cc/60?u=${encodeURIComponent(fbData.name ? fbData.name.toLowerCase() : 'anonymous')}`;
-                avatarImg.alt = `${fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'}'s Avatar`;
-                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/60/6a0dad/FFFFFF?text=${fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'}`; this.alt = fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'; };
-
-                const feedbackDetailsDiv = document.createElement('div');
-                feedbackDetailsDiv.className = 'feedback-details';
-                const strongName = document.createElement('strong');
-                strongName.textContent = fbData.name;
-                if (fbData.googleId) {
-                    const googleTag = document.createElement('span');
-                    googleTag.className = 'google-user-indicator';
-                    googleTag.textContent = 'G'; // Or 'Google User'
-                    strongName.appendChild(googleTag);
-                }
+                const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
+                const strongName = document.createElement('strong'); strongName.textContent = fbData.name;
+                if (fbData.googleId) { const googleTag = document.createElement('span'); googleTag.className = 'google-user-indicator'; googleTag.textContent = 'G'; strongName.appendChild(googleTag); }
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
-
-                const starsDiv = document.createElement('div');
-                starsDiv.className = 'feedback-stars';
+                
+                const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars';
                 starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
-                const pFeedback = document.createElement('p');
-                pFeedback.textContent = fbData.feedback;
-                const feedbackTimestampDiv = document.createElement('div');
-                feedbackTimestampDiv.className = 'feedback-timestamp';
-                feedbackTimestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString()}`;
-                feedbackDetailsDiv.append(strongName, starsDiv, pFeedback, feedbackTimestampDiv);
+                
+                const pFeedback = document.createElement('p'); pFeedback.textContent = fbData.feedback;
+                const timestampDiv = document.createElement('div'); timestampDiv.className = 'feedback-timestamp';
+                timestampDiv.textContent = `Jama kiya: ${new Date(fbData.timestamp).toLocaleString('hi-IN', { dateStyle:'short', timeStyle:'short' })}`; // Hindi format
+                
+                detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-                const editButton = document.createElement('button');
-                editButton.className = 'edit-feedback-btn';
-                editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-                editButton.title = 'Edit this feedback';
-
-                let canEdit = false;
-                if (currentGoogleUser && fbData.googleId && currentGoogleUser.sub === fbData.googleId) {
-                    canEdit = true; // Google user owns this feedback
-                } else if (!fbData.googleId && userIpAddress && userIpAddress !== 'UNKNOWN' && userIpAddress === fbData.userIp) {
-                    canEdit = true; // Non-Google user, IP matches
-                }
-                editButton.disabled = !canEdit;
-
+                const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+                editButton.title = 'Is feedback ko edit karein';
+                // Edit button sirf tab enable hoga jab user logged in ho aur feedback usi ka ho
+                editButton.disabled = !(currentGoogleUser && fbData.googleId && currentGoogleUser.googleId === fbData.googleId);
 
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation();
-                    showCustomModal('info', 'EDIT FEEDBACK', 'APNA FEEDBACK EDIT KARNE KE LIYE FORM FILL KARO.');
-
-                    nameInput.value = fbData.name;
-                    // If it's a Google user's feedback they are editing, keep name disabled
-                    nameInput.disabled = !!fbData.googleId;
-
+                    if (!currentGoogleUser || currentGoogleUser.googleId !== fbData.googleId) {
+                        showCustomModal('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
+                        return;
+                    }
+                    showCustomModal('info', 'FEEDBACK EDIT KAREIN', 'Neeche form mein apna feedback edit karein.');
+                    nameInput.value = fbData.name; // Logged in user ka naam
+                    nameInput.disabled = true; // Naam edit nahi karne denge agar Google user hai
                     feedbackTextarea.value = fbData.feedback;
-                    currentSelectedRating = fbData.rating;
-                    ratingInput.value = fbData.rating;
-                    updateStarVisuals(fbData.rating);
-                    submitButton.textContent = 'UPDATE FEEDBACK';
-                    isEditing = true;
-                    currentEditFeedbackId = fbData._id;
-
-                    if(formContainer) formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else window.scrollTo({ top: 0, behavior: 'smooth' });
+                    currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
+                    submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
                 item.appendChild(editButton);
 
+                // Admin replies (agar hain toh)
                 if (fbData.replies && fbData.replies.length > 0) {
                     const latestReply = fbData.replies[fbData.replies.length - 1];
                     if (latestReply && latestReply.text) {
-                        const adminReplyDiv = document.createElement('div');
-                        adminReplyDiv.className = 'admin-reply';
-                        const adminReplyAvatar = document.createElement('img');
-                        adminReplyAvatar.className = 'admin-reply-avatar';
-                        adminReplyAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
-                        adminReplyAvatar.alt = 'Nobita\'s Avatar';
-                        const adminReplyContent = document.createElement('div');
-                        adminReplyContent.className = 'admin-reply-content';
-                        adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString()})</span>`;
-                        adminReplyDiv.append(adminReplyAvatar, adminReplyContent);
-                        feedbackDetailsDiv.appendChild(adminReplyDiv);
+                        const adminReplyDiv = document.createElement('div'); adminReplyDiv.className = 'admin-reply';
+                        const adminAvatar = document.createElement('img'); adminAvatar.className = 'admin-reply-avatar'; adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAvatar.alt = 'Nobita';
+                        const adminReplyContent = document.createElement('div'); adminReplyContent.className = 'admin-reply-content';
+                        adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString('hi-IN', {dateStyle:'short', timeStyle:'short'})})</span>`;
+                        adminReplyDiv.append(adminAvatar, adminReplyContent);
+                        detailsDiv.appendChild(adminReplyDiv);
                     }
                 }
-                item.append(avatarImg, feedbackDetailsDiv);
+                item.append(avatarImg, detailsDiv);
                 feedbackListContainer.appendChild(item);
-                setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out'; }, index * 100);
+                // Animation ke liye item ko thodi der baad visible karo
+                setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out'; }, index * 70);
             }
-            fetchFeedbacks();
-
-
-             // Initial UI setup based on if a user was previously logged in (though GSI handles this mostly)
-            if (currentGoogleUser) {
-                updateUIAfterLogin();
-            } else {
-                updateUIAfterLogout();
-            }
+            // Initial animations for containers
+            setTimeout(() => { document.querySelector('.container.animate-in').style.opacity = 1; document.querySelector('.container.animate-in').style.transform = 'translateY(0)'; }, 100);
+            setTimeout(() => { document.querySelector('#feedback-list-container.animate-in').style.opacity = 1; document.querySelector('#feedback-list-container.animate-in').style.transform = 'translateY(0)'; }, 300);
+            setTimeout(() => { document.querySelector('.owner-info.animate-in').style.opacity = 1; document.querySelector('.owner-info.animate-in').style.transform = 'translateY(0)'; }, 50);
         });
     </script>
 </body>
