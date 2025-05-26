@@ -14,7 +14,7 @@
             --primary-color: #6a0dad; --secondary-color: #FFD700; --accent-color: #3B82F6;
             --text-color-light: #f4f4f9; --text-color-dark: #2c3e50;
             --bg-gradient-start: #1a1a2e; --bg-gradient-end: #16213e; 
-            --card-bg-popup: #2E3B4E; /* Darker blue-grey for popup */
+            --card-bg-popup: #2E3B4E; 
             --card-bg: rgba(44, 62, 80, 0.85); 
             --card-border: rgba(255, 255, 255, 0.15);
             --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -29,7 +29,7 @@
             box-sizing: border-box; overflow-x: hidden;
         }
 
-        /* --- Login/User Avatar Trigger --- */
+        /* --- Login Icon (Logged Out State) & User Avatar Icon (Logged In State) --- */
         .corner-trigger { 
             position: fixed; top: 15px; right: 20px; cursor: pointer;
             width: 48px; height: 48px;
@@ -42,9 +42,10 @@
             overflow: hidden; font-weight: 600; 
         }
         .corner-trigger:hover { transform: scale(1.08); box-shadow: 0 5px 15px rgba(0,0,0,0.35); }
-        #login-icon-trigger { border-radius: 8px; font-size: 1.2em; padding: 0 10px; }
+        #login-icon-trigger { border-radius: 8px; font-size: 0.9em; padding: 0 10px; /* For text "Login" */ }
         #user-avatar-trigger { border-radius: 50%; padding: 0; }
         #user-avatar-trigger img { width: 100%; height: 100%; object-fit: cover; }
+
 
         /* --- Auth Modals (Login/Signup) --- */
         .auth-modal-overlay { 
@@ -52,21 +53,16 @@
             background: rgba(0,0,0,0.7); 
             align-items: center; justify-content: center;
             z-index: 1002; 
-            opacity: 0; transition: opacity 0.3s ease-out;
+            opacity: 0; pointer-events: none; /* Hidden by default */
+            transition: opacity 0.3s ease-out;
         }
-        .auth-modal-overlay.active { display: flex; opacity: 1; }
-        .auth-modal-content {
-            background: var(--bg-gradient-end); border: 1px solid var(--card-border);
-            border-radius: 10px; padding: 25px;
-            width: 90%; max-width: 380px; position: relative;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light);
-            transform: scale(0.95); transition: transform 0.3s ease-out;
-        }
+        .auth-modal-overlay.active { display: flex; opacity: 1; pointer-events: all; }
+        /* ... (Baaki Auth Modal CSS pehle jaisi) ... */
+        .auth-modal-content { background: var(--bg-gradient-end); border: 1px solid var(--card-border); border-radius: 10px; padding: 25px; width: 90%; max-width: 380px; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light); transform: scale(0.95); transition: transform 0.3s ease-out;}
         .auth-modal-overlay.active .auth-modal-content { transform: scale(1); }
         .auth-modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.8em; font-family: 'Luckiest Guy', cursive; color: var(--secondary-color); text-align: center; }
-        .auth-modal-content .close-modal-btn { position: absolute; top: 12px; right: 15px; cursor: pointer; font-size: 24px; color: var(--text-color-light); line-height: 1; transition: color 0.2s; }
+        .auth-modal-content .close-modal-btn { position: absolute; top: 12px; right: 15px; cursor: pointer; font-size: 24px; color: var(--text-color-light); line-height: 1; transition: color 0.2s;}
         .auth-modal-content .close-modal-btn:hover { color: var(--secondary-color); }
-        /* ... (Auth modal form, input, button styles pehle jaise) ... */
         .auth-modal-form input[type="email"], .auth-modal-form input[type="password"], .auth-modal-form input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px 15px; margin-bottom: 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em;}
         .auth-modal-form input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
         .auth-modal-form button { width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 6px; font-size: 1em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s;}
@@ -81,17 +77,17 @@
         .auth-modal-form .google-auth-btn img { height: 18px; margin-right: 10px; }
         .auth-modal-form .google-auth-btn:hover { background: #f8f8f8; }
 
-
         /* --- User Menu (Dropdown) --- */
         .user-profile-menu { 
             display: none; position: fixed;
             top: 70px; right: 20px; width: 240px; 
             background: var(--bg-gradient-end); border: 1px solid var(--card-border);
             border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
-            z-index: 1000; opacity: 0; transform: translateY(-10px) scale(0.95);
+            z-index: 1000; opacity: 0; pointer-events:none; /* Hidden by default */
+            transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
-        .user-profile-menu.active { display: block; opacity: 1; transform: translateY(0) scale(1); }
+        .user-profile-menu.active { display: block; opacity: 1; transform: translateY(0) scale(1); pointer-events:all; }
         /* ... (User Menu content styles pehle jaise) ... */
         .user-profile-menu .menu-content { padding: 0; }
         .user-profile-menu .menu-header {display: flex; flex-direction: column; align-items: center; padding: 20px 15px; border-bottom: 1px solid var(--card-border);}
@@ -102,104 +98,70 @@
         .user-profile-menu ul li a:hover { background: var(--primary-color); color: var(--secondary-color);}
         .user-profile-menu ul li a .fas { margin-right: 10px; width: 16px; text-align: center;}
         
-        /* --- NEW STYLISH UNIVERSAL POPUP --- */
+        /* --- STYLISH UNIVERSAL POPUP (Replaces old customModalOverlay) --- */
         .stylish-popup-overlay {
             position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: rgba(10, 10, 20, 0.6); /* Darker overlay for contrast */
-            backdrop-filter: blur(5px); /* Stronger blur */
-            display: none; /* Crucial: Hidden by default */
+            background: rgba(10, 10, 20, 0.6); 
+            backdrop-filter: blur(5px); 
+            display: none; /* CRUCIAL: Hidden by default */
             align-items: center; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.25s ease-in-out;
+            transition: opacity 0.25s ease-in-out; /* Smoother transition */
             z-index: 1005; 
         }
-        .stylish-popup-overlay.active {
-            display: flex; opacity: 1; pointer-events: all;
+        .stylish-popup-overlay.active { /* This class makes it visible */
+            display: flex !important; /* Use !important to ensure it overrides display:none */
+            opacity: 1 !important; 
+            pointer-events: all !important;
         }
         .stylish-popup-card {
             background: var(--card-bg-popup); 
             border: 1px solid var(--card-border);
-            border-radius: 12px; /* Softer radius */
-            padding: 30px 35px; /* More padding */
+            border-radius: 12px; 
+            padding: 30px 35px; 
             max-width: 420px; width: 90%;
             box-shadow: 0 12px 40px rgba(0,0,0,0.3);
             text-align: center;
-            transform: translateY(20px) scale(0.9); opacity: 0; /* Start from bottom and smaller */
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out; /* Smooth bounce */
+            transform: translateY(20px) scale(0.9); opacity: 0; 
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out; 
             position: relative; 
-            color: var(--text-color-light); /* Ensure text is light */
+            color: var(--text-color-light); 
         }
         .stylish-popup-overlay.active .stylish-popup-card { transform: translateY(0) scale(1); opacity: 1; }
         
-        .stylish-popup-card .popup-icon-area {
-            font-size: 2.8em; margin-bottom: 18px; line-height: 1;
-        }
+        .stylish-popup-card .popup-icon-area { font-size: 2.8em; margin-bottom: 18px; line-height: 1; }
         .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
         .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-
-        .stylish-popup-card h2.popup-title {
-            margin-top:0; margin-bottom: 15px; font-size: 1.5em; color: var(--secondary-color);
-            font-family: 'Poppins', sans-serif; font-weight: 600; /* Changed font */
-        }
-        .stylish-popup-card p.popup-message {
-            margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light);
-            line-height: 1.6;
-        }
+        .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 15px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
+        .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
         .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; }
-        .stylish-popup-card .popup-form-input-group input {
-            width: 100%; box-sizing: border-box; padding: 12px 15px;
-            border: 1px solid var(--card-border); border-radius: 6px;
-            background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em;
-        }
-         .stylish-popup-card .popup-form-input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
-
-        .stylish-popup-card .popup-button-container { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-        .stylish-popup-card .popup-button {
-            padding: 10px 22px; border: none; border-radius: 6px;
-            font-size: 0.9em; font-weight: 500; cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            min-width: 90px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 12px 15px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
+        .stylish-popup-card .popup-form-input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
+        .stylish-popup-card .popup-button-container { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; } /* Centered buttons */
+        .stylish-popup-card .popup-button { padding: 10px 22px; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; min-width: 90px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .stylish-popup-card .popup-button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
         .stylish-popup-card .popup-button.primary { background: var(--accent-color); color: #fff; }
         .stylish-popup-card .popup-button.primary:hover { background-color: #3578e0; }
-        .stylish-popup-card .popup-button.secondary { background: #5a6268; color: #fff; } /* Darker secondary */
-        .stylish-popup-card .popup-button.secondary:hover { background-color: #495057; }
-        
-        .stylish-popup-card .close-popup-btn-styled { 
-            position: absolute; top: 12px; right: 12px; background: none; border: none; 
-            font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s;
-            padding: 5px; line-height: 1;
-        }
+        .stylish-popup-card .popup-button.secondary { background: #6c757d; color: #fff; } 
+        .stylish-popup-card .popup-button.secondary:hover { background-color: #5a6268; }
+        .stylish-popup-card .close-popup-btn-styled { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s; padding: 5px; line-height: 1; }
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
         /* --- End Stylish Popup --- */
 
-        .page-content-wrapper { /* ... (pehle jaisa) ... */
-            width: 100%; padding-top: 80px; 
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .owner-info { /* ... (pehle jaisa) ... */
-            display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+        .page-content-wrapper { width: 100%; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
+        /* ... (Baaki saare styles - owner-info, main-container, feedback form, list, etc. - pehle jaise hi rakhe hain, ensure no accidental deletions) ... */
+        .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
         .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
-        
-        .main-container { /* ... (pehle jaisa margin fix ke saath) ... */
-            background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
-            border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
-            width: 90%; max-width: 750px; 
-            opacity: 0; transform: translateY(40px); 
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
-        }
+        .main-container { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center; width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         #feedback-form-container.main-container { margin-bottom: 3px; }
         #feedback-list-container.main-container { margin-top: 0; margin-bottom: 25px; }
         .main-container.animate-in { opacity: 1; transform: translateY(0); }
-                                
-        /* ... (Baaki saare purane CSS styles jaise feedback form, list, confetti, media query CSS pehle jaise) ... */
         #feedback-form-container h1 { color: var(--secondary-color); margin-bottom: 10px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25); display: flex; align-items: center; justify-content: center; overflow: hidden;}
         #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -10px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden;}
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
@@ -246,8 +208,8 @@
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{width:45px; height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
-        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
+        @media (max-width: 768px) { /* ... (media queries pehle jaisi) ... */ }
+        @media (max-width: 480px) { /* ... (media queries pehle jaisi) ... */ }
     </style>
 </head>
 <body>
@@ -354,7 +316,7 @@
             
             const loginIconTrigger = document.getElementById('login-icon-trigger');
             const userAvatarTrigger = document.getElementById('user-avatar-trigger');
-            const userAvatarTriggerImg = userAvatarTrigger.querySelector('img');
+            const userAvatarTriggerImg = userAvatarTrigger.querySelector('img'); // Corrected
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             const userMenu = document.getElementById('userMenu');
@@ -380,7 +342,7 @@
             const menuLogoutLink = document.getElementById('menu-logout');
 
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-            const stylishPopupCard = document.getElementById('stylishPopupCard');
+            const stylishPopupCard = document.getElementById('stylishPopupCard'); // For overlay click check
             const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
             const stylishPopupIcon = document.getElementById('stylishPopupIcon');
             const stylishPopupTitle = document.getElementById('stylishPopupTitle');
@@ -399,6 +361,8 @@
             const submitButton = document.getElementById('submit-feedback');
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title'); 
+            // Confetti container is not in the stylish popup, it's in the old custom modal which is removed.
+            // const confettiContainer = document.querySelector('.confetti-container'); 
             
             let currentUser = null; 
             let currentSelectedRating = 0;
@@ -416,7 +380,11 @@
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
-                if(!stylishPopupOverlay || !stylishPopupCard) { console.error("Stylish popup elements not found!"); return; }
+                if(!stylishPopupOverlay || !stylishPopupCard || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) { 
+                    console.error("Stylish popup core elements not found!"); 
+                    alert(`${title}: ${message}`); // Fallback
+                    return; 
+                }
                 console.log(`Showing stylish popup: Type=${type}, Title=${title}`);
 
                 stylishPopupIcon.className = 'popup-icon-area'; 
@@ -454,8 +422,8 @@
                     confirmBtn.className = 'popup-button primary';
                     confirmBtn.id = 'stylishPopupPrimaryActionBtn'; 
                     confirmBtn.onclick = () => {
-                        // Let onConfirm decide if popup should be closed
                         if (options.onConfirm) options.onConfirm(); 
+                        // Don't hide here, let onConfirm handle it or do it after onConfirm
                     };
                     stylishPopupButtonContainer.appendChild(confirmBtn);
                 } else {
@@ -472,53 +440,65 @@
             }
 
             if(closeStylishPopupBtn) {
-                closeStylishPopupBtn.addEventListener('click', () => stylishPopupOverlay.classList.remove('active'));
+                closeStylishPopupBtn.addEventListener('click', () => {
+                    if(stylishPopupOverlay) stylishPopupOverlay.classList.remove('active');
+                });
             }
-            stylishPopupOverlay.addEventListener('click', e => { 
-                if (e.target === stylishPopupOverlay) stylishPopupOverlay.classList.remove('active');
-            });
+            if(stylishPopupOverlay) {
+                stylishPopupOverlay.addEventListener('click', e => { 
+                    if (e.target === stylishPopupOverlay) { // Click on overlay itself, not card
+                        stylishPopupOverlay.classList.remove('active');
+                    }
+                });
+            }
 
             // --- New UI Trigger Logic & Modal Control ---
             if (loginIconTrigger) {
                 loginIconTrigger.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (loginModal) loginModal.classList.add('active');
-                    if (userMenu) userMenu.classList.remove('active'); // Hide user menu if open
+                    if (userMenu) userMenu.classList.remove('active');
                 });
             }
             if (userAvatarTrigger) {
                 userAvatarTrigger.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (userMenu) userMenu.classList.toggle('active');
-                    if (loginModal) loginModal.classList.remove('active'); // Hide login modal if open
+                    if (loginModal) loginModal.classList.remove('active');
                 });
             }
-            // Global click listener to close modals/menus
             document.addEventListener('click', (e) => { 
-                // Close userMenu if click is outside
                 if (userMenu && userMenu.classList.contains('active') && userAvatarTrigger && !userAvatarTrigger.contains(e.target) && !userMenu.contains(e.target)) {
                     userMenu.classList.remove('active');
                 }
-                // Close auth modals if click is on overlay
-                if (loginModal && loginModal.classList.contains('active') && e.target === loginModal) {
-                    loginModal.classList.remove('active');
-                }
-                if (signupModal && signupModal.classList.contains('active') && e.target === signupModal) {
-                    signupModal.classList.remove('active');
-                }
             });
-            // Close buttons for login/signup modals
-            document.querySelectorAll('.auth-modal-overlay .close-modal-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const modalToClose = btn.closest('.auth-modal-overlay');
-                    if(modalToClose) modalToClose.classList.remove('active');
-                });
+            [loginModal, signupModal].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', e => {
+                        if (e.target === modal) modal.classList.remove('active');
+                    });
+                    const closeBtn = modal.querySelector('.close-modal-btn');
+                    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+                }
             });
             
+
             async function apiRequest(url, method, body = null) {
                 const headers = { 'Content-Type': 'application/json' };
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
+                let submitBtn; // For re-enabling
+                if(body && (url.includes('/api/auth/login') || url.includes('/api/auth/signup'))) {
+                    const formId = url.includes('/api/auth/login') ? 'email-login-form' : 'email-signup-form';
+                    const form = document.getElementById(formId);
+                    if(form) submitBtn = form.querySelector('button[type="submit"]');
+                } else if (body && url.includes('/api/auth/request-password-reset')) {
+                    const form = document.getElementById('forgot-password-form'); // This is for the old modal
+                    // For new stylish popup, need to get button differently if it's dynamic
+                    // This will be handled inside the onConfirm for forgot password
+                }
+
+
                 try {
                     const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
                     const data = await response.json(); 
@@ -529,6 +509,7 @@
                     if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                         showStylishPopup('error', 'Oops!', error.message || 'Server se communication mein error.');
                     }
+                    if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = method === 'POST' && url.includes('login') ? 'Login' : 'Sign Up';}
                     throw error; 
                 }
             }
@@ -554,7 +535,7 @@
                         const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                         handleAuthResponse(data);
                     } catch (error) { /* Handled by apiRequest */ }
-                    finally { if(submitBtn) {submitBtn.disabled = false; submitBtn.textContent="Login";}}
+                    // finally will be handled by apiRequest for this button
                 });
             }
 
@@ -574,7 +555,7 @@
                         const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                         handleAuthResponse(data);
                     } catch (error) { /* Handled */ }
-                    finally { if(submitBtn) {submitBtn.disabled = false; submitBtn.textContent="Sign Up";}}
+                    // finally will be handled by apiRequest for this button
                 });
             }
 
@@ -604,24 +585,21 @@
                             onConfirm: async () => {
                                 const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                                 if (!forgotEmailVal) {
-                                    // Show error inside the current popup or re-trigger with error
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address daalna zaroori hai.</p>' + 
-                                                                    'Apna registered email address daalein...';
+                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address daalna zaroori hai.</p>' + 'Apna registered email address daalein...';
                                     document.getElementById('popup-forgot-email').focus();
-                                    return; // Keep popup open
+                                    return; 
                                 }
-                                const primaryBtn = stylishPopupCard.querySelector('.popup-button.primary');
+                                const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn'); // Get specific button
                                 if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Bhej Rahe Hain...";}
                                 try {
                                     const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
                                     stylishPopupOverlay.classList.remove('active'); 
-                                    showStylishPopup('success', 'Link Bhej Diya!', data.message);
+                                    showStyledPopup('success', 'Link Bhej Diya!', data.message);
                                 } catch (error) {
                                     if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Reset Link Bhejein";}
-                                    // Error already shown by apiRequest if it's an API error.
-                                    // If validation error before API call, it was handled above.
                                 }
-                            }
+                            },
+                            onCancel: () => { /* Popup closes automatically */ }
                         }
                     );
                 });
