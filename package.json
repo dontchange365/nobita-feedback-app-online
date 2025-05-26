@@ -24,6 +24,8 @@
     "mongoose": "^8.4.1",
     "google-auth-library": "^9.9.0",
     "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^3.0.2"
+    "bcryptjs": "^3.0.2",
+    "nodemailer": "^6.9.13"
+
   }
 }
