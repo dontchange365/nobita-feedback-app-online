@@ -13,7 +13,9 @@
     "express",
     "google-login",
     "jwt",
-    "bcryptjs"
+    "bcryptjs",
+    "cloudinary",
+    "multer"
   ],
   "author": "Nobita",
   "license": "ISC",
@@ -26,7 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^3.0.2",
     "nodemailer": "^6.9.13",
-    "cloudinary": "^1.x.x",
+    "cloudinary": "^1.41.3",
     "multer": "^1.4.5-lts.1"
   }
 }
