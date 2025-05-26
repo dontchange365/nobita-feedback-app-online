@@ -10,23 +10,20 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --primary-color: #6a0dad; /* गहरा बैंगनी */
-            --secondary-color: #FFD700; /* सोना */
-            --accent-color: #3B82F6; /* नीला */
+            --primary-color: #6a0dad;
+            --secondary-color: #FFD700;
+            --accent-color: #3B82F6;
             --text-color-light: #f4f4f9;
             --text-color-dark: #2c3e50;
-            --bg-gradient-start: #1a1a2e; /* गहरा नीला-काला */
-            --bg-gradient-end: #16213e; /* थोड़ा हल्का नीला-काला */
-            --card-bg: rgba(255, 255, 255, 0.1); /* हल्का पारदर्शी सफेद */
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: rgba(255, 255, 255, 0.1);
             --card-border: rgba(255, 255, 255, 0.2);
             --input-bg: rgba(255, 255, 255, 0.08);
             --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
-            --success-color: #28a745; /* हरा */
-            --error-color: #dc3545; /* लाल */
+            --success-color: #28a745;
+            --error-color: #dc3545;
             --google-blue: #4285F4;
-            --google-red: #DB4437;
-            --google-yellow: #F4B400;
-            --google-green: #0F9D58;
         }
         html { scroll-behavior: smooth; }
         body {
@@ -34,16 +31,18 @@
             background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: var(--text-color-light);
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; min-height: 100vh; margin: 0;
+            justify-content: flex-start; /* Changed to flex-start for scrolling */
+            min-height: 100vh; margin: 0;
             padding: 25px 15px; box-sizing: border-box; overflow-x: hidden;
         }
-        .container {
+        .main-container { /* Renamed .container to .main-container for feedback form */
             background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
             border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
             width: 90%; max-width: 750px; margin-bottom: 35px; opacity: 0; transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out; position: relative; overflow: hidden;
         }
-        .container.animate-in { opacity: 1; transform: translateY(0); }
+        .main-container.animate-in { opacity: 1; transform: translateY(0); }
+        
         .owner-info {
             display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px;
             opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; transition-delay: 0.5s;
@@ -51,89 +50,98 @@
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
         .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
-        
-        #google-auth-container { 
-            margin-bottom: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 15px; 
-        }
 
-        /* NEW Custom Google Sign-In Button Styles */
-        .custom-google-btn {
-            background-color: #fff; /* Google's recommended white background */
-            color: #757575; /* Google's recommended text color */
-            border: 1px solid #DCDCDC;
-            border-radius: 8px; /* Rounded corners */
-            padding: 10px 24px;
-            font-size: 1em;
-            font-weight: 600;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px; /* Space between icon and text */
+        /* --- NEW Auth Forms Container --- */
+        .auth-container {
+            background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border);
+            border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px;
+            width: 90%; max-width: 480px; margin: 20px auto 30px auto;
+            opacity: 0; transform: scale(0.95) translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .auth-container.animate-in { opacity: 1; transform: scale(1) translateY(0); }
+        .auth-container h2 {
+            color: var(--secondary-color);
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3);
+        }
+        .auth-form { display: none; /* Initially hidden, JS will show active form */ }
+        .auth-form.active { display: block; }
+        .auth-input-group { margin-bottom: 18px; text-align: left; }
+        .auth-input-group label {
+            display: block; margin-bottom: 6px; color: var(--text-color-light);
+            font-weight: 500; font-size: 0.9em;
+        }
+        .auth-input-group input {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px;
+            background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none;
+            transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .auth-input-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2), inset 1px 1px 4px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .auth-button {
+            background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none;
+            width: 100%; padding: 11px 20px; border-radius: 8px; font-size: 1em; font-weight: 500;
+            cursor: pointer; transition: all 0.25s ease; box-shadow: 0 3px 10px rgba(59,130,246,0.3);
+            margin-top: 10px;
+        }
+        .auth-button:hover {
+            background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59,130,246,0.45);
+        }
+        .auth-toggle-link {
+            display: block; text-align: center; margin-top: 20px;
+            color: var(--secondary-color); text-decoration: none; font-size: 0.9em;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .auth-toggle-link:hover { color: #ffd700b3; text-decoration: underline; }
+        .divider-or {
+            text-align: center; color: rgba(255,255,255,0.5); font-size: 0.85em;
+            margin: 20px 0; text-transform: uppercase;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .divider-or::before, .divider-or::after {
+            content: ''; flex-grow: 1; height: 1px; background-color: rgba(255,255,255,0.2);
+        }
+        .custom-google-btn { /* Styles for custom Google button from previous step */
+            background-color: #fff; color: #757575; border: 1px solid #DCDCDC;
+            border-radius: 8px; padding: 10px 24px; font-size: 1em; font-weight: 600;
+            font-family: 'Poppins', sans-serif; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; gap: 12px;
             box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25);
             transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-out;
-            min-width: 250px; /* Ensure decent width */
+            width: 100%; /* Make it full width within its container */
+            box-sizing: border-box;
         }
-        .custom-google-btn:hover {
-            background-color: #f8f8f8;
-            box-shadow: 0 3px 6px 0 rgba(0,0,0,0.25);
-            transform: translateY(-1px);
-        }
-        .custom-google-btn:active {
-            background-color: #efefef;
-            transform: translateY(0px);
-        }
-        .custom-google-btn .google-icon {
-            width: 20px;
-            height: 20px;
-        }
-        /* Hide the default Google button container if not used directly */
-        #google-signin-button-container {
-            display: none; /* Hiding default button container */
-        }
+        .custom-google-btn:hover { background-color: #f8f8f8; box-shadow: 0 3px 6px 0 rgba(0,0,0,0.25); transform: translateY(-1px); }
+        .custom-google-btn .google-icon { width: 20px; height: 20px; }
 
-        #user-info { 
+        /* User Info Display (After Login) */
+        #user-info-display {
             display: none; /* Initially hidden */
-            align-items: center; 
-            gap: 10px; 
-            color: var(--text-color-light); 
-            font-weight: 500; 
-            font-size: 1em; 
-            padding: 8px 15px; 
-            background-color: rgba(255, 255, 255, 0.08); 
-            border-radius: 8px; 
-            border: 1px solid var(--card-border);
+            align-items: center; justify-content: center; gap: 12px;
+            margin: 20px 0; padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.08); border-radius: 10px;
+            border: 1px solid var(--card-border); max-width: 400px;
         }
         #user-profile-pic {
-            width: 40px; 
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--secondary-color); 
-            box-shadow: 0 0 8px rgba(255,215,0,0.4);
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid var(--secondary-color); box-shadow: 0 0 8px rgba(255,215,0,0.4);
         }
-        #user-info-text {
-             color: var(--secondary-color); 
+        #user-greeting { color: var(--text-color-light); font-size: 1em; }
+        #user-greeting strong { color: var(--secondary-color); }
+        #logout-button { /* Renamed from google-logout-button for general use */
+            background-color: var(--error-color); color: white; border: none;
+            padding: 8px 16px; border-radius: 7px; font-size: 0.9em; cursor: pointer;
+            transition: background-color 0.25s ease, transform 0.2s ease;
         }
-        #google-logout-button { 
-            background-color: var(--error-color); 
-            color: white; border: none; 
-            padding: 8px 16px; 
-            border-radius: 7px; 
-            font-size: 0.9em; 
-            cursor: pointer; 
-            transition: background-color 0.25s ease, transform 0.2s ease; 
-        }
-        #google-logout-button:hover { 
-            background-color: #c82333; 
-            transform: translateY(-1px); 
-        }
-
-        h1 { color: var(--secondary-color); margin-bottom: 18px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #logout-button:hover { background-color: #c82333; transform: translateY(-1px); }
+        /* --------------------------------- */
+        
+        .main-container h1 { color: var(--secondary-color); margin-bottom: 18px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -12px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
         .input-group label { display: block; margin-bottom: 7px; color: var(--text-color-light); font-weight: 500; font-size: 0.95em; }
@@ -142,7 +150,7 @@
             background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none;
             transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15);
         }
-        .input-group input:disabled { background: rgba(255, 255, 255, 0.04); cursor: not-allowed; opacity: 0.65; }
+        .input-group input#name:disabled { background: rgba(255, 255, 255, 0.04); cursor: not-allowed; opacity: 0.65; }
         .input-group input:focus, .input-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3.5px rgba(59,130,246,0.25), inset 1px 1px 6px rgba(0,0,0,0.2); background: rgba(255, 255, 255, 0.1); }
         .input-group textarea { resize: vertical; min-height: 85px; max-height: 220px; }
         .stars { margin-top: 10px; display: flex; justify-content: center; gap: 7px; }
@@ -156,6 +164,7 @@
         button#submit-feedback::before { content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; background: rgba(255,255,255,0.12); border-radius: 50%; transition: all 0.5s ease-out; transform: translate(-50%, -50%) scale(0); opacity: 0; }
         button#submit-feedback:hover::before { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         button#submit-feedback:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2.5px) scale(1.015); box-shadow: 0 7px 18px rgba(59,130,246,0.55); }
+        
         #feedback-list-container { margin-top: 35px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; transition-delay: 0.1s;}
         #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); }
         #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); }
@@ -170,7 +179,9 @@
         .avatar-img { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; border: 2.5px solid var(--accent-color); box-shadow: 0 0 9px rgba(59,130,246,0.45); object-fit: cover; }
         .feedback-details { flex-grow: 1; display: flex; flex-direction: column; }
         .feedback-details strong { color: var(--secondary-color); font-size: 1.1em; display: block; margin-bottom: 4px; text-transform: capitalize; }
-        .google-user-indicator { font-size: 0.65em; background-color: #4285F4; color: white; padding: 1.5px 5.5px; border-radius: 3.5px; margin-left: 7px; vertical-align: middle; font-weight: normal; }
+        .user-type-indicator { font-size: 0.65em; color: white; padding: 1.5px 5.5px; border-radius: 3.5px; margin-left: 7px; vertical-align: middle; font-weight: normal; }
+        .google-user-indicator { background-color: var(--google-blue); }
+        .email-user-indicator { background-color: var(--primary-color); }
         .feedback-stars { color: var(--secondary-color); font-size: 1.5em; letter-spacing: 2.5px; margin-bottom: 5.5px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
         .feedback-details p { margin-top: 4px; margin-bottom: 7px; word-wrap: break-word; white-space: pre-wrap; color: var(--text-color-light); line-height: 1.55; font-size: 0.95em;}
         .feedback-timestamp { font-size: 0.7em; color: rgba(255, 255, 255, 0.55); margin-top: 4px; text-align: right; }
@@ -183,6 +194,7 @@
         .edit-feedback-btn[disabled] { display: none !important; }
         .edited-tag { background-color: #f0ad4e; color: white; padding: 2.5px 7px; border-radius: 4.5px; font-size: 0.65em; font-weight: bold; margin-left: 7px; vertical-align: middle; animation: fadeIn 0.45s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+        
         #custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.92); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.35s ease-out, visibility 0s linear 0.35s; }
         #custom-modal-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.35s ease-out, visibility 0s linear 0s; }
         .custom-modal { background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid; border-radius: 18px; padding: 28px 22px; text-align: center; color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28); transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden; transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out; max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;}
@@ -193,11 +205,13 @@
         .custom-modal p { font-size: 0.95em; line-height: 1.45; margin-bottom: 18px; color: #bbb; }
         .modal-close-btn { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; padding: 9px 18px; border-radius: 7px; font-size: 0.95em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2.5px 9px rgba(59,130,246,0.35); }
         .modal-close-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
+        
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; min-width: 220px;} }
-        @media (max-width: 480px) { h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} #google-auth-container{margin-bottom: 15px;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px; min-width: 200px;} }
+        
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } .main-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; } .auth-container h2 {font-size: 1.8em;} }
+        @media (max-width: 480px) { .main-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} .auth-container {padding: 25px 20px; max-width: 100%;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px;} }
     </style>
 </head>
 <body>
@@ -206,34 +220,67 @@
         <span class="owner-text">Banaya gaya: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 dwara</span>
     </div>
 
-    <div class="container animate-in">
-        <div id="google-auth-container">
-            <div id="google-signin-button-container"></div>
-
-            <button id="custom-google-signin" class="custom-google-btn" style="display: none;"> <svg class="google-icon" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                    <path fill="none" d="M0 0h48v48H0z"></path>
-                </svg>
-                Sign in with Google
-            </button>
-
-            <div id="user-info"> 
-                <img id="user-profile-pic" src="#" alt="User DP">
-                <span id="user-info-text"></span>
+    <div id="auth-section" class="auth-container animate-in">
+        <form id="signup-form" class="auth-form">
+            <h2>Naya Account Banayein</h2>
+            <div class="auth-input-group">
+                <label for="signup-name">Aapka Naam:</label>
+                <input type="text" id="signup-name" required>
             </div>
-            <button id="google-logout-button" style="display:none;">LOGOUT</button>
-        </div>
+            <div class="auth-input-group">
+                <label for="signup-email">Email:</label>
+                <input type="email" id="signup-email" required>
+            </div>
+            <div class="auth-input-group">
+                <label for="signup-password">Password (min. 6 characters):</label>
+                <input type="password" id="signup-password" required minlength="6">
+            </div>
+            <div class="auth-input-group">
+                <label for="signup-confirm-password">Password Dobara Daalein:</label>
+                <input type="password" id="signup-confirm-password" required minlength="6">
+            </div>
+            <button type="submit" class="auth-button">SIGN UP</button>
+            <div class="divider-or"><span>Ya</span></div>
+            <button type="button" id="custom-google-signin-signup" class="custom-google-btn">
+                <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                Google Se Sign Up Karein
+            </button>
+            <a class="auth-toggle-link" id="show-login-link">Pehle se account hai? Login Karein</a>
+        </form>
 
-        <h1 id="main-title"></h1>
+        <form id="login-form" class="auth-form">
+            <h2>Login Karein</h2>
+            <div class="auth-input-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" required>
+            </div>
+            <div class="auth-input-group">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" class="auth-button">LOGIN</button>
+            <div class="divider-or"><span>Ya</span></div>
+            <button type="button" id="custom-google-signin-login" class="custom-google-btn">
+                 <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                Google Se Login Karein
+            </button>
+            <a class="auth-toggle-link" id="show-signup-link">Naya account banayein</a>
+        </form>
+    </div>
+
+    <div id="user-info-display">
+        <img id="user-profile-pic" src="#" alt="User DP">
+        <span id="user-greeting">Swagat, <strong></strong>!</span>
+        <button id="logout-button">LOGOUT</button>
+    </div>
+    
+    <div id="feedback-form-container" class="main-container animate-in" style="display:none;"> <h1 id="main-title"></h1>
         <div id="typed-output"></div>
 
         <form id="feedback-form">
             <div class="input-group">
-                <label for="name">Aapka Naam:</label>
-                <input type="text" id="name" placeholder="Apna naam yahaan likhein..." required>
+                <label for="name">Aapka Naam: (Logged in as <span id="feedback-form-username">User</span>)</label>
+                <input type="text" id="name" placeholder="Apna naam yahaan likhein..." required disabled>
             </div>
             <div class="input-group">
                 <label for="feedback">Aapka Feedback:</label>
@@ -248,11 +295,11 @@
             </div>
             <button type="button" id="submit-feedback">FEEDBACK JAMA KAREIN</button>
         </form>
+    </div>
 
-        <div id="custom-modal-overlay" class="modal-overlay">
-            <div class="custom-modal">
-                <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p><button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
-            </div>
+    <div id="custom-modal-overlay" class="modal-overlay">
+        <div class="custom-modal">
+            <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p><button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
         </div>
     </div>
 
@@ -266,16 +313,33 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
 
-            const nameInput = document.getElementById('name');
+            // Auth Form Elements
+            const authSection = document.getElementById('auth-section');
+            const signupForm = document.getElementById('signup-form');
+            const loginForm = document.getElementById('login-form');
+            const showLoginLink = document.getElementById('show-login-link');
+            const showSignupLink = document.getElementById('show-signup-link');
+            const customGoogleSigninSignupBtn = document.getElementById('custom-google-signin-signup');
+            const customGoogleSigninLoginBtn = document.getElementById('custom-google-signin-login');
+
+            // User Info Display Elements
+            const userInfoDisplay = document.getElementById('user-info-display');
+            const userProfilePic = document.getElementById('user-profile-pic');
+            const userGreetingName = userInfoDisplay.querySelector('#user-greeting strong');
+            const logoutButton = document.getElementById('logout-button');
+
+            // Feedback Form Elements
+            const feedbackFormContainer = document.getElementById('feedback-form-container');
+            const nameInput = document.getElementById('name'); // Feedback form name input
+            const feedbackFormUsername = document.getElementById('feedback-form-username');
             const feedbackTextarea = document.getElementById('feedback');
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
             const feedbackListContainer = document.getElementById('feedback-list-container');
             const starsElements = document.querySelectorAll('.star');
-            const mainTitle = document.getElementById('main-title');
+            const mainTitle = document.getElementById('main-title'); // Typed.js title
             const averageRatingDisplay = document.getElementById('average-rating-display');
-            const formContainer = document.querySelector('.container');
-
+            
             const customModalOverlay = document.getElementById('custom-modal-overlay');
             const modalIcon = customModalOverlay.querySelector('.modal-icon');
             const modalTitleEl = document.getElementById('modal-title');
@@ -283,167 +347,204 @@
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const confettiContainer = customModalOverlay.querySelector('.confetti-container');
 
-            // const googleSigninButtonContainer = document.getElementById('google-signin-button-container'); // We might not need this if we hide it.
-            const customGoogleSigninButton = document.getElementById('custom-google-signin'); // NEW Custom Button
-            const userInfoDiv = document.getElementById('user-info');
-            const userProfilePic = document.getElementById('user-profile-pic');
-            const userInfoText = document.getElementById('user-info-text');
-            const googleLogoutButton = document.getElementById('google-logout-button');
-
             let currentSelectedRating = 0;
             let isEditing = false;
             let currentEditFeedbackId = null;
-            let currentGoogleUser = null;
+            let currentUser = null; // Stores { userId, name, email, avatarUrl, loginMethod }
 
             const BASE_API_URL = window.location.origin;
-            const API_URL_FEEDBACK = `${BASE_API_URL}/api/feedback`;
-            const FETCH_API_URL = `${BASE_API_URL}/api/feedbacks`;
-            const GOOGLE_AUTH_URL = `${BASE_API_URL}/api/auth/google-signin`;
-            const VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
+            const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
+            const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
+            const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
+            const API_VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
+            const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
+            const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
+
+            // --- Auth Form Toggle Logic ---
+            function showForm(formToShow) {
+                signupForm.classList.remove('active');
+                loginForm.classList.remove('active');
+                if (formToShow === 'signup') {
+                    signupForm.classList.add('active');
+                } else {
+                    loginForm.classList.add('active');
+                }
+                authSection.classList.add('animate-in'); // Ensure auth container is visible
+            }
+            showLoginLink.addEventListener('click', () => showForm('login'));
+            showSignupLink.addEventListener('click', () => showForm('signup'));
+
+
+            // --- API Call Helper ---
+            async function apiRequest(url, method, body = null) {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                try {
+                    const response = await fetch(url, {
+                        method,
+                        headers,
+                        body: body ? JSON.stringify(body) : null
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || `Error: ${response.status}`);
+                    }
+                    return data;
+                } catch (error) {
+                    console.error(`API request error to ${url}:`, error);
+                    showCustomModal('error', 'Oops!', error.message || 'Server se communication mein error.');
+                    throw error; // Re-throw for further handling if needed
+                }
+            }
+            
+            // --- Authentication Logic ---
+            async function handleAuthResponse(data) {
+                localStorage.setItem('authToken', data.token);
+                currentUser = data.user; // { userId, name, email, avatarUrl, loginMethod }
+                updateUIAfterLogin();
+                showCustomModal('success', `SWAGAT HAI, ${currentUser.name}!`, 
+                    currentUser.loginMethod === 'google' ? 'Aap Google se सफलतापूर्वक login ho gaye hain!' : 'Aap सफलतापूर्वक login ho gaye hain!');
+                await fetchFeedbacks();
+            }
+
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signup-name').value.trim();
+                const email = document.getElementById('signup-email').value.trim();
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+                if (!name || !email || !password || !confirmPassword) {
+                    return showCustomModal('error', 'Khali Fields!', 'Sabhi fields bharna zaroori hai.');
+                }
+                if (password !== confirmPassword) {
+                    return showCustomModal('error', 'Password Match Nahi Hua!', 'Dono password fields same hone chahiye.');
+                }
+                if (password.length < 6) {
+                     return showCustomModal('error', 'Kamzor Password!', 'Password kam se kam 6 characters ka hona chahiye.');
+                }
+                try {
+                    const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
+                    handleAuthResponse(data);
+                } catch (error) { /* apiRequest handles modal */ }
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value;
+                 if (!email || !password) {
+                    return showCustomModal('error', 'Khali Fields!', 'Email aur password daalna zaroori hai.');
+                }
+                try {
+                    const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
+                    handleAuthResponse(data);
+                } catch (error) { /* apiRequest handles modal */ }
+            });
+
+            // Google Sign-In
+            window.onload = function () {
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                    google.accounts.id.initialize({
+                        client_id: GOOGLE_CLIENT_ID,
+                        callback: handleGoogleCredentialResponse
+                    });
+                    // Attach click listener to custom Google buttons
+                    const triggerGooglePrompt = () => {
+                        google.accounts.id.prompt((notification) => {
+                            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                                console.warn('Google Sign-In prompt was not displayed or skipped.');
+                            }
+                        });
+                    };
+                    if(customGoogleSigninSignupBtn) customGoogleSigninSignupBtn.onclick = triggerGooglePrompt;
+                    if(customGoogleSigninLoginBtn) customGoogleSigninLoginBtn.onclick = triggerGooglePrompt;
+
+                } else {
+                    console.error("Google Identity Services script abhi load nahi hua hai.");
+                }
+                checkLoginStatus();
+                 // Animate owner info a bit later
+                setTimeout(() => { 
+                    const ownerInfoEl = document.querySelector('.owner-info');
+                    if(ownerInfoEl) ownerInfoEl.classList.add('animate-in');
+                }, 50);
+            };
+
+            async function handleGoogleCredentialResponse(response) {
+                try {
+                    const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
+                    handleAuthResponse(data);
+                } catch (error) { /* apiRequest handles modal */ }
+            }
+
+            logoutButton.addEventListener('click', () => {
+                localStorage.removeItem('authToken');
+                currentUser = null;
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                    google.accounts.id.disableAutoSelect();
+                }
+                updateUIAfterLogout();
+                showCustomModal('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.');
+                fetchFeedbacks(); // Refresh feedbacks to show non-editable state
+            });
 
             async function checkLoginStatus() {
                 const token = localStorage.getItem('authToken');
                 if (token) {
                     try {
-                        const res = await fetch(VALIDATE_TOKEN_URL, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (res.ok) {
-                            currentGoogleUser = await res.json();
-                            updateUIAfterLogin();
-                        } else { 
-                            localStorage.removeItem('authToken');
-                            updateUIAfterLogout();
-                            if(res.status === 403 || res.status === 401) console.warn("Session token invalid/expired. Please login again.");
-                        }
-                    } catch (err) {
-                        console.error("Token validate karte waqt error:", err);
-                        localStorage.removeItem('authToken'); 
+                        const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
+                        currentUser = userData; // Server returns { userId, name, email, avatarUrl, loginMethod }
+                        updateUIAfterLogin();
+                    } catch (error) {
+                        localStorage.removeItem('authToken');
+                        currentUser = null;
                         updateUIAfterLogout();
+                        console.warn("Session token invalid/expired. Please login again.");
                     }
                 } else {
-                    updateUIAfterLogout(); 
+                    updateUIAfterLogout();
                 }
-                await fetchFeedbacks(); 
-            }
-
-            window.onload = function () { 
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                    google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: handleCredentialResponse
-                        // auto_select: true // Optional: Agar user pehle se logged in hai toh automatically select kar lega
-                    });
-
-                    // Custom button ko trigger karne ke liye event listener
-                    if (customGoogleSigninButton) {
-                        customGoogleSigninButton.onclick = () => {
-                            google.accounts.id.prompt((notification) => {
-                                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                                    // Agar prompt display nahi hua (e.g., due to cooldown or browser settings)
-                                    console.warn('Google Sign-In prompt was not displayed or skipped.');
-                                    // Yahaan aap user ko manually sign-in process ke liye guide kar sakte hain,
-                                    // ya browser settings check karne ko keh sakte hain (pop-ups, third-party cookies).
-                                    // Abhi ke liye, hum modal dikha sakte hain.
-                                    // showCustomModal('info', 'Sign-In Issue', 'Google Sign-In prompt couldn\'t be shown. Please check browser pop-up settings or try again.');
-                                }
-                            });
-                        };
-                    }
-                    
-                    // Default Google button render karne ki ab zaroorat nahi agar hum custom button use kar rahe hain.
-                    // renderGoogleButton(); // Commented out or remove this line
-
-                } else {
-                    console.error("Google Identity Services script abhi load nahi hua hai ya aage load hoga.");
-                }
-                checkLoginStatus(); 
-            };
-
-            // renderGoogleButton function ki ab zaroorat nahi hai agar hum custom button use kar rahe hain
-            /*
-            function renderGoogleButton() {
-                 if (googleSigninButtonContainer && typeof google !== 'undefined' && google.accounts && google.accounts.id) { 
-                    google.accounts.id.renderButton( 
-                        googleSigninButtonContainer,
-                        { theme: "outline", size: "large", text: "signin_with", shape: "rectangular", width: "250px" } 
-                    );
-                    googleSigninButtonContainer.style.display = 'flex'; 
-                    googleSigninButtonContainer.style.justifyContent = 'center'; 
-                }
-            }
-            */
-
-            async function handleCredentialResponse(response) {
-                try {
-                    const res = await fetch(GOOGLE_AUTH_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: response.credential }) 
-                    });
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(errorData.message || `Google Sign-In Error Status: ${res.status}`);
-                    }
-                    const { token, user } = await res.json(); 
-                    localStorage.setItem('authToken', token); 
-                    currentGoogleUser = user; 
-                    updateUIAfterLogin();
-                    showCustomModal('success', `SWAGAT HAI ${currentGoogleUser.name}!`, 'Aap Google se सफलतापूर्वक login ho gaye hain!');
-                    await fetchFeedbacks(); 
-                } catch (err) {
-                    localStorage.removeItem('authToken'); 
-                    currentGoogleUser = null;
-                    updateUIAfterLogout(); 
-                    showCustomModal('error', 'LOGIN FAIL!', `Google se login nahi ho paya: ${err.message}`);
-                }
+                await fetchFeedbacks();
             }
 
             function updateUIAfterLogin() {
-                if (currentGoogleUser) {
-                    if(customGoogleSigninButton) customGoogleSigninButton.style.display = 'none'; // Custom login button chhupao
+                if (currentUser) {
+                    authSection.style.display = 'none'; // Hide full auth section
+                    userInfoDisplay.style.display = 'flex'; // Show user info bar
+                    userProfilePic.src = currentUser.avatarUrl || `https://via.placeholder.com/45/FFFFFF/6a0dad?text=${currentUser.name.charAt(0)}`;
+                    userProfilePic.alt = currentUser.name;
+                    userGreetingName.textContent = currentUser.name;
                     
-                    userProfilePic.src = currentGoogleUser.picture || 'https://via.placeholder.com/40'; 
-                    userProfilePic.alt = currentGoogleUser.name; 
-                    userInfoText.textContent = `Logged in as: ${currentGoogleUser.name}`; 
-                    userInfoDiv.style.display = 'flex'; 
-
-                    googleLogoutButton.style.display = 'inline-block'; 
-                    
-                    nameInput.value = currentGoogleUser.name; 
-                    nameInput.disabled = true; 
+                    feedbackFormContainer.style.display = 'block'; // Show feedback form
+                    feedbackFormContainer.classList.add('animate-in');
+                    nameInput.value = currentUser.name; // Pre-fill name in feedback form
+                    feedbackFormUsername.textContent = currentUser.name; // Update span
+                    nameInput.disabled = true;
                 }
             }
-
-            function handleLogout() {
-                localStorage.removeItem('authToken'); 
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id && currentGoogleUser) { 
-                     google.accounts.id.disableAutoSelect(); 
-                }
-                currentGoogleUser = null; 
-                updateUIAfterLogout(); 
-                showCustomModal('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.');
-                fetchFeedbacks(); 
-            }
-            googleLogoutButton.addEventListener('click', handleLogout);
 
             function updateUIAfterLogout() {
-                if(customGoogleSigninButton) customGoogleSigninButton.style.display = 'inline-flex'; // Custom login button dikhao
-                googleLogoutButton.style.display = 'none'; 
-                
-                userInfoDiv.style.display = 'none'; 
-                userInfoText.textContent = ''; 
-                userProfilePic.src = '#'; 
-
-                if (!isEditing) { 
-                    nameInput.value = ''; 
-                    nameInput.disabled = false; 
-                }
+                authSection.style.display = 'block'; // Show auth section
+                showForm('login'); // Default to login form
+                userInfoDisplay.style.display = 'none';
+                feedbackFormContainer.style.display = 'none'; // Hide feedback form
+                nameInput.value = '';
+                feedbackFormUsername.textContent = 'User';
+                nameInput.disabled = false; // Enable if you want anonymous users to type name
+            }
+            
+            // --- Typed.js (for feedback form title) ---
+            if (mainTitle) {
+                 new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
+                 new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
             }
 
-            new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
-            new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
 
+            // --- Star Rating Logic ---
             function updateStarVisuals(ratingToShow) {
                 starsElements.forEach(star => {
                     const val = parseInt(star.getAttribute('data-value'));
@@ -457,11 +558,12 @@
                 star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); });
             });
 
+            // --- Custom Modal Logic ---
             function showCustomModal(type, title, message) {
                 modalTitleEl.textContent = title; modalMessageEl.textContent = message;
-                if (confettiContainer) confettiContainer.innerHTML = ''; 
-                const icons = {'success': '🎉', 'error': '❌', 'info': '💡'};
-                const borderColors = {'success': 'var(--success-color)', 'error': 'var(--error-color)', 'info': 'var(--accent-color)'};
+                if (confettiContainer) confettiContainer.innerHTML = '';
+                const icons = {'success': '🎉', 'error': '❌', 'info': '💡', 'warning':'⚠️'};
+                const borderColors = {'success': 'var(--success-color)', 'error': 'var(--error-color)', 'info': 'var(--accent-color)', 'warning':'#FFC107'};
                 modalIcon.innerHTML = icons[type] || '💡';
                 customModalOverlay.querySelector('.custom-modal').style.borderColor = borderColors[type] || 'var(--accent-color)';
                 modalIcon.style.color = borderColors[type] || 'var(--accent-color)';
@@ -470,7 +572,7 @@
             }
             modalCloseBtn.addEventListener('click', () => customModalOverlay.classList.remove('show'));
 
-            function launchConfetti() { 
+            function launchConfetti() {
                 if (!confettiContainer) return;
                 const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722'];
                 confettiContainer.innerHTML = '';
@@ -483,12 +585,11 @@
                 }
             }
 
+            // --- Feedback Submission & Display Logic ---
             async function fetchFeedbacks() {
                 try {
-                    const res = await fetch(FETCH_API_URL);
-                    if (!res.ok) throw new Error(`Server se response theek nahi (${res.status})`);
-                    const data = await res.json();
-                    const h2Title = feedbackListContainer.querySelector('h2'); 
+                    const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET');
+                    const h2Title = feedbackListContainer.querySelector('h2');
                     feedbackListContainer.innerHTML = ''; 
                     feedbackListContainer.appendChild(averageRatingDisplay); 
                     if(h2Title) feedbackListContainer.appendChild(h2Title); 
@@ -504,10 +605,7 @@
                         updateAverageRating(average, data.length);
                         data.forEach((fb, index) => addFeedbackToDOM(fb, index));
                     }
-                } catch (err) {
-                    console.error('Feedbacks fetch karte waqt error:', err);
-                    showCustomModal('error', 'Fetch Error!', `Feedbacks load nahi ho paye: ${err.message}`);
-                }
+                } catch (err) { /* apiRequest handles modal for fetch errors */ }
             }
 
             function updateAverageRating(avg, count) {
@@ -524,55 +622,39 @@
                 }, 50);
             }
 
-            async function handleSubmitOrUpdate() {
+            submitButton.addEventListener('click', async () => {
+                if (!currentUser) {
+                    return showCustomModal('warning', 'Login Zaroori', 'Feedback dene ke liye kripya login karein.');
+                }
                 const feedbackContent = feedbackTextarea.value.trim();
                 const ratingValue = ratingInput.value;
-                let nameValue = nameInput.value.trim();
-
-                if (currentGoogleUser && nameInput.disabled) { 
-                    nameValue = currentGoogleUser.name;
-                }
-
-                if (!nameValue || !feedbackContent || ratingValue === '0') {
-                    showCustomModal('error', 'Khali Fields!', 'Naam, feedback aur rating, sab kuch daalna zaroori hai!');
-                    return;
+                
+                if (!feedbackContent || ratingValue === '0') {
+                    return showCustomModal('error', 'Khali Fields!', 'Feedback aur rating, sab kuch daalna zaroori hai!');
                 }
 
                 let feedbackPayload = {
-                    name: nameValue,
+                    // name will be taken from JWT on backend (currentUser.name)
                     feedback: feedbackContent,
                     rating: parseInt(ratingValue)
                 };
 
-                const token = localStorage.getItem('authToken');
-                const headers = { 'Content-Type':'application/json' };
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`; 
-                }
-
-                const url = isEditing ? `${API_URL_FEEDBACK}/${currentEditFeedbackId}` : API_URL_FEEDBACK;
+                const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
                 const method = isEditing ? 'PUT' : 'POST';
 
                 try {
-                    const res = await fetch(url, { method, headers, body: JSON.stringify(feedbackPayload) });
-                    if (!res.ok) { const errorData = await res.json(); throw new Error(errorData.message || `Server Error Status: ${res.status}`); }
-                    
-                    const successMsg = isEditing ? 'Aapka feedback सफलतापूर्वक update ho gaya!' : 'Aapka feedback सफलतापूर्वक jama ho gaya!';
-                    showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', successMsg);
-                    resetForm(); 
+                    const data = await apiRequest(url, method, feedbackPayload);
+                    showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', data.message);
+                    resetFeedbackForm(); 
                     await fetchFeedbacks(); 
-                } catch (err) {
-                    console.error(`${isEditing ? 'Update' : 'Submit'} karte waqt error:`, err);
-                    showCustomModal('error', `${isEditing ? 'UPDATE' : 'SUBMISSION'} FAIL!`, `Kuch gadbad ho gayi: ${err.message}`);
-                }
-            }
-            submitButton.addEventListener('click', handleSubmitOrUpdate);
+                } catch (error) { /* apiRequest handles modal */ }
+            });
 
-            function resetForm() {
-                if (currentGoogleUser) { 
-                    nameInput.value = currentGoogleUser.name;
+            function resetFeedbackForm() {
+                if (currentUser) { 
+                    nameInput.value = currentUser.name;
                     nameInput.disabled = true;
-                } else { 
+                } else {
                     nameInput.value = '';
                     nameInput.disabled = false;
                 }
@@ -589,13 +671,25 @@
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
                 
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
-                avatarImg.src = fbData.avatarUrl || `https://i.pravatar.cc/50?u=${encodeURIComponent(fbData.name.toLowerCase() || 'anon')}`;
+                avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
                 avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
                 avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
 
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
                 const strongName = document.createElement('strong'); strongName.textContent = fbData.name;
-                if (fbData.googleId) { const googleTag = document.createElement('span'); googleTag.className = 'google-user-indicator'; googleTag.textContent = 'G'; strongName.appendChild(googleTag); }
+                
+                // User type indicator
+                let userTypeTag = '';
+                if (fbData.googleIdSubmitter) { // Check if googleId was stored during submission
+                    userTypeTag = `<span class="user-type-indicator google-user-indicator">G</span>`;
+                } else {
+                     // Could fetch user from User model via userId to confirm loginMethod if needed,
+                     // but for display, assuming non-Google if googleIdSubmitter is not set.
+                    userTypeTag = `<span class="user-type-indicator email-user-indicator">E</span>`;
+                }
+                strongName.innerHTML += ` ${userTypeTag}`;
+
+
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
                 
                 const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars';
@@ -609,13 +703,15 @@
 
                 const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Is feedback ko edit karein';
-                editButton.disabled = !(currentGoogleUser && fbData.googleId && currentGoogleUser.googleId === fbData.googleId);
+                
+                // Edit button enabled only if logged in user is the owner of the feedback
+                editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
+
 
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation();
-                    if (!currentGoogleUser || currentGoogleUser.googleId !== fbData.googleId) {
-                        showCustomModal('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
-                        return;
+                    if (!currentUser || currentUser.userId !== fbData.userId) {
+                        return showCustomModal('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
                     }
                     showCustomModal('info', 'FEEDBACK EDIT KAREIN', 'Neeche form mein apna feedback edit karein.');
                     nameInput.value = fbData.name; 
@@ -623,7 +719,7 @@
                     feedbackTextarea.value = fbData.feedback;
                     currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
                     submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
-                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
                 item.appendChild(editButton);
 
@@ -642,9 +738,15 @@
                 feedbackListContainer.appendChild(item);
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out'; }, index * 70);
             }
-            setTimeout(() => { document.querySelector('.container.animate-in').style.opacity = 1; document.querySelector('.container.animate-in').style.transform = 'translateY(0)'; }, 100);
-            setTimeout(() => { document.querySelector('#feedback-list-container.animate-in').style.opacity = 1; document.querySelector('#feedback-list-container.animate-in').style.transform = 'translateY(0)'; }, 300);
-            setTimeout(() => { document.querySelector('.owner-info.animate-in').style.opacity = 1; document.querySelector('.owner-info.animate-in').style.transform = 'translateY(0)'; }, 50);
+            
+            // Initial UI setup based on login status
+            // checkLoginStatus will handle this on page load.
+            // Initial animation for feedback list container
+            setTimeout(() => { 
+                 const fbListEl = document.querySelector('#feedback-list-container');
+                 if(fbListEl) fbListEl.classList.add('animate-in');
+            }, 300);
+
         });
     </script>
 </body>
