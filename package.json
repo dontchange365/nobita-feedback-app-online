@@ -1,7 +1,7 @@
 {
-  "name": "nobita-feedback-app-with-google",
-  "version": "1.2.0",
-  "description": "A simple feedback application with stars, MongoDB, Google Login and persistent session.",
+  "name": "nobita-feedback-app-pro-admin-login",
+  "version": "1.4.0",
+  "description": "Feedback app with JWT user persistence and professional session-based admin login.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -12,7 +12,9 @@
     "node",
     "express",
     "google-login",
-    "jwt"
+    "jwt",
+    "session",
+    "admin panel"
   ],
   "author": "Nobita",
   "license": "ISC",
@@ -22,6 +24,8 @@
     "express": "^4.19.2",
     "mongoose": "^8.4.1",
     "google-auth-library": "^9.9.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "express-session": "^1.18.0",
+    "connect-mongo": "^5.1.0"
   }
 }
