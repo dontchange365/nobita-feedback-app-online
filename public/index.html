@@ -11,23 +11,38 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --primary-color: #6a0dad; --secondary-color: #FFD700; --accent-color: #3B82F6;
-            --text-color-light: #f4f4f9; --text-color-dark: #2c3e50;
-            --bg-gradient-start: #1a1a2e; --bg-gradient-end: #16213e;
-            --card-bg-popup: #272c3a;
-            --card-bg: rgba(44, 62, 80, 0.85);
-            --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0,0,0,0.5);
-            --success-color: #28a745; --error-color: #dc3545; --info-color: var(--accent-color); --confirm-color: #fd7e14;
-            --google-blue: #4285F4;
+            --primary-color: #6a0dad; /* Dark Purple */
+            --secondary-color: #FFD700; /* Gold */
+            --accent-color: #3B82F6; /* Bright Blue */
+            --text-color-light: #f4f4f9; /* Off-white */
+            --text-color-dark: #2c3e50; /* Dark gray-blue */
+            --bg-gradient-start: #1a1a2e; /* Darker Space Blue */
+            --bg-gradient-end: #16213e; /* Lighter Space Blue */
+            --card-bg-popup: #272c3a; /* Slightly darker popup background */
+            --card-bg: rgba(44, 62, 80, 0.85); /* Dark gray-blue with transparency */
+            --card-border: rgba(255, 255, 255, 0.15); /* Light border with transparency */
+            --input-bg: rgba(255, 255, 255, 0.08); /* Even lighter input background */
+            --shadow-deep: 0 10px 30px rgba(0,0,0,0.5); /* Deeper shadow for main elements */
+            --success-color: #28a745; /* Green for success */
+            --error-color: #dc3545; /* Red for errors */
+            --info-color: var(--accent-color); /* Blue for info */
+            --confirm-color: #fd7e14; /* Orange for confirmation */
+            --google-blue: #4285F4; /* Google brand blue */
         }
         html { scroll-behavior: smooth; }
         body {
-            font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            color: var(--text-color-light); display: flex; flex-direction: column; align-items: center;
-            justify-content: flex-start; min-height: 100vh; margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-color-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
             padding: 0 15px 25px 15px;
-            box-sizing: border-box; overflow-x: hidden;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* --- Corner Triggers (Login Icon / User Avatar) --- */
@@ -36,13 +51,14 @@
             width: auto; height: 48px;
             background-color: var(--secondary-color); color: var(--primary-color);
             border: 2px solid var(--primary-color);
-            display: none;
+            display: none; /* Default to hidden, shown by JS */
             align-items: center; justify-content: center;
             box-shadow: 0 3px 10px rgba(0,0,0,0.25);
             transition: all 0.2s ease-out;
             overflow: hidden; font-weight: 600;
             padding: 0 15px;
             border-radius: 8px;
+            z-index: 1001; /* Above main content, below modals */
         }
         .corner-trigger.avatar-mode {
              border-radius: 50%; padding: 0; width: 48px;
@@ -148,12 +164,26 @@
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
+        .stylish-popup-card .popup-icon-area.profile { color: var(--primary-color); } /* New icon color for profile */
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
-        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
+        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; position: relative; } /* Added relative for eye icon positioning */
         .stylish-popup-card .popup-form-input-group label { display:block; margin-bottom:5px; font-size:0.9em;}
         .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
         .stylish-popup-card .popup-form-input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
+        .stylish-popup-card .password-toggle-icon {
+            position: absolute;
+            right: 12px;
+            top: 40px; /* Adjust based on label height */
+            cursor: pointer;
+            color: #aaa;
+            font-size: 1.1em;
+            transition: color 0.2s;
+        }
+        .stylish-popup-card .password-toggle-icon:hover {
+            color: var(--secondary-color);
+        }
+
         .stylish-popup-card .popup-button-container { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
         .stylish-popup-card .popup-button { padding: 10px 22px; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; min-width: 90px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .stylish-popup-card .popup-button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
@@ -161,6 +191,9 @@
         .stylish-popup-card .popup-button.primary:hover { background-color: #3578e0; }
         .stylish-popup-card .popup-button.secondary { background: #5a6268; color: #fff; }
         .stylish-popup-card .popup-button.secondary:hover { background-color: #495057; }
+        .stylish-popup-card .popup-button.warning { background: #ffc107; color: #333; }
+        .stylish-popup-card .popup-button.warning:hover { background: #e0a800; }
+
         .stylish-popup-card .close-popup-btn-styled { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s; padding: 5px; line-height: 1; }
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
 
@@ -225,7 +258,8 @@
 </head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i> </div>
+        <i class="fas fa-lock"></i>
+    </div>
     <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
         <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
     </div>
@@ -304,17 +338,31 @@
         </div>
 
         <div id="feedback-form-container" class="main-container">
-            <h1 id="main-title"></h1> <div id="typed-output"></div>
+            <h1 id="main-title"></h1>
+            <div id="typed-output"></div>
             <form id="feedback-form">
-                <div class="input-group"> <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled> </div>
-                <div class="input-group"> <label for="feedback">Your Feedback:</label> <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea> </div>
-                <div class="input-group"> <label>Rate Your Experience:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
+                <div class="input-group">
+                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
+                    <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
+                </div>
+                <div class="input-group">
+                    <label for="feedback">Your Feedback:</label>
+                    <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Rate Your Experience:</label>
+                    <div class="stars" id="star-rating">
+                        <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span>
+                    </div>
+                    <input type="hidden" id="rating" value="0">
+                </div>
                 <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
             </form>
         </div>
 
         <div id="feedback-list-container" class="main-container">
-             <div id="average-rating-display"></div> <h2>Recent Feedbacks</h2>
+             <div id="average-rating-display"></div>
+             <h2>Recent Feedbacks</h2>
         </div>
     </div>
 
@@ -397,6 +445,7 @@
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
             const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
             const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`; // New API endpoint for profile update
+            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New API endpoint for password change
 
 
             // --- Stylish Popup Functionality ---
@@ -410,7 +459,7 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>'};
+                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>', 'password': '<i class="fas fa-lock"></i>'}; // Added 'password' icon
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
@@ -761,12 +810,28 @@
                         <input type="file" id="popup-avatar-file" accept="image/*">
                         <button type="button" id="upload-avatar-btn" class="popup-button primary" style="width:100%; margin-top:10px;">Upload Photo</button>
                     </div>
+                    <div class="popup-form-input-group" id="change-password-group" style="${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">
+                        <label for="popup-current-password">Current Password:</label>
+                        <input type="password" id="popup-current-password" placeholder="Enter current password" required>
+                        <i class="fas fa-eye password-toggle-icon" data-target="popup-current-password"></i>
+                    </div>
+                    <div class="popup-form-input-group" id="change-new-password-group" style="${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">
+                        <label for="popup-new-password">New Password (min. 6 characters):</label>
+                        <input type="password" id="popup-new-password" placeholder="Enter new password" required minlength="6">
+                        <i class="fas fa-eye password-toggle-icon" data-target="popup-new-password"></i>
+                    </div>
+                    <div class="popup-form-input-group" id="change-confirm-password-group" style="${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">
+                        <label for="popup-confirm-password">Confirm New Password:</label>
+                        <input type="password" id="popup-confirm-password" placeholder="Confirm new password" required minlength="6">
+                        <i class="fas fa-eye password-toggle-icon" data-target="popup-confirm-password"></i>
+                    </div>
+                    <button type="button" id="change-password-btn" class="popup-button warning" style="width:100%; margin-top:10px; ${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">Change Password</button>
                 `;
 
                 showStylishPopup('profile', 'Edit Your Profile', '', {
                     formHTML: editProfileHTML,
                     isConfirm: true,
-                    confirmText: 'Save Changes',
+                    confirmText: 'Save Name Changes', // Changed button text
                     cancelText: 'Cancel',
                     onConfirm: async () => {
                         const newName = document.getElementById('popup-edit-name').value.trim();
@@ -775,12 +840,12 @@
                             return;
                         }
                         if (newName === currentUser.name) {
-                            showStylishPopup('info', 'No Changes', 'No changes detected in name.');
+                            showStylishPopup('info', 'No Name Changes', 'No changes detected in name.');
                             return;
                         }
 
                         const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Saving...";}
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Saving Name...";}
 
                         try {
                             const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
@@ -792,7 +857,7 @@
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";}
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Name Changes";} // Re-enable save button
                         }
                     },
                     onCancel: () => {
@@ -800,8 +865,27 @@
                     }
                 });
 
+                // Password toggle functionality for new inputs
+                document.querySelectorAll('.password-toggle-icon').forEach(icon => {
+                    icon.addEventListener('click', function() {
+                        const targetId = this.dataset.target;
+                        const targetInput = document.getElementById(targetId);
+                        if (targetInput.type === 'password') {
+                            targetInput.type = 'text';
+                            this.classList.remove('fa-eye');
+                            this.classList.add('fa-eye-slash');
+                        } else {
+                            targetInput.type = 'password';
+                            this.classList.remove('fa-eye-slash');
+                            this.classList.add('fa-eye');
+                        }
+                    });
+                });
+
+
                 const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
                 const popupAvatarFile = document.getElementById('popup-avatar-file');
+                const changePasswordBtn = document.getElementById('change-password-btn'); // New element
 
                 if (uploadAvatarBtn && popupAvatarFile) {
                     uploadAvatarBtn.addEventListener('click', async () => {
@@ -840,8 +924,55 @@
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Name Changes";} // Re-enable save button
                             popupAvatarFile.value = ''; // Clear file input
+                        }
+                    });
+                }
+
+                if (changePasswordBtn) {
+                    changePasswordBtn.addEventListener('click', async () => {
+                        const currentPassword = document.getElementById('popup-current-password').value;
+                        const newPassword = document.getElementById('popup-new-password').value;
+                        const confirmNewPassword = document.getElementById('popup-confirm-password').value;
+
+                        if (!currentPassword || !newPassword || !confirmNewPassword) {
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Please fill all password fields.</p>';
+                            return;
+                        }
+                        if (newPassword !== confirmNewPassword) {
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New passwords do not match.</p>';
+                            return;
+                        }
+                        if (newPassword.length < 6) {
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New password must be at least 6 characters long.</p>';
+                            return;
+                        }
+
+                        if(currentUser.loginMethod === 'google') {
+                             stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Google users cannot change password directly.</p>';
+                             return;
+                        }
+
+                        changePasswordBtn.disabled = true;
+                        changePasswordBtn.textContent = "Changing...";
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) primaryBtn.disabled = true;
+
+                        try {
+                            const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'PUT', { currentPassword, newPassword });
+                            stylishPopupOverlay.classList.remove('active');
+                            showStylishPopup('success', 'Password Changed!', data.message);
+                            // Clear password fields after success
+                            document.getElementById('popup-current-password').value = '';
+                            document.getElementById('popup-new-password').value = '';
+                            document.getElementById('popup-confirm-password').value = '';
+                        } catch (error) {
+                            // Message handled by apiRequest
+                        } finally {
+                            changePasswordBtn.disabled = false;
+                            changePasswordBtn.textContent = "Change Password";
+                            if(primaryBtn) primaryBtn.disabled = false;
                         }
                     });
                 }
