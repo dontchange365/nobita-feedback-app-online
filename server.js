@@ -5,6 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+const { OAuth2Client } = require('google-auth-library');
 
 dotenv.config();
 
@@ -14,37 +15,39 @@ const PORT = process.env.PORT || 3000;
 // ****** MongoDB Connection String ******
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
 
-// ****** Admin Credentials (SECURITY ALERT! USE ENVIRONMENT VARIABLES IN PRODUCTION) ******
+// ****** Admin Credentials ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
+
+// ****** Google Client ID ******
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com'; // AAPKA CLIENT ID YAHAN DAAL DIYA HAI
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('MONGODB SE CONNECTION SAFAL! DATABASE AB READY HAI!'))
   .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
 
-// Function to generate DiceBear Avatar URL (server side)
 function getDiceBearAvatarUrlServer(name, randomSeed = '') {
-    // Ensure name is a string before calling toLowerCase
     const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
     const seed = encodeURIComponent(seedName + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
-// Define a Schema for Feedback
 const feedbackSchema = new mongoose.Schema({
   name: { type: String, required: true },
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
-  timestamp: { type: Date, default: Date.now }, 
+  timestamp: { type: Date, default: Date.now },
   avatarUrl: { type: String },
   userIp: { type: String },
+  googleId: { type: String, sparse: true }, // To store Google User's unique ID
   isEdited: { type: Boolean, default: false },
-  originalContent: { 
+  originalContent: {
     name: String,
     feedback: String,
     rating: Number,
-    timestamp: Date 
+    timestamp: Date
   },
   replies: [
     {
@@ -57,24 +60,161 @@ const feedbackSchema = new mongoose.Schema({
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-// Middleware
 app.use(cors({
-    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000', `http://localhost:${PORT}`],
+    origin: ['https://nobita-feedback-app-online.onrender.com', 'http://localhost:3000', `http://localhost:${PORT}`,'https://*.google.com', 'https://accounts.google.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
     req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if (req.clientIp === '::1' || req.clientIp === '::ffff:127.0.0.1') { 
+    if (req.clientIp === '::1' || req.clientIp === '::ffff:127.0.0.1') {
         req.clientIp = '127.0.0.1';
     }
     if (req.clientIp && req.clientIp.includes(',')) {
         req.clientIp = req.clientIp.split(',')[0].trim();
     }
     next();
+});
+
+// Google Sign-In Verification Route
+app.post('/api/auth/google-signin', async (req, res) => {
+    const { token } = req.body;
+    if (!token) {
+        return res.status(400).json({ message: 'Google ID token nahi mila.' });
+    }
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: token,
+            audience: GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const { sub, name, email, picture } = payload;
+        res.status(200).json({ sub, name, email, picture });
+    } catch (error) {
+        console.error('Google token verification fail hua:', error);
+        res.status(401).json({ message: 'Google token invalid hai.', error: error.message });
+    }
+});
+
+
+app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
+
+app.get('/api/feedbacks', async (req, res) => {
+    try {
+        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
+        res.status(200).json(allFeedbacks);
+    } catch (error) {
+        console.error('FEEDBACK FETCH KARTE WAQT ERROR AAYA:', error);
+        res.status(500).json({ message: 'FEEDBACK FETCH NAHI HO PAYE.', error: error.message });
+    }
+});
+
+app.post('/api/feedback', async (req, res) => {
+    const { name, feedback, rating, googleId, googleUserPicture } = req.body;
+    const userIp = req.clientIp;
+
+    if (!name || !feedback || !rating || rating === '0') {
+        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
+    }
+    try {
+        let avatarUrlToSave;
+
+        if (googleId && googleUserPicture) {
+            avatarUrlToSave = googleUserPicture;
+        } else if (googleId && !googleUserPicture) {
+            avatarUrlToSave = getDiceBearAvatarUrlServer(name);
+        } else {
+            const existingFeedbackByName = await Feedback.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+            if (existingFeedbackByName && existingFeedbackByName.avatarUrl && !existingFeedbackByName.googleId) {
+                avatarUrlToSave = existingFeedbackByName.avatarUrl;
+            } else {
+                avatarUrlToSave = getDiceBearAvatarUrlServer(name);
+            }
+        }
+
+        const newFeedback = new Feedback({
+            name: name,
+            feedback: feedback,
+            rating: parseInt(rating),
+            avatarUrl: avatarUrlToSave,
+            userIp: userIp,
+            googleId: googleId || null,
+            isEdited: false
+        });
+        await newFeedback.save();
+        console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
+        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
+    } catch (error) {
+        console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
+        if (error.code === 11000) { // Duplicate key error for googleId if you made it unique
+             return res.status(400).json({ message: 'Yeh Google account se pehle hi feedback de diya gaya hai.', error: error.message });
+        }
+        res.status(500).json({ message: 'FEEDBACK DATABASE MEIN SAVE NAHI HO PAYA.', error: error.message });
+    }
+});
+
+app.put('/api/feedback/:id', async (req, res) => {
+    const feedbackId = req.params.id;
+    const { name, feedback, rating, googleIdFromCurrentUser } = req.body;
+    const clientIp = req.clientIp;
+
+    if (!name || !feedback || !rating || rating === '0') {
+        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE UPDATE KE LIYE!' });
+    }
+
+    try {
+        const existingFeedback = await Feedback.findById(feedbackId);
+        if (!existingFeedback) {
+            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, UPDATE KISKO KARUN?' });
+        }
+
+        let authorized = false;
+        if (existingFeedback.googleId) {
+            if (googleIdFromCurrentUser && existingFeedback.googleId === googleIdFromCurrentUser) {
+                authorized = true;
+            }
+        } else {
+            if (existingFeedback.userIp === clientIp) {
+                authorized = true;
+            }
+        }
+
+        if (!authorized) {
+            console.warn(`UNAUTHORIZED ATTEMPT TO EDIT FEEDBACK ID: ${feedbackId} FROM IP: ${clientIp} / GoogleID: ${googleIdFromCurrentUser}. ORIGINAL IP: ${existingFeedback.userIp}, ORIGINAL GoogleID: ${existingFeedback.googleId}`);
+            return res.status(403).json({ message: 'TUM SIRF APNA FEEDBACK EDIT KAR SAKTE HO, DOOSRE KA NAHI!' });
+        }
+
+        const parsedRating = parseInt(rating);
+        const contentActuallyChanged = existingFeedback.name !== name || existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
+
+        if (contentActuallyChanged) {
+            if (!existingFeedback.originalContent) {
+                existingFeedback.originalContent = {
+                    name: existingFeedback.name,
+                    feedback: existingFeedback.feedback,
+                    rating: existingFeedback.rating,
+                    timestamp: existingFeedback.timestamp
+                };
+            }
+            // If it's a Google user, the name is derived from their profile and shouldn't change unless their profile name changes.
+            // The client should send the current Google name.
+            existingFeedback.name = name;
+            existingFeedback.feedback = feedback;
+            existingFeedback.rating = parsedRating;
+            existingFeedback.timestamp = Date.now();
+            existingFeedback.isEdited = true;
+        }
+
+        await existingFeedback.save();
+        res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
+
+    } catch (error) {
+        console.error(`FEEDBACK UPDATE KARTE WAQT ERROR AAYA (ID: ${feedbackId}):`, error);
+        res.status(500).json({ message: 'FEEDBACK UPDATE NAHI HO PAYA.', error: error.message });
+    }
 });
 
 const authenticateAdmin = (req, res, next) => {
@@ -97,117 +237,9 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
-// Serve static files from the 'public' directory (assuming index.html is here)
-app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
-
-// API endpoint to fetch all feedbacks
-app.get('/api/feedbacks', async (req, res) => {
-    try {
-        const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
-        res.status(200).json(allFeedbacks);
-    } catch (error) {
-        console.error('FEEDBACK FETCH KARTE WAQT ERROR AAYA:', error);
-        res.status(500).json({ message: 'FEEDBACK FETCH NAHI HO PAYE.', error: error.message });
-    }
-});
-
-// API endpoint to submit a new feedback
-app.post('/api/feedback', async (req, res) => {
-    const { name, feedback, rating } = req.body;
-    const userIp = req.clientIp;
-    if (!name || !feedback || !rating || rating === '0') { 
-        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
-    }
-    try {
-        let avatarUrlToSave;
-        const existingFeedbackByName = await Feedback.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
-        if (existingFeedbackByName && existingFeedbackByName.avatarUrl) {
-            avatarUrlToSave = existingFeedbackByName.avatarUrl;
-        } else {
-            avatarUrlToSave = getDiceBearAvatarUrlServer(name);
-        }
-        const newFeedback = new Feedback({
-            name: name,
-            feedback: feedback,
-            rating: parseInt(rating),
-            avatarUrl: avatarUrlToSave,
-            userIp: userIp,
-            isEdited: false
-        });
-        await newFeedback.save();
-        console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
-        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
-    } catch (error) {
-        console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
-        res.status(500).json({ message: 'FEEDBACK DATABASE MEIN SAVE NAHI HO PAYA.', error: error.message });
-    }
-});
-
-// API endpoint to update an existing feedback
-app.put('/api/feedback/:id', async (req, res) => {
-    const feedbackId = req.params.id;
-    const { name, feedback, rating } = req.body;
-    const clientIp = req.clientIp;
-
-    if (!name || !feedback || !rating || rating === '0') {
-        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE UPDATE KE LIYE!' });
-    }
-
-    try {
-        const existingFeedback = await Feedback.findById(feedbackId);
-        if (!existingFeedback) {
-            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, UPDATE KISKO KARUN?' });
-        }
-        if (existingFeedback.userIp !== clientIp) {
-            console.warn(`UNAUTHORIZED ATTEMPT TO EDIT FEEDBACK ID: ${feedbackId} FROM IP: ${clientIp}. ORIGINAL IP: ${existingFeedback.userIp}`);
-            return res.status(403).json({ message: 'TUM SIRF APNA FEEDBACK EDIT KAR SAKTE HO, DOOSRE KA NAHI!' });
-        }
-
-        const parsedRating = parseInt(rating);
-        const contentActuallyChanged = existingFeedback.name !== name || existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
-
-        console.log(`[EDIT CHECK] Feedback ID: ${feedbackId}`);
-        console.log(`[EDIT CHECK] Content Actually Changed: ${contentActuallyChanged}`);
-        console.log(`[EDIT CHECK] Existing originalContent:`, existingFeedback.originalContent ? 'Present' : 'Not Present');
-
-
-        if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent) { 
-                existingFeedback.originalContent = {
-                    name: existingFeedback.name,
-                    feedback: existingFeedback.feedback,
-                    rating: existingFeedback.rating,
-                    timestamp: existingFeedback.timestamp 
-                };
-                console.log(`[EDIT ACTION] Storing NEW original content for feedback ID ${feedbackId}:`, existingFeedback.originalContent);
-            } else {
-                console.log(`[EDIT INFO] Original content already exists for feedback ID ${feedbackId}. Not overwriting.`);
-            }
-            
-            existingFeedback.name = name;
-            existingFeedback.feedback = feedback;
-            existingFeedback.rating = parsedRating;
-            existingFeedback.timestamp = Date.now(); 
-            existingFeedback.isEdited = true;
-            console.log(`[EDIT ACTION] Feedback ID ${feedbackId} marked as edited. New content saved.`);
-        } else {
-            console.log(`[EDIT INFO] No actual content change detected for feedback ID ${feedbackId}. Not marking as edited or changing originalContent.`);
-        }
-
-        await existingFeedback.save();
-        console.log('[EDIT ACTION] Feedback saved successfully.');
-        res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
-
-    } catch (error) {
-        console.error(`FEEDBACK UPDATE KARTE WAQT ERROR AAYA (ID: ${feedbackId}):`, error);
-        res.status(500).json({ message: 'FEEDBACK UPDATE NAHI HO PAYA.', error: error.message });
-    }
-});
-
-// Admin Panel Route
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
-        // Feedbacks will be fetched by client-side JS using polling
+        const feedbacks = await Feedback.find().sort({ timestamp: -1 });
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
@@ -271,6 +303,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-avatar img { width: 100%; height: 100%; object-fit: cover; }
                     .feedback-info { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; }
                     .feedback-info h4 { margin: 0; font-size: 1.4em; color: #FFD700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+                    .google-user-tag { background-color: #4285F4; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-left: 8px; vertical-align: middle;}
                     .feedback-info .rating { font-size: 1.1em; color: #F39C12; margin-top: 5px; }
                     .feedback-info .user-ip { font-size: 0.9em; color: #AAB7B8; margin-top: 5px; }
                     .feedback-body { font-size: 1em; color: #BDC3C7; line-height: 1.6; margin-bottom: 15px; flex-grow: 1; overflow-y: auto; word-wrap: break-word; }
@@ -314,8 +347,78 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <div class="main-panel-btn-container">
                     <a href="/" class="main-panel-btn">← GO TO MAIN FEEDBACK PANEL</a>
                 </div>
-                <div class="feedback-grid" id="feedbackGrid">
-                    <p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">LOADING FEEDBACKS...</p>
+                <div class="feedback-grid">
+        `;
+
+        if (feedbacks.length === 0) {
+            html += `<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>`;
+        } else {
+            feedbacks.forEach(fb => {
+                const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
+                const googleUserTag = fb.googleId ? '<span class="google-user-tag">Google User</span>' : '';
+                
+                html += `
+                    <div class="feedback-card" id="card-${fb._id}">
+                        <div class="feedback-card-inner">
+                            <div class="feedback-card-front">
+                                <div class="feedback-header">
+                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.name || 'Anonymous')}" alt="${fbNameInitial}"></div>
+                                    <div class="feedback-info">
+                                        <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${googleUserTag}</h4>
+                                        <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
+                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} ${fb.googleId ? `| G-ID: ${fb.googleId.substring(0,10)}...`:''}</div>
+                                    </div>
+                                </div>
+                                <div class="feedback-body"><p>${fb.feedback}</p></div>
+                                <div class="feedback-date">
+                                    ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
+                                    ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original Post: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
+                                    ${!fb.googleId ? `<button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${fb.name || ''}')">AVATAR BADAL!</button>` : ''}
+                                </div>
+                                <div class="reply-section">
+                                    <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
+                                    <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
+                                    <div class="replies-display">
+                                        ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
+                                        ${fb.replies.map(reply => `
+                                            <div class="single-reply">
+                                                <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
+                                                <div class="reply-content-wrapper">
+                                                    <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+                                                    <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                                </div>
+                                            </div>`).join('')}
+                                    </div>
+                                </div>
+                                ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIGINAL DEKH BHAI!</button>` : ''}
+                            </div>`;
+                if (fb.isEdited && fb.originalContent) {
+                    const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
+                    html += `
+                            <div class="feedback-card-back">
+                                <div class="feedback-header">
+                                    <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrlServer(fb.originalContent.name || 'Anonymous')}" alt="${originalNameInitial}"></div>
+                                    <div class="feedback-info">
+                                        <h4>ORIGINAL: ${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
+                                        <div class="rating">${'★'.repeat(fb.originalContent.rating || 0)}${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
+                                    </div>
+                                </div>
+                                <div class="feedback-body"><p>${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
+                                <div class="feedback-date">Originally Posted: ${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
+                                <div style="margin-top: auto;"> 
+                                   <button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED DEKH BHAI!</button>
+                                </div>
+                            </div>`;
+                }
+                html += `
+                        </div> 
+                    </div>`;
+            });
+        }
+        html += `
                 </div> 
 
                 <div id="adminModalOverlay" class="admin-modal-overlay">
@@ -332,8 +435,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
-                    const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Defined here for JS usage
-                    const feedbackGrid = document.getElementById('feedbackGrid');
                     const adminModalOverlay = document.getElementById('adminModalOverlay');
                     const adminModalTitle = document.getElementById('adminModalTitle');
                     const adminModalMessage = document.getElementById('adminModalMessage');
@@ -341,7 +442,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     const adminModalConfirmButton = document.getElementById('adminModalConfirmButton');
                     const adminModalCancelButton = document.getElementById('adminModalCancelButton');
                     let globalConfirmCallback = null;
-                    let currentFeedbacks = []; // To store the current state of feedbacks for comparison
 
                     function showAdminModal(type, title, message, confirmCallbackFn = null) {
                         adminModalTitle.textContent = title;
@@ -372,131 +472,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                     function flipCard(feedbackId) {
                         const card = document.getElementById(\`card-\${feedbackId}\`);
-                        if (card) {
-                            card.classList.toggle('is-flipped');
-                        }
+                        card.classList.toggle('is-flipped');
                     }
                     
-                    // Function to generate DiceBear Avatar URL (client side, same as server)
-                    function getDiceBearAvatarUrlClient(name, randomSeed = '') {
-                        const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
-                        const seed = encodeURIComponent(seedName + randomSeed);
-                        return \`https://api.dicebear.com/8.x/adventurer/svg?seed=\${seed}&flip=true&radius=50&doodle=true&scale=90\`;
-                    }
-
-                    function createFeedbackCard(fb) {
-                        const fbNameInitial = (typeof fb.name === 'string' && fb.name.length > 0) ? fb.name.charAt(0).toUpperCase() : 'X';
-                        const avatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.name || 'Anonymous');
-
-                        let cardHtml = `
-                            <div class="feedback-card" id="card-${fb._id}">
-                                <div class="feedback-card-inner">
-                                    <div class="feedback-card-front">
-                                        <div class="feedback-header">
-                                            <div class="feedback-avatar"><img src="${avatarSrc}" alt="${fbNameInitial}"></div>
-                                            <div class="feedback-info">
-                                                <h4>${fb.name || 'NAAM NAHI HAI'} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''}</h4>
-                                                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
-                                                <div class="user-ip">IP: ${fb.userIp || 'N/A'}</div>
-                                            </div>
-                                        </div>
-                                        <div class="feedback-body"><p>${fb.feedback}</p></div>
-                                        <div class="feedback-date">
-                                            ${new Date(fb.timestamp).toLocaleString()}
-                                            ${fb.isEdited && fb.originalContent && fb.originalContent.timestamp ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
-                                        </div>
-                                        <div class="action-buttons">
-                                            <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">UDHA DE!</button>
-                                            <button class="change-avatar-btn" onclick="tryChangeAvatar('${fb._id}', '${fb.name || ''}')">AVATAR BADAL!</button>
-                                        </div>
-                                        <div class="reply-section">
-                                            <textarea id="reply-text-${fb._id}" placeholder="REPLY LIKH YAHAN..."></textarea>
-                                            <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY FEK!</button>
-                                            <div class="replies-display">
-                                                ${fb.replies && fb.replies.length > 0 ? '<h4>REPLIES:</h4>' : ''}
-                                                ${fb.replies.map(reply => `
-                                                    <div class="single-reply">
-                                                        <img src="${nobitaAvatarUrl}" alt="Nobita Admin" class="admin-reply-avatar-sm">
-                                                        <div class="reply-content-wrapper">
-                                                            <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
-                                                            <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
-                                                        </div>
-                                                    </div>`).join('')}
-                                            </div>
-                                        </div>
-                                        ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIGINAL DEKH BHAI!</button>` : ''}
-                                    </div>`;
-                        if (fb.isEdited && fb.originalContent) {
-                            const originalNameInitial = (fb.originalContent && typeof fb.originalContent.name === 'string' && fb.originalContent.name.length > 0) ? fb.originalContent.name.charAt(0).toUpperCase() : 'X';
-                            const originalAvatarSrc = fb.avatarUrl || getDiceBearAvatarUrlClient(fb.originalContent.name || 'Anonymous'); 
-
-                            cardHtml += `
-                                    <div class="feedback-card-back">
-                                        <div class="feedback-header">
-                                            <div class="feedback-avatar"><img src="${originalAvatarSrc}" alt="${originalNameInitial}"></div>
-                                            <div class="feedback-info">
-                                                <h4>ORIGINAL: ${fb.originalContent.name || 'NAAM NAHI HAI'}</h4>
-                                                <div class="rating">${'★'.repeat(fb.originalContent.rating || 0)}${'☆'.repeat(5 - (fb.originalContent.rating || 0))}</div>
-                                            </div>
-                                        </div>
-                                        <div class="feedback-body"><p>${fb.originalContent.feedback || 'FEEDBACK NAHI HAI'}</p></div>
-                                        <div class="feedback-date">Originally Posted: ${fb.originalContent.timestamp ? new Date(fb.originalContent.timestamp).toLocaleString() : 'N/A'}</div>
-                                        <div style="margin-top: auto;"> 
-                                           <button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED DEKH BHAI!</button>
-                                        </div>
-                                    </div>`;
-                        }
-                        cardHtml += `
-                                </div> 
-                            </div>`;
-                        return cardHtml;
-                    }
-
-                    async function fetchAndRenderFeedbacks() {
-                        try {
-                            const response = await fetch('/api/feedbacks', {
-                                headers: { 'Authorization': AUTH_HEADER } // Ensure this API endpoint is also protected if needed
-                            });
-                            if (!response.ok) {
-                                // If authentication fails for API call, it might be due to session expiration
-                                if (response.status === 401) {
-                                    console.error('Admin API authentication failed. Redirecting to login or showing error.');
-                                    // You might want to redirect to the login page or re-prompt for credentials
-                                    // window.location.reload(); // Or provide a specific login route
-                                }
-                                throw new Error(\`Failed to fetch feedbacks: \${response.statusText}\`);
-                            }
-                            const newFeedbacks = await response.json();
-
-                            // Compare current feedbacks with new ones
-                            // Convert arrays to JSON strings for easy comparison
-                            const newFeedbacksString = JSON.stringify(newFeedbacks);
-                            const currentFeedbacksString = JSON.stringify(currentFeedbacks);
-
-                            if (newFeedbacksString !== currentFeedbacksString) {
-                                currentFeedbacks = newFeedbacks; // Update current state
-                                feedbackGrid.innerHTML = ''; // Clear existing
-                                if (currentFeedbacks.length === 0) {
-                                    feedbackGrid.innerHTML = '<p class="no-feedback" style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">ABHI TAK KISI NE GANDI BAAT NAHI KI HAI, BHAI!</p>';
-                                } else {
-                                    currentFeedbacks.forEach(fb => {
-                                        feedbackGrid.insertAdjacentHTML('beforeend', createFeedbackCard(fb));
-                                    });
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error fetching feedbacks for admin panel:', error);
-                            // Optionally show a non-intrusive alert for network issues
-                            // showAdminModal('alert', 'GADBAD!', 'FEEDBACKS LOAD KARNE MEIN PROBLEM HUI! NETWORK ISSUE HO SAKTA HAI.');
-                        }
-                    }
-
-                    // Initial load
-                    fetchAndRenderFeedbacks();
-
-                    // Poll for new feedbacks every 5 seconds
-                    setInterval(fetchAndRenderFeedbacks, 5000); // Poll every 5 seconds (adjust as needed)
-
                     async function tryDeleteFeedback(id) {
                         showAdminModal('confirm', 'DHAYAN DE!', 'PAKKA UDHA DENA HAI? FIR WAPAS NAHI AAYEGA!', async (confirmed) => {
                             if (confirmed) {
@@ -504,8 +482,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     const response = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER } });
                                     if (response.ok) {
                                         showAdminModal('alert', 'SAFAL!', 'FEEDBACK UDHA DIYA!');
-                                        // Update UI live after deletion
-                                        await fetchAndRenderFeedbacks();
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'GADBAD!', \`UDHANE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -532,9 +509,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'HO GAYA!', 'REPLY SAFALTA-POORVAK POST HUA!');
-                                        replyTextarea.value = ''; // Clear textarea
-                                        // Update UI live after reply
-                                        await fetchAndRenderFeedbacks();
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'REPLY FAIL!', \`REPLY POST KARNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -554,8 +529,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (response.ok) {
                                         showAdminModal('alert', 'BADAL GAYA!', 'AVATAR SAFALTA-POORVAK BADLA GAYA! NAYA IMAGE AB DIKHEGA!');
-                                        // Update UI live after avatar change
-                                        await fetchAndRenderFeedbacks();
+                                        setTimeout(() => window.location.reload(), 1200);
                                     } else {
                                         const errorData = await response.json();
                                         showAdminModal('alert', 'AVATAR FAIL!', \`AVATAR BADALNE MEIN PHADDA HUA: \${errorData.message || 'SERVER ERROR'}\`);
@@ -570,12 +544,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         `;
         res.send(html);
     } catch (error) { 
-        console.error('ERROR GENERATING ADMIN PANEL:', error); 
-        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`); 
+        console.error('ERROR GENERATING ADMIN PANEL:', error);
+        res.status(500).send(`SAALA! ADMIN PANEL KI FATTI HAI! ERROR MESSAGE: ${error.message}. STACK: ${error.stack}`);
     }
 });
 
-// API endpoint to delete feedback (admin only)
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
@@ -591,7 +564,6 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-// API endpoint to post a reply to a feedback (admin only)
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { replyText, adminName } = req.body;
@@ -612,7 +584,6 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
     }
 });
 
-// API endpoint to change avatar (admin only)
 app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     try {
@@ -620,14 +591,18 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
         if (!feedbackToUpdate) {
             return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
         }
+         // Only allow changing avatar if it's not a Google User, as their avatar comes from Google.
+        if (feedbackToUpdate.googleId) {
+            return res.status(400).json({ message: 'GOOGLE USER KA AVATAR YAHAAN SE NAHI BADAL SAKTE, BHAI!' });
+        }
         const userName = feedbackToUpdate.name;
-        if (typeof userName !== 'string' || !userName) { 
+        if (typeof userName !== 'string' || !userName) {
              console.error(`[AVATAR CHANGE ERROR] User name is invalid for feedback ID ${id}:`, userName);
              return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
         }
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
-        // Update all feedbacks by the same name with the new avatar
-        await Feedback.updateMany({ name: userName }, { $set: { avatarUrl: newAvatarUrl } });
+        // Update avatar for all non-Google feedbacks by this user name
+        await Feedback.updateMany({ name: userName, googleId: null }, { $set: { avatarUrl: newAvatarUrl } });
         console.log(`[AVATAR CHANGE] Avatar updated for user ${userName} (triggered by feedback ID ${id}) to ${newAvatarUrl}`);
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
@@ -636,9 +611,8 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
     }
 });
 
-// Start the server
+
 app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
     console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
-
