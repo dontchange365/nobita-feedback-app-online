@@ -32,11 +32,11 @@ function getDiceBearAvatarUrl(name, randomSeed = '') {
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
-// User Schema (Naya)
+// User Schema
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String }, // Hashed password, Google users ke liye optional
+  password: { type: String }, 
   googleId: { type: String, sparse: true, unique: true, default: null },
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
@@ -45,16 +45,16 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Feedback Schema (Updated: userId add kiya gaya)
+// Feedback Schema
 const feedbackSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // Yeh user ka naam hoga jo JWT se aayega
+  name: { type: String, required: true }, 
   feedback: { type: String, required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
   timestamp: { type: Date, default: Date.now },
-  avatarUrl: { type: String }, // User ka avatar
+  avatarUrl: { type: String }, 
   userIp: { type: String },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User model
-  googleIdSubmitter: { type: String, sparse: true }, // Agar Google se login karke submit kiya tha toh (optional, mainly userId use hoga)
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
+  googleIdSubmitter: { type: String, sparse: true }, 
   isEdited: { type: Boolean, default: false },
   originalContent: {
     name: String,
@@ -100,7 +100,7 @@ const authenticateToken = (req, res, next) => {
             console.error("JWT Verification Error:", err.message);
             return res.status(403).json({ message: "Token valid nahi hai ya expire ho gaya hai." });
         }
-        req.user = user; // Ab req.user mein { userId, name, email, avatarUrl, loginMethod } hoga
+        req.user = user; 
         next();
     });
 };
@@ -118,7 +118,6 @@ const authenticateTokenOptional = (req, res, next) => {
     }
 };
 
-// --- Naye Auth Routes ---
 // SIGNUP
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
@@ -180,6 +179,10 @@ app.post('/api/auth/login', async (req, res) => {
         if (user.loginMethod === 'google' && !user.password) {
             return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
         }
+        // Make sure user.password exists before comparing (for users who might have signed up via other methods without password)
+        if (!user.password) {
+             return res.status(401).json({ message: "Login credentials sahi nahi hain." });
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
@@ -191,7 +194,7 @@ app.post('/api/auth/login', async (req, res) => {
             name: user.name,
             email: user.email,
             avatarUrl: user.avatarUrl,
-            loginMethod: user.loginMethod // Should be 'email' here
+            loginMethod: user.loginMethod 
         };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
@@ -219,27 +222,25 @@ app.post('/api/auth/google-signin', async (req, res) => {
 
         let user = await User.findOne({ googleId });
 
-        if (!user) { // Agar Google ID se user nahi mila
-            user = await User.findOne({ email: email.toLowerCase() }); // Email se check karo
-            if (user) { // User email se mila
+        if (!user) { 
+            user = await User.findOne({ email: email.toLowerCase() }); 
+            if (user) { 
                 if (user.loginMethod === 'email') {
-                    // Email user pehle se hai, Google ID link kar do
                     user.googleId = googleId;
-                    user.avatarUrl = googleAvatar || user.avatarUrl; // Google avatar prefer karo
-                    user.loginMethod = 'google'; // Ya 'both' if you want to allow both logins
+                    user.avatarUrl = googleAvatar || user.avatarUrl; 
+                    // user.loginMethod = 'google'; // Optionally update loginMethod if you want to prioritize Google
                 }
-                // Agar email se user mila aur woh already Google user hai, toh kuch karne ki zaroorat nahi (upar googleId se mil jayega)
-            } else { // Naya user
+            } else { 
                 user = new User({
                     googleId,
                     name,
                     email: email.toLowerCase(),
-                    avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), // Fallback to DiceBear if no Google picture
+                    avatarUrl: googleAvatar || getDiceBearAvatarUrl(name),
                     loginMethod: 'google'
                 });
             }
             await user.save();
-        } else { // User Google ID se mil gaya, ensure avatar is up-to-date
+        } else { 
              if (user.avatarUrl !== googleAvatar && googleAvatar) {
                 user.avatarUrl = googleAvatar;
                 await user.save();
@@ -251,7 +252,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
             name: user.name,
             email: user.email,
             avatarUrl: user.avatarUrl,
-            loginMethod: 'google' // Ya user.loginMethod agar aap multiple methods allow kar rahe hain
+            loginMethod: 'google'
         };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
 
@@ -263,7 +264,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => {
-    res.status(200).json(req.user); // req.user ab JWT se directly aata hai
+    res.status(200).json(req.user); 
 });
 
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
@@ -277,61 +278,49 @@ app.get('/api/feedbacks', async (req, res) => {
     }
 });
 
-// Submit New Feedback (Updated)
 app.post('/api/feedback', authenticateTokenOptional, async (req, res) => {
-    const { feedback, rating, name: formName } = req.body; // Form se naam aa sakta hai agar user logged in nahi
+    const { feedback, rating } = req.body; 
     const userIp = req.clientIp;
+
+    if (!req.user) { // User must be logged in
+        return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
+    }
 
     if (!feedback || !rating || rating === '0') {
         return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
     }
 
     let feedbackData = {
+        name: req.user.name,
+        avatarUrl: req.user.avatarUrl,
+        userId: req.user.userId,
         feedback: feedback,
         rating: parseInt(rating),
         userIp: userIp,
         isEdited: false,
     };
-
-    if (req.user) { // User logged in hai (chahe email se ya Google se)
-        feedbackData.name = req.user.name;
-        feedbackData.avatarUrl = req.user.avatarUrl;
-        feedbackData.userId = req.user.userId;
-        if (req.user.loginMethod === 'google') {
-            const loggedInUser = await User.findById(req.user.userId);
-            if (loggedInUser && loggedInUser.googleId) {
-                 feedbackData.googleIdSubmitter = loggedInUser.googleId;
-            }
+    
+    if (req.user.loginMethod === 'google') {
+        const loggedInUser = await User.findById(req.user.userId); // Re-fetch to be sure about googleId
+        if (loggedInUser && loggedInUser.googleId) {
+             feedbackData.googleIdSubmitter = loggedInUser.googleId;
         }
-    } else { // User logged in nahi hai (Anonymous) - ISKO ABHI HUM SUPPORT NAHI KAR RAHE HAIN FULLY NAYE SYSTEM MEIN
-            // Agar anonymous feedback allow karna hai, toh User schema mein ek 'anonymous' user type banakar
-            // ya bina userId ke feedback save karna padega. Abhi ke liye, hum assume kar rahe hain ki user logged in hona chahiye.
-            // For simplicity, let's require login. If not, then need a default userId or handle no userId.
-            // YA, agar form se naam aa raha hai for non-logged in user (jaise pehle tha)
-        if (!formName) {
-             return res.status(400).json({ message: 'Login nahi kiya hai toh naam daalna zaroori hai.' });
-        }
-        // Agar anonymous allow karna hai, toh yahan default 'anonymous' user ki ID ya placeholder use karein.
-        // Abhi ke liye, is flow ko restricted rakhte hain to logged-in users for simplicity.
-        // Forcing login for new feedback system
-        return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     }
-
 
     try {
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
         res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
     } catch (error) {
+        console.error("Feedback save karte waqt error:", error);
         res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });
     }
 });
 
-// Update Existing Feedback (Updated)
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
     const feedbackId = req.params.id;
     const { feedback, rating } = req.body;
-    const loggedInJwtUser = req.user; // Contains { userId, name, email, avatarUrl, loginMethod }
+    const loggedInJwtUser = req.user; 
 
     if (!feedback || !rating || rating === '0') {
         return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
@@ -343,15 +332,11 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'Yeh feedback ID mila nahi.' });
         }
 
-        // Authorization: Sirf feedback ka owner hi edit kar sakta hai
         if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) {
             return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
         }
 
-        // User ka current name aur avatar use karo JWT se
         const currentNameFromJwt = loggedInJwtUser.name;
-        // const currentAvatarFromJwt = loggedInJwtUser.avatarUrl; // Avatar update nahi kar rahe yahan
-
         const parsedRating = parseInt(rating);
         const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating || existingFeedback.name !== currentNameFromJwt;
 
@@ -364,26 +349,25 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
                     timestamp: existingFeedback.timestamp
                 };
             }
-            existingFeedback.name = currentNameFromJwt; // Hamesha current JWT user ka naam use karo
+            existingFeedback.name = currentNameFromJwt; 
             existingFeedback.feedback = feedback;
             existingFeedback.rating = parsedRating;
             existingFeedback.timestamp = Date.now();
             existingFeedback.isEdited = true;
-            // existingFeedback.avatarUrl = currentAvatarFromJwt; // Agar avatar bhi update karna hai
+            existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl; // Update avatar as well from current user profile
         }
 
         await existingFeedback.save();
         res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
 
     } catch (error) {
+        console.error(`Feedback update karte waqt error (ID: ${feedbackId}):`, error);
         res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });
     }
 });
 
-
-// --- Admin Panel Routes (Pehle Jaise Hi) ---
+// Admin Panel Routes
 const authenticateAdmin = (req, res, next) => {
-    // ... (Admin authentication logic pehle jaisa hi)
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); 
     res.setHeader('Pragma', 'no-cache'); 
     res.setHeader('Expires', '0');
@@ -464,7 +448,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .reply-content-wrapper { flex-grow: 1; word-wrap: break-word; } .reply-admin-name { font-weight: bold; color: #9B59B6; display: inline; margin-right: 5px; }
                     .reply-timestamp { font-size: 0.75em; color: #8E9A9D; margin-left: 10px; }
                     .edited-admin-tag { background-color: #5cb85c; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.75em; font-weight: bold; vertical-align: middle; }
-                    /* ... (baaki admin panel CSS pehle jaisa) ... */
+                    .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 2000; }
+                    .admin-custom-modal { background: #222a35; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; color: #f0f0f0; width: 90%; max-width: 480px; border: 1px solid #445; }
+                    .admin-custom-modal h3 { color: #FFD700; margin-top: 0; margin-bottom: 15px; font-size: 1.8em; }
+                    .admin-custom-modal p { margin-bottom: 25px; font-size: 1.1em; line-height: 1.6; color: #ccc; word-wrap: break-word;}
+                    .admin-modal-buttons button { background-color: #007bff; color: white; border: none; padding: 12px 22px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 5px; transition: background-color 0.3s, transform 0.2s; font-weight: bold; }
+                    .admin-modal-buttons button:hover { transform: translateY(-2px); }
+                    #adminModalOkButton:hover { background-color: #0056b3; }
+                    #adminModalConfirmButton { background-color: #28a745; } #adminModalConfirmButton:hover { background-color: #1e7e34; }
+                    #adminModalCancelButton { background-color: #dc3545; } #adminModalCancelButton:hover { background-color: #b02a37; }
+                    @media (max-width: 768px) { h1 { font-size: 2.2em; } .feedback-grid { grid-template-columns: 1fr; } .main-panel-btn-container { justify-content: center; } }
                 </style>
             </head>
             <body>
@@ -476,18 +469,13 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         if (feedbacks.length === 0) {
             html += `<p style="text-align: center; color: #7F8C8D; font-size: 1.2em; grid-column: 1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
         } else {
-            for (const fb of feedbacks) { // Use for...of for async operations if any inside (not here, but good practice)
+            for (const fb of feedbacks) {
                 let userTag = '';
-                // Optional: Fetch user details if you want to show loginMethod on admin panel
-                // const feedbackUser = await User.findById(fb.userId);
-                // if (feedbackUser) {
-                //    userTag = feedbackUser.loginMethod === 'google' ? '<span class="google-user-tag">Google User</span>' : '<span class="email-user-tag">Email User</span>';
-                // }
-                // For now, using googleIdSubmitter to differentiate if needed
-                if (fb.googleIdSubmitter) {
-                    userTag = '<span class="google-user-tag">Google User</span>';
-                } else {
-                    userTag = '<span class="email-user-tag">User</span>'; // General tag
+                const feedbackUser = await User.findById(fb.userId); // User details fetch karo
+                if (feedbackUser) {
+                   userTag = feedbackUser.loginMethod === 'google' ? '<span class="google-user-tag">Google</span>' : '<span class="email-user-tag">Email</span>';
+                } else if (fb.googleIdSubmitter) { // Fallback agar User fetch nahi hua
+                     userTag = '<span class="google-user-tag">Google</span>';
                 }
 
 
@@ -510,8 +498,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 </div>
                                 <div class="action-buttons">
                                     <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
-                                    ${!fb.googleIdSubmitter ? `<button class="change-avatar-btn" onclick="tryChangeAvatar('${fb.userId}', '${fb.name}')">AVATAR</button>` : ''} 
-                                    </div>
+                                    ${feedbackUser && feedbackUser.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId}', '${fb.name}')">AVATAR</button>` : ''} 
+                                </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
                                     <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
@@ -550,22 +538,15 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         html += `</div> <div id="adminModalOverlay" class="admin-modal-overlay"> <div class="admin-custom-modal"> <h3 id="adminModalTitle"></h3> <p id="adminModalMessage"></p> <div class="admin-modal-buttons"> <button id="adminModalOkButton">OK</button> <button id="adminModalConfirmButton" style="display:none;">Confirm</button> <button id="adminModalCancelButton" style="display:none;">Cancel</button> </div> </div> </div>
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
-                    // ... (baaki admin panel JavaScript pehle jaisa hi) ...
-                    // Note: tryChangeAvatar function ab user ID use karega agar aap usko modify karte hain backend mein
-                     async function tryChangeAvatar(userId, userName) { // fbId ki jagah userId
-                         showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \${userName}? This will regenerate avatar for this user if they are not a Google user.\`, async (confirmed) => {
-                            if(confirmed) {
-                                // Backend API ko /api/admin/user/\${userId}/change-avatar jaisa banana padega
-                                // Abhi ke liye, purana endpoint use kar raha hoon, lekin isko update karna hoga
-                                // const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {method:'PUT',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}});
-                                // if(res.ok) { showAdminModal('alert', 'Avatar Changed!', 'Avatar updated.'); setTimeout(()=>location.reload(),1000); }
-                                // else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to change avatar: \${err.message}\`);}
-                                showAdminModal('alert', 'Info', 'Avatar change functionality for non-Google users needs backend update for User model.');
-                            }
-                        });
-                    }
-                    // Baaki functions tryDeleteFeedback, tryPostReply pehle jaise hi रहेंगे
-                     function showAdminModal(type, title, message, confirmCallbackFn = null) { 
+                    const adminModalOverlay = document.getElementById('adminModalOverlay');
+                    const adminModalTitle = document.getElementById('adminModalTitle');
+                    const adminModalMessage = document.getElementById('adminModalMessage');
+                    const adminModalOkButton = document.getElementById('adminModalOkButton');
+                    const adminModalConfirmButton = document.getElementById('adminModalConfirmButton');
+                    const adminModalCancelButton = document.getElementById('adminModalCancelButton');
+                    let globalConfirmCallback = null;
+
+                    function showAdminModal(type, title, message, confirmCallbackFn = null) { 
                         adminModalTitle.textContent = title; adminModalMessage.textContent = message; globalConfirmCallback = confirmCallbackFn;
                         adminModalOkButton.style.display = type === 'confirm' ? 'none' : 'inline-block';
                         adminModalConfirmButton.style.display = type === 'confirm' ? 'inline-block' : 'none';
@@ -592,6 +573,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 const res = await fetch(\`/api/admin/feedback/\${fbId}/reply\`, {method:'POST',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}, body:JSON.stringify({replyText, adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});
                                 if(res.ok) { showAdminModal('alert', 'Replied!', 'Reply posted.'); setTimeout(()=>location.reload(),1000); }
                                 else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to reply: \${err.message}\`);}
+                            }
+                        });
+                    }
+                    async function tryChangeUserAvatar(userId, userName) { // Changed parameter to userId
+                         showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \${userName}? This will regenerate avatar for this email user.\`, async (confirmed) => {
+                            if(confirmed) {
+                                // API endpoint ko update karna hoga: /api/admin/user/:userId/change-avatar
+                                const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {method:'PUT',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}});
+                                if(res.ok) { showAdminModal('alert', 'Avatar Changed!', 'Avatar updated for ' + userName + '.'); setTimeout(()=>location.reload(),1000); }
+                                else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to change avatar: \${err.message}\`);}
                             }
                         });
                     }
@@ -629,16 +620,31 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
     }
 });
 
-// Admin API: Change Avatar for non-Google users (Needs update for User model)
-// Yeh functionality ab User model se avatar update karne ke liye alag endpoint banani padegi,
-// kyunki ab feedback mein direct avatar nahi, balki user ka avatar link hoga.
-// Abhi ke liye, yeh endpoint shayad sahi se kaam na kare email users ke liye.
-app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, res) => {
-    // Is route ko User model ke hisaab se update karna hoga.
-    // Ab avatar User model mein hai. Admin ko User ka avatar update karna chahiye, na ki feedback entry ka.
-    // Eg: /api/admin/user/:userId/change-avatar
-    // For now, this might not work as expected for non-Google users.
-    return res.status(400).json({ message: 'Avatar change functionality needs to be updated for the new User model. Google user avatars are updated via Google.' });
+// Admin API: Change Avatar for Email Users
+app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => {
+    try {
+        const userToUpdate = await User.findById(req.params.userId);
+        if (!userToUpdate) return res.status(404).json({ message: 'User ID mila nahi.' });
+        
+        if (userToUpdate.loginMethod === 'google') {
+            return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });
+        }
+
+        const userName = userToUpdate.name;
+        if (!userName) return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });
+
+        const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); // Naya random seed
+        userToUpdate.avatarUrl = newAvatarUrl;
+        await userToUpdate.save();
+        
+        // Update avatar in all feedbacks by this user as well
+        await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } });
+
+        res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
+    } catch (error) {
+        console.error("Admin avatar change error:", error);
+        res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });
+    }
 });
 
 
