@@ -10,8 +10,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const multer = require('multer'); // File uploads ke liye
-const cloudinary = require('cloudinary').v2; // Cloudinary storage ke liye
+const cloudinary = require('cloudinary').v2; // New
+const multer = require('multer'); // New
 
 dotenv.config(); // Yeh local .env file ke liye hai, Render isko ignore karega
 
@@ -29,9 +29,9 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME; // Add Cloudinary creds
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY; // Add Cloudinary creds
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET; // Add Cloudinary creds
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dyv7xav3e'; // New: Cloudinary credentials
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '973787665916358'; // New
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'TmLVqNVkBiS8mRxU9SLStjmcOF8'; // New
 
 // --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
@@ -46,9 +46,9 @@ console.log("EMAIL_USER (loaded):", EMAIL_USER ? "SET" : "NOT SET");
 console.log("EMAIL_PASS (loaded):", EMAIL_PASS ? "SET (value hidden)" : "NOT SET");
 console.log("EMAIL_HOST (loaded):", EMAIL_HOST ? "SET" : "NOT SET");
 console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
-console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
-console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET");
-console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
+console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET"); // New
+console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET"); // New
+console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET"); // New
 console.log("--- End Environment Variable Check ---");
 
 // Zaroori environment variables check karna
@@ -67,8 +67,8 @@ if (!GOOGLE_CLIENT_ID) {
 if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
     console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Password reset email kaam nahi karega.");
 }
-if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    console.warn("WARNING: Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) poori tarah set nahi hain. Custom avatar upload kaam nahi karega.");
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) { // New
+    console.warn("WARNING: Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) poori tarah set nahi hain. Profile picture upload kaam nahi karega.");
 }
 
 
@@ -82,31 +82,31 @@ mongoose.connect(MONGODB_URI)
     process.exit(1);
 });
 
-// Cloudinary configuration
+// Configure Cloudinary
 cloudinary.config({
     cloud_name: CLOUDINARY_CLOUD_NAME,
     api_key: CLOUDINARY_API_KEY,
     api_secret: CLOUDINARY_API_SECRET
 });
 
-// Multer setup for file uploads
-const storage = multer.memoryStorage(); // Files ko memory mein store karega
+// Configure Multer for file uploads
+const storage = multer.memoryStorage(); // Store files in memory
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB file size limit
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (allowedTypes.includes(file.mimetype)) {
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (allowedMimes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only JPEG, PNG, GIF, WEBP are allowed.'), false);
+            cb(new Error('Invalid file type. Only JPEG, PNG, and GIF images are allowed.'), false);
         }
     }
 });
 
 
 function getDiceBearAvatarUrl(name, randomSeed = '') {
-    const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
+    const seedName = (typeof name === 'string' && name) ? name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'default_seed';
     const seed = encodeURIComponent(seedName + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
@@ -228,7 +228,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
         if (!user) {
             user = await User.findOne({ email: email.toLowerCase() });
             if (user) {
-                if (user.loginMethod === 'email') { user.googleId = googleId; user.avatarUrl = googleAvatar || user.avatarUrl; }
+                if (user.loginMethod === 'email') { user.googleId = googleId; user.avatarUrl = googleAvatar || user.avatarUrl; user.loginMethod = 'google'; } // Update login method if existing email user signs in with Google
             } else {
                 user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), loginMethod: 'google' });
             }
@@ -243,6 +243,74 @@ app.post('/api/auth/google-signin', async (req, res) => {
 });
 app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
+// New: User Profile Picture Upload
+app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'Koi image file upload nahi ki gayi.' });
+    }
+    if (req.user.loginMethod === 'google') {
+        return res.status(400).json({ message: 'Google login users apni profile picture सीधे Google se manage karein.' });
+    }
+
+    try {
+        // Upload image to Cloudinary
+        const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
+            folder: `nobita_avatars`, // Cloudinary mein ek specific folder
+            public_id: `user_${req.user.userId}_${Date.now()}`, // Unique ID for each upload
+            overwrite: true,
+            invalidate: true, // CDN cache invalidate karein
+            transformation: [
+                { width: 150, height: 150, crop: "fill", gravity: "face" }, // Resize and crop
+                { quality: "auto:eco" } // Optimize quality
+            ]
+        });
+
+        // Update user's avatarUrl in MongoDB
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            // Agar user mila hi nahi, toh Cloudinary se image delete kar dein
+            cloudinary.uploader.destroy(result.public_id);
+            return res.status(404).json({ message: 'User nahi mila.' });
+        }
+
+        const oldAvatarUrl = user.avatarUrl; // Purana avatar URL store karein
+
+        user.avatarUrl = result.secure_url;
+        await user.save();
+
+        // Update avatarUrl in all feedbacks submitted by this user
+        await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: result.secure_url } });
+
+        // Optional: Delete old avatar from Cloudinary if it's not a default DiceBear one
+        if (oldAvatarUrl && oldAvatarUrl.includes('cloudinary.com') && oldAvatarUrl !== result.secure_url) {
+            try {
+                // Public ID extract karne ke liye ek simple regex ya string manipulation
+                const oldPublicId = oldAvatarUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`nobita_avatars/${oldPublicId}`); // Folder path include karein
+                console.log(`Old avatar ${oldPublicId} Cloudinary se delete kiya.`);
+            } catch (deleteError) {
+                console.error("Purana avatar delete karte waqt error:", deleteError);
+            }
+        }
+
+        res.status(200).json({
+            message: 'Profile picture safaltapoorvak upload aur update ho gayi!',
+            newAvatarUrl: user.avatarUrl
+        });
+
+    } catch (error) {
+        console.error('Avatar upload mein error:', error);
+        if (error.message.includes('file type')) {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message.includes('File too large')) {
+             return res.status(400).json({ message: 'File size 2MB se zyada nahi hona chahiye.' });
+        }
+        res.status(500).json({ message: 'Profile picture upload karne mein dikkat aa gayi.', error: error.message });
+    }
+});
+
+
 // Password Reset Routes
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
@@ -254,7 +322,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
         console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
-        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App App Team`;
         const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
@@ -292,61 +360,6 @@ app.get('/api/feedbacks', async (req, res) => {
     try { const allFeedbacks = await Feedback.find().sort({ timestamp: -1 }); res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
-
-// User profile update (Name and Avatar)
-app.put('/api/user/profile', authenticateToken, upload.single('avatar'), async (req, res) => {
-    try {
-        const { name } = req.body;
-        const userId = req.user.userId;
-
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: 'User not found.' });
-
-        let newAvatarUrl = user.avatarUrl; // Default to current avatar
-
-        if (req.file) { // Agar koi naya avatar upload kiya gaya hai
-            if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-                return res.status(500).json({ message: "Cloudinary configuration missing. Cannot upload avatar." });
-            }
-            // Upload file to Cloudinary
-            const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
-                folder: 'nobita-avatars', // Cloudinary mein folder
-                transformation: [
-                    { width: 150, height: 150, gravity: "face", crop: "thumb", radius: "max" }, // Thumbnail and round
-                    { fetch_format: "auto", quality: "auto" }
-                ]
-            });
-            newAvatarUrl = result.secure_url;
-            // Purana cloudinary avatar delete kar sakte hain agar zaroori ho
-            // if (user.avatarUrl && user.avatarUrl.includes('cloudinary')) {
-            //     const publicId = user.avatarUrl.split('/').pop().split('.')[0];
-            //     await cloudinary.uploader.destroy(`nobita-avatars/${publicId}`);
-            // }
-        }
-
-        if (name) user.name = name;
-        user.avatarUrl = newAvatarUrl;
-        await user.save();
-
-        // Update avatarUrl in all feedbacks submitted by this user
-        await Feedback.updateMany({ userId: userId }, { $set: { name: user.name, avatarUrl: user.avatarUrl } });
-
-        const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
-        const appToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
-
-        res.status(200).json({
-            message: 'Profile updated successfully!',
-            user: updatedUserForToken,
-            token: appToken
-        });
-
-    } catch (error) {
-        console.error('Profile update error:', error);
-        res.status(500).json({ message: 'Profile update nahi ho paya.', error: error.message });
-    }
-});
-
-
 app.post('/api/feedback', authenticateToken, async (req, res) => {
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
@@ -357,38 +370,18 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
-    const feedbackId = req.params.id;
-    const { feedback, rating } = req.body; // Ab name aur avatar change nahi hoga feedback edit se
-    const loggedInJwtUser = req.user;
-
+    const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
-
     try {
         const existingFeedback = await Feedback.findById(feedbackId);
         if (!existingFeedback) return res.status(404).json({ message: 'Yeh feedback ID mila nahi.' });
         if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
-
-        const parsedRating = parseInt(rating);
-
-        const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
-
+        const currentNameFromJwt = loggedInJwtUser.name; const parsedRating = parseInt(rating);
+        const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating || existingFeedback.name !== currentNameFromJwt || existingFeedback.avatarUrl !== loggedInJwtUser.avatarUrl;
         if (contentActuallyChanged) {
-            // Agar originalContent pehle se nahi hai toh store karo
-            if (!existingFeedback.originalContent) {
-                existingFeedback.originalContent = {
-                    name: existingFeedback.name,
-                    feedback: existingFeedback.feedback,
-                    rating: existingFeedback.rating,
-                    timestamp: existingFeedback.timestamp
-                };
-            }
-            existingFeedback.feedback = feedback;
-            existingFeedback.rating = parsedRating;
-            existingFeedback.timestamp = Date.now(); // Update timestamp on edit
-            existingFeedback.isEdited = true;
-            // Name aur avatar yahan update nahi honge, woh profile update se honge
+            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp };}
+            existingFeedback.name = currentNameFromJwt; existingFeedback.feedback = feedback; existingFeedback.rating = parsedRating; existingFeedback.timestamp = Date.now(); existingFeedback.isEdited = true; existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl;
         }
-
         await existingFeedback.save();
         res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
@@ -435,7 +428,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             adminModalOkButton.addEventListener('click',()=>adminModalOverlay.style.display='none');adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(true)});adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(false)});function flipCard(id){document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped')}
             async function tryDeleteFeedback(id){console.log("Attempting to delete feedback ID:",id);showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Delete failed response:",err);showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`)}}catch(e){console.error("Delete fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during delete: \${e.message}\`)}}})}
             async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
-            async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?','Change avatar for '+userName+'? This will regenerate a new DiceBear avatar for this email user.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
+            async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
         </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
@@ -457,7 +450,9 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
     if (userToUpdate.loginMethod === 'google') { console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`); return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });}
     const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });}
-    const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
+    // New: Generate a random string to force DiceBear to create a new image
+    const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString());
+    userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
     await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } }); console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
     res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
     } catch (error) { console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error); res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });}
