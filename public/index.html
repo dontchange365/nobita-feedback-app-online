@@ -50,12 +50,12 @@
         #user-hub-login-text { display: inline; line-height: 1; }
         #user-hub-login-text .fa-sign-in-alt { font-size: 1.5em; }
 
-        .user-hub-dropdown { /* Yeh ab sirf logged-out state ke liye hai (login/signup forms) */
+        .user-hub-dropdown {
             position: absolute; top: 65px; right: 0;
             background-color: var(--bg-gradient-end); border: 1px solid var(--card-border);
             border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4);
             width: 300px; max-width: calc(100vw - 40px);
-            z-index: 1000;
+            z-index: 1000; 
             display: none; opacity: 0;
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
@@ -67,7 +67,6 @@
             background: transparent; width: 100%; max-width: 100%;
         }
         .user-hub-dropdown .auth-container h2 { font-size: 1.5em; margin-bottom: 15px; }
-        /* ... (Baaki .user-hub-dropdown .auth-container ke andar ke styles pehle jaise) ... */
         .user-hub-dropdown .auth-input-group { margin-bottom: 12px; }
         .user-hub-dropdown .auth-input-group input { font-size: 0.9em; padding: 9px 12px; }
         .user-hub-dropdown .auth-button, 
@@ -75,92 +74,55 @@
         .user-hub-dropdown .divider-or { margin: 12px 0; font-size: 0.8em; }
         .user-hub-dropdown .auth-toggle-link, 
         .user-hub-dropdown .forgot-password-link { font-size: 0.8em; margin-top: 12px; }
-
-        /* --- NEW User Profile Popup Styles (Aapke template se inspired) --- */
-        #user-profile-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.65); /* Thoda zyada dark overlay */
-            display: none; /* Shuru mein hidden */
-            justify-content: center;
-            align-items: center;
-            z-index: 1002; /* User Hub dropdown (1000) aur general modal (1005) ke beech */
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
+        
+        .user-hub-dropdown #user-info-display-content { 
+            display: flex; flex-direction: column; align-items: center; 
+            gap: 12px; padding: 20px; width: 100%; box-sizing: border-box;
         }
-        #user-profile-overlay.show { display: flex; opacity: 1; }
-
-        #user-profile-popup {
-            background: var(--bg-gradient-end); /* Matching theme */
-            border: 1px solid var(--card-border);
-            padding: 25px; /* Thoda zyada padding */
-            width: 300px; /* Width aap adjust kar sakte hain */
-            border-radius: 12px; /* Rounded corners */
+        .user-hub-dropdown #user-info-display-content #user-profile-pic-dropdown { 
+            width: 60px; height: 60px; 
+            border-radius: 50%; 
+            border: 2px solid var(--secondary-color);
+            margin-bottom: 8px; object-fit: cover;
+            box-shadow: 0 0 10px rgba(255,215,0,0.2);
+        }
+        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown { 
+            font-size: 1.1em; 
+            margin-bottom: 12px; 
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            position: relative;
             color: var(--text-color-light);
-            transform: scale(0.9);
-            transition: transform 0.3s ease-out;
+            font-weight: 400; 
         }
-        #user-profile-overlay.show #user-profile-popup { transform: scale(1); }
-
-        #user-profile-popup .close-popup-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            cursor: pointer;
-            font-size: 24px; /* Bada close icon */
-            color: var(--text-color-light);
-            line-height: 1;
-            transition: color 0.2s;
+        .user-hub-dropdown #user-info-display-content #user-greeting-dropdown strong { 
+            color: var(--secondary-color); font-weight: 600; 
         }
-        #user-profile-popup .close-popup-btn:hover { color: var(--secondary-color); }
-
-        #popup-avatar { /* ID for avatar inside this new popup */
-            width: 80px; /* Aapke template ka size */
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 15px;
-            border: 3px solid var(--secondary-color); /* Theme border */
-            background-color: var(--card-bg); /* Fallback if image transparent */
+        .user-hub-dropdown .profile-link-btn,
+        .user-hub-dropdown #logout-button-dropdown { 
+             background: var(--accent-color); color: white; border: none;
+             padding: 10px 15px; border-radius: 8px; font-size: 0.9em; font-weight: 500;
+             cursor: pointer; transition: background-color 0.2s, transform 0.1s; width: 100%;
+             margin-bottom: 8px; text-decoration: none; display: block; text-align: center;
+             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
-        #user-profile-popup h3 { /* Welcome message style */
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 1.2em;
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--text-color-light);
-        }
-        #user-profile-popup h3 strong { color: var(--secondary-color); font-weight: 700; }
-
-        #user-profile-popup .profile-action-btn {
-            width: 100%;
-            padding: 10px 0; /* Vertical padding */
-            margin: 8px 0;
-            border: none;
-            border-radius: 8px; /* Rounded buttons */
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 500;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        #user-profile-popup .profile-action-btn:hover { transform: translateY(-1px); }
-        #popup-view-profile { background: var(--accent-color); color: #fff; }
-        #popup-view-profile:hover { background: #3578e0; }
-        #popup-logout { background: var(--error-color); color: #fff; }
-        #popup-logout:hover { background: #c82333; }
-        /* --- End User Profile Popup Styles --- */
-
+        .user-hub-dropdown #logout-button-dropdown { background-color: var(--error-color); }
+        .user-hub-dropdown .profile-link-btn:hover,
+        .user-hub-dropdown #logout-button-dropdown:hover { transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        .user-hub-dropdown .profile-link-btn:active,
+        .user-hub-dropdown #logout-button-dropdown:active { transform: translateY(0px); }
+        .user-hub-dropdown #logout-button-dropdown:hover { background-color: #c82333; }
+        .user-hub-dropdown .profile-link-btn:hover { background: var(--primary-color); }
 
         #auth-section-original-container, #user-info-display-original-container { display: none !important; }
+        /* --- End Compact User Hub Styles --- */
 
         .page-content-wrapper {
-            width: 100%; padding-top: 80px; 
-            display: flex; flex-direction: column; align-items: center;
+            width: 100%;
+            padding-top: 80px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
@@ -170,7 +132,7 @@
             background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
             border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
             width: 90%; max-width: 750px; 
-            margin-bottom: 25px; 
+            margin-bottom: 20px; /* YEH CHANGE KIYA GAYA HAI (25px se 20px) */
             opacity: 0; transform: translateY(40px); 
             transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
         }
@@ -181,7 +143,6 @@
         }
         .auth-container h2 { color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
         .auth-form { display: none; } .auth-form.active { display: block; }
-        /* ... (Baaki .auth-container ke andar ke elements ki CSS pehle jaisi) ... */
         .auth-input-group { margin-bottom: 18px; text-align: left; }
         .auth-input-group label { display: block; margin-bottom: 6px; color: var(--text-color-light); font-weight: 500; font-size: 0.9em; }
         .auth-input-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none; transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); }
@@ -209,7 +170,6 @@
             min-height: calc(1.05em * 1.35 * 2); 
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        /* ... (Baaki feedback form, list, modal CSS pehle jaisi) ... */
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
         .input-group label { display: block; margin-bottom: 7px; color: var(--text-color-light); font-weight: 500; font-size: 0.95em; }
         .input-group input, .input-group textarea { width: 100%; padding: 11px 16px; border: 1px solid var(--card-border); border-radius: 9px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none; transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15); }
@@ -223,8 +183,10 @@
         button#submit-feedback::before { content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; background: rgba(255,255,255,0.12); border-radius: 50%; transition: all 0.5s ease-out; transform: translate(-50%, -50%) scale(0); opacity: 0; }
         button#submit-feedback:hover::before { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         button#submit-feedback:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2.5px) scale(1.015); box-shadow: 0 7px 18px rgba(59,130,246,0.55); }
+        
         #feedback-list-container { margin-top: 35px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); }
+        /* ... (Baaki feedback list, modal, confetti, media query CSS pehle jaisi) ... */
         #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); }
         .average-rating-container { background: rgba(255, 215, 0, 0.09); border: 1px solid var(--secondary-color); border-radius: 13px; padding: 16px 22px; margin-bottom: 22px; text-align: center; box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-color-light); opacity: 0; transform: translateY(25px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         .average-rating-container.animate-in { opacity: 1; transform: translateY(0); }
@@ -259,7 +221,7 @@
         @keyframes bounceIn { 0% {transform: scale(0.35);opacity: 0;} 50% {transform: scale(1.15);opacity: 1;} 70% {transform: scale(0.92);} 100% {transform: scale(1);} }
         .custom-modal h3 { font-family: 'Luckiest Guy', cursive; font-size: 1.7em; color: var(--secondary-color); margin-bottom: 9px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
         .custom-modal p { font-size: 0.95em; line-height: 1.45; margin-bottom: 18px; color: #bbb; }
-        .modal-button-container { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; flex-wrap: wrap; /* Allow buttons to wrap on small screens */ }
+        .modal-button-container { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         .modal-action-btn, .modal-close-btn { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; padding: 9px 18px; border-radius: 7px; font-size: 0.95em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2.5px 9px rgba(59,130,246,0.35); margin: 5px;}
         .modal-action-btn:hover, .modal-close-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
         .modal-cancel-btn { background: #6c757d; } .modal-cancel-btn:hover { background: #5a6268; }
@@ -267,8 +229,8 @@
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; } .auth-container h2 {font-size: 1.8em;} .compact-user-hub{right:10px; top:10px;} #user-hub-trigger{width:auto; min-width:45px; height:45px; padding:0 10px;} #user-hub-trigger.avatar-mode{width:45px; padding:0;} #user-hub-trigger #user-hub-login-text{font-size:0.9em;} #user-hub-trigger #user-hub-login-text .fa-sign-in-alt{font-size:1.3em;} .user-hub-dropdown{width:280px;} }
-        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} .auth-container {padding: 25px 20px; max-width: 100%;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px;} .user-hub-dropdown{width:calc(100vw - 40px); right:0; margin-right:20px;} }
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .custom-google-btn { padding: 10px 18px; font-size: 0.95em; gap: 10px; } .auth-container h2 {font-size: 1.8em;} .compact-user-hub{right:10px; top:10px;} #user-hub-trigger{min-width:45px; height:45px; padding:0 8px;} #user-hub-trigger.avatar-mode{width:45px; padding:0;} #user-hub-trigger #user-hub-login-text{font-size:0.8em;} #user-hub-trigger #user-hub-login-text .fa-sign-in-alt{font-size:1.3em;} .user-hub-dropdown{width:280px;} #user-profile-popup{width:280px;} }
+        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .custom-modal { width: 94%; padding: 22px 16px;} .owner-info {margin-bottom: 15px;} .auth-container {padding: 25px 20px; max-width: 100%;} .custom-google-btn { padding: 10px 15px; font-size: 0.9em; gap: 8px;} .user-hub-dropdown{width:calc(100vw - 40px); right:0; margin-right:20px;} #user-profile-popup{width:calc(100vw - 40px);}}
     </style>
 </head>
 <body>
@@ -289,7 +251,6 @@
         <button id="popup-logout" class="profile-action-btn">Logout</button>
       </div>
     </div>
-
 
     <div class="page-content-wrapper">
         <div class="owner-info"> 
@@ -369,13 +330,10 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
             
-            // User Hub Elements
             const userHubTrigger = document.getElementById('user-hub-trigger');
             const userHubAvatar = document.getElementById('user-hub-avatar');
             const userHubLoginText = document.getElementById('user-hub-login-text');
-            const userHubDropdown = document.getElementById('user-hub-dropdown'); // For logged-out state
-            
-            // New User Profile Popup Elements (from user's template)
+            const userHubDropdown = document.getElementById('user-hub-dropdown'); 
             const userProfileOverlay = document.getElementById('user-profile-overlay');
             const userProfilePopup = document.getElementById('user-profile-popup');
             const closeUserProfilePopupBtn = document.getElementById('close-user-profile-popup');
@@ -384,18 +342,14 @@
             const popupViewProfileBtn = document.getElementById('popup-view-profile');
             const popupLogoutBtn = document.getElementById('popup-logout');
 
-
-            // Original Auth Section Template (for cloning into dropdown)
             const authSectionTemplate = document.getElementById('auth-section'); 
             
-            // Feedback Form Elements
             const ownerInfoEl = document.querySelector('.owner-info');
             const feedbackFormContainer = document.getElementById('feedback-form-container');
             const feedbackListContainer = document.getElementById('feedback-list-container');
             const averageRatingDisplayEl = document.getElementById('average-rating-display');
             const nameInputInFeedbackForm = document.getElementById('name'); 
             const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
-            // ... (baaki saare element selectors pehle jaise)
             const feedbackTextarea = document.getElementById('feedback');
             const ratingInput = document.getElementById('rating');
             const submitButton = document.getElementById('submit-feedback');
@@ -428,41 +382,41 @@
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
 
-            // --- User Hub and Popups Logic ---
             if (userHubTrigger) {
                 userHubTrigger.addEventListener('click', (e) => {
                     e.stopPropagation(); 
-                    if (currentUser) { // Agar logged in hai, toh naya profile popup dikhao
+                    if (currentUser) { 
                         if (userProfileOverlay) userProfileOverlay.classList.add('show');
-                        if (userHubDropdown) userHubDropdown.classList.remove('show'); // Puraana dropdown band karo
-                    } else { // Agar logged out hai, toh login/signup wala dropdown dikhao
+                        if (userHubDropdown) userHubDropdown.classList.remove('show'); 
+                    } else { 
                         if (userHubDropdown) userHubDropdown.classList.toggle('show');
-                        if (userProfileOverlay) userProfileOverlay.classList.remove('show'); // Profile popup band karo
+                        if (userProfileOverlay) userProfileOverlay.classList.remove('show'); 
                     }
                 });
             }
-            // Close User Hub Dropdown (login/signup forms)
             document.addEventListener('click', function(event) {
                 if (userHubDropdown && userHubTrigger && !userHubTrigger.contains(event.target) && !userHubDropdown.contains(event.target) && userHubDropdown.classList.contains('show')) {
                     userHubDropdown.classList.remove('show');
                 }
+                if (userProfileOverlay && userProfileOverlay.classList.contains('show') && userProfilePopup && !userProfilePopup.contains(event.target) && event.target !== userHubTrigger && !userHubTrigger.contains(event.target) ) {
+                     userProfileOverlay.classList.remove('show');
+                }
+                if (forgotPasswordModalOverlay && forgotPasswordModalOverlay.classList.contains('show')) {
+                    const forgotModal = document.getElementById('forgotPasswordModal');
+                    const linkThatOpenedIt = userHubDropdown.querySelector('.forgot-password-link');
+                    let clickedOnLink = linkThatOpenedIt && linkThatOpenedIt.contains(event.target);
+                    if (forgotModal && !forgotModal.contains(event.target) && !clickedOnLink ) {
+                         forgotPasswordModalOverlay.classList.remove('show');
+                    }
+                }
             });
-            // Close User Profile Popup (new)
             if(closeUserProfilePopupBtn) {
                 closeUserProfilePopupBtn.addEventListener('click', () => {
                     if(userProfileOverlay) userProfileOverlay.classList.remove('show');
                 });
             }
-            if(userProfileOverlay) { // Click outside popup to close
-                 userProfileOverlay.addEventListener('click', function(event) {
-                    if (event.target === userProfileOverlay) { // Sirf overlay par click, popup ke andar nahi
-                        userProfileOverlay.classList.remove('show');
-                    }
-                });
-            }
 
-
-            function setupDropdownAuthForms(authSectionCloneInDropdown) { /* ... (same as before, no changes here) ... */
+            function setupDropdownAuthForms(authSectionCloneInDropdown) { /* ... (same as before) ... */
                 const signupFormInDropdown = authSectionCloneInDropdown.querySelector('#signup-form');
                 const loginFormInDropdown = authSectionCloneInDropdown.querySelector('#login-form');
                 const showLoginLinkInDropdown = authSectionCloneInDropdown.querySelector('#show-login-link');
@@ -537,7 +491,6 @@
                     return data;
                 } catch (error) { 
                     console.error(`API request error to ${url}:`, error); 
-                    // Specific check for token validation errors to avoid redundant modal
                     if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                         showCustomModalWrapper('error', 'Oops!', error.message || 'Server se communication mein error.');
                     }
@@ -546,8 +499,8 @@
             }
             
             async function handleAuthResponse(data) { 
-                if (userHubDropdown) userHubDropdown.classList.remove('show'); // Login/Signup forms dropdown band
-                if (userProfileOverlay) userProfileOverlay.classList.remove('show'); // Profile popup (agar khula tha) band
+                if (userHubDropdown) userHubDropdown.classList.remove('show'); 
+                if (userProfileOverlay) userProfileOverlay.classList.remove('show'); 
 
                 localStorage.setItem('authToken', data.token); currentUser = data.user; 
                 updateUIAfterLogin(); 
@@ -606,20 +559,20 @@
             function updateUIAfterLogin() {
                 if (currentUser) {
                     // Update User Hub Trigger (Top-right icon)
+                    if (userHubTrigger) userHubTrigger.classList.add('avatar-mode');
                     if (userHubAvatar) {
                         userHubAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                         userHubAvatar.alt = currentUser.name;
                         userHubAvatar.style.display = 'block';
                     }
                     if (userHubLoginText) userHubLoginText.style.display = 'none';
-                    if (userHubTrigger) userHubTrigger.classList.add('avatar-mode'); // Make button circular
 
-                    // Populate New User Profile Popup (User's template)
+                    // Populate New User Profile Popup
                     if (popupAvatar) popupAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/80/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if (popupWelcomeMessage) popupWelcomeMessage.innerHTML = `Swagat, <strong>${currentUser.name}</strong>!`;
                     
                     if (userHubDropdown) userHubDropdown.innerHTML = ''; // Clear login/signup forms dropdown
-
+                    
                     if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name; 
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name; 
@@ -628,22 +581,20 @@
             }
 
             function updateUIAfterLogout() {
-                // Update User Hub Trigger (Top-right icon)
+                if (userHubTrigger) userHubTrigger.classList.remove('avatar-mode');
                 if (userHubAvatar) userHubAvatar.style.display = 'none';
                 if (userHubLoginText) {
-                    userHubLoginText.innerHTML = 'Login'; // Changed to text "Login"
+                    userHubLoginText.innerHTML = 'Login'; 
                     userHubLoginText.style.display = 'inline';
                 }
-                if (userHubTrigger) userHubTrigger.classList.remove('avatar-mode'); // Make button rectangular for "Login"
 
-                // Populate User Hub Dropdown (for logged-out state with login/signup forms)
                 if (userHubDropdown && authSectionTemplate) {
                     userHubDropdown.innerHTML = ''; 
                     const authSectionClone = authSectionTemplate.cloneNode(true);
                     userHubDropdown.appendChild(authSectionClone);
                     setupDropdownAuthForms(authSectionClone); 
                 }
-                if (userProfileOverlay) userProfileOverlay.classList.remove('show'); // Hide profile popup
+                if (userProfileOverlay) userProfileOverlay.classList.remove('show'); 
                 
                 if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
                 if(nameInputInFeedbackForm) {
@@ -654,12 +605,10 @@
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest'; 
             }
 
-            // Logout from new profile popup
             if(popupLogoutBtn) {
                 popupLogoutBtn.addEventListener('click', () => {
-                    if(userProfileOverlay) userProfileOverlay.classList.remove('show'); // Close profile popup first
+                    if(userProfileOverlay) userProfileOverlay.classList.remove('show'); 
                     showCustomModalWrapper('confirm', 'Logout Confirmation', 'Kya aap वाकई logout karna chahte hain?', () => {
-                        // Confirmed logout
                         localStorage.removeItem('authToken'); currentUser = null;
                         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                         updateUIAfterLogout(); 
@@ -668,12 +617,10 @@
                     });
                 });
             }
-             // View Profile from new profile popup
             if(popupViewProfileBtn) {
                 popupViewProfileBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userProfileOverlay) userProfileOverlay.classList.remove('show');
-                    // TODO: Implement showing actual profile section for editing
                     showCustomModalWrapper('info', 'Profile Feature', 'Aapka profile edit section jald hi yahaan dikhega!');
                 });
             }
@@ -723,7 +670,7 @@
                 }
                 
                 if (type === 'success' && confettiContainer) launchConfetti();
-                if (!customModalOverlay.classList.contains('show')) { // Agar pehle se show nahi hai tabhi add karo
+                if (customModalOverlay && !customModalOverlay.classList.contains('show')) { 
                     customModalOverlay.classList.add('show');
                 }
             }
@@ -752,7 +699,7 @@
                 catch (error) { /* handled */ }
                 finally { submitButton.disabled = false; submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "FEEDBACK JAMA KAREIN"; }
             });
-            function resetFeedbackForm() { /* ... (same as before) ... */
+            function resetFeedbackForm() { /* ... (same as before) ... */ 
                 if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; feedbackFormUsernameSpan.textContent = currentUser.name; nameInputInFeedbackForm.disabled = true; 
                 } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';} 
                 feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); 
