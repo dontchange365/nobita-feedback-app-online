@@ -55,36 +55,29 @@
             background-color: var(--bg-gradient-end); border: 1px solid var(--card-border);
             border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4);
             width: 300px; max-width: calc(100vw - 40px);
-            z-index: 1000; /* Below User Hub trigger, above general modals if any overlap */
+            z-index: 1000; 
             display: none; opacity: 0;
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
             overflow: hidden; 
         }
         .user-hub-dropdown.show { display: block; opacity: 1; transform: translateY(0) scale(1); }
-        /* Styles for Auth Forms within Dropdown */
-        .user-hub-dropdown .auth-container { 
-            padding: 20px 15px 15px 15px; margin: 0; box-shadow: none; border: none;
-            background: transparent; width: 100%; max-width: 100%;
-        }
+        /* ... (Styles for Auth Forms within Dropdown pehle jaise) ... */
+        .user-hub-dropdown .auth-container { padding: 20px 15px 15px 15px; margin: 0; box-shadow: none; border: none; background: transparent; width: 100%; max-width: 100%; }
         .user-hub-dropdown .auth-container h2 { font-size: 1.5em; margin-bottom: 15px; }
         .user-hub-dropdown .auth-input-group { margin-bottom: 12px; }
         .user-hub-dropdown .auth-input-group input { font-size: 0.9em; padding: 9px 12px; }
-        .user-hub-dropdown .auth-button, 
-        .user-hub-dropdown .custom-google-btn { font-size: 0.9em; padding: 10px 15px; }
+        .user-hub-dropdown .auth-button, .user-hub-dropdown .custom-google-btn { font-size: 0.9em; padding: 10px 15px; }
         .user-hub-dropdown .divider-or { margin: 12px 0; font-size: 0.8em; }
-        .user-hub-dropdown .auth-toggle-link, 
-        .user-hub-dropdown .forgot-password-link { font-size: 0.8em; margin-top: 12px; }
+        .user-hub-dropdown .auth-toggle-link, .user-hub-dropdown .forgot-password-link { font-size: 0.8em; margin-top: 12px; }
         
-        /* --- User Profile Popup Styles (User's Template Inspired) --- */
+        /* --- User Profile Popup Styles --- */
         #user-profile-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.65); 
-            display: none; /* Default hidden, shown by .show */
-            justify-content: center; align-items: center;
-            z-index: 1002; /* Above User Hub dropdown, below general modals */
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
+            display: none; justify-content: center; align-items: center;
+            z-index: 1002; 
+            opacity: 0; transition: opacity 0.3s ease-out;
         }
         #user-profile-overlay.show { display: flex; opacity: 1; }
         #user-profile-popup {
@@ -95,32 +88,15 @@
             transform: scale(0.9); transition: transform 0.3s ease-out;
         }
         #user-profile-overlay.show #user-profile-popup { transform: scale(1); }
-        #user-profile-popup .close-popup-btn {
-            position: absolute; top: 10px; right: 15px; cursor: pointer;
-            font-size: 24px; color: var(--text-color-light); line-height: 1;
-            transition: color 0.2s;
-        }
+        #user-profile-popup .close-popup-btn { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 24px; color: var(--text-color-light); line-height: 1; transition: color 0.2s; }
         #user-profile-popup .close-popup-btn:hover { color: var(--secondary-color); }
-        #popup-avatar { 
-            width: 70px; height: 70px; /* Refined size */
-            border-radius: 50%; object-fit: cover; margin-bottom: 12px; /* Adjusted margin */
-            border: 3px solid var(--secondary-color); background-color: var(--card-bg); 
-        }
-        #user-profile-popup h3#popup-welcome-message { 
-            font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 1.2em;
-            margin-top: 0; margin-bottom: 15px; color: var(--text-color-light);
-        }
+        #popup-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 3px solid var(--secondary-color); background-color: var(--card-bg); }
+        #user-profile-popup h3#popup-welcome-message { font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 1.2em; margin-top: 0; margin-bottom: 15px; color: var(--text-color-light); }
         #user-profile-popup h3#popup-welcome-message strong { color: var(--secondary-color); font-weight: 700; }
-        #user-profile-popup .profile-action-btn {
-            width: 100%; padding: 10px; margin: 8px 0; border: none;
-            border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500;
-            transition: background-color 0.2s, transform 0.1s;
-        }
+        #user-profile-popup .profile-action-btn { width: 100%; padding: 10px; margin: 8px 0; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.2s, transform 0.1s; }
         #user-profile-popup .profile-action-btn:hover { transform: translateY(-1px); }
-        #popup-view-profile { background: var(--accent-color); color: #fff; }
-        #popup-view-profile:hover { background: #3578e0; }
-        #popup-logout { background: var(--error-color); color: #fff; }
-        #popup-logout:hover { background: #c82333; }
+        #popup-view-profile { background: var(--accent-color); color: #fff; } #popup-view-profile:hover { background: #3578e0; }
+        #popup-logout { background: var(--error-color); color: #fff; } #popup-logout:hover { background: #c82333; }
         /* --- End User Profile Popup Styles --- */
 
         #auth-section-original-container, #user-info-display-original-container { display: none !important; }
@@ -131,10 +107,9 @@
         }
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
-        /* ... (Owner Avatar, Owner Text styles pehle jaise) ... */
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
         .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
-
+        
         .main-container { 
             background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
             border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
@@ -142,16 +117,18 @@
             opacity: 0; transform: translateY(40px); 
             transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
         }
+        /* === YEH BADLAV KIYA GAYA HAI === */
         #feedback-form-container.main-container {
-            margin-bottom: 3px; /* STRICTLY 3px margin */
+            margin-bottom: 3px; /* Feedback form ke neeche sirf 3px margin */
         }
         #feedback-list-container.main-container {
-            margin-top: 0; /* No top margin for list to be close to form */
-            margin-bottom: 25px; /* Default bottom margin for list */
+            margin-top: 0; /* Feedback list ke upar koi extra margin nahi */
+            margin-bottom: 25px; /* List ke neeche default margin */
         }
+        /* =============================== */
         .main-container.animate-in { opacity: 1; transform: translateY(0); }
         
-        /* ... (Auth Container and its inner elements CSS (for template) pehle jaisi) ... */
+        /* ... (Auth Container template ki CSS waise hi rahegi) ... */
         .auth-container { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px; width: 100%; max-width: 480px; margin: 0 auto; }
         .auth-container h2 { color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
         .auth-form { display: none; } .auth-form.active { display: block; }
@@ -196,7 +173,7 @@
         button#submit-feedback::before { content: ''; position: absolute; top: 50%; left: 50%; width: 300%; height: 300%; background: rgba(255,255,255,0.12); border-radius: 50%; transition: all 0.5s ease-out; transform: translate(-50%, -50%) scale(0); opacity: 0; }
         button#submit-feedback:hover::before { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         button#submit-feedback:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2.5px) scale(1.015); box-shadow: 0 7px 18px rgba(59,130,246,0.55); }
-        #feedback-list-container { margin-top: 0px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        #feedback-list-container { /* margin-top: 0px ab upar set hai */ background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(7px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 22px; text-align: left; box-shadow: var(--shadow-deep); width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         #feedback-list-container.animate-in { opacity: 1; transform: translateY(0); }
         #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); }
         .average-rating-container { background: rgba(255, 215, 0, 0.09); border: 1px solid var(--secondary-color); border-radius: 13px; padding: 16px 22px; margin-bottom: 22px; text-align: center; box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-color-light); opacity: 0; transform: translateY(25px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
@@ -224,7 +201,9 @@
         .edit-feedback-btn[disabled] { display: none !important; }
         .edited-tag { background-color: #f0ad4e; color: white; padding: 2.5px 7px; border-radius: 4.5px; font-size: 0.65em; font-weight: bold; margin-left: 7px; vertical-align: middle; animation: fadeIn 0.45s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+        
         .custom-modal-overlay { z-index: 1005; } 
+        /* ... (Baaki modal, confetti, media query CSS pehle jaise) ... */
         .custom-modal { background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid; border-radius: 18px; padding: 28px 22px; text-align: center; color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28); transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden; transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out; max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;}
         .custom-modal-overlay.show .custom-modal { transform: scale(1) translateY(0); opacity: 1; visibility: visible; }
         .modal-icon { font-size: 4.2em; color: white; margin-bottom: 13px; animation: bounceIn 0.75s ease-out; text-shadow: 0 0 13px; }
@@ -551,7 +530,7 @@
                 if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
                 if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
                 if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
-                const avgRatingContainerInitial = averageRatingDisplayEl.querySelector('.average-rating-container'); // Initial animate-in
+                const avgRatingContainerInitial = averageRatingDisplayEl.querySelector('.average-rating-container');
                 if (avgRatingContainerInitial) setTimeout(() => { if (!avgRatingContainerInitial.classList.contains('animate-in')) avgRatingContainerInitial.classList.add('animate-in'); }, 450);
             };
 
@@ -581,12 +560,12 @@
                     if (popupAvatar) popupAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/80/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if (popupWelcomeMessage) popupWelcomeMessage.innerHTML = `Swagat, <strong>${currentUser.name}</strong>!`;
                     
-                    if (userHubDropdown) userHubDropdown.innerHTML = ''; 
+                    if (userHubDropdown) userHubDropdown.innerHTML = ''; // Clear login/signup forms
                     
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name; 
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name; 
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
-                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure visible
                 }
             }
 
@@ -606,7 +585,7 @@
                 }
                 if (userProfileOverlay) userProfileOverlay.classList.remove('show'); 
                 
-                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Always visible
                 if(nameInputInFeedbackForm) {
                     nameInputInFeedbackForm.value = ''; 
                     nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';
@@ -686,15 +665,15 @@
             }
 
             function launchConfetti() { if (!confettiContainer) return; const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722']; confettiContainer.innerHTML = ''; for (let i = 0; i < 50; i++) { const c = document.createElement('div'); c.classList.add('confetti'); c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]); c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`; confettiContainer.appendChild(c); c.addEventListener('animationend', () => c.remove()); }}
-            async function fetchFeedbacks() {
+            async function fetchFeedbacks() { /* ... (same as before) ... */
                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title); 
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'Abhi tak koi feedback nahi aaya hai. Aap pehle ho sakte hain!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* handled */ }
             }
-            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
+            function updateAverageRating(avg, count) { /* ... (same as before) ... */ const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
             
-            if(submitButton) submitButton.addEventListener('click', async () => {
+            if(submitButton) submitButton.addEventListener('click', async () => { /* ... (same as before) ... */
                 const feedbackContent = feedbackTextarea.value.trim(); 
                 const ratingValue = ratingInput.value;
                 let nameValue = nameInputInFeedbackForm.value.trim();
@@ -709,7 +688,7 @@
                 catch (error) { /* handled */ }
                 finally { submitButton.disabled = false; submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "FEEDBACK JAMA KAREIN"; }
             });
-            function resetFeedbackForm() { 
+            function resetFeedbackForm() { /* ... (same as before) ... */ 
                 if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; feedbackFormUsernameSpan.textContent = currentUser.name; nameInputInFeedbackForm.disabled = true; 
                 } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';} 
                 feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); 
