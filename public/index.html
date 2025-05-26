@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,8 +17,9 @@
             --card-bg-popup: #272c3a;
             --card-bg: rgba(44, 62, 80, 0.85);
             --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0,0,0,0.5);
             --success-color: #28a745; --error-color: #dc3545; --info-color: var(--accent-color); --confirm-color: #fd7e14;
+            --google-blue: #4285F4;
         }
         html { scroll-behavior: smooth; }
         body {
@@ -31,7 +33,7 @@
         /* --- Corner Triggers (Login Icon / User Avatar) --- */
         .corner-trigger {
             position: fixed; top: 15px; right: 20px; cursor: pointer;
-            width: auto; height: 48px; /* Width auto for text */
+            width: auto; height: 48px;
             background-color: var(--secondary-color); color: var(--primary-color);
             border: 2px solid var(--primary-color);
             display: none;
@@ -39,14 +41,14 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.25);
             transition: all 0.2s ease-out;
             overflow: hidden; font-weight: 600;
-            padding: 0 15px; /* Padding for text */
+            padding: 0 15px;
             border-radius: 8px;
         }
-        .corner-trigger.avatar-mode { /* Only when avatar is shown */
+        .corner-trigger.avatar-mode {
              border-radius: 50%; padding: 0; width: 48px;
         }
         .corner-trigger:hover { transform: scale(1.08); box-shadow: 0 5px 15px rgba(0,0,0,0.35); }
-        #login-icon-trigger .fas { font-size: 1.3em; margin-right: 5px; } /* For icon before Login text */
+        #login-icon-trigger .fas { font-size: 1.3em; margin-right: 5px; }
         #user-avatar-trigger img { width: 100%; height: 100%; object-fit: cover; }
 
 
@@ -60,7 +62,6 @@
             transition: opacity 0.25s ease-out;
         }
         .auth-modal-overlay.active { display: flex; opacity: 1; pointer-events: all; }
-        /* ... (Baaki Auth Modal CSS pehle jaisi, ensure no issues) ... */
         .auth-modal-content { background: var(--bg-gradient-end); border: 1px solid var(--card-border); border-radius: 10px; padding: 25px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light); transform: scale(0.95); opacity:0; transition: transform 0.25s ease-out, opacity 0.2s ease-out;}
         .auth-modal-overlay.active .auth-modal-content { transform: scale(1); opacity: 1; }
         .auth-modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.6em; font-family: 'Poppins', sans-serif; font-weight:600; color: var(--secondary-color); text-align: center; }
@@ -91,7 +92,6 @@
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
         .user-profile-menu.active { display: block; opacity: 1; transform: translateY(0) scale(1); pointer-events:all; }
-        /* ... (User Menu content styles pehle jaise) ... */
         .user-profile-menu .menu-content { padding: 0; }
         .user-profile-menu .menu-header {display: flex; flex-direction: column; align-items: center; padding: 20px 15px; border-bottom: 1px solid var(--card-border);}
         .user-profile-menu .menu-header img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: 2px solid var(--secondary-color);}
@@ -100,17 +100,27 @@
         .user-profile-menu ul li a {color: var(--text-color-light); text-decoration: none; font-size: 0.95em; display: block; padding: 10px 20px; border-radius: 0; transition: background-color 0.2s, color 0.2s;}
         .user-profile-menu ul li a:hover { background: var(--primary-color); color: var(--secondary-color);}
         .user-profile-menu ul li a .fas { margin-right: 10px; width: 16px; text-align: center;}
-        
+        .user-profile-menu ul li label {
+            color: var(--text-color-light); text-decoration: none; font-size: 0.95em; display: flex; align-items: center; padding: 10px 20px; border-radius: 0; transition: background-color 0.2s, color 0.2s; cursor: pointer;
+        }
+        .user-profile-menu ul li label:hover {
+            background: var(--primary-color); color: var(--secondary-color);
+        }
+        .user-profile-menu ul li label .fas { margin-right: 10px; width: 16px; text-align: center;}
+        .user-profile-menu ul li label input[type="file"] {
+            display: none;
+        }
+
         /* --- STYLISH UNIVERSAL POPUP --- */
         .stylish-popup-overlay {
             position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh;
             background: rgba(10, 10, 20, 0.6);
             backdrop-filter: blur(5px);
-            display: none; /* CRUCIAL: Hidden by default */
+            display: none;
             align-items: center; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
+            transition: opacity 0.2s ease-in-out !important;
             z-index: 1005;
         }
         .stylish-popup-overlay.active {
@@ -132,13 +142,12 @@
             color: var(--text-color-light);
         }
         .stylish-popup-overlay.active .stylish-popup-card { transform: translateY(0) scale(1); opacity: 1; }
-        /* ... (Baaki stylish popup CSS (icon, title, message, buttons) pehle jaisi) ... */
         .stylish-popup-card .popup-icon-area { font-size: 2.8em; margin-bottom: 18px; line-height: 1; }
         .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
         .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
-        .stylish-popup-card .popup-icon-area.forgot_password, .stylish-popup-card .popup-icon-area.change_password { color: var(--secondary-color); }
+        .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
         .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
@@ -156,7 +165,6 @@
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
 
         .page-content-wrapper { width: 100%; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
-        /* ... (Baaki saare purane CSS styles jaise owner-info, main-container, feedback form, list, etc. waise hi rakhe hain, ensure no accidental deletions) ... */
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
@@ -211,8 +219,8 @@
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { /* ... (media queries pehle jaisi, ensure corner trigger styles are consistent) ... */ .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{width:45px; padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
-        @media (max-width: 480px) { /* ... (media queries pehle jaisi) ... */ #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{width:45px; padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
+        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
     </style>
 </head>
 <body>
@@ -262,7 +270,7 @@
         </form>
       </div>
     </div>
-    
+
     <div id="userMenu" class="user-profile-menu">
       <div class="menu-content">
         <div class="menu-header">
@@ -270,12 +278,12 @@
           <span class="username" id="menu-username">User Name</span>
         </div>
         <ul>
-          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
-          <li><a href="#" id="menu-change-password"><i class="fas fa-key"></i> Change Password</a></li> <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          <li><a href="#" id="menu-see-profile-detail"><i class="fas fa-user-circle"></i> See Profile Detail</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
     </div>
-    
+
     <div id="stylishPopupOverlay" class="stylish-popup-overlay">
         <div id="stylishPopupCard" class="stylish-popup-card">
           <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
@@ -294,7 +302,7 @@
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
             <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
         </div>
-        
+
         <div id="feedback-form-container" class="main-container">
             <h1 id="main-title"></h1> <div id="typed-output"></div>
             <form id="feedback-form">
@@ -317,7 +325,7 @@
             console.log("DOM Fully Loaded and Parsed");
 
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
-            
+
             // Corner Triggers
             const loginIconTrigger = document.getElementById('login-icon-trigger');
             const userAvatarTrigger = document.getElementById('user-avatar-trigger');
@@ -327,7 +335,7 @@
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             const userMenu = document.getElementById('userMenu');
-            
+
             // Login Modal Elements
             const emailLoginForm = document.getElementById('email-login-form');
             const modalLoginEmailInput = document.getElementById('modal-login-email');
@@ -335,7 +343,7 @@
             const modalForgotPasswordLink = document.getElementById('modal-forgot-password-link');
             const modalCreateAccountLink = document.getElementById('modal-create-account-link');
             const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
-            
+
             // Signup Modal Elements
             const emailSignupForm = document.getElementById('email-signup-form');
             const modalSignupNameInput = document.getElementById('modal-signup-name');
@@ -348,20 +356,19 @@
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
-            const menuViewProfileLink = document.getElementById('menu-view-profile');
-            const menuChangePasswordLink = document.getElementById('menu-change-password'); // New Element
+            const menuSeeProfileDetailLink = document.getElementById('menu-see-profile-detail'); // Changed link
             const menuLogoutLink = document.getElementById('menu-logout');
 
             // Universal Stylish Popup Elements
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-            const stylishPopupCard = document.getElementById('stylishPopupCard'); // For overlay click check
+            const stylishPopupCard = document.getElementById('stylishPopupCard');
             const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
             const stylishPopupIcon = document.getElementById('stylishPopupIcon');
             const stylishPopupTitle = document.getElementById('stylishPopupTitle');
             const stylishPopupMessage = document.getElementById('stylishPopupMessage');
             const stylishPopupFormArea = document.getElementById('stylishPopupFormArea');
             const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
-            
+
             // Page Content Elements
             const ownerInfoEl = document.querySelector('.owner-info');
             const feedbackFormContainer = document.getElementById('feedback-form-container');
@@ -374,7 +381,7 @@
             const submitButton = document.getElementById('submit-feedback');
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title');
-           
+
             let currentUser = null;
             let currentSelectedRating = 0;
             let isEditing = false;
@@ -386,13 +393,15 @@
             const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
             const API_VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
             const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
-            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/auth/change-password`; // New API URL
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
+            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
+            const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`; // New API endpoint for profile update
+
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
-                console.log("[showStylishPopup] Called. Type:", type, "Title:", title); // DEBUG log
+                console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
                 if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
                     console.error("Stylish popup core HTML elements not found!");
                     alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`);
@@ -401,14 +410,14 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'change_password': '<i class="fas fa-key"></i>'}; // Added change_password icon
+                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>'};
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
                 }
 
                 stylishPopupTitle.textContent = title;
-                stylishPopupMessage.innerHTML = `<p>${message}</p>`; // Ensure message is wrapped in p for styling
+                stylishPopupMessage.innerHTML = `<p>${message}</p>`;
 
                 if (options.formHTML) {
                     stylishPopupFormArea.innerHTML = options.formHTML;
@@ -417,7 +426,7 @@
                     stylishPopupFormArea.innerHTML = '';
                     stylishPopupFormArea.style.display = 'none';
                 }
-               
+
                 stylishPopupButtonContainer.innerHTML = '';
                 if (options.isConfirm) {
                     const cancelBtn = document.createElement('button');
@@ -434,11 +443,10 @@
                     confirmBtn.className = 'popup-button primary';
                     confirmBtn.id = 'stylishPopupPrimaryActionBtn';
                     confirmBtn.onclick = () => {
-                        // Let onConfirm decide if popup should be closed or if it handles it
                         if (options.onConfirm) {
                             options.onConfirm();
                         } else {
-                           stylishPopupOverlay.classList.remove('active'); // Default close if no onConfirm
+                           stylishPopupOverlay.classList.remove('active');
                         }
                     };
                     stylishPopupButtonContainer.appendChild(confirmBtn);
@@ -452,9 +460,9 @@
                     };
                     stylishPopupButtonContainer.appendChild(okBtn);
                 }
-               
+
                 stylishPopupOverlay.classList.add('active');
-                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display); // DEBUG log
+                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
             }
 
             if(closeStylishPopupBtn) {
@@ -499,17 +507,29 @@
                     if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
                 }
             });
-           
-            async function apiRequest(url, method, body = null) {
-                const headers = { 'Content-Type': 'application/json' };
+
+            async function apiRequest(url, method, body = null, isFormData = false) {
+                const headers = {};
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                let reqOptions = { method, headers };
+                if (body) {
+                    if (isFormData) {
+                        delete headers['Content-Type'];
+                        reqOptions.body = body;
+                    } else {
+                        headers['Content-Type'] = 'application/json';
+                        reqOptions.body = JSON.stringify(body);
+                    }
+                }
+
                 let submitBtn;
-                if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-                if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-               
+                if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+                else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+
                 try {
-                    const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
+                    const response = await fetch(url, reqOptions);
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || `Server error (${response.status})`);
                     return data;
@@ -526,11 +546,12 @@
                     throw error;
                 }
             }
-           
+
             async function handleAuthResponse(data) {
                 if (loginModal) loginModal.classList.remove('active');
                 if (signupModal) signupModal.classList.remove('active');
-                localStorage.setItem('authToken', data.token); currentUser = data.user;
+                localStorage.setItem('authToken', data.token);
+                currentUser = data.user;
                 updateUIAfterLogin();
                 showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
                 await fetchFeedbacks();
@@ -596,7 +617,6 @@
                             onConfirm: async () => {
                                 const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                                 if (!forgotEmailVal) {
-                                    // Update message in current popup
                                     stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' +
                                                                     'Enter your registered email address. We will send you a link to reset your password.';
                                     document.getElementById('popup-forgot-email').focus();
@@ -609,87 +629,13 @@
                                     stylishPopupOverlay.classList.remove('active');
                                     showStylishPopup('success', 'Link Sent!', data.message);
                                 } catch (error) {
-                                    // Error already shown by apiRequest, just re-enable button if it exists
                                     if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
-                                    // Optionally, to keep the forgot password dialog open on API error:
-                                    // Do not call stylishPopupOverlay.classList.remove('active');
-                                    // showStyledPopup was already called by apiRequest for the error.
                                 }
                             }
                         }
                     );
                 });
             }
-
-            // New: Handle Change Password Link
-            if (menuChangePasswordLink) {
-                menuChangePasswordLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (userMenu) userMenu.classList.remove('active'); // Close user menu
-                    if (!currentUser || currentUser.loginMethod === 'google') {
-                        return showStylishPopup('info', 'Feature Not Available', 'Password change is only available for email/password accounts.');
-                    }
-                    showStylishPopup('change_password', 'Change Your Password',
-                        'Enter your current password and your new password.',
-                        {
-                            formHTML: `
-                                <div class="popup-form-input-group">
-                                    <label for="current-password">Current Password:</label>
-                                    <input type="password" id="current-password" required>
-                                </div>
-                                <div class="popup-form-input-group">
-                                    <label for="new-password">New Password (min. 6 characters):</label>
-                                    <input type="password" id="new-password" required minlength="6">
-                                </div>
-                                <div class="popup-form-input-group">
-                                    <label for="confirm-new-password">Confirm New Password:</label>
-                                    <input type="password" id="confirm-new-password" required minlength="6">
-                                </div>
-                            `,
-                            isConfirm: true, confirmText: 'Update Password', cancelText: 'Cancel',
-                            onConfirm: async () => {
-                                const currentPassword = document.getElementById('current-password').value;
-                                const newPassword = document.getElementById('new-password').value;
-                                const confirmNewPassword = document.getElementById('confirm-new-password').value;
-
-                                if (!currentPassword || !newPassword || !confirmNewPassword) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Please fill all password fields.</p>' +
-                                                                    'Enter your current password and your new password.';
-                                    return;
-                                }
-                                if (newPassword !== confirmNewPassword) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New passwords do not match.</p>' +
-                                                                    'Enter your current password and your new password.';
-                                    return;
-                                }
-                                if (newPassword.length < 6) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New password must be at least 6 characters.</p>' +
-                                                                    'Enter your current password and your new password.';
-                                    return;
-                                }
-                                if (currentPassword === newPassword) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New password cannot be the same as current password.</p>' +
-                                                                    'Enter your current password and your new password.';
-                                    return;
-                                }
-
-                                const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                                if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Updating...";}
-
-                                try {
-                                    const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword, newPassword, confirmNewPassword });
-                                    stylishPopupOverlay.classList.remove('active'); // Close the popup
-                                    showStylishPopup('success', 'Password Updated!', data.message);
-                                } catch (error) {
-                                    if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Update Password";}
-                                    // Error message is already shown by apiRequest, no need to re-show it here.
-                                }
-                            }
-                        }
-                    );
-                });
-            }
-
 
             const triggerGoogleSignIn = () => {
                 if (loginModal) loginModal.classList.remove('active');
@@ -726,24 +672,17 @@
                 if (currentUser) {
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
                     if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
+                    // Always use currentUser.avatarUrl for the logged-in avatar
                     if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
-                   
+
                     if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
-                   
+
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
                     if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
 
-                    // Enable/disable change password link based on loginMethod
-                    if (menuChangePasswordLink) {
-                        if (currentUser.loginMethod === 'google') {
-                            menuChangePasswordLink.style.display = 'none';
-                        } else {
-                            menuChangePasswordLink.style.display = 'block';
-                        }
-                    }
                 }
             }
 
@@ -759,7 +698,6 @@
                     nameInputInFeedbackForm.disabled = false;
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
-                if (menuChangePasswordLink) menuChangePasswordLink.style.display = 'none'; // Hide on logout
             }
 
             if(menuLogoutLink) {
@@ -778,29 +716,153 @@
                     });
                 });
             }
-            if(menuViewProfileLink) {
-                menuViewProfileLink.addEventListener('click', (e) => {
+
+            if(menuSeeProfileDetailLink) {
+                menuSeeProfileDetailLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userMenu) userMenu.classList.remove('active');
-                    showStylishPopup('info', 'Profile Feature', 'Your profile editing section will be available here soon!');
+                    if (!currentUser) {
+                        showStylishPopup('error', 'Login Required', 'Please login to view profile details.');
+                        return;
+                    }
+
+                    showStylishProfileDetailPopup();
                 });
             }
-           
+
+            function showStylishProfileDetailPopup() {
+                const profileDetailHTML = `
+                    <p><strong>Name:</strong> ${currentUser.name}</p>
+                    <p><strong>Email:</strong> ${currentUser.email}</p>
+                    <p><strong>Login Method:</strong> ${currentUser.loginMethod}</p>
+                `;
+
+                showStylishPopup('profile', 'Your Profile Details', profileDetailHTML, {
+                    isConfirm: true,
+                    confirmText: 'Edit Profile',
+                    cancelText: 'Close',
+                    onConfirm: () => {
+                        showEditProfilePopup();
+                    },
+                    onCancel: () => {
+                        // Popup will close by default
+                    }
+                });
+            }
+
+            function showEditProfilePopup() {
+                const editProfileHTML = `
+                    <div class="popup-form-input-group">
+                        <label for="popup-edit-name">Name:</label>
+                        <input type="text" id="popup-edit-name" value="${currentUser.name}" required>
+                    </div>
+                    <div class="popup-form-input-group" id="change-avatar-group" style="${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">
+                        <label for="popup-avatar-file">Change Profile Picture:</label>
+                        <input type="file" id="popup-avatar-file" accept="image/*">
+                        <button type="button" id="upload-avatar-btn" class="popup-button primary" style="width:100%; margin-top:10px;">Upload Photo</button>
+                    </div>
+                `;
+
+                showStylishPopup('profile', 'Edit Your Profile', '', {
+                    formHTML: editProfileHTML,
+                    isConfirm: true,
+                    confirmText: 'Save Changes',
+                    cancelText: 'Cancel',
+                    onConfirm: async () => {
+                        const newName = document.getElementById('popup-edit-name').value.trim();
+                        if (!newName) {
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Name cannot be empty.</p>';
+                            return;
+                        }
+                        if (newName === currentUser.name) {
+                            showStylishPopup('info', 'No Changes', 'No changes detected in name.');
+                            return;
+                        }
+
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Saving...";}
+
+                        try {
+                            const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
+                            currentUser.name = data.user.name; // Update current user name
+                            localStorage.setItem('authToken', data.token); // Update token if it was re-issued
+                            updateUIAfterLogin(); // Re-render UI with new name
+                            await fetchFeedbacks(); // Refresh feedbacks if needed
+                            showStylishPopup('success', 'Profile Updated!', 'Your name has been updated.');
+                        } catch (error) {
+                            // Handled by apiRequest
+                        } finally {
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";}
+                        }
+                    },
+                    onCancel: () => {
+                        // Popup will close by default
+                    }
+                });
+
+                const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+                const popupAvatarFile = document.getElementById('popup-avatar-file');
+
+                if (uploadAvatarBtn && popupAvatarFile) {
+                    uploadAvatarBtn.addEventListener('click', async () => {
+                        const file = popupAvatarFile.files[0];
+                        if (!file) {
+                            showStylishPopup('warning', 'No File Selected', 'Please choose an image file to upload.');
+                            return;
+                        }
+                        if (!file.type.startsWith('image/')) {
+                            showStylishPopup('error', 'Invalid File Type', 'Please upload an image file (e.g., JPEG, PNG, GIF).');
+                            return;
+                        }
+                        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                            showStylishPopup('error', 'File Too Large', 'Please upload an image smaller than 2MB.');
+                            return;
+                        }
+
+                        if (!currentUser || currentUser.loginMethod === 'google') {
+                            showStylishPopup('error', 'Permission Denied', 'Avatar upload is only for email-based accounts.');
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('avatar', file);
+
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
+
+                        try {
+                            const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true);
+                            currentUser.avatarUrl = data.newAvatarUrl;
+                            localStorage.setItem('authToken', data.token); // Ensure token is updated if new one is issued
+                            updateUIAfterLogin();
+                            await fetchFeedbacks();
+                            showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been successfully uploaded.');
+                        } catch (error) {
+                            // Handled by apiRequest
+                        } finally {
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
+                            popupAvatarFile.value = ''; // Clear file input
+                        }
+                    });
+                }
+            }
+
+
             if (mainTitle) {
                  new Typed('#main-title', { strings: ["✨ NOBITA's Feedback Portal ✨", "🚀 Share Your Valuable Thoughts 🚀", "💡 Help Us Improve! 💡"], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
                  new Typed('#typed-output', { strings: ["Your feedback is precious to us!", "With your opinion, we will improve.", "Every star is important to us!"], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
             }
             function updateStarVisuals(ratingToShow) { starsElements.forEach(star => { const val = parseInt(star.getAttribute('data-value')); star.classList.toggle('selected', val <= ratingToShow); star.classList.remove('highlighted'); });}
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
-           
+
             async function fetchFeedbacks() {
-                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
+                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* handled */ }
             }
             function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
-           
+
             if(submitButton) submitButton.addEventListener('click', async () => {
                 const feedbackContent = feedbackTextarea.value.trim();
                 const ratingValue = ratingInput.value;
@@ -832,7 +894,10 @@
             }
             function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
-                const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'); avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
+                const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
+                avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
+                avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
+                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong');
                 let nameContent = fbData.name; let userTypeTag = '';
                 if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
@@ -845,7 +910,7 @@
                 try {
                     timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
                 } catch(e) {
-                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
+                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
                 }
 
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
@@ -872,7 +937,7 @@
                 item.append(avatarImg, detailsDiv);
                  if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {} else { feedbackListContainer.appendChild(item); }
             }
-           
+
             updateUIAfterLogout();
             checkLoginStatus();
         });
