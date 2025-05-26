@@ -1,7 +1,7 @@
 {
   "name": "nobita-feedback-app-with-google",
-  "version": "1.1.0",
-  "description": "A simple feedback application with stars, MongoDB, and Google Login.",
+  "version": "1.2.0",
+  "description": "A simple feedback application with stars, MongoDB, Google Login and persistent session.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,7 +11,8 @@
     "mongodb",
     "node",
     "express",
-    "google-login"
+    "google-login",
+    "jwt"
   ],
   "author": "Nobita",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.4.1",
-    "google-auth-library": "^9.9.0"
+    "google-auth-library": "^9.9.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }
