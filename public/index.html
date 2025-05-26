@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,7 +16,7 @@
             --card-bg-popup: #272c3a;
             --card-bg: rgba(44, 62, 80, 0.85);
             --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0,0,0,0.5);
             --success-color: #28a745; --error-color: #dc3545; --info-color: var(--accent-color); --confirm-color: #fd7e14;
         }
         html { scroll-behavior: smooth; }
@@ -102,6 +101,39 @@
         .user-profile-menu ul li a:hover { background: var(--primary-color); color: var(--secondary-color);}
         .user-profile-menu ul li a .fas { margin-right: 10px; width: 16px; text-align: center;}
 
+        /* New styles for file upload in menu */
+        .user-profile-menu ul li .file-upload-wrapper {
+            display: flex; flex-direction: column; align-items: flex-start; padding: 10px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 15px;
+        }
+        .user-profile-menu ul li .file-upload-wrapper label {
+            display: block; font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px; font-weight: 500;
+        }
+        .user-profile-menu ul li .file-upload-wrapper input[type="file"] {
+            width: 100%; border: 1px solid var(--card-border); border-radius: 6px;
+            background: var(--input-bg); color: var(--text-color-light); font-size: 0.85em;
+            padding: 8px 10px; box-sizing: border-box; margin-bottom: 10px;
+        }
+        .user-profile-menu ul li .file-upload-wrapper input[type="file"]::-webkit-file-upload-button {
+            background: var(--accent-color); color: #fff; border: none; padding: 6px 12px;
+            border-radius: 5px; cursor: pointer; transition: background-color 0.2s; margin-right: 10px;
+        }
+        .user-profile-menu ul li .file-upload-wrapper input[type="file"]::-webkit-file-upload-button:hover {
+            background: #3578e0;
+        }
+        .user-profile-menu ul li .file-upload-wrapper button {
+            width: 100%; padding: 8px 15px; border: none; border-radius: 6px;
+            background: var(--primary-color); color: var(--secondary-color); font-weight: 500;
+            cursor: pointer; transition: background-color 0.2s, transform 0.1s; font-size: 0.9em;
+        }
+        .user-profile-menu ul li .file-upload-wrapper button:hover {
+            background: #5a0b94; transform: translateY(-1px);
+        }
+        .user-profile-menu ul li .file-upload-wrapper button:disabled {
+            background: #555; cursor: not-allowed; opacity: 0.7;
+        }
+
+
         /* --- STYLISH UNIVERSAL POPUP --- */
         .stylish-popup-overlay {
             position: fixed; top: 0; left: 0;
@@ -140,7 +172,6 @@
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-        .stylish-popup-card .popup-icon-area.profile { color: var(--secondary-color); } /* Updated */
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
         .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
@@ -197,7 +228,7 @@
         .feedback-details { flex-grow: 1; display: flex; flex-direction: column; }
         .feedback-details strong { color: var(--secondary-color); font-size: 1.1em; display: block; margin-bottom: 4px; text-transform: capitalize; }
         .user-type-indicator { font-size: 0.65em; color: white; padding: 1.5px 5.5px; border-radius: 3.5px; margin-left: 7px; vertical-align: middle; font-weight: normal; }
-        .google-user-indicator { background-color: #4285F4; } .email-user-indicator { background-color: var(--primary-color); }
+        .google-user-indicator { background-color: var(--google-blue); } .email-user-indicator { background-color: var(--primary-color); }
         .feedback-stars { color: var(--secondary-color); font-size: 1.5em; letter-spacing: 2.5px; margin-bottom: 5.5px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
         .feedback-details p { margin-top: 4px; margin-bottom: 7px; word-wrap: break-word; white-space: pre-wrap; color: var(--text-color-light); line-height: 1.55; font-size: 0.95em;}
         .feedback-timestamp { font-size: 0.7em; color: rgba(255, 255, 255, 0.55); margin-top: 4px; text-align: right; }
@@ -215,83 +246,12 @@
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
         @media (max-width: 768px) { /* ... (media queries pehle jaisi, ensure corner trigger styles are consistent) ... */ .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{width:45px; padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
         @media (max-width: 480px) { /* ... (media queries pehle jaisi) ... */ #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
-
-        /* New Profile Modal Styles */
-        #profileModal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-            align-items: center; justify-content: center; z-index: 1003;
-            opacity: 0; pointer-events: none; transition: opacity 0.25s ease-out;
-        }
-        #profileModal.active { display: flex; opacity: 1; pointer-events: all; }
-        #profileModal .modal-content {
-            background: var(--bg-gradient-end); border: 1px solid var(--card-border); border-radius: 10px;
-            padding: 25px; width: 90%; max-width: 500px; position: relative;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light);
-            transform: scale(0.95); opacity:0; transition: transform 0.25s ease-out, opacity 0.2s ease-out;
-        }
-        #profileModal.active .modal-content { transform: scale(1); opacity: 1; }
-        #profileModal h2 { color: var(--secondary-color); margin-top: 0; margin-bottom: 20px; font-size: 1.6em; text-align: center; }
-        #profileModal .close-modal-btn { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 26px; color: var(--text-color-light); line-height: 1; transition: color 0.2s; padding: 5px; }
-        #profileModal .close-modal-btn:hover { color: var(--secondary-color); }
-
-        #profileModal .profile-info-section, #profileModal .change-password-section {
-            background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px; margin-bottom: 20px;
-            text-align: left;
-        }
-        #profileModal .profile-info-section h3, #profileModal .change-password-section h3 {
-            color: var(--accent-color); margin-top: 0; margin-bottom: 15px; font-size: 1.2em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
-        }
-        #profileModal .profile-info-section p { margin-bottom: 10px; font-size: 0.95em; }
-        #profileModal .profile-info-section strong { color: var(--secondary-color); margin-right: 5px; }
-        #profileModal .profile-avatar-preview {
-            width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
-            border: 3px solid var(--secondary-color); margin: 0 auto 15px auto;
-            display: block; box-shadow: 0 0 10px rgba(255,215,0,0.4);
-        }
-
-        #profileModal .input-group { margin-bottom: 15px; }
-        #profileModal .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: var(--text-color-light); }
-        #profileModal .input-group input[type="text"],
-        #profileModal .input-group input[type="password"] {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 6px;
-            background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none;
-            box-sizing: border-box;
-        }
-        #profileModal .input-group input[type="file"] {
-            width: 100%; padding: 8px 12px; border: 1px solid var(--card-border); border-radius: 6px;
-            background: var(--input-bg); color: var(--text-color-light); font-size: 0.9em; outline: none;
-            box-sizing: border-box;
-        }
-        #profileModal .input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
-
-        #profileModal button {
-            width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 6px;
-            font-size: 1em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s;
-            background: var(--accent-color); color: #fff;
-        }
-        #profileModal button:hover { background: #3578e0; transform: translateY(-1px); }
-        #profileModal button:disabled { opacity: 0.7; cursor: not-allowed; }
-        .profile-actions { display: flex; flex-direction: column; gap: 10px; }
-        .profile-actions .profile-section-buttons {
-            display: flex; gap: 10px; margin-top: 10px;
-        }
-        .profile-actions .profile-section-buttons button {
-             width: auto; flex-grow: 1;
-        }
-        .profile-actions .profile-section-buttons button.secondary-btn {
-            background: #6c757d;
-        }
-        .profile-actions .profile-section-buttons button.secondary-btn:hover {
-            background: #5a6268;
-        }
-
     </style>
 </head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i> Login
-    </div>
-    <div id="user-avatar-trigger" class="corner-trigger avatar-mode" title="Profile Menu">
+        <i class="fas fa-lock"></i> </div>
+    <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
         <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
     </div>
 
@@ -307,12 +267,10 @@
             <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
             <a href="#" id="modal-create-account-link">Create New Account</a>
           </div>
-          <div id="g_id_onload"
-               data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
-               data-callback="handleGoogleCredentialResponse"
-               data-auto_prompt="false">
-          </div>
-          <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Login with Google
+          </button>
         </form>
       </div>
     </div>
@@ -330,12 +288,10 @@
           <div class="form-links" style="justify-content: center;">
             <a href="#" id="modal-already-account-link">Already have an account? Login</a>
           </div>
-           <div id="g_id_onload"
-               data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
-               data-callback="handleGoogleCredentialResponse"
-               data-auto_prompt="false">
-          </div>
-          <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="sign_up_with" data-shape="rectangular" data-logo_alignment="left"></div>
+           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Sign Up with Google
+          </button>
         </form>
       </div>
     </div>
@@ -348,45 +304,14 @@
         </div>
         <ul>
           <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
+          <li class="file-upload-wrapper">
+            <label for="avatar-upload-input">Change Profile Picture:</label>
+            <input type="file" id="avatar-upload-input" accept="image/*">
+            <button id="upload-avatar-btn">Upload Avatar</button>
+          </li>
           <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
-    </div>
-
-    <div id="profileModal" class="auth-modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal-btn" data-modal-close="profileModal">&times;</span>
-            <h2>My Profile</h2>
-            <div class="profile-info-section">
-                <h3>User Information</h3>
-                <img id="profile-avatar-preview" class="profile-avatar-preview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Profile Avatar">
-                <p><strong>Name:</strong> <span id="profile-name-display"></span></p>
-                <p><strong>Email:</strong> <span id="profile-email-display"></span></p>
-                <p><strong>Login Method:</strong> <span id="profile-login-method-display"></span></p>
-                <div class="profile-actions">
-                    <button id="edit-profile-btn">Edit Profile</button>
-                </div>
-            </div>
-
-            <div class="change-password-section" style="display: none;">
-                <h3>Change Password</h3>
-                <form id="change-password-form">
-                    <div class="input-group">
-                        <label for="current-password">Current Password:</label>
-                        <input type="password" id="current-password" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="new-password">New Password (min. 6 characters):</label>
-                        <input type="password" id="new-password" required minlength="6">
-                    </div>
-                    <div class="input-group">
-                        <label for="confirm-new-password">Confirm New Password:</label>
-                        <input type="password" id="confirm-new-password" required minlength="6">
-                    </div>
-                    <button type="submit" id="change-password-submit-btn">Change Password</button>
-                </form>
-            </div>
-        </div>
     </div>
 
     <div id="stylishPopupOverlay" class="stylish-popup-overlay">
@@ -411,7 +336,7 @@
         <div id="feedback-form-container" class="main-container">
             <h1 id="main-title"></h1> <div id="typed-output"></div>
             <form id="feedback-form">
-                <div class="input-group"> <label for="name">Your Name: (<span id="feedback-form-username">Guest</span>)</label> <input type="text" id="name" placeholder="Your name here if not logged in..." required> </div>
+                <div class="input-group"> <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled> </div>
                 <div class="input-group"> <label for="feedback">Your Feedback:</label> <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea> </div>
                 <div class="input-group"> <label>Rate Your Experience:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
                 <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
@@ -440,7 +365,6 @@
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             const userMenu = document.getElementById('userMenu');
-            const profileModal = document.getElementById('profileModal'); // New
 
             // Login Modal Elements
             const emailLoginForm = document.getElementById('email-login-form');
@@ -448,6 +372,7 @@
             const modalLoginPasswordInput = document.getElementById('modal-login-password');
             const modalForgotPasswordLink = document.getElementById('modal-forgot-password-link');
             const modalCreateAccountLink = document.getElementById('modal-create-account-link');
+            const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
 
             // Signup Modal Elements
             const emailSignupForm = document.getElementById('email-signup-form');
@@ -456,25 +381,16 @@
             const modalSignupPasswordInput = document.getElementById('modal-signup-password');
             const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password');
             const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
+            const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
 
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
             const menuViewProfileLink = document.getElementById('menu-view-profile');
             const menuLogoutLink = document.getElementById('menu-logout');
+            const avatarUploadInput = document.getElementById('avatar-upload-input'); // New
+            const uploadAvatarBtn = document.getElementById('upload-avatar-btn');     // New
 
-            // Profile Modal Elements
-            const profileAvatarPreview = document.getElementById('profile-avatar-preview'); // New
-            const profileNameDisplay = document.getElementById('profile-name-display');
-            const profileEmailDisplay = document.getElementById('profile-email-display');
-            const profileLoginMethodDisplay = document.getElementById('profile-login-method-display');
-            const editProfileBtn = document.getElementById('edit-profile-btn');
-            const changePasswordSection = document.getElementById('change-password-section');
-            const changePasswordForm = document.getElementById('change-password-form');
-            const currentPasswordInput = document.getElementById('current-password');
-            const newPasswordInput = document.getElementById('new-password');
-            const confirmNewPasswordInput = document.getElementById('confirm-new-password');
-            const changePasswordSubmitBtn = document.getElementById('change-password-submit-btn');
 
             // Universal Stylish Popup Elements
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
@@ -512,8 +428,7 @@
             const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
-            const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`; // New
-            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New
+            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
@@ -526,7 +441,7 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>'}; // Added 'profile'
+                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>'};
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
@@ -579,7 +494,7 @@
                 }
 
                 stylishPopupOverlay.classList.add('active');
-                console.log("[showStylishPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display); // DEBUG log
+                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display); // DEBUG log
             }
 
             if(closeStylishPopupBtn) {
@@ -601,7 +516,6 @@
                     e.stopPropagation();
                     if (loginModal) { loginModal.classList.add('active'); console.log("Login modal activated"); }
                     if (userMenu) userMenu.classList.remove('active');
-                    if (profileModal) profileModal.classList.remove('active'); // Close profile modal
                 });
             }
             if (userAvatarTrigger) {
@@ -609,7 +523,6 @@
                     e.stopPropagation();
                     if (userMenu) { userMenu.classList.toggle('active'); console.log("User menu toggled"); }
                     if (loginModal) loginModal.classList.remove('active');
-                    if (profileModal) profileModal.classList.remove('active'); // Close profile modal
                 });
             }
             document.addEventListener('click', (e) => {
@@ -617,8 +530,7 @@
                     userMenu.classList.remove('active');
                 }
             });
-            // Common close logic for all modals
-            [loginModal, signupModal, profileModal].forEach(modal => {
+            [loginModal, signupModal].forEach(modal => {
                 if (modal) {
                     modal.addEventListener('click', e => {
                         if (e.target === modal) modal.classList.remove('active');
@@ -628,55 +540,33 @@
                 }
             });
 
-            async function apiRequest(url, method, body = null, isFormData = false) { // Added isFormData
+            async function apiRequest(url, method, body = null, isFormData = false) { // Added isFormData parameter
                 const headers = {};
-                if (!isFormData) { // Set Content-Type only if not FormData
+                if (!isFormData) {
                     headers['Content-Type'] = 'application/json';
                 }
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
                 let submitBtn;
-                // Identify submit buttons based on URL for disabling/enabling
-                if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-                else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-                else if(url.includes('/api/user/profile')) submitBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn'); // Use the primary button in stylish popup for profile
-                else if(url.includes('/api/user/change-password')) submitBtn = changePasswordSubmitBtn;
-                else if(url.includes('/api/feedback') && method === 'POST') submitBtn = submitButton; // For initial feedback submission
-                else if(url.includes('/api/feedback') && method === 'PUT') submitBtn = submitButton; // For feedback edit submission
-
-                if(submitBtn) {
-                    submitBtn.disabled = true;
-                    // Change text for specific buttons
-                    if (url.includes('/api/auth/login')) submitBtn.textContent = "Logging in...";
-                    else if (url.includes('/api/auth/signup')) submitBtn.textContent = "Signing up...";
-                    else if (url.includes('/api/user/profile')) submitBtn.textContent = "Saving...";
-                    else if (url.includes('/api/user/change-password')) submitBtn.textContent = "Changing...";
-                    else if (url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "Updating..." : "Submitting...";
-                }
+                if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+                if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+                if(url.includes('/api/user/upload-avatar')) submitBtn = uploadAvatarBtn; // For avatar upload
 
                 try {
-                    const fetchOptions = { method, headers: headers };
-                    if (body) {
-                        fetchOptions.body = isFormData ? body : JSON.stringify(body);
-                    }
-                    const response = await fetch(url, fetchOptions);
+                    const response = await fetch(url, { method, headers: isFormData ? headers : headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) }); // Conditionally stringify body
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || `Server error (${response.status})`);
                     return data;
                 } catch (error) {
                     console.error(`API request error to ${url}:`, error);
-                    // Do not show popup for token validation failure on initial load
-                    const isAuthCheckError = (url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"));
-                    if (!isAuthCheckError) {
+                    if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                         showStylishPopup('error', 'Error', error.message || 'Server communication error.');
                     }
                     if(submitBtn) {
                         submitBtn.disabled = false;
                         if(url.includes('login')) submitBtn.textContent = "Login";
                         else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
-                        else if(url.includes('/api/user/profile')) submitBtn.textContent = "Save Changes"; // Reset text for profile update button
-                        else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                        else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                        else if(url.includes('upload-avatar')) submitBtn.textContent = "Upload Avatar"; // For avatar upload
                     }
                     throw error;
                 }
@@ -685,8 +575,7 @@
             async function handleAuthResponse(data) {
                 if (loginModal) loginModal.classList.remove('active');
                 if (signupModal) signupModal.classList.remove('active');
-                localStorage.setItem('authToken', data.token);
-                currentUser = data.user;
+                localStorage.setItem('authToken', data.token); currentUser = data.user;
                 updateUIAfterLogin();
                 showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
                 await fetchFeedbacks();
@@ -698,6 +587,8 @@
                     const email = modalLoginEmailInput.value.trim();
                     const password = modalLoginPasswordInput.value;
                     if (!email || !password) return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.');
+                    const submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+                    if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Logging in...";}
                     try {
                         const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                         handleAuthResponse(data);
@@ -715,6 +606,8 @@
                     if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill all fields.');
                     if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.');
                     if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters.');
+                    const submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+                    if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Signing up...";}
                     try {
                         const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                         handleAuthResponse(data);
@@ -765,7 +658,7 @@
                                     if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
                                     // Optionally, to keep the forgot password dialog open on API error:
                                     // Do not call stylishPopupOverlay.classList.remove('active');
-                                    // showStylishPopup was already called by apiRequest for the error.
+                                    // showStyledPopup was already called by apiRequest for the error.
                                 }
                             }
                         }
@@ -773,20 +666,18 @@
                 });
             }
 
-            // Google Sign-In/Sign-Up (already handled by GSI's auto-rendering on elements with class g_id_signin)
-            // No direct JS click handlers needed for the G_id_signin buttons, as GSI handles it.
-            // The data-callback "handleGoogleCredentialResponse" is what processes the successful login.
+            const triggerGoogleSignIn = () => {
+                if (loginModal) loginModal.classList.remove('active');
+                if (signupModal) signupModal.classList.remove('active');
+                google.accounts.id.prompt((notification) => { if (notification.isNotDisplayed() || notification.isSkippedMoment()) console.warn('Google Sign-In prompt was not displayed/skipped.');});
+            };
+            if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn;
+            if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
 
             window.onload = function () {
-                // Initialize Google Identity Services only after window is loaded to ensure `google` object is available
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse });
-                    // Render the Google Sign-In button manually if you want custom placement/styling
-                    // google.accounts.id.renderButton(document.getElementById("modal-google-login-btn"), { /* your button config */ });
-                    // google.accounts.id.renderButton(document.getElementById("modal-google-signup-btn"), { /* your button config */ });
-                } else {
-                    console.error("Google Identity Services script abhi load nahi hua hai ya initialize nahi ho paya hai.");
-                }
+                } else console.error("Google Identity Services script abhi load nahi hua hai.");
                 checkLoginStatus();
                 if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
                 if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
@@ -794,64 +685,32 @@
             };
 
             async function handleGoogleCredentialResponse(response) {
-                try {
-                    const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
-                    handleAuthResponse(data);
-                } catch (error) {
-                    // Error handled by apiRequest, no additional action needed here unless specific GSI error handling
-                }
+                try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) { /* handled */ }
             }
 
             async function checkLoginStatus() {
                 const token = localStorage.getItem('authToken');
                 if (token) {
-                    try {
-                        const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
-                        currentUser = userData;
-                        updateUIAfterLogin();
-                    } catch (error) {
-                        console.warn("Token validation failed or expired. Logging out.");
-                        localStorage.removeItem('authToken');
-                        currentUser = null;
-                        updateUIAfterLogout();
-                    }
-                } else {
-                    updateUIAfterLogout();
-                }
+                    try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); }
+                    catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); }
+                } else updateUIAfterLogout();
                 await fetchFeedbacks();
             }
 
             function updateUIAfterLogin() {
                 if (currentUser) {
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
-                    if(userAvatarTrigger) {
-                        userAvatarTrigger.style.display = 'flex';
-                        userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
-                    }
+                    if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
+                    // Use currentUser.avatarUrl if available, otherwise fallback to DiceBear
+                    if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
-                    if(nameInputInFeedbackForm) {
-                        nameInputInFeedbackForm.value = currentUser.name;
-                        nameInputInFeedbackForm.disabled = true; // Disable name field for logged-in users
-                    }
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
-
-                    // Update Profile Modal fields
-                    if (profileAvatarPreview) profileAvatarPreview.src = currentUser.avatarUrl || `https://via.placeholder.com/100/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`; // Updated
-                    if (profileNameDisplay) profileNameDisplay.textContent = currentUser.name;
-                    if (profileEmailDisplay) profileEmailDisplay.display = currentUser.email;
-                    if (profileLoginMethodDisplay) profileLoginMethodDisplay.textContent = currentUser.loginMethod === 'google' ? 'Google' : 'Email/Password';
-
-                    // Show/hide change password section based on login method
-                    if (changePasswordSection) {
-                        if (currentUser.loginMethod === 'google') {
-                            changePasswordSection.style.display = 'none';
-                        } else {
-                            changePasswordSection.style.display = 'block';
-                        }
-                    }
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
+                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
                 }
             }
 
@@ -859,12 +718,12 @@
                 if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
                 if(userAvatarTrigger) userAvatarTrigger.style.display = 'none';
                 if(userMenu) userMenu.classList.remove('active');
-                if(profileModal) profileModal.classList.remove('active'); // Ensure profile modal is closed on logout
 
+                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
                 if(nameInputInFeedbackForm) {
                     nameInputInFeedbackForm.value = '';
                     nameInputInFeedbackForm.placeholder = 'Please enter your name...';
-                    nameInputInFeedbackForm.disabled = false; // Enable name field for guests
+                    nameInputInFeedbackForm.disabled = false;
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
             }
@@ -880,164 +739,65 @@
                             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                             updateUIAfterLogout();
                             showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
-                            fetchFeedbacks(); // Refresh feedbacks after logout (some might be user-specific)
+                            fetchFeedbacks();
                         }
                     });
                 });
             }
-
-            // View Profile Link Handler
             if(menuViewProfileLink) {
                 menuViewProfileLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if(userMenu) userMenu.classList.remove('active'); // Close user menu
-                    if(profileModal) profileModal.classList.add('active'); // Open profile modal
-                    updateUIAfterLogin(); // Refresh profile data in modal
+                    if(userMenu) userMenu.classList.remove('active');
+                    showStylishPopup('info', 'Profile Feature', 'Your profile editing section will be available here soon!');
                 });
             }
 
-            // Edit Profile Button Handler (inside profile modal)
-            if(editProfileBtn) {
-                editProfileBtn.addEventListener('click', () => {
-                    showStylishPopup('profile', 'Edit Profile',
-                        'Update your name and avatar here. Your avatar will be visible on your feedbacks.',
-                        {
-                            formHTML: `
-                                <div class="popup-form-input-group">
-                                    <label>Current Avatar:</label>
-                                    <img id="popup-current-avatar-preview" src="${currentUser ? currentUser.avatarUrl : ''}" class="profile-avatar-preview" style="margin: 0 auto 10px;">
-                                </div>
-                                <div class="popup-form-input-group">
-                                    <label for="popup-edit-name">Name:</label>
-                                    <input type="text" id="popup-edit-name" value="${currentUser ? currentUser.name : ''}" required>
-                                </div>
-                                <div class="profile-section-buttons">
-                                    <button type="button" id="popup-choose-avatar-btn" class="popup-button primary" style="width: auto; flex-grow: 1;"><i class="fas fa-upload"></i> Choose Avatar</button>
-                                    <input type="file" id="popup-avatar-file-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
-                                    ${currentUser && currentUser.loginMethod === 'email' ?
-                                        '<button type="button" id="popup-generate-avatar-btn" class="popup-button secondary-btn" style="width: auto; flex-grow: 1;"><i class="fas fa-magic"></i> Generate New Avatar</button>' : ''
-                                    }
-                                </div>
-                                <p style="font-size:0.8em; color: #bbb; margin-top:10px;">Max 5MB. JPEG, PNG, GIF, WEBP allowed.</p>
-                            `,
-                            isConfirm: true, confirmText: 'Save Changes', cancelText: 'Cancel',
-                            onConfirm: async () => {
-                                const newName = document.getElementById('popup-edit-name').value.trim();
-                                const avatarFile = document.getElementById('popup-avatar-file-input').files[0];
-
-                                if (!newName) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Name cannot be empty.</p>' +
-                                                                    'Update your name and avatar here. Your avatar will be visible on your feedbacks.';
-                                    document.getElementById('popup-edit-name').focus();
-                                    return;
-                                }
-
-                                const formData = new FormData();
-                                formData.append('name', newName);
-                                if (avatarFile) {
-                                    formData.append('avatar', avatarFile);
-                                } else if (window.generateDiceBearAvatar) { // Check if DiceBear was triggered
-                                    // If DiceBear was explicitly generated, signal this to the server
-                                    // We'll rely on the server to re-generate if name changed and no file uploaded
-                                }
-
-                                try {
-                                    const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', formData, true); // Use isFormData = true
-                                    localStorage.setItem('authToken', data.token); // Update token with new user data
-                                    currentUser = data.user; // Update current user object
-                                    stylishPopupOverlay.classList.remove('active'); // Close popup first
-                                    profileModal.classList.remove('active'); // Close profile modal
-                                    updateUIAfterLogin(); // Refresh all UI elements
-                                    showStylishPopup('success', 'Profile Updated!', data.message);
-                                    await fetchFeedbacks(); // Refresh feedbacks to show updated names/avatars
-                                } catch (error) {
-                                    // Error handled by apiRequest
-                                }
-                            },
-                            onOpen: () => { // Add this to onOpen of showStylishPopup for edit profile
-                                const popupAvatarFileInput = document.getElementById('popup-avatar-file-input');
-                                const popupChooseAvatarBtn = document.getElementById('popup-choose-avatar-btn');
-                                const popupGenerateAvatarBtn = document.getElementById('popup-generate-avatar-btn');
-                                const popupCurrentAvatarPreview = document.getElementById('popup-current-avatar-preview');
-                                let avatarFileSelected = null; // To keep track of selected file
-
-                                // Set initial preview
-                                if (currentUser && currentUser.avatarUrl) {
-                                    popupCurrentAvatarPreview.src = currentUser.avatarUrl;
-                                }
-
-                                if (popupChooseAvatarBtn && popupAvatarFileInput) {
-                                    popupChooseAvatarBtn.addEventListener('click', () => {
-                                        popupAvatarFileInput.click();
-                                    });
-
-                                    popupAvatarFileInput.addEventListener('change', (event) => {
-                                        const file = event.target.files[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = (e) => {
-                                                popupCurrentAvatarPreview.src = e.target.result;
-                                                avatarFileSelected = file; // Store the selected file
-                                            };
-                                            reader.readAsDataURL(file);
-                                        } else {
-                                            avatarFileSelected = null;
-                                            popupCurrentAvatarPreview.src = currentUser ? currentUser.avatarUrl : ''; // Revert to current
-                                        }
-                                    });
-                                }
-
-                                if (popupGenerateAvatarBtn && currentUser.loginMethod === 'email') {
-                                    popupGenerateAvatarBtn.addEventListener('click', () => {
-                                        // This signals that a DiceBear avatar should be generated on the server
-                                        // No need to set avatarFileSelected, server will handle it based on name change
-                                        const tempName = document.getElementById('popup-edit-name').value.trim() || 'default';
-                                        popupCurrentAvatarPreview.src = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(tempName + Date.now().toString())}&flip=true&radius=50&doodle=true&scale=90`;
-                                        window.generateDiceBearAvatar = true; // Flag to indicate user chose to generate
-                                        if(popupAvatarFileInput) popupAvatarFileInput.value = ''; // Clear file input
-                                    });
-                                }
-                                // Reset this flag when the popup is opened
-                                window.generateDiceBearAvatar = false;
-                            }
-                        }
-                    );
-                });
-            }
-
-
-            // Change Password Form Handler (inside profile modal)
-            if(changePasswordForm) {
-                changePasswordForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const currentPass = currentPasswordInput.value;
-                    const newPass = newPasswordInput.value;
-                    const confirmNewPass = confirmNewPasswordInput.value;
-
-                    if (!currentPass || !newPass || !confirmNewPass) {
-                        return showStylishPopup('error', 'Missing Fields!', 'Please fill all password fields.');
+            // New: Avatar Upload Logic
+            if (uploadAvatarBtn) {
+                uploadAvatarBtn.addEventListener('click', async () => {
+                    if (!currentUser) {
+                        showStylishPopup('error', 'Login Required', 'Please login to upload a profile picture.');
+                        return;
                     }
-                    if (newPass !== confirmNewPass) {
-                        return showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.');
+                    const file = avatarUploadInput.files[0];
+                    if (!file) {
+                        showStylishPopup('error', 'No File Selected', 'Please select an image file to upload.');
+                        return;
                     }
-                    if (newPass.length < 6) {
-                        return showStylishPopup('error', 'Weak Password!', 'New password must be at least 6 characters long.');
+
+                    if (!file.type.startsWith('image/')) {
+                        showStylishPopup('error', 'Invalid File Type', 'Only image files are allowed (e.g., JPEG, PNG, GIF).');
+                        return;
                     }
+
+                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                        showStylishPopup('error', 'File Too Large', 'Image size cannot exceed 2MB.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('avatar', file);
+
+                    uploadAvatarBtn.disabled = true;
+                    uploadAvatarBtn.textContent = 'Uploading...';
 
                     try {
-                        const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'PUT', {
-                            currentPassword: currentPass,
-                            newPassword: newPass,
-                            confirmNewPassword: confirmNewPass
-                        });
-                        showStylishPopup('success', 'Password Changed!', data.message);
-                        changePasswordForm.reset(); // Clear form
-                        profileModal.classList.remove('active'); // Close profile modal
+                        const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true); // Send as FormData
+                        showStylishPopup('success', 'Avatar Updated!', data.message);
+                        currentUser.avatarUrl = data.newAvatarUrl; // Update currentUser object
+                        updateUIAfterLogin(); // Update UI with new avatar
+                        avatarUploadInput.value = ''; // Clear file input
+                        if (userMenu) userMenu.classList.remove('active'); // Close menu after upload
+                        await fetchFeedbacks(); // Refresh feedbacks to show updated avatar if user has posted
                     } catch (error) {
-                        // Error handled by apiRequest
+                        // Error is already shown by apiRequest
+                    } finally {
+                        uploadAvatarBtn.disabled = false;
+                        uploadAvatarBtn.textContent = 'Upload Avatar';
                     }
                 });
             }
+
 
             if (mainTitle) {
                  new Typed('#main-title', { strings: ["✨ NOBITA's Feedback Portal ✨", "🚀 Share Your Valuable Thoughts 🚀", "💡 Help Us Improve! 💡"], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
@@ -1047,7 +807,7 @@
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
 
             async function fetchFeedbacks() {
-                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
+                 try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title);
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* handled */ }
@@ -1058,29 +818,15 @@
                 const feedbackContent = feedbackTextarea.value.trim();
                 const ratingValue = ratingInput.value;
                 let nameValue = nameInputInFeedbackForm.value.trim();
-
                 if (!currentUser && !nameValue) { return showStylishPopup('error', 'Name Required', 'If you are not logged in, please enter your name.');}
                 if (!feedbackContent || ratingValue === '0') { return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');}
-
-                // If user is not logged in, show login prompt
-                if (!currentUser) {
-                    showStylishPopup('warning', 'Login Required', 'Please login or sign up to submit feedback.', {
-                        isConfirm: true,
-                        confirmText: 'Login / Sign Up',
-                        cancelText: 'Maybe Later',
-                        onConfirm: () => {
-                            if (loginModal) loginModal.classList.add('active');
-                        }
-                    });
-                    return;
-                }
-
+                if (!currentUser) { showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.'); return; }
                 let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
                 const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
                 const method = isEditing ? 'PUT' : 'POST';
-
+                submitButton.disabled = true; submitButton.textContent = "Submitting...";
                 try {
-                    const data = await apiRequest(url, method, feedbackPayload, false);
+                    const data = await apiRequest(url, method, feedbackPayload);
                     showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message);
                     resetFeedbackForm();
                     await fetchFeedbacks();
@@ -1092,40 +838,19 @@
                 }
             });
             function resetFeedbackForm() {
-                if (currentUser) {
-                    nameInputInFeedbackForm.value = currentUser.name;
-                    feedbackFormUsernameSpan.textContent = currentUser.name;
-                    nameInputInFeedbackForm.disabled = true;
-                } else {
-                    nameInputInFeedbackForm.value = '';
-                    feedbackFormUsernameSpan.textContent = 'Guest';
-                    nameInputInFeedbackForm.disabled = false;
-                    nameInputInFeedbackForm.placeholder = 'Your name here...';
-                }
-                feedbackTextarea.value = '';
-                ratingInput.value = '0';
-                currentSelectedRating = 0;
-                updateStarVisuals(0);
-                submitButton.textContent = 'SUBMIT FEEDBACK';
-                isEditing = false;
-                currentEditFeedbackId = null;
+                if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; feedbackFormUsernameSpan.textContent = currentUser.name; nameInputInFeedbackForm.disabled = true;
+                } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = 'Your name here...';}
+                feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0);
+                submitButton.textContent = 'SUBMIT FEEDBACK'; isEditing = false; currentEditFeedbackId = null;
             }
             function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'); avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong');
-                let nameContent = fbData.name;
-                let userTypeTag = '';
-                // Check for userId existence and loginMethod to determine tag
-                if (fbData.userId && fbData.userId.loginMethod) {
-                    userTypeTag = fbData.userId.loginMethod === 'google' ? `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>` : `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
-                } else if (fbData.googleIdSubmitter) { // Fallback for older feedbacks or specific cases
-                    userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User (Legacy)">G</span>`;
-                } else {
-                    userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User (Legacy)">E</span>`; // Default to email user if no specific method found
-                }
+                let nameContent = fbData.name; let userTypeTag = '';
+                if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
                 strongName.innerHTML = `${nameContent} ${userTypeTag}`;
-
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
                 const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars'; starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
                 const pFeedback = document.createElement('p'); pFeedback.textContent = fbData.feedback;
@@ -1138,19 +863,9 @@
 
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
                 const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Edit this feedback';
-
-                // Enable edit button only if user is logged in and is the owner of the feedback
-                if (currentUser && fbData.userId && currentUser.userId === fbData.userId) {
-                    editButton.disabled = false;
-                } else {
-                    editButton.disabled = true;
-                }
-
+                editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
                 editButton.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    if (!currentUser || (fbData.userId && currentUser.userId !== fbData.userId)) {
-                        return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
-                    }
+                    event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                     showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                     nameInputInFeedbackForm.value = fbData.name; feedbackFormUsernameSpan.textContent = fbData.name; nameInputInFeedbackForm.disabled = true;
                     feedbackTextarea.value = fbData.feedback; currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
@@ -1168,25 +883,7 @@
                     }
                     adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`; adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);}}
                 item.append(avatarImg, detailsDiv);
-                 if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
-                    // Update existing feedback item instead of re-adding if it already exists
-                    const existingItem = feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`);
-                    existingItem.replaceWith(item);
-                 } else {
-                    // Add new item to the top of the list (after the average rating and title)
-                    const firstFeedbackItem = feedbackListContainer.querySelector('.feedback-item');
-                    if (firstFeedbackItem) {
-                        feedbackListContainer.insertBefore(item, firstFeedbackItem);
-                    } else {
-                        // If no feedbacks, just append after title
-                        const h2Title = feedbackListContainer.querySelector('h2');
-                        if (h2Title) {
-                             h2Title.insertAdjacentElement('afterend', item);
-                        } else {
-                             feedbackListContainer.appendChild(item); // Fallback
-                        }
-                    }
-                }
+                 if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {} else { feedbackListContainer.appendChild(item); }
             }
 
             updateUIAfterLogout();
