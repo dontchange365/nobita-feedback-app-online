@@ -179,7 +179,6 @@ app.post('/api/auth/login', async (req, res) => {
         if (user.loginMethod === 'google' && !user.password) {
             return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
         }
-        // Make sure user.password exists before comparing (for users who might have signed up via other methods without password)
         if (!user.password) {
              return res.status(401).json({ message: "Login credentials sahi nahi hain." });
         }
@@ -225,10 +224,10 @@ app.post('/api/auth/google-signin', async (req, res) => {
         if (!user) { 
             user = await User.findOne({ email: email.toLowerCase() }); 
             if (user) { 
-                if (user.loginMethod === 'email') {
+                if (user.loginMethod === 'email') { // User exists with email, link Google ID
                     user.googleId = googleId;
                     user.avatarUrl = googleAvatar || user.avatarUrl; 
-                    // user.loginMethod = 'google'; // Optionally update loginMethod if you want to prioritize Google
+                    // user.loginMethod = 'google'; // Optionally update loginMethod
                 }
             } else { 
                 user = new User({
@@ -241,7 +240,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
             }
             await user.save();
         } else { 
-             if (user.avatarUrl !== googleAvatar && googleAvatar) {
+             if (user.avatarUrl !== googleAvatar && googleAvatar) { // Update avatar if changed
                 user.avatarUrl = googleAvatar;
                 await user.save();
             }
@@ -282,7 +281,7 @@ app.post('/api/feedback', authenticateTokenOptional, async (req, res) => {
     const { feedback, rating } = req.body; 
     const userIp = req.clientIp;
 
-    if (!req.user) { // User must be logged in
+    if (!req.user) {
         return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     }
 
@@ -301,7 +300,7 @@ app.post('/api/feedback', authenticateTokenOptional, async (req, res) => {
     };
     
     if (req.user.loginMethod === 'google') {
-        const loggedInUser = await User.findById(req.user.userId); // Re-fetch to be sure about googleId
+        const loggedInUser = await User.findById(req.user.userId);
         if (loggedInUser && loggedInUser.googleId) {
              feedbackData.googleIdSubmitter = loggedInUser.googleId;
         }
@@ -354,7 +353,7 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
             existingFeedback.rating = parsedRating;
             existingFeedback.timestamp = Date.now();
             existingFeedback.isEdited = true;
-            existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl; // Update avatar as well from current user profile
+            existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl; 
         }
 
         await existingFeedback.save();
@@ -392,10 +391,12 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
+    console.log("Admin panel access attempt.");
     try {
-        const feedbacks = await Feedback.find().sort({ timestamp: -1 });
+        const feedbacks = await Feedback.find().populate('userId', 'loginMethod').sort({ timestamp: -1 }); // Populate loginMethod from User
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
+        console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `
@@ -407,6 +408,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title>
                 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
                 <style>
+                    /* ... (Admin panel CSS pehle jaisa hi) ... */
                     body { font-family: 'Roboto', sans-serif; background: linear-gradient(135deg, #1A1A2E, #16213E); color: #E0E0E0; margin: 0; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
                     h1 { color: #FFD700; text-align: center; margin-bottom: 40px; font-size: 2.8em; text-shadow: 0 0 15px rgba(255,215,0,0.5); }
                     .main-panel-btn-container { width: 100%; max-width: 1200px; display: flex; justify-content: flex-start; margin-bottom: 20px; padding: 0 10px; }
@@ -471,11 +473,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         } else {
             for (const fb of feedbacks) {
                 let userTag = '';
-                const feedbackUser = await User.findById(fb.userId); // User details fetch karo
-                if (feedbackUser) {
-                   userTag = feedbackUser.loginMethod === 'google' ? '<span class="google-user-tag">Google</span>' : '<span class="email-user-tag">Email</span>';
-                } else if (fb.googleIdSubmitter) { // Fallback agar User fetch nahi hua
-                     userTag = '<span class="google-user-tag">Google</span>';
+                // fb.userId yahan object { _id, loginMethod } hoga kyunki populate kiya hai
+                if (fb.userId && fb.userId.loginMethod) {
+                   userTag = fb.userId.loginMethod === 'google' ? '<span class="google-user-tag">Google</span>' : '<span class="email-user-tag">Email</span>';
+                } else if (fb.googleIdSubmitter) { 
+                     userTag = '<span class="google-user-tag">Google (Legacy)</span>'; // Agar populate fail ho
                 }
 
 
@@ -488,7 +490,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     <div class="feedback-info">
                                         <h4>${fb.name} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
-                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? fb.userId.toString().substring(0,10) + '...' : 'N/A'}</div>
+                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="feedback-body"><p>${fb.feedback}</p></div>
@@ -498,7 +500,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 </div>
                                 <div class="action-buttons">
                                     <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
-                                    ${feedbackUser && feedbackUser.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId}', '${fb.name}')">AVATAR</button>` : ''} 
+                                    ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${fb.name}')">AVATAR</button>` : ''} 
                                 </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
@@ -538,6 +540,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         html += `</div> <div id="adminModalOverlay" class="admin-modal-overlay"> <div class="admin-custom-modal"> <h3 id="adminModalTitle"></h3> <p id="adminModalMessage"></p> <div class="admin-modal-buttons"> <button id="adminModalOkButton">OK</button> <button id="adminModalConfirmButton" style="display:none;">Confirm</button> <button id="adminModalCancelButton" style="display:none;">Cancel</button> </div> </div> </div>
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
+                    if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") { // "Og==" is base64 for ":"
+                        console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!");
+                        alert("Admin authentication is not configured properly. Actions will fail.");
+                    }
                     const adminModalOverlay = document.getElementById('adminModalOverlay');
                     const adminModalTitle = document.getElementById('adminModalTitle');
                     const adminModalMessage = document.getElementById('adminModalMessage');
@@ -557,32 +563,69 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     adminModalConfirmButton.addEventListener('click', () => { adminModalOverlay.style.display = 'none'; if (globalConfirmCallback) globalConfirmCallback(true); });
                     adminModalCancelButton.addEventListener('click', () => { adminModalOverlay.style.display = 'none'; if (globalConfirmCallback) globalConfirmCallback(false); });
                     function flipCard(id) { document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped'); }
+                    
                     async function tryDeleteFeedback(id) { 
+                        console.log("Attempting to delete feedback ID:", id);
                         showAdminModal('confirm', 'Delete Feedback?', 'Are you sure you want to delete this feedback? This cannot be undone.', async (confirmed) => {
                             if(confirmed) {
-                                const res = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER }});
-                                if(res.ok) { showAdminModal('alert', 'Deleted!', 'Feedback deleted successfully.'); setTimeout(()=>location.reload(),1000); }
-                                else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to delete: \${err.message}\`);}
+                                try {
+                                    const res = await fetch(\`/api/admin/feedback/\${id}\`, { method: 'DELETE', headers: { 'Authorization': AUTH_HEADER }});
+                                    if(res.ok) { 
+                                        showAdminModal('alert', 'Deleted!', 'Feedback deleted successfully.'); 
+                                        setTimeout(()=>location.reload(),1000); 
+                                    } else { 
+                                        const err = await res.json(); 
+                                        console.error("Delete failed response:", err);
+                                        showAdminModal('alert', 'Error!', \`Failed to delete: \${err.message || res.statusText}\`);
+                                    }
+                                } catch (e) {
+                                    console.error("Delete fetch error:", e);
+                                    showAdminModal('alert', 'Fetch Error!', \`Error during delete: \${e.message}\`);
+                                }
                             }
                         });
                     }
                     async function tryPostReply(fbId, txtId) { 
-                        const replyText = document.getElementById(txtId).value.trim(); if(!replyText) {showAdminModal('alert', 'Empty Reply', 'Please write something to reply.'); return;}
+                        const replyText = document.getElementById(txtId).value.trim(); 
+                        console.log("Attempting to post reply to feedback ID:", fbId, "Text:", replyText);
+                        if(!replyText) {showAdminModal('alert', 'Empty Reply', 'Please write something to reply.'); return;}
                         showAdminModal('confirm', 'Post Reply?', \`Confirm reply: "\${replyText.substring(0,50)}..."\`, async (confirmed) => {
                             if(confirmed) {
-                                const res = await fetch(\`/api/admin/feedback/\${fbId}/reply\`, {method:'POST',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}, body:JSON.stringify({replyText, adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});
-                                if(res.ok) { showAdminModal('alert', 'Replied!', 'Reply posted.'); setTimeout(()=>location.reload(),1000); }
-                                else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to reply: \${err.message}\`);}
+                                try {
+                                    const res = await fetch(\`/api/admin/feedback/\${fbId}/reply\`, {method:'POST',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}, body:JSON.stringify({replyText, adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});
+                                    if(res.ok) { 
+                                        showAdminModal('alert', 'Replied!', 'Reply posted.'); 
+                                        setTimeout(()=>location.reload(),1000); 
+                                    } else { 
+                                        const err = await res.json(); 
+                                        console.error("Reply failed response:", err);
+                                        showAdminModal('alert', 'Error!', \`Failed to reply: \${err.message || res.statusText}\`);
+                                    }
+                                } catch (e) {
+                                     console.error("Reply fetch error:", e);
+                                     showAdminModal('alert', 'Fetch Error!', \`Error during reply: \${e.message}\`);
+                                }
                             }
                         });
                     }
-                    async function tryChangeUserAvatar(userId, userName) { // Changed parameter to userId
+                    async function tryChangeUserAvatar(userId, userName) { 
+                        console.log("Attempting to change avatar for user ID:", userId, "Name:", userName);
                          showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \${userName}? This will regenerate avatar for this email user.\`, async (confirmed) => {
                             if(confirmed) {
-                                // API endpoint ko update karna hoga: /api/admin/user/:userId/change-avatar
-                                const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {method:'PUT',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}});
-                                if(res.ok) { showAdminModal('alert', 'Avatar Changed!', 'Avatar updated for ' + userName + '.'); setTimeout(()=>location.reload(),1000); }
-                                else { const err = await res.json(); showAdminModal('alert', 'Error!', \`Failed to change avatar: \${err.message}\`);}
+                                try {
+                                    const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {method:'PUT',headers:{'Content-Type':'application/json', 'Authorization':AUTH_HEADER}});
+                                    if(res.ok) { 
+                                        showAdminModal('alert', 'Avatar Changed!', 'Avatar updated for ' + userName + '.'); 
+                                        setTimeout(()=>location.reload(),1000); 
+                                    } else { 
+                                        const err = await res.json(); 
+                                        console.error("Change avatar failed response:", err);
+                                        showAdminModal('alert', 'Error!', \`Failed to change avatar: \${err.message || res.statusText}\`);
+                                    }
+                                } catch (e) {
+                                    console.error("Change avatar fetch error:", e);
+                                    showAdminModal('alert', 'Fetch Error!', \`Error during avatar change: \${e.message}\`);
+                                }
                             }
                         });
                     }
@@ -597,52 +640,79 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 });
 
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
+    console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
     try {
         const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id);
-        if (!deletedFeedback) return res.status(404).json({ message: 'Feedback ID mila nahi.' });
+        if (!deletedFeedback) {
+            console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`);
+            return res.status(404).json({ message: 'Feedback ID mila nahi.' });
+        }
+        console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`);
         res.status(200).json({ message: 'Feedback delete ho gaya.' });
     } catch (error) {
+        console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error);
         res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });
     }
 });
 
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
+    const feedbackId = req.params.id;
     const { replyText, adminName } = req.body;
-    if (!replyText) return res.status(400).json({ message: 'Reply text daalo.' });
+    console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
+
+    if (!replyText) {
+        console.log(`ADMIN: Reply text missing for feedback ID: ${feedbackId}`);
+        return res.status(400).json({ message: 'Reply text daalo.' });
+    }
     try {
-        const feedback = await Feedback.findById(req.params.id);
-        if (!feedback) return res.status(404).json({ message: 'Feedback ID mila nahi.' });
+        const feedback = await Feedback.findById(feedbackId);
+        if (!feedback) {
+            console.log(`ADMIN: Feedback ID ${feedbackId} not found for replying.`);
+            return res.status(404).json({ message: 'Feedback ID mila nahi.' });
+        }
         feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
         await feedback.save();
+        console.log(`ADMIN: Reply added successfully to feedback ID: ${feedbackId}`);
         res.status(200).json({ message: 'Reply post ho gaya.', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) {
+        console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error);
         res.status(500).json({ message: 'Reply save nahi ho paya.', error: error.message });
     }
 });
 
-// Admin API: Change Avatar for Email Users
 app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => {
+    const userId = req.params.userId;
+    console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
     try {
-        const userToUpdate = await User.findById(req.params.userId);
-        if (!userToUpdate) return res.status(404).json({ message: 'User ID mila nahi.' });
+        const userToUpdate = await User.findById(userId);
+        if (!userToUpdate) {
+            console.log(`ADMIN: User ID ${userId} not found for avatar change.`);
+            return res.status(404).json({ message: 'User ID mila nahi.' });
+        }
         
         if (userToUpdate.loginMethod === 'google') {
+            console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`);
             return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });
         }
 
         const userName = userToUpdate.name;
-        if (!userName) return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });
+        if (!userName) {
+            console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`);
+            return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });
+        }
 
-        const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); // Naya random seed
+        const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString());
         userToUpdate.avatarUrl = newAvatarUrl;
         await userToUpdate.save();
+        console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
         
         // Update avatar in all feedbacks by this user as well
         await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } });
+        console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
 
         res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
     } catch (error) {
-        console.error("Admin avatar change error:", error);
+        console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error);
         res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });
     }
 });
