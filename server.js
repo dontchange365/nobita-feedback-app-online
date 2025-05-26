@@ -10,6 +10,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const cloudinary = require('cloudinary').v2; // ADDED: Cloudinary import
+const multer = require('multer');           // ADDED: Multer import
 
 dotenv.config(); // Yeh local .env file ke liye hai, Render isko ignore karega
 
@@ -27,6 +29,11 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+// ADDED: Cloudinary Environment Variables
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
 
 // --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
@@ -41,6 +48,10 @@ console.log("EMAIL_USER (loaded):", EMAIL_USER ? "SET" : "NOT SET");
 console.log("EMAIL_PASS (loaded):", EMAIL_PASS ? "SET (value hidden)" : "NOT SET");
 console.log("EMAIL_HOST (loaded):", EMAIL_HOST ? "SET" : "NOT SET");
 console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
+// ADDED: Cloudinary Env Variable Check
+console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
 // Zaroori environment variables check karna
@@ -54,14 +65,41 @@ if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
     console.warn("WARNING: ADMIN_USERNAME ya ADMIN_PASSWORD environment variable nahi mila. Admin panel login kaam nahi karega.");
 }
 if (!GOOGLE_CLIENT_ID) {
-    console.warn("WARNING: GOOGLE_CLIENT_ID environment variable nahi mila. Google Sign-In kaam nahi karega.");
+    console.warn("WARNING: GOOGLE_CLIENT_ID environment variable nahi mila. Google Sign-In kaam nahi nahi karega.");
 }
 if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
     console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Password reset email kaam nahi karega.");
 }
+// ADDED: Cloudinary Env Variable Check
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    console.warn("WARNING: Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) poori tarah set nahi hain. Image upload functionality kaam nahi karegi.");
+}
 
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+// ADDED: Cloudinary Configuration
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET
+});
+
+// ADDED: Multer storage configuration for in-memory processing
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+  fileFilter: (req, file, cb) => {
+    // Only allow image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Sirf images upload karein.'), false);
+    }
+  }
+});
+
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('MongoDB se connection safal!'))
@@ -81,7 +119,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String },
-  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
+  googleId: { type: String, sparse: true, unique: true }, // 'default: null' removed here in previous fix
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -167,7 +205,6 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Signup mein error:', error);
-        // Original error response (removed temporary debugging line)
         res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });
     }
 });
@@ -288,6 +325,76 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
         res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
 });
+
+// ADDED: API for User Profile Updates (Avatar Upload)
+app.put('/api/user/profile/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Koi image upload nahi ki gayi.' });
+        }
+        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+            console.error("Cloudinary credentials missing for upload.");
+            return res.status(500).json({ message: 'Server par image upload service configure nahi hai.' });
+        }
+
+        // Upload image to Cloudinary
+        const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
+            folder: 'nobita_feedback_avatars', // Optional: Cloudinary mein ek folder banayega
+            public_id: `${req.user.userId}_${Date.now()}` // User ID aur timestamp se unique public_id
+        });
+
+        // Update user's avatarUrl in MongoDB
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User mila nahi.' });
+        }
+
+        const oldAvatarUrl = user.avatarUrl; // Purana avatar URL store karein
+        user.avatarUrl = result.secure_url;
+        await user.save();
+
+        // Optional: Purane avatar ko Cloudinary se delete karein agar woh DiceBear ka nahi hai
+        // Ye check important hai taki DiceBear (dynamic) URLs delete na ho.
+        if (oldAvatarUrl && !oldAvatarUrl.includes('api.dicebear.com')) {
+            // Cloudinary public_id ko URL se extract karna
+            // Example URL: https://res.cloudinary.com/your_cloud_name/image/upload/v123456789/your_folder/public_id.jpg
+            const publicId = oldAvatarUrl.substring(
+                oldAvatarUrl.lastIndexOf('/') + 1,
+                oldAvatarUrl.lastIndexOf('.')
+            );
+            // Public ID ko folder path ke saath delete karein
+            const publicIdToDelete = `nobita_feedback_avatars/${publicId}`; // Replace 'nobita_feedback_avatars' with your actual folder name if different
+            cloudinary.uploader.destroy(publicIdToDelete)
+                .then(destroyResult => console.log('Old Cloudinary avatar deleted:', destroyResult))
+                .catch(destroyErr => console.error('Error deleting old Cloudinary avatar:', destroyErr));
+        }
+
+        // Update avatarUrl in all feedback items by this user
+        await Feedback.updateMany(
+            { userId: req.user.userId },
+            { $set: { avatarUrl: result.secure_url } }
+        );
+
+        // Update JWT in user's token (optional but good practice for immediate UI update)
+        // Note: Full JWT re-issuance would typically happen on next login or full token refresh.
+        // For simpler apps, just updating the client-side `currentUser` object might suffice.
+        // If you want to issue a new token with updated avatarUrl, you'd need to create a new token.
+        // For now, we'll just send the updated avatar URL and let the frontend update its state.
+
+        res.status(200).json({
+            message: 'Profile picture successfully updated!',
+            avatarUrl: result.secure_url
+        });
+
+    } catch (error) {
+        console.error('Avatar upload error:', error);
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: 'Image size bahut zyada hai (5MB limit).' });
+        }
+        res.status(500).json({ message: 'Profile picture update nahi ho paya.', error: error.message });
+    }
+});
+
 
 // Admin Panel Routes
 const authenticateAdmin = (req, res, next) => {
