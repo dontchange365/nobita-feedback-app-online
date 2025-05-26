@@ -29,9 +29,9 @@ const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dyv7xav3e';
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '973787665916358';
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'TmLVqNVkBiS8mRxU9SLStjmcOF8';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 // --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
@@ -310,88 +310,83 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
     }
 });
 
-// New: User Profile Update (for name)
+// New: Update User Profile (Name)
 app.put('/api/user/update-profile', authenticateToken, async (req, res) => {
     const { name } = req.body;
-
-    if (!name || name.trim() === '') {
-        return res.status(400).json({ message: 'Naam khaali nahi ho sakta.' });
+    if (!name) {
+        return res.status(400).json({ message: "Naam khaali nahi ho sakta." });
     }
 
     try {
         const user = await User.findById(req.user.userId);
-
         if (!user) {
-            return res.status(404).json({ message: 'User nahi mila.' });
+            return res.status(404).json({ message: "User nahi mila." });
         }
 
-        user.name = name.trim();
+        if (user.name === name) {
+            return res.status(200).json({ message: "Naam mein koi badlav nahi hai.", user: req.user });
+        }
+
+        user.name = name;
         await user.save();
 
-        // Regenerate token with updated name
+        // Update name in all feedbacks submitted by this user
+        await Feedback.updateMany({ userId: user._id }, { $set: { name: name } });
+
+        // Generate a new token with updated user info
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
 
         res.status(200).json({
-            message: 'Profile name safaltapoorvak update ho gaya!',
-            user: userForToken,
-            token: appToken
+            message: "Naam safaltapoorvak update ho gaya!",
+            user: userForToken, // Send back updated user info
+            token: appToken // Send new token
         });
-
     } catch (error) {
-        console.error('Profile update (name) mein error:', error);
-        res.status(500).json({ message: 'Profile name update karne mein dikkat aa gayi.', error: error.message });
+        console.error('Profile update mein error:', error);
+        res.status(500).json({ message: "Naam update karne mein dikkat aa gayi.", error: error.message });
     }
 });
 
-
-// New: Change Password for logged-in email users
+// New: Change Password Route
 app.post('/api/user/change-password', authenticateToken, async (req, res) => {
-    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    const { currentPassword, newPassword } = req.body;
 
-    if (req.user.loginMethod === 'google') {
-        return res.status(400).json({ message: 'Google login users apna password सीधे Google se manage karein.' });
-    }
-
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-        return res.status(400).json({ message: 'Sabhi password fields bharna zaroori hai.' });
-    }
-    if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({ message: 'Naye passwords match nahi ho rahe.' });
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Sabhi password fields bharna zaroori hai." });
     }
     if (newPassword.length < 6) {
-        return res.status(400).json({ message: 'Naya password kam se kam 6 characters ka hona chahiye.' });
+        return res.status(400).json({ message: "Naya password kam se kam 6 characters ka hona chahiye." });
     }
 
     try {
         const user = await User.findById(req.user.userId);
-
         if (!user) {
-            return res.status(404).json({ message: 'User nahi mila.' });
+            return res.status(404).json({ message: "User nahi mila." });
         }
-        if (!user.password) {
-            // This case should ideally not happen for email users
-            return res.status(400).json({ message: 'Aapka account email/password login ke liye set nahi hai.' });
+
+        if (user.loginMethod === 'google') {
+            return res.status(400).json({ message: "Google account ke password yahan se change nahi kar sakte. Google se manage karein." });
         }
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Current password galat hai.' });
+            return res.status(401).json({ message: "Purana password galat hai." });
         }
 
         user.password = await bcrypt.hash(newPassword, 12);
         await user.save();
 
-        res.status(200).json({ message: 'Password safaltapoorvak badal gaya hai. Kripya naye password se login karein.' });
+        res.status(200).json({ message: "Aapka password safaltapoorvak badal gaya hai!" });
 
     } catch (error) {
-        console.error('Change password mein error:', error);
-        res.status(500).json({ message: 'Password badalne mein dikkat aa gayi.', error: error.message });
+        console.error('Password change mein error:', error);
+        res.status(500).json({ message: "Password badalne mein dikkat aa gayi.", error: error.message });
     }
 });
 
 
-// Password Reset Routes (for forgotten passwords, uses token)
+// Password Reset Routes
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
@@ -401,7 +396,10 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila ya email/password account nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayega." });}
         const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
         console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
-        const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
+        // Ensure FRONTEND_URL is treated as a base URL.
+        const resetPagePath = "/reset-password.html";
+        const resetUrl = new URL(resetPagePath, FRONTEND_URL).href; // Correctly construct URL
+        console.log("Password Reset URL banaya gaya:", resetUrl);
         const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App App Team`;
         const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
@@ -431,7 +429,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
-    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
+    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
 });
 
 // Static Files & Feedback Routes
