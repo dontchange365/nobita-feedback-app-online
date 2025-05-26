@@ -148,7 +148,8 @@
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
         .stylish-popup-card .popup-icon-area.profile { color: var(--accent-color); } /* New color for profile */
-        .stylish-popup-card .popup-icon-area.change_password { color: var(--primary-color); } /* New color for password change */
+        .stylish-popup-card .popup-icon-area.password_change { color: #8E44AD; } /* New color for password change */
+
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
         .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
@@ -280,6 +281,7 @@
         </div>
         <ul>
           <li><a href="#" id="menu-see-profile-detail"><i class="fas fa-user-circle"></i> See Profile Detail</a></li>
+          <li><a href="#" id="menu-change-password" style="display:none;"><i class="fas fa-key"></i> Change Password</a></li>
           <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
@@ -357,7 +359,8 @@
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
-            const menuSeeProfileDetailLink = document.getElementById('menu-see-profile-detail'); // Changed link
+            const menuSeeProfileDetailLink = document.getElementById('menu-see-profile-detail');
+            const menuChangePasswordLink = document.getElementById('menu-change-password'); // New
             const menuLogoutLink = document.getElementById('menu-logout');
 
             // Universal Stylish Popup Elements
@@ -396,9 +399,9 @@
             const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
-            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
-            const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`; // New API endpoint for profile update
-            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New API endpoint for password change
+            const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`;
+            const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`;
+            const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New API for password change
 
 
             // --- Stylish Popup Functionality ---
@@ -412,16 +415,7 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {
-                    'success': '<i class="fas fa-check-circle"></i>',
-                    'error': '<i class="fas fa-times-circle"></i>',
-                    'info': '<i class="fas fa-info-circle"></i>',
-                    'warning':'<i class="fas fa-exclamation-triangle"></i>',
-                    'confirm': '<i class="fas fa-question-circle"></i>',
-                    'forgot_password': '<i class="fas fa-key"></i>',
-                    'profile': '<i class="fas fa-user-circle"></i>',
-                    'change_password': '<i class="fas fa-fingerprint"></i>' // New icon for password change
-                };
+                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>', 'password_change': '<i class="fas fa-lock"></i>'};
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
@@ -565,7 +559,7 @@
                 currentUser = data.user;
                 updateUIAfterLogin();
                 showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
-                await fetchFeedbacks();
+                await fetchFeedbacks(); // Refresh feedbacks to show updated user names/avatars
             }
 
             if (emailLoginForm) {
@@ -673,17 +667,25 @@
             async function checkLoginStatus() {
                 const token = localStorage.getItem('authToken');
                 if (token) {
-                    try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); }
-                    catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); }
-                } else updateUIAfterLogout();
-                await fetchFeedbacks();
+                    try {
+                        const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
+                        currentUser = userData;
+                        updateUIAfterLogin();
+                    } catch (error) {
+                        localStorage.removeItem('authToken');
+                        currentUser = null;
+                        updateUIAfterLogout();
+                    }
+                } else {
+                    updateUIAfterLogout();
+                }
+                await fetchFeedbacks(); // Always fetch feedbacks on load, irrespective of login status
             }
 
             function updateUIAfterLogin() {
                 if (currentUser) {
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
                     if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
-                    // Always use currentUser.avatarUrl for the logged-in avatar
                     if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
@@ -692,7 +694,15 @@
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
-                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                    // if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Already visible
+
+                    if (menuChangePasswordLink) {
+                        if (currentUser.loginMethod === 'email') {
+                            menuChangePasswordLink.style.display = 'block';
+                        } else {
+                            menuChangePasswordLink.style.display = 'none';
+                        }
+                    }
 
                 }
             }
@@ -702,13 +712,14 @@
                 if(userAvatarTrigger) userAvatarTrigger.style.display = 'none';
                 if(userMenu) userMenu.classList.remove('active');
 
-                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                // if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Already visible
                 if(nameInputInFeedbackForm) {
                     nameInputInFeedbackForm.value = '';
                     nameInputInFeedbackForm.placeholder = 'Please enter your name...';
                     nameInputInFeedbackForm.disabled = false;
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
+                if (menuChangePasswordLink) menuChangePasswordLink.style.display = 'none'; // Hide password change link on logout
             }
 
             if(menuLogoutLink) {
@@ -736,7 +747,6 @@
                         showStylishPopup('error', 'Login Required', 'Please login to view profile details.');
                         return;
                     }
-
                     showStylishProfileDetailPopup();
                 });
             }
@@ -746,7 +756,6 @@
                     <p><strong>Name:</strong> ${currentUser.name}</p>
                     <p><strong>Email:</strong> ${currentUser.email}</p>
                     <p><strong>Login Method:</strong> ${currentUser.loginMethod}</p>
-                    ${currentUser.loginMethod === 'email' ? `<button id="change-password-btn" class="popup-button primary" style="width:100%; margin-top:20px;">Change Password</button>` : ''}
                 `;
 
                 showStylishPopup('profile', 'Your Profile Details', profileDetailHTML, {
@@ -760,16 +769,6 @@
                         // Popup will close by default
                     }
                 });
-
-                if (currentUser.loginMethod === 'email') {
-                    const changePasswordBtn = document.getElementById('change-password-btn');
-                    if (changePasswordBtn) {
-                        changePasswordBtn.addEventListener('click', () => {
-                            stylishPopupOverlay.classList.remove('active'); // Close current popup
-                            showChangePasswordPopup();
-                        });
-                    }
-                }
             }
 
             function showEditProfilePopup() {
@@ -793,12 +792,13 @@
                     onConfirm: async () => {
                         const newName = document.getElementById('popup-edit-name').value.trim();
                         if (!newName) {
-                            showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Name cannot be empty.</p>';
+                            document.getElementById('popup-edit-name').focus();
                             return;
                         }
-                        // Check if name actually changed
+
                         if (newName === currentUser.name) {
-                            showStylishPopup('info', 'No Changes', 'No changes detected in name. Please upload an avatar or change name.');
+                            showStylishPopup('info', 'No Changes', 'No changes detected in name. If you meant to change avatar, use the upload button.');
                             return;
                         }
 
@@ -807,20 +807,30 @@
 
                         try {
                             const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
-                            currentUser.name = data.user.name; // Update current user name
+                            // Update currentUser directly for immediate UI reflection
+                            currentUser.name = data.user.name;
                             localStorage.setItem('authToken', data.token); // Update token if it was re-issued
-                            updateUIAfterLogin(); // Re-render UI with new name
-                            await fetchFeedbacks(); // Refresh feedbacks to show updated name
+                            updateUIAfterLogin(); // Re-render UI with new name (corner avatar, menu, feedback form name)
+                            // Now, update names in displayed feedbacks
+                            document.querySelectorAll('.feedback-item').forEach(item => {
+                                if (item.dataset.userId === currentUser.userId) {
+                                    const strongName = item.querySelector('.feedback-details strong');
+                                    if (strongName) {
+                                        let userTypeTag = '';
+                                        if (currentUser.loginMethod === 'google') userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                                        else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
+                                        strongName.innerHTML = `${currentUser.name} ${userTypeTag}`;
+                                    }
+                                }
+                            });
                             showStylishPopup('success', 'Profile Updated!', 'Your name has been updated.');
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";}
                         }
                     },
-                    onCancel: () => {
-                        // Popup will close by default
-                    }
+                    onCancel: () => {} // Popup will close by default
                 });
 
                 const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
@@ -850,24 +860,38 @@
                         const formData = new FormData();
                         formData.append('avatar', file);
 
-                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
+                        const uploadBtn = document.getElementById('upload-avatar-btn');
+                        if(uploadBtn) { uploadBtn.disabled = true; uploadBtn.textContent = "Uploading..."; }
+
 
                         try {
                             const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true);
                             currentUser.avatarUrl = data.newAvatarUrl;
                             localStorage.setItem('authToken', data.token); // Ensure token is updated if new one is issued
-                            updateUIAfterLogin();
-                            await fetchFeedbacks();
+                            updateUIAfterLogin(); // Update corner avatar, menu avatar
+                            await fetchFeedbacks(); // Re-fetch to update all displayed feedbacks with new avatar
                             showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been successfully uploaded.');
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
+                            if(uploadBtn) { uploadBtn.disabled = false; uploadBtn.textContent = "Upload Photo"; }
                             popupAvatarFile.value = ''; // Clear file input
                         }
                     });
                 }
+            }
+
+            // New: Change Password functionality
+            if (menuChangePasswordLink) {
+                menuChangePasswordLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if(userMenu) userMenu.classList.remove('active');
+                    if (!currentUser || currentUser.loginMethod === 'google') {
+                        showStylishPopup('error', 'Action Not Allowed', 'Google login users cannot change password directly. Please use Google settings.');
+                        return;
+                    }
+                    showChangePasswordPopup();
+                });
             }
 
             function showChangePasswordPopup() {
@@ -886,7 +910,7 @@
                     </div>
                 `;
 
-                showStylishPopup('change_password', 'Change Password', '', {
+                showStylishPopup('password_change', 'Change Your Password', '', {
                     formHTML: changePasswordHTML,
                     isConfirm: true,
                     confirmText: 'Change Password',
@@ -897,15 +921,15 @@
                         const confirmNewPassword = document.getElementById('popup-confirm-new-password').value;
 
                         if (!currentPassword || !newPassword || !confirmNewPassword) {
-                            showStylishPopup('error', 'Empty Fields!', 'Please fill all password fields.');
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">All password fields are required.</p>';
                             return;
                         }
                         if (newPassword !== confirmNewPassword) {
-                            showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.');
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New passwords do not match.</p>';
                             return;
                         }
                         if (newPassword.length < 6) {
-                            showStylishPopup('error', 'Weak Password!', 'New password must be at least 6 characters.');
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">New password must be at least 6 characters long.</p>';
                             return;
                         }
 
@@ -913,23 +937,18 @@
                         if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Changing...";}
 
                         try {
-                            const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', {
-                                currentPassword,
-                                newPassword,
-                                confirmNewPassword
-                            });
+                            const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword, newPassword });
+                            stylishPopupOverlay.classList.remove('active');
                             showStylishPopup('success', 'Password Changed!', data.message);
-                            // Optionally, force re-login or update token if needed
-                            // localStorage.setItem('authToken', data.token); // If server sends new token
+                            // Optionally, force re-login or update token if server issues new one
+                            // For simplicity, we just inform the user and they can continue using current token.
                         } catch (error) {
                             // Handled by apiRequest
                         } finally {
                             if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Change Password";}
                         }
                     },
-                    onCancel: () => {
-                        // Popup will close by default
-                    }
+                    onCancel: () => {} // Popup will close by default
                 });
             }
 
@@ -945,27 +964,26 @@
                  try {
                      const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);
                      const h2Title = feedbackListContainer.querySelector('h2');
-                     feedbackListContainer.innerHTML = ''; // Clear existing feedbacks
+                     feedbackListContainer.innerHTML = '';
                      feedbackListContainer.appendChild(averageRatingDisplayEl);
                      if(h2Title) feedbackListContainer.appendChild(h2Title);
 
-                     if (data.length === 0) {
-                         const msgP = document.createElement('p');
-                         msgP.textContent = 'No feedback yet. Be the first one!';
-                         msgP.style.textAlign='center';
-                         msgP.style.padding='20px';
-                         feedbackListContainer.appendChild(msgP);
-                         updateAverageRating(0, 0);
-                     } else {
-                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
-                         const average = totalRatings / data.length;
-                         updateAverageRating(average, data.length);
-                         // Clear only existing feedback items before adding new ones
-                         const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
-                         existingFeedbackItems.forEach(item => item.remove());
-                         data.forEach((fb, index) => addFeedbackToDOM(fb, index));
-                     }
-                 } catch (err) { /* handled */ }
+                    if (data.length === 0) {
+                        const msgP = document.createElement('p');
+                        msgP.textContent = 'No feedback yet. Be the first one!';
+                        msgP.style.textAlign='center';
+                        msgP.style.padding='20px';
+                        feedbackListContainer.appendChild(msgP);
+                        updateAverageRating(0, 0);
+                    } else {
+                        const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                        const average = totalRatings / data.length;
+                        updateAverageRating(average, data.length);
+                        // Sort feedbacks to ensure edited ones with recent timestamp appear on top
+                        data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        data.forEach((fb, index) => addFeedbackToDOM(fb, index));
+                    }
+                } catch (err) { /* handled */ }
             }
             function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
 
@@ -999,14 +1017,16 @@
                 submitButton.textContent = 'SUBMIT FEEDBACK'; isEditing = false; currentEditFeedbackId = null;
             }
             function addFeedbackToDOM(fbData, index) {
-                const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
+                const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id; item.dataset.userId = fbData.userId; // Add userId for easier lookup
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
                 avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
                 avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
-                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
+                avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fb.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong');
                 let nameContent = fbData.name; let userTypeTag = '';
-                if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                // Use fbData.loginMethod from server for accuracy if available, else derive
+                const loginMethod = fbData.loginMethod || (fbData.googleIdSubmitter ? 'google' : 'email'); // Fallback if loginMethod not directly on feedback
+                if (loginMethod === 'google') userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
                 strongName.innerHTML = `${nameContent} ${userTypeTag}`;
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
@@ -1041,7 +1061,19 @@
                     }
                     adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`; adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);}}
                 item.append(avatarImg, detailsDiv);
-                 if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {} else { feedbackListContainer.appendChild(item); }
+                 if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
+                    // Update existing element
+                    const existingItem = feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`);
+                    existingItem.replaceWith(item);
+                 } else {
+                    // Add new element to the top
+                    const firstFeedbackItem = feedbackListContainer.querySelector('.feedback-item');
+                    if (firstFeedbackItem) {
+                        feedbackListContainer.insertBefore(item, firstFeedbackItem);
+                    } else {
+                        feedbackListContainer.appendChild(item);
+                    }
+                 }
             }
 
             updateUIAfterLogout();
