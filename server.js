@@ -81,7 +81,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String },
-  googleId: { type: String, sparse: true, unique: true, default: null },
+  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -167,10 +167,8 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Signup mein error:', error);
-        // --- TEMPORARY FIX FOR DEBUGGING ---
-        // Production mein isko remove kar dein. Yeh sirf debugging ke liye hai.
-        res.status(500).json({ message: `Account banane mein kuch dikkat aa gayi. Details: ${error.message}` });
-        // --- END TEMPORARY FIX ---
+        // Original error response (removed temporary debugging line)
+        res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });
     }
 });
 app.post('/api/auth/login', async (req, res) => {
