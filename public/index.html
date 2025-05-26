@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>✨ NOBITA Ka Feedback Portal ✨</title>
-    <base href="/"> <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -24,20 +24,23 @@
             justify-content: flex-start; min-height: 100vh; margin: 0;
             padding: 25px 15px; box-sizing: border-box; overflow-x: hidden;
         }
-        .main-container {
+        .main-container { /* Feedback form container */
             background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
             border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
             width: 90%; max-width: 750px; margin-bottom: 35px; opacity: 0; transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out; position: relative; overflow: hidden;
         }
         .main-container.animate-in { opacity: 1; transform: translateY(0); }
+        
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; transition-delay: 0.5s;}
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
         .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
-        .auth-container, .reset-password-container { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px; width: 90%; max-width: 480px; margin: 20px auto 30px auto; opacity: 0; transform: scale(0.95) translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out;}
-        .auth-container.animate-in, .reset-password-container.animate-in { opacity: 1; transform: scale(1) translateY(0); }
-        .auth-container h2, .reset-password-container h2 { color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
+        
+        /* Auth Forms Container */
+        .auth-container { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px; width: 90%; max-width: 480px; margin: 20px auto 30px auto; opacity: 0; transform: scale(0.95) translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out;}
+        .auth-container.animate-in { opacity: 1; transform: scale(1) translateY(0); }
+        .auth-container h2 { color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
         .auth-form { display: none; } .auth-form.active { display: block; }
         .auth-input-group { margin-bottom: 18px; text-align: left; }
         .auth-input-group label { display: block; margin-bottom: 6px; color: var(--text-color-light); font-weight: 500; font-size: 0.9em; }
@@ -53,12 +56,15 @@
         .custom-google-btn { background-color: #fff; color: #757575; border: 1px solid #DCDCDC; border-radius: 8px; padding: 10px 24px; font-size: 1em; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 2px 4px 0 rgba(0,0,0,0.25); transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-out; width: 100%; box-sizing: border-box; }
         .custom-google-btn:hover { background-color: #f8f8f8; box-shadow: 0 3px 6px 0 rgba(0,0,0,0.25); transform: translateY(-1px); }
         .custom-google-btn .google-icon { width: 20px; height: 20px; }
+        
+        /* User Info Display */
         #user-info-display { display: none; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; padding: 10px 15px; background-color: rgba(255, 255, 255, 0.08); border-radius: 10px; border: 1px solid var(--card-border); max-width: 400px; }
         #user-profile-pic { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--secondary-color); box-shadow: 0 0 8px rgba(255,215,0,0.4); }
         #user-greeting { color: var(--text-color-light); font-size: 1em; } #user-greeting strong { color: var(--secondary-color); }
         #logout-button { background-color: var(--error-color); color: white; border: none; padding: 8px 16px; border-radius: 7px; font-size: 0.9em; cursor: pointer; transition: background-color 0.25s ease, transform 0.2s ease; }
         #logout-button:hover { background-color: #c82333; transform: translateY(-1px); }
-        /* Feedback Form & List CSS (Pehle Jaisa) */
+        
+        /* Feedback Form & List CSS */
         .main-container h1 { color: var(--secondary-color); margin-bottom: 18px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -12px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
@@ -102,22 +108,41 @@
         .edit-feedback-btn[disabled] { display: none !important; }
         .edited-tag { background-color: #f0ad4e; color: white; padding: 2.5px 7px; border-radius: 4.5px; font-size: 0.65em; font-weight: bold; margin-left: 7px; vertical-align: middle; animation: fadeIn 0.45s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
-        #custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.92); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.35s ease-out, visibility 0s linear 0.35s; }
-        #custom-modal-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.35s ease-out, visibility 0s linear 0s; }
-        .custom-modal { background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid; border-radius: 18px; padding: 28px 22px; text-align: center; color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28); transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden; transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out; max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;}
-        #custom-modal-overlay.show .custom-modal { transform: scale(1) translateY(0); opacity: 1; visibility: visible; }
+        
+        /* Modal Styles */
+        .custom-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 46, 0.92);
+            display: none; /* Initially hidden */
+            justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.35s ease-out, visibility 0s linear 0.35s;
+        }
+        .custom-modal-overlay.show {
+            display: flex; /* Show it */
+            opacity: 1; visibility: visible;
+            transition: opacity 0.35s ease-out, visibility 0s linear 0s;
+        }
+        .custom-modal {
+            background: linear-gradient(135deg, #1f2a3a, #2c3e50); border: 1.5px solid;
+            border-radius: 18px; padding: 28px 22px; text-align: center;
+            color: var(--text-color-light); box-shadow: 0 9px 28px rgba(0,0,0,0.28);
+            transform: scale(0.75) translateY(-28px); opacity: 0; visibility: hidden;
+            transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.35s ease-out;
+            max-width: 88%; width: 430px; min-width: 290px; position: relative; z-index: 1001;
+        }
+        .custom-modal-overlay.show .custom-modal { transform: scale(1) translateY(0); opacity: 1; visibility: visible; }
         .modal-icon { font-size: 4.2em; color: white; margin-bottom: 13px; animation: bounceIn 0.75s ease-out; text-shadow: 0 0 13px; }
         @keyframes bounceIn { 0% {transform: scale(0.35);opacity: 0;} 50% {transform: scale(1.15);opacity: 1;} 70% {transform: scale(0.92);} 100% {transform: scale(1);} }
         .custom-modal h3 { font-family: 'Luckiest Guy', cursive; font-size: 1.7em; color: var(--secondary-color); margin-bottom: 9px; text-shadow: 0 0 7px rgba(255,215,0,0.45); }
         .custom-modal p { font-size: 0.95em; line-height: 1.45; margin-bottom: 18px; color: #bbb; }
-        .modal-close-btn, .modal-action-btn { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; padding: 9px 18px; border-radius: 7px; font-size: 0.95em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2.5px 9px rgba(59,130,246,0.35); margin: 5px;}
-        .modal-close-btn:hover, .modal-action-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
+        .modal-button-container { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .modal-action-btn, .modal-close-btn { background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; padding: 9px 18px; border-radius: 7px; font-size: 0.95em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2.5px 9px rgba(59,130,246,0.35); margin: 5px;}
+        .modal-action-btn:hover, .modal-close-btn:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-1.5px) scale(1.015); box-shadow: 0 4.5px 13px rgba(59,130,246,0.55); }
         .modal-cancel-btn { background: #6c757d; } .modal-cancel-btn:hover { background: #5a6268; }
-
-        /* Forgot Password Modal Specific Styles */
-        #forgotPasswordModal .auth-input-group input { margin-bottom: 10px; }
-        #forgotPasswordModal .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;}
-
+        
+        #forgotPasswordModal .auth-input-group input { margin-bottom: 10px; } /* Already there */
+        /* .modal-actions is replaced by .modal-button-container for consistency */
 
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
@@ -169,16 +194,18 @@
         </form>
     </div>
 
-    <div id="custom-modal-overlay">
+    <div id="custom-modal-overlay" class="custom-modal-overlay">
         <div class="custom-modal">
             <div class="confetti-container"></div><div class="modal-icon"></div><h3 id="modal-title"></h3><p id="modal-message"></p>
-            <button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
+            <div class="modal-button-container">
+                <button class="modal-close-btn" id="modal-close-btn">THEEK HAI!</button>
+            </div>
         </div>
     </div>
 
-    <div id="forgotPasswordModalOverlay" class="custom-modal-overlay" style="display: none;">
+    <div id="forgotPasswordModalOverlay" class="custom-modal-overlay">
         <div id="forgotPasswordModal" class="custom-modal" style="border-color: var(--accent-color);">
-            <div class="modal-icon">🔑</div>
+            <div class="modal-icon" style="font-size: 3em;">🔑</div>
             <h3>Password Bhool Gaye?</h3>
             <p>Apna registered email address daalein. Hum aapko password reset karne ke liye link bhejenge.</p>
             <form id="forgot-password-form">
@@ -186,14 +213,13 @@
                     <label for="forgot-email">Email Address:</label>
                     <input type="email" id="forgot-email" required placeholder="email@example.com">
                 </div>
-                <div class="modal-actions">
+                <div class="modal-button-container">
                     <button type="button" id="cancel-forgot-password" class="modal-action-btn modal-cancel-btn">Cancel</button>
                     <button type="submit" class="modal-action-btn">Reset Link Bhejein</button>
                 </div>
             </form>
         </div>
     </div>
-
 
     <div id="feedback-list-container" class="animate-in"> <div id="average-rating-display"></div> <h2>Haal Hi Ke Feedbacks</h2> </div>
 
@@ -222,18 +248,21 @@
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title'); 
             const averageRatingDisplay = document.getElementById('average-rating-display');
+            
+            // General Custom Modal Elements
             const customModalOverlay = document.getElementById('custom-modal-overlay');
-            const modalIcon = customModalOverlay.querySelector('.modal-icon');
+            const modalIconEl = customModalOverlay.querySelector('.modal-icon'); // Renamed to avoid conflict
             const modalTitleEl = document.getElementById('modal-title');
             const modalMessageEl = document.getElementById('modal-message');
-            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalButtonContainer = customModalOverlay.querySelector('.modal-button-container');
             const confettiContainer = customModalOverlay.querySelector('.confetti-container');
 
-            // Forgot Password Elements
+            // Forgot Password Modal Elements
             const forgotPasswordLink = document.getElementById('forgot-password-link');
             const forgotPasswordModalOverlay = document.getElementById('forgotPasswordModalOverlay');
             const forgotPasswordForm = document.getElementById('forgot-password-form');
             const cancelForgotPasswordBtn = document.getElementById('cancel-forgot-password');
+            const forgotEmailInput = document.getElementById('forgot-email');
 
             let currentSelectedRating = 0;
             let isEditing = false;
@@ -246,44 +275,50 @@
             const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
             const API_VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
             const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
-            // const API_RESET_PASSWORD_URL = `${BASE_API_URL}/api/auth/reset-password`; // Defined in reset-password.html
-
+            
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
 
-            function showForm(formToShow) { /* ... (pehle jaisa) ... */
+            function showForm(formToShow) {
                 signupForm.classList.remove('active'); loginForm.classList.remove('active');
                 if (formToShow === 'signup') signupForm.classList.add('active');
                 else loginForm.classList.add('active');
-                authSection.classList.add('animate-in'); 
+                if(authSection) authSection.classList.add('animate-in'); 
             }
-            showLoginLink.addEventListener('click', () => showForm('login'));
-            showSignupLink.addEventListener('click', () => showForm('signup'));
+            if(showLoginLink) showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+            if(showSignupLink) showSignupLink.addEventListener('click', (e) => { e.preventDefault(); showForm('signup'); });
 
-            async function apiRequest(url, method, body = null, isAuthOptional = false) { /* ... (pehle jaisa, auth header) ... */
+            async function apiRequest(url, method, body = null, isAuthOptional = false) {
                 const headers = { 'Content-Type': 'application/json' };
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
-                else if (!isAuthOptional && method !== 'GET' && !url.includes('/api/auth/')) { // GET requests or auth routes don't always need token
-                    showCustomModal('error', 'Authentication Error', 'Aapko is action ke liye login karna hoga.');
-                    throw new Error('Not authenticated for this action');
-                }
+                
                 try {
                     const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message || `Error: ${response.status}`);
+                    const data = await response.json(); // Try to parse JSON first
+                    if (!response.ok) {
+                         // Use data.message if available, otherwise default error
+                        throw new Error(data.message || `Server error: ${response.status} ${response.statusText}`);
+                    }
                     return data;
-                } catch (error) { console.error(`API request error to ${url}:`, error); if (!url.includes('/api/auth/me')) showCustomModal('error', 'Oops!', error.message || 'Server se communication mein error.'); throw error; }
+                } catch (error) { 
+                    console.error(`API request error to ${url}:`, error); 
+                    // Avoid showing modal for /me checks if token is just invalid/expired silently
+                    if (!url.includes('/api/auth/me') || (error.message && !error.message.toLowerCase().includes("token"))) {
+                        showCustomModal('error', 'Oops!', error.message || 'Server se communication mein error.');
+                    }
+                    throw error; 
+                }
             }
             
-            async function handleAuthResponse(data) { /* ... (pehle jaisa) ... */
+            async function handleAuthResponse(data) {
                 localStorage.setItem('authToken', data.token); currentUser = data.user; 
                 updateUIAfterLogin();
                 showCustomModal('success', `SWAGAT HAI, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Aap Google se सफलतापूर्वक login ho gaye hain!' : 'Aap सफलतापूर्वक login ho gaye hain!');
                 await fetchFeedbacks();
             }
 
-            signupForm.addEventListener('submit', async (e) => { /* ... (pehle jaisa) ... */
+            if(signupForm) signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('signup-name').value.trim();
                 const email = document.getElementById('signup-email').value.trim();
@@ -292,164 +327,180 @@
                 if (!name || !email || !password || !confirmPassword) return showCustomModal('error', 'Khali Fields!', 'Sabhi fields bharna zaroori hai.');
                 if (password !== confirmPassword) return showCustomModal('error', 'Password Match Nahi Hua!', 'Dono password fields same hone chahiye.');
                 if (password.length < 6) return showCustomModal('error', 'Kamzor Password!', 'Password kam se kam 6 characters ka hona chahiye.');
-                try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }); handleAuthResponse(data); } catch (error) { /* handled by apiRequest */ }
+                const submitBtn = signupForm.querySelector('button[type="submit"]');
+                if(submitBtn) submitBtn.disabled = true;
+                try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }); handleAuthResponse(data); } 
+                catch (error) { /* handled by apiRequest */ }
+                finally { if(submitBtn) submitBtn.disabled = false; }
             });
 
-            loginForm.addEventListener('submit', async (e) => { /* ... (pehle jaisa) ... */
+            if(loginForm) loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value.trim();
                 const password = document.getElementById('login-password').value;
                 if (!email || !password) return showCustomModal('error', 'Khali Fields!', 'Email aur password daalna zaroori hai.');
-                try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }); handleAuthResponse(data); } catch (error) { /* handled by apiRequest */ }
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                if(submitBtn) submitBtn.disabled = true;
+                try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }); handleAuthResponse(data); } 
+                catch (error) { /* handled by apiRequest */ }
+                finally { if(submitBtn) submitBtn.disabled = false; }
             });
             
-            // Forgot Password Modal Logic
             if (forgotPasswordLink) {
                 forgotPasswordLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    forgotPasswordModalOverlay.style.display = 'flex';
-                    forgotPasswordModalOverlay.querySelector('.custom-modal').style.opacity = 1; // Make sure modal is visible
-                    forgotPasswordModalOverlay.querySelector('.custom-modal').style.transform = 'scale(1) translateY(0)';
+                    e.preventDefault(); 
+                    console.log("Forgot password link clicked!"); 
+                    if (forgotPasswordModalOverlay) {
+                        forgotPasswordModalOverlay.classList.add('show'); 
+                    } else {
+                        console.error("Forgot password modal overlay element not found!");
+                    }
                 });
             }
             if (cancelForgotPasswordBtn) {
                 cancelForgotPasswordBtn.addEventListener('click', () => {
-                    forgotPasswordModalOverlay.style.display = 'none';
-                    forgotPasswordForm.reset();
+                    if (forgotPasswordModalOverlay) forgotPasswordModalOverlay.classList.remove('show'); 
+                    if (forgotPasswordForm) forgotPasswordForm.reset();
                 });
             }
             if (forgotPasswordForm) {
                 forgotPasswordForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const email = document.getElementById('forgot-email').value.trim();
-                    if (!email) return showCustomModal('error', 'Email Zaroori', 'Password reset karne ke liye email daalein.');
+                    const email = forgotEmailInput.value.trim();
+                    if (!email) { showCustomModal('error', 'Email Zaroori', 'Password reset karne ke liye email daalein.'); return; }
+                    
+                    const submitBtn = forgotPasswordForm.querySelector('button[type="submit"]');
+                    if(submitBtn) submitBtn.disabled = true;
                     try {
+                        console.log(`Requesting password reset for: ${email}`);
                         const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email });
-                        forgotPasswordModalOverlay.style.display = 'none';
-                        forgotPasswordForm.reset();
+                        if (forgotPasswordModalOverlay) forgotPasswordModalOverlay.classList.remove('show');
+                        if (forgotPasswordForm) forgotPasswordForm.reset();
                         showCustomModal('success', 'Link Bhej Diya Gaya Hai!', data.message);
-                    } catch (error) {
-                        // showCustomModal is already called by apiRequest
-                    }
+                    } catch (error) { console.error("Forgot password submit error:", error); /* apiRequest handles modal for API errors */ }
+                    finally { if(submitBtn) submitBtn.disabled = false; }
                 });
             }
 
-
-            window.onload = function () { /* ... (pehle jaisa Google Init) ... */
+            window.onload = function () {
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse });
                     const triggerGooglePrompt = () => { google.accounts.id.prompt((notification) => { if (notification.isNotDisplayed() || notification.isSkippedMoment()) console.warn('Google Sign-In prompt was not displayed/skipped.');}); };
                     if(customGoogleSigninSignupBtn) customGoogleSigninSignupBtn.onclick = triggerGooglePrompt;
                     if(customGoogleSigninLoginBtn) customGoogleSigninLoginBtn.onclick = triggerGooglePrompt;
                 } else console.error("Google Identity Services script abhi load nahi hua hai.");
-                checkLoginStatus();
+                
+                checkLoginStatus(); // Check login status and then decide initial view
+                
                 setTimeout(() => { const ownerInfoEl = document.querySelector('.owner-info'); if(ownerInfoEl) ownerInfoEl.classList.add('animate-in');}, 50);
             };
 
-            async function handleGoogleCredentialResponse(response) { /* ... (pehle jaisa) ... */
+            async function handleGoogleCredentialResponse(response) {
                 try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) { /* handled by apiRequest */ }
             }
 
-            logoutButton.addEventListener('click', () => { /* ... (pehle jaisa) ... */
+            if(logoutButton) logoutButton.addEventListener('click', () => {
                 localStorage.removeItem('authToken'); currentUser = null;
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                 updateUIAfterLogout(); showCustomModal('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.'); fetchFeedbacks(); 
             });
 
-            async function checkLoginStatus() { /* ... (pehle jaisa) ... */
+            async function checkLoginStatus() {
                 const token = localStorage.getItem('authToken');
                 if (token) {
                     try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); }
                     catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); console.warn("Session token invalid/expired."); }
-                } else updateUIAfterLogout();
+                } else {
+                    updateUIAfterLogout(); // Ensures auth form is shown if not logged in
+                }
                 await fetchFeedbacks();
-                // Check if on reset password page (client-side routing for reset if you don't use a separate HTML file)
-                handleResetPasswordPage(); // Call this to handle reset password view
             }
 
-            function updateUIAfterLogin() { /* ... (pehle jaisa) ... */
+            function updateUIAfterLogin() {
                 if (currentUser) {
-                    authSection.style.display = 'none'; userInfoDisplay.style.display = 'flex'; 
-                    userProfilePic.src = currentUser.avatarUrl || `https://via.placeholder.com/45/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
-                    userProfilePic.alt = currentUser.name; userGreetingName.textContent = currentUser.name;
-                    feedbackFormContainer.style.display = 'block'; feedbackFormContainer.classList.add('animate-in');
-                    nameInput.value = currentUser.name; feedbackFormUsername.textContent = currentUser.name; nameInput.disabled = true;
+                    if(authSection) authSection.style.display = 'none'; 
+                    if(userInfoDisplay) userInfoDisplay.style.display = 'flex'; 
+                    if(userProfilePic) userProfilePic.src = currentUser.avatarUrl || `https://via.placeholder.com/45/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                    if(userProfilePic) userProfilePic.alt = currentUser.name; 
+                    if(userGreetingName) userGreetingName.textContent = currentUser.name;
+                    if(feedbackFormContainer) {
+                        feedbackFormContainer.style.display = 'block'; 
+                        feedbackFormContainer.classList.add('animate-in');
+                    }
+                    if(nameInput) nameInput.value = currentUser.name; 
+                    if(feedbackFormUsername) feedbackFormUsername.textContent = currentUser.name; 
+                    if(nameInput) nameInput.disabled = true;
                 }
             }
 
-            function updateUIAfterLogout() { /* ... (pehle jaisa) ... */
-                authSection.style.display = 'block'; showForm('login'); 
-                userInfoDisplay.style.display = 'none'; feedbackFormContainer.style.display = 'none'; 
-                nameInput.value = ''; feedbackFormUsername.textContent = 'User'; nameInput.disabled = true; 
+            function updateUIAfterLogout() {
+                if(authSection) {
+                     authSection.style.display = 'block'; 
+                     showForm('login'); // Default to login form
+                }
+                if(userInfoDisplay) userInfoDisplay.style.display = 'none'; 
+                if(feedbackFormContainer) feedbackFormContainer.style.display = 'none'; 
+                if(nameInput) nameInput.value = ''; 
+                if(feedbackFormUsername) feedbackFormUsername.textContent = 'User'; 
+                if(nameInput) nameInput.disabled = true; 
             }
             
-            if (mainTitle) { /* ... (Typed.js pehle jaisa) ... */
+            if (mainTitle) {
                  new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
                  new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
             }
-            function updateStarVisuals(ratingToShow) { /* ... (pehle jaisa) ... */ starsElements.forEach(star => { const val = parseInt(star.getAttribute('data-value')); star.classList.toggle('selected', val <= ratingToShow); star.classList.remove('highlighted'); });}
-            starsElements.forEach(star => { /* ... (pehle jaisa) ... */ star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
+            function updateStarVisuals(ratingToShow) { starsElements.forEach(star => { const val = parseInt(star.getAttribute('data-value')); star.classList.toggle('selected', val <= ratingToShow); star.classList.remove('highlighted'); });}
+            starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
             
-            function showCustomModal(type, title, message, actions = null) { /* Updated to handle custom actions */
-                modalTitleEl.textContent = title; modalMessageEl.innerHTML = `<p>${message}</p>`; // Allow HTML in message
+            function showCustomModal(type, title, message) {
+                if(!customModalOverlay || !modalTitleEl || !modalMessageEl || !modalIconEl || !modalButtonContainer) {
+                    console.error("Custom modal elements not found!");
+                    alert(`${title}: ${message}`); // Fallback alert
+                    return;
+                }
+                modalTitleEl.textContent = title; modalMessageEl.innerHTML = `<p>${message}</p>`;
                 if (confettiContainer) confettiContainer.innerHTML = '';
                 const icons = {'success': '🎉', 'error': '❌', 'info': '💡', 'warning':'⚠️'};
                 const borderColors = {'success': 'var(--success-color)', 'error': 'var(--error-color)', 'info': 'var(--accent-color)', 'warning':'#FFC107'};
-                modalIcon.innerHTML = icons[type] || '💡';
+                modalIconEl.innerHTML = icons[type] || '💡';
                 customModalOverlay.querySelector('.custom-modal').style.borderColor = borderColors[type] || 'var(--accent-color)';
-                modalIcon.style.color = borderColors[type] || 'var(--accent-color)';
+                modalIconEl.style.color = borderColors[type] || 'var(--accent-color)';
                 
-                const modalButtonContainer = customModalOverlay.querySelector('.custom-modal').querySelector('#modal-close-btn').parentElement;
-                // Clear previous buttons except the default close button if it's always there.
-                // Or, better, manage buttons dynamically
-                modalButtonContainer.innerHTML = ''; // Clear all buttons
-
-                if (actions && actions.length > 0) {
-                    actions.forEach(action => {
-                        const btn = document.createElement('button');
-                        btn.textContent = action.text;
-                        btn.className = `modal-action-btn ${action.class || ''}`;
-                        btn.onclick = () => {
-                            customModalOverlay.classList.remove('show');
-                            if (action.callback) action.callback();
-                        };
-                        modalButtonContainer.appendChild(btn);
-                    });
-                } else {
-                    // Default "THEEK HAI!" button
-                    const defaultBtn = document.createElement('button');
-                    defaultBtn.textContent = 'THEEK HAI!';
-                    defaultBtn.className = 'modal-close-btn';
-                    defaultBtn.onclick = () => customModalOverlay.classList.remove('show');
-                    modalButtonContainer.appendChild(defaultBtn);
-                }
+                modalButtonContainer.innerHTML = ''; // Clear previous buttons
+                const defaultBtn = document.createElement('button');
+                defaultBtn.textContent = 'THEEK HAI!';
+                defaultBtn.className = 'modal-close-btn'; // Ensure this class exists
+                defaultBtn.onclick = () => customModalOverlay.classList.remove('show');
+                modalButtonContainer.appendChild(defaultBtn);
                 
-                if (type === 'success') launchConfetti();
+                if (type === 'success' && confettiContainer) launchConfetti();
                 customModalOverlay.classList.add('show');
             }
-            // modalCloseBtn.addEventListener('click', () => customModalOverlay.classList.remove('show')); // Handled by dynamic buttons now
 
-            function launchConfetti() { /* ... (pehle jaisa) ... */ if (!confettiContainer) return; const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722']; confettiContainer.innerHTML = ''; for (let i = 0; i < 50; i++) { const c = document.createElement('div'); c.classList.add('confetti'); c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]); c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`; confettiContainer.appendChild(c); c.addEventListener('animationend', () => c.remove()); }}
+            function launchConfetti() { if (!confettiContainer) return; const colors = ['#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5','#2196f3','#03a9f4','#00bcd4','#009688','#4CAF50','#8BC34A','#CDDC39','#FFEB3B','#FFC107','#FF9800','#FF5722']; confettiContainer.innerHTML = ''; for (let i = 0; i < 50; i++) { const c = document.createElement('div'); c.classList.add('confetti'); c.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]); c.style.left = `${Math.random()*100}%`; c.style.animationDelay = `${Math.random()*0.5}s`; confettiContainer.appendChild(c); c.addEventListener('animationend', () => c.remove()); }}
             
-            async function fetchFeedbacks() { /* ... (pehle jaisa) ... */
-                try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true); /* Auth optional for viewing */ const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplay); if(h2Title) feedbackListContainer.appendChild(h2Title); 
+            async function fetchFeedbacks() {
+                try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true); const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplay); if(h2Title) feedbackListContainer.appendChild(h2Title); 
                 if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'Abhi tak koi feedback nahi aaya hai. Aap pehle ho sakte hain!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* apiRequest handles modal */ }
             }
-            function updateAverageRating(avg, count) { /* ... (pehle jaisa) ... */ const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplay.querySelector('.average-rating-container'); if (avgContainer) avgContainer.classList.add('animate-in'); }, 50);}
+            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplay.innerHTML = `<div class="average-rating-container animate-in"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplay.querySelector('.average-rating-container'); if (avgContainer) avgContainer.classList.add('animate-in'); }, 50);}
             
-            submitButton.addEventListener('click', async () => { /* ... (pehle jaisa, but ensures currentUser for auth) ... */
+            if(submitButton) submitButton.addEventListener('click', async () => {
                 if (!currentUser) return showCustomModal('warning', 'Login Zaroori', 'Feedback dene ke liye kripya login karein.');
                 const feedbackContent = feedbackTextarea.value.trim(); const ratingValue = ratingInput.value;
                 if (!feedbackContent || ratingValue === '0') return showCustomModal('error', 'Khali Fields!', 'Feedback aur rating, sab kuch daalna zaroori hai!');
                 let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
                 const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
                 const method = isEditing ? 'PUT' : 'POST';
-                try { const data = await apiRequest(url, method, feedbackPayload); showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } catch (error) { /* apiRequest handles modal */ }
+                submitButton.disabled = true;
+                try { const data = await apiRequest(url, method, feedbackPayload); showCustomModal('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } 
+                catch (error) { /* apiRequest handles modal */ }
+                finally { submitButton.disabled = false; }
             });
 
-            function resetFeedbackForm() { /* ... (pehle jaisa) ... */ if (currentUser) { nameInput.value = currentUser.name; feedbackFormUsername.textContent = currentUser.name; nameInput.disabled = true; } else { nameInput.value = ''; feedbackFormUsername.textContent = 'User'; nameInput.disabled = true; } feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); submitButton.textContent = 'FEEDBACK JAMA KAREIN'; isEditing = false; currentEditFeedbackId = null; }
+            function resetFeedbackForm() { if (currentUser) { nameInput.value = currentUser.name; feedbackFormUsername.textContent = currentUser.name; nameInput.disabled = true; } else { nameInput.value = ''; feedbackFormUsername.textContent = 'User'; nameInput.disabled = true; } feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); submitButton.textContent = 'FEEDBACK JAMA KAREIN'; isEditing = false; currentEditFeedbackId = null; }
             
             function addFeedbackToDOM(fbData, index) { /* ... (pehle jaisa, with small update for user type indicator title) ... */
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
@@ -466,37 +517,21 @@
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
                 const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Is feedback ko edit karein';
                 editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
-                editButton.addEventListener('click', (event) => { /* ... (edit logic pehle jaisa) ... */
+                editButton.addEventListener('click', (event) => { 
                     event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showCustomModal('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
                     showCustomModal('info', 'FEEDBACK EDIT KAREIN', 'Neeche form mein apna feedback edit karein.');
                     nameInput.value = fbData.name; feedbackFormUsername.textContent = fbData.name; nameInput.disabled = true; 
                     feedbackTextarea.value = fbData.feedback; currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
                     submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
-                    feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
                 item.appendChild(editButton);
-                if (fbData.replies && fbData.replies.length > 0) { /* ... (admin reply logic pehle jaisa) ... */
+                if (fbData.replies && fbData.replies.length > 0) { 
                     const latestReply = fbData.replies[fbData.replies.length - 1]; if (latestReply && latestReply.text) { const adminReplyDiv = document.createElement('div'); adminReplyDiv.className = 'admin-reply'; const adminAvatar = document.createElement('img'); adminAvatar.className = 'admin-reply-avatar'; adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAvatar.alt = 'Nobita'; const adminReplyContent = document.createElement('div'); adminReplyContent.className = 'admin-reply-content'; adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString('hi-IN', {dateStyle:'short', timeStyle:'short'})})</span>`; adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);}}
                 item.append(avatarImg, detailsDiv); feedbackListContainer.appendChild(item);
                 setTimeout(() => { item.style.opacity = '1'; item.style.transform = 'translateY(0)'; item.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out'; }, index * 70);
             }
             
-            // Function to handle showing/hiding reset password page content
-            function handleResetPasswordPage() {
-                const path = window.location.pathname;
-                const params = new URLSearchParams(window.location.search);
-                const token = params.get('token');
-
-                if (path.includes('reset-password.html') && token) {
-                    // Agar hum reset-password.html page par hain aur token hai
-                    // Toh baaki sab content hide karo aur sirf reset password form dikhao
-                    // Yeh tab kaam karega jab aap reset-password.html alag se banayenge.
-                    // Agar aap single page app approach use kar rahe hain, toh yahaan UI dynamically change karna hoga.
-                    // For now, we will assume a separate reset-password.html file.
-                }
-            }
-
-
             setTimeout(() => { const fbListEl = document.querySelector('#feedback-list-container'); if(fbListEl) fbListEl.classList.add('animate-in'); }, 300);
         });
     </script>
