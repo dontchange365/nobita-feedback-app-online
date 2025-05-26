@@ -17,9 +17,9 @@
             --card-bg-popup: #272c3a;
             --card-bg: rgba(44, 62, 80, 0.85);
             --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0,0,0,0.5);
             --success-color: #28a745; --error-color: #dc3545; --info-color: var(--accent-color); --confirm-color: #fd7e14;
-            --google-blue: #4285F4; /* Added for consistency */
+            --google-blue: #4285F4;
         }
         html { scroll-behavior: smooth; }
         body {
@@ -33,7 +33,7 @@
         /* --- Corner Triggers (Login Icon / User Avatar) --- */
         .corner-trigger {
             position: fixed; top: 15px; right: 20px; cursor: pointer;
-            width: auto; height: 48px; /* Width auto for text */
+            width: auto; height: 48px;
             background-color: var(--secondary-color); color: var(--primary-color);
             border: 2px solid var(--primary-color);
             display: none;
@@ -41,14 +41,14 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.25);
             transition: all 0.2s ease-out;
             overflow: hidden; font-weight: 600;
-            padding: 0 15px; /* Padding for text */
+            padding: 0 15px;
             border-radius: 8px;
         }
-        .corner-trigger.avatar-mode { /* Only when avatar is shown */
+        .corner-trigger.avatar-mode {
              border-radius: 50%; padding: 0; width: 48px;
         }
         .corner-trigger:hover { transform: scale(1.08); box-shadow: 0 5px 15px rgba(0,0,0,0.35); }
-        #login-icon-trigger .fas { font-size: 1.3em; margin-right: 5px; } /* For icon before Login text */
+        #login-icon-trigger .fas { font-size: 1.3em; margin-right: 5px; }
         #user-avatar-trigger img { width: 100%; height: 100%; object-fit: cover; }
 
 
@@ -117,10 +117,10 @@
             width: 100vw; height: 100vh;
             background: rgba(10, 10, 20, 0.6);
             backdrop-filter: blur(5px);
-            display: none; /* CRUCIAL: Hidden by default */
+            display: none;
             align-items: center; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
+            transition: opacity 0.2s ease-in-out !important;
             z-index: 1005;
         }
         .stylish-popup-overlay.active {
@@ -278,13 +278,7 @@
           <span class="username" id="menu-username">User Name</span>
         </div>
         <ul>
-          <li>
-            <label for="avatar-upload-input">
-                <i class="fas fa-camera"></i> Upload Avatar
-                <input type="file" id="avatar-upload-input" accept="image/*">
-            </label>
-          </li>
-          <li><a href="#" id="menu-edit-profile"><i class="fas fa-user-edit"></i> Edit Profile</a></li>
+          <li><a href="#" id="menu-see-profile-detail"><i class="fas fa-user-circle"></i> See Profile Detail</a></li>
           <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
@@ -362,9 +356,8 @@
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
-            const menuEditProfileLink = document.getElementById('menu-edit-profile'); // Changed from View Profile
+            const menuSeeProfileDetailLink = document.getElementById('menu-see-profile-detail'); // Changed link
             const menuLogoutLink = document.getElementById('menu-logout');
-            const avatarUploadInput = document.getElementById('avatar-upload-input'); // New
 
             // Universal Stylish Popup Elements
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
@@ -403,6 +396,8 @@
             const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
             const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
             const API_UPLOAD_AVATAR_URL = `${BASE_API_URL}/api/user/upload-avatar`; // New API endpoint for avatar upload
+            const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/update-profile`; // New API endpoint for profile update
+
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
@@ -415,7 +410,7 @@
 
                 stylishPopupIcon.className = 'popup-icon-area';
                 stylishPopupIcon.innerHTML = '';
-                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>'};
+                const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'profile': '<i class="fas fa-user-circle"></i>'};
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
                     stylishPopupIcon.classList.add(type);
@@ -521,7 +516,7 @@
                 let reqOptions = { method, headers };
                 if (body) {
                     if (isFormData) {
-                        delete headers['Content-Type']; // FormData sets its own Content-Type
+                        delete headers['Content-Type'];
                         reqOptions.body = body;
                     } else {
                         headers['Content-Type'] = 'application/json';
@@ -530,8 +525,8 @@
                 }
 
                 let submitBtn;
-                if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-                if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+                if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+                else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
 
                 try {
                     const response = await fetch(url, reqOptions);
@@ -555,7 +550,8 @@
             async function handleAuthResponse(data) {
                 if (loginModal) loginModal.classList.remove('active');
                 if (signupModal) signupModal.classList.remove('active');
-                localStorage.setItem('authToken', data.token); currentUser = data.user;
+                localStorage.setItem('authToken', data.token);
+                currentUser = data.user;
                 updateUIAfterLogin();
                 showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
                 await fetchFeedbacks();
@@ -676,6 +672,7 @@
                 if (currentUser) {
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
                     if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
+                    // Always use currentUser.avatarUrl for the logged-in avatar
                     if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
@@ -685,13 +682,6 @@
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                     if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
                     if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
-
-                    // Hide avatar upload for Google users as they cannot change it here
-                    if (avatarUploadInput && currentUser.loginMethod === 'google') {
-                        avatarUploadInput.parentElement.style.display = 'none';
-                    } else if (avatarUploadInput) {
-                        avatarUploadInput.parentElement.style.display = 'flex'; // Show for email users
-                    }
 
                 }
             }
@@ -708,7 +698,6 @@
                     nameInputInFeedbackForm.disabled = false;
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
-                if (avatarUploadInput) avatarUploadInput.parentElement.style.display = 'none'; // Hide upload for logged out users
             }
 
             if(menuLogoutLink) {
@@ -728,72 +717,134 @@
                 });
             }
 
-            if(menuEditProfileLink) {
-                menuEditProfileLink.addEventListener('click', (e) => {
+            if(menuSeeProfileDetailLink) {
+                menuSeeProfileDetailLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userMenu) userMenu.classList.remove('active');
-                    if (currentUser && currentUser.loginMethod === 'google') {
-                        showStylishPopup('info', 'Google Profile', 'You are logged in with Google. Your profile information is managed by your Google account.');
-                    } else {
-                        showStylishPopup('info', 'Profile Editing', 'Profile editing options (like changing name or password) will be available here soon for email-based accounts!');
+                    if (!currentUser) {
+                        showStylishPopup('error', 'Login Required', 'Please login to view profile details.');
+                        return;
+                    }
+
+                    showStylishProfileDetailPopup();
+                });
+            }
+
+            function showStylishProfileDetailPopup() {
+                const profileDetailHTML = `
+                    <p><strong>Name:</strong> ${currentUser.name}</p>
+                    <p><strong>Email:</strong> ${currentUser.email}</p>
+                    <p><strong>Login Method:</strong> ${currentUser.loginMethod}</p>
+                `;
+
+                showStylishPopup('profile', 'Your Profile Details', profileDetailHTML, {
+                    isConfirm: true,
+                    confirmText: 'Edit Profile',
+                    cancelText: 'Close',
+                    onConfirm: () => {
+                        showEditProfilePopup();
+                    },
+                    onCancel: () => {
+                        // Popup will close by default
                     }
                 });
             }
 
-            // New: Avatar Upload functionality
-            if (avatarUploadInput) {
-                avatarUploadInput.addEventListener('change', async (event) => {
-                    const file = event.target.files[0];
-                    if (!file) {
-                        showStylishPopup('warning', 'No File Selected', 'Please choose an image file to upload.');
-                        return;
+            function showEditProfilePopup() {
+                const editProfileHTML = `
+                    <div class="popup-form-input-group">
+                        <label for="popup-edit-name">Name:</label>
+                        <input type="text" id="popup-edit-name" value="${currentUser.name}" required>
+                    </div>
+                    <div class="popup-form-input-group" id="change-avatar-group" style="${currentUser.loginMethod === 'google' ? 'display:none;' : ''}">
+                        <label for="popup-avatar-file">Change Profile Picture:</label>
+                        <input type="file" id="popup-avatar-file" accept="image/*">
+                        <button type="button" id="upload-avatar-btn" class="popup-button primary" style="width:100%; margin-top:10px;">Upload Photo</button>
+                    </div>
+                `;
+
+                showStylishPopup('profile', 'Edit Your Profile', '', {
+                    formHTML: editProfileHTML,
+                    isConfirm: true,
+                    confirmText: 'Save Changes',
+                    cancelText: 'Cancel',
+                    onConfirm: async () => {
+                        const newName = document.getElementById('popup-edit-name').value.trim();
+                        if (!newName) {
+                            stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Name cannot be empty.</p>';
+                            return;
+                        }
+                        if (newName === currentUser.name) {
+                            showStylishPopup('info', 'No Changes', 'No changes detected in name.');
+                            return;
+                        }
+
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Saving...";}
+
+                        try {
+                            const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
+                            currentUser.name = data.user.name; // Update current user name
+                            localStorage.setItem('authToken', data.token); // Update token if it was re-issued
+                            updateUIAfterLogin(); // Re-render UI with new name
+                            await fetchFeedbacks(); // Refresh feedbacks if needed
+                            showStylishPopup('success', 'Profile Updated!', 'Your name has been updated.');
+                        } catch (error) {
+                            // Handled by apiRequest
+                        } finally {
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";}
+                        }
+                    },
+                    onCancel: () => {
+                        // Popup will close by default
                     }
+                });
 
-                    if (!file.type.startsWith('image/')) {
-                        showStylishPopup('error', 'Invalid File Type', 'Please upload an image file (e.g., JPEG, PNG, GIF).');
-                        return;
-                    }
+                const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+                const popupAvatarFile = document.getElementById('popup-avatar-file');
 
-                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                        showStylishPopup('error', 'File Too Large', 'Please upload an image smaller than 2MB.');
-                        return;
-                    }
+                if (uploadAvatarBtn && popupAvatarFile) {
+                    uploadAvatarBtn.addEventListener('click', async () => {
+                        const file = popupAvatarFile.files[0];
+                        if (!file) {
+                            showStylishPopup('warning', 'No File Selected', 'Please choose an image file to upload.');
+                            return;
+                        }
+                        if (!file.type.startsWith('image/')) {
+                            showStylishPopup('error', 'Invalid File Type', 'Please upload an image file (e.g., JPEG, PNG, GIF).');
+                            return;
+                        }
+                        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                            showStylishPopup('error', 'File Too Large', 'Please upload an image smaller than 2MB.');
+                            return;
+                        }
 
-                    if (!currentUser || currentUser.loginMethod === 'google') {
-                        showStylishPopup('error', 'Permission Denied', 'Avatar upload is only for email-based accounts.');
-                        return;
-                    }
+                        if (!currentUser || currentUser.loginMethod === 'google') {
+                            showStylishPopup('error', 'Permission Denied', 'Avatar upload is only for email-based accounts.');
+                            return;
+                        }
 
-                    const formData = new FormData();
-                    formData.append('avatar', file);
+                        const formData = new FormData();
+                        formData.append('avatar', file);
 
-                    // Show a confirmation popup
-                    showStylishPopup('confirm', 'Confirm Avatar Upload', `Are you sure you want to upload "${file.name}" as your new avatar?`, {
-                        isConfirm: true,
-                        confirmText: 'Upload',
-                        cancelText: 'Cancel',
-                        onConfirm: async () => {
-                            const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                            if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
-                            try {
-                                const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true); // true for FormData
-                                currentUser.avatarUrl = data.newAvatarUrl; // Update current user object
-                                updateUIAfterLogin(); // Re-render avatar in UI
-                                await fetchFeedbacks(); // Refresh feedbacks to show updated avatar in old posts
+                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Uploading...";}
 
-                                showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been successfully uploaded and updated across your feedbacks!');
-                            } catch (error) {
-                                // Error handling already in apiRequest
-                            } finally {
-                                if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Upload";}
-                                event.target.value = ''; // Clear file input
-                            }
-                        },
-                        onCancel: () => {
-                            event.target.value = ''; // Clear file input if cancelled
+                        try {
+                            const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true);
+                            currentUser.avatarUrl = data.newAvatarUrl;
+                            localStorage.setItem('authToken', data.token); // Ensure token is updated if new one is issued
+                            updateUIAfterLogin();
+                            await fetchFeedbacks();
+                            showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been successfully uploaded.');
+                        } catch (error) {
+                            // Handled by apiRequest
+                        } finally {
+                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Save Changes";} // Re-enable save button
+                            popupAvatarFile.value = ''; // Clear file input
                         }
                     });
-                });
+                }
             }
 
 
@@ -844,7 +895,6 @@
             function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
-                // Use fbData.avatarUrl directly for feedback items as it holds the actual avatar for that specific feedback
                 avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
                 avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
                 avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
@@ -865,7 +915,6 @@
 
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
                 const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Edit this feedback';
-                // Only show edit button if current user is logged in AND is the author of the feedback
                 editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
                 editButton.addEventListener('click', (event) => {
                     event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
