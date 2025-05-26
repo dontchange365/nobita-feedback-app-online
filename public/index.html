@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="hi">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>✨ NOBITA Ka Feedback Portal ✨</title>
+    <title>✨ NOBITA's Feedback Portal ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -14,7 +13,7 @@
             --primary-color: #6a0dad; --secondary-color: #FFD700; --accent-color: #3B82F6;
             --text-color-light: #f4f4f9; --text-color-dark: #2c3e50;
             --bg-gradient-start: #1a1a2e; --bg-gradient-end: #16213e; 
-            --card-bg-popup: #2E3B4E; 
+            --card-bg-popup: #272c3a; /* Slightly different from main bg */
             --card-bg: rgba(44, 62, 80, 0.85); 
             --card-border: rgba(255, 255, 255, 0.15);
             --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -29,7 +28,7 @@
             box-sizing: border-box; overflow-x: hidden;
         }
 
-        /* --- Login Icon (Logged Out State) & User Avatar Icon (Logged In State) --- */
+        /* --- Corner Triggers (Login Icon / User Avatar) --- */
         .corner-trigger { 
             position: fixed; top: 15px; right: 20px; cursor: pointer;
             width: 48px; height: 48px;
@@ -42,30 +41,36 @@
             overflow: hidden; font-weight: 600; 
         }
         .corner-trigger:hover { transform: scale(1.08); box-shadow: 0 5px 15px rgba(0,0,0,0.35); }
-        #login-icon-trigger { border-radius: 8px; font-size: 0.9em; padding: 0 10px; /* For text "Login" */ }
-        #user-avatar-trigger { border-radius: 50%; padding: 0; }
+        #login-icon-trigger { border-radius: 8px; font-size: 0.9em; padding: 0 10px; } /* For "Login" text */
+        #user-avatar-trigger { border-radius: 50%; padding: 0; } /* For avatar image */
         #user-avatar-trigger img { width: 100%; height: 100%; object-fit: cover; }
 
-
-        /* --- Auth Modals (Login/Signup) --- */
+        /* --- Auth Modals (Login/Signup - User's Template Themed) --- */
         .auth-modal-overlay { 
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.7); 
+            background: rgba(0,0,0,0.75); /* Darker overlay */
             align-items: center; justify-content: center;
-            z-index: 1002; 
-            opacity: 0; pointer-events: none; /* Hidden by default */
-            transition: opacity 0.3s ease-out;
+            z-index: 1002; /* Below stylish universal popup */
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease-out;
         }
         .auth-modal-overlay.active { display: flex; opacity: 1; pointer-events: all; }
-        /* ... (Baaki Auth Modal CSS pehle jaisi) ... */
-        .auth-modal-content { background: var(--bg-gradient-end); border: 1px solid var(--card-border); border-radius: 10px; padding: 25px; width: 90%; max-width: 380px; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); color: var(--text-color-light); transform: scale(0.95); transition: transform 0.3s ease-out;}
-        .auth-modal-overlay.active .auth-modal-content { transform: scale(1); }
-        .auth-modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.8em; font-family: 'Luckiest Guy', cursive; color: var(--secondary-color); text-align: center; }
-        .auth-modal-content .close-modal-btn { position: absolute; top: 12px; right: 15px; cursor: pointer; font-size: 24px; color: var(--text-color-light); line-height: 1; transition: color 0.2s;}
+        .auth-modal-content {
+            background: var(--bg-gradient-end); border: 1px solid var(--card-border);
+            border-radius: 10px; padding: 30px 25px; /* More padding */
+            width: 90%; max-width: 400px; /* Slightly wider */
+            position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.3); 
+            color: var(--text-color-light);
+            transform: scale(0.9); opacity: 0; /* Start smaller and faded */
+            transition: transform 0.25s ease-out, opacity 0.2s ease-out;
+        }
+        .auth-modal-overlay.active .auth-modal-content { transform: scale(1); opacity: 1; }
+        .auth-modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.6em; font-family: 'Poppins', sans-serif; font-weight:600; color: var(--secondary-color); text-align: center; }
+        .auth-modal-content .close-modal-btn { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 26px; color: var(--text-color-light); line-height: 1; transition: color 0.2s; padding:5px; }
         .auth-modal-content .close-modal-btn:hover { color: var(--secondary-color); }
-        .auth-modal-form input[type="email"], .auth-modal-form input[type="password"], .auth-modal-form input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px 15px; margin-bottom: 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em;}
+        .auth-modal-form input[type="email"], .auth-modal-form input[type="password"], .auth-modal-form input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px 15px; margin-bottom: 15px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em;}
         .auth-modal-form input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
-        .auth-modal-form button { width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 6px; font-size: 1em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s;}
+        .auth-modal-form button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; font-size: 1em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s;}
         .auth-modal-form button:hover {transform: translateY(-1px);}
         .auth-modal-form button:disabled {opacity: 0.7; cursor: not-allowed;}
         .auth-modal-form button[type=submit] { background: var(--accent-color); color: #fff; }
@@ -77,13 +82,13 @@
         .auth-modal-form .google-auth-btn img { height: 18px; margin-right: 10px; }
         .auth-modal-form .google-auth-btn:hover { background: #f8f8f8; }
 
-        /* --- User Menu (Dropdown) --- */
+        /* --- User Menu (Dropdown - User's Template Themed) --- */
         .user-profile-menu { 
             display: none; position: fixed;
             top: 70px; right: 20px; width: 240px; 
             background: var(--bg-gradient-end); border: 1px solid var(--card-border);
             border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
-            z-index: 1000; opacity: 0; pointer-events:none; /* Hidden by default */
+            z-index: 1000; opacity: 0; pointer-events:none;
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
@@ -104,14 +109,14 @@
             width: 100vw; height: 100vh;
             background: rgba(10, 10, 20, 0.6); 
             backdrop-filter: blur(5px); 
-            display: none; /* CRUCIAL: Hidden by default */
+            display: none !important; /* CRUCIAL: Hidden by default, JS adds .active */
             align-items: center; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.25s ease-in-out; /* Smoother transition */
-            z-index: 1005; 
+            transition: opacity 0.2s ease-in-out; /* Faster transition */
+            z-index: 1005; /* Highest z-index */
         }
         .stylish-popup-overlay.active { /* This class makes it visible */
-            display: flex !important; /* Use !important to ensure it overrides display:none */
+            display: flex !important; 
             opacity: 1 !important; 
             pointer-events: all !important;
         }
@@ -119,12 +124,12 @@
             background: var(--card-bg-popup); 
             border: 1px solid var(--card-border);
             border-radius: 12px; 
-            padding: 30px 35px; 
-            max-width: 420px; width: 90%;
+            padding: 25px 30px; 
+            max-width: 400px; width: 90%;
             box-shadow: 0 12px 40px rgba(0,0,0,0.3);
             text-align: center;
-            transform: translateY(20px) scale(0.9); opacity: 0; 
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out; 
+            transform: translateY(10px) scale(0.95); opacity: 0; /* Start slightly down and smaller */
+            transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.25s ease-out; 
             position: relative; 
             color: var(--text-color-light); 
         }
@@ -136,34 +141,43 @@
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-        .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 15px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
+        .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
         .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
-        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; }
-        .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 12px 15px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
+        .stylish-popup-card .popup-form-input-group { margin-bottom: 20px; text-align:left; }
+        .stylish-popup-card .popup-form-input-group label { display:block; margin-bottom:5px; font-size:0.9em;}
+        .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
         .stylish-popup-card .popup-form-input-group input:focus { border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
-        .stylish-popup-card .popup-button-container { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; } /* Centered buttons */
+        .stylish-popup-card .popup-button-container { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
         .stylish-popup-card .popup-button { padding: 10px 22px; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; min-width: 90px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .stylish-popup-card .popup-button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
         .stylish-popup-card .popup-button.primary { background: var(--accent-color); color: #fff; }
         .stylish-popup-card .popup-button.primary:hover { background-color: #3578e0; }
-        .stylish-popup-card .popup-button.secondary { background: #6c757d; color: #fff; } 
-        .stylish-popup-card .popup-button.secondary:hover { background-color: #5a6268; }
-        .stylish-popup-card .close-popup-btn-styled { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s; padding: 5px; line-height: 1; }
+        .stylish-popup-card .popup-button.secondary { background: #5a6268; color: #fff; } 
+        .stylish-popup-card .popup-button.secondary:hover { background-color: #495057; }
+        .stylish-popup-card .close-popup-btn-styled { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.6em; cursor: pointer; color: #aaa; transition: color 0.2s; padding: 5px; line-height: 1; }
         .stylish-popup-card .close-popup-btn-styled:hover { color: var(--secondary-color); }
         /* --- End Stylish Popup --- */
 
         .page-content-wrapper { width: 100%; padding-top: 80px; display: flex; flex-direction: column; align-items: center; }
-        /* ... (Baaki saare styles - owner-info, main-container, feedback form, list, etc. - pehle jaise hi rakhe hain, ensure no accidental deletions) ... */
         .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .owner-info.animate-in { opacity: 1; transform: translateY(0); }
         .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--secondary-color); box-shadow: 0 0 12px rgba(255,215,0,0.5); object-fit: cover; }
         .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif; }
-        .main-container { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center; width: 90%; max-width: 750px; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        
+        .main-container { 
+            background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border);
+            border-radius: 22px; box-shadow: var(--shadow-deep); padding: 35px; text-align: center;
+            width: 90%; max-width: 750px; 
+            opacity: 0; transform: translateY(40px); 
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+        }
         #feedback-form-container.main-container { margin-bottom: 3px; }
         #feedback-list-container.main-container { margin-top: 0; margin-bottom: 25px; }
         .main-container.animate-in { opacity: 1; transform: translateY(0); }
+                        
         #feedback-form-container h1 { color: var(--secondary-color); margin-bottom: 10px; font-size: 2.3em; font-weight: 700; text-shadow: 0 0 12px rgba(255,215,0,0.45); letter-spacing: 0.5px; line-height: 1.25; min-height: calc(2.3em * 1.25); display: flex; align-items: center; justify-content: center; overflow: hidden;}
         #typed-output { color: var(--accent-color); font-size: 1.05em; margin-top: -10px; margin-bottom: 22px; line-height: 1.35; min-height: calc(1.05em * 1.35 * 2); display: flex; align-items: center; justify-content: center; overflow: hidden;}
+        /* ... (Baaki saare purane CSS styles jaise input-group, stars, feedback-item, etc. waise hi rakhe hain) ... */
         .input-group { margin-bottom: 18px; text-align: left; position: relative; }
         .input-group label { display: block; margin-bottom: 7px; color: var(--text-color-light); font-weight: 500; font-size: 0.95em; }
         .input-group input, .input-group textarea { width: 100%; padding: 11px 16px; border: 1px solid var(--card-border); border-radius: 9px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; outline: none; transition: all 0.25s ease; box-sizing: border-box; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15); }
@@ -208,8 +222,8 @@
         .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;}
         .confetti { position: absolute; width: 9px; height: 9px; background-color: var(--confetti-color); border-radius: 50%; opacity: 0; animation: confetti-fall 2.8s ease-out forwards; }
         @keyframes confetti-fall { 0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;} 100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;} }
-        @media (max-width: 768px) { /* ... (media queries pehle jaisi) ... */ }
-        @media (max-width: 480px) { /* ... (media queries pehle jaisi) ... */ }
+        @media (max-width: 768px) { .owner-avatar { width: 60px; height: 60px; } #feedback-form-container h1 { font-size: 2em; } .star { font-size: 2.8em; } .corner-trigger{width:45px; height:45px; padding:0 8px;} .corner-trigger#user-avatar-trigger{padding:0;} .auth-modal-content h2{font-size:1.5em;} .user-profile-menu{width:220px; top:65px;} }
+        @media (max-width: 480px) { #feedback-form-container h1 { font-size: 1.7em; } .star { font-size: 2.3em; } .owner-info {margin-bottom: 15px;} .auth-modal-content{width:95%; padding:20px;} .user-profile-menu{width:calc(100vw - 40px); right:10px;} }
     </style>
 </head>
 <body>
@@ -229,12 +243,12 @@
           <input type="password" id="modal-login-password" placeholder="Password" required>
           <button type="submit">Login</button>
           <div class="form-links">
-            <a href="#" id="modal-forgot-password-link">Password Bhool Gaye?</a>
-            <a href="#" id="modal-create-account-link">Naya Account Banayein</a>
+            <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
+            <a href="#" id="modal-create-account-link">Create New Account</a>
           </div>
           <button type="button" id="modal-google-login-btn" class="google-auth-btn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Google Se Login Karein
+            Login with Google
           </button>
         </form>
       </div>
@@ -243,19 +257,19 @@
     <div id="signupModal" class="auth-modal-overlay">
       <div class="auth-modal-content">
         <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
-        <h2>Naya Account Banayein</h2>
+        <h2>Create New Account</h2>
         <form id="email-signup-form" class="auth-modal-form">
-          <input type="text" id="modal-signup-name" placeholder="Aapka Naam" required>
+          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
           <input type="email" id="modal-signup-email" placeholder="Email" required>
           <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
-          <input type="password" id="modal-signup-confirm-password" placeholder="Password Dobara Daalein" required minlength="6">
+          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
           <button type="submit">Sign Up</button>
           <div class="form-links" style="justify-content: center;">
-            <a href="#" id="modal-already-account-link">Pehle se account hai? Login</a>
+            <a href="#" id="modal-already-account-link">Already have an account? Login</a>
           </div>
            <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Google Se Sign Up Karein
+            Sign Up with Google
           </button>
         </form>
       </div>
@@ -289,22 +303,22 @@
 
     <div class="page-content-wrapper">
         <div class="owner-info"> 
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita ka Avatar" class="owner-avatar">
-            <span class="owner-text">Banaya gaya: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 dwara</span>
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
+            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
         </div>
         
         <div id="feedback-form-container" class="main-container"> 
             <h1 id="main-title"></h1> <div id="typed-output"></div>
             <form id="feedback-form">
-                <div class="input-group"> <label for="name">Aapka Naam: (<span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Apna naam yahaan likhein..." required disabled> </div>
-                <div class="input-group"> <label for="feedback">Aapka Feedback:</label> <textarea id="feedback" placeholder="Apne anmol vichar yahaan likhein..." required></textarea> </div>
-                <div class="input-group"> <label>Apne anubhav ko rate karein:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
-                <button type="button" id="submit-feedback">FEEDBACK JAMA KAREIN</button>
+                <div class="input-group"> <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label> <input type="text" id="name" placeholder="Your name will appear here after login..." required disabled> </div>
+                <div class="input-group"> <label for="feedback">Your Feedback:</label> <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea> </div>
+                <div class="input-group"> <label>Rate Your Experience:</label> <div class="stars" id="star-rating"> <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span><span class="star" data-value="3">★</span><span class="star" data-value="4">★</span><span class="star" data-value="5">★</span> </div> <input type="hidden" id="rating" value="0"> </div>
+                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
             </form>
         </div>
 
         <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div> <h2>Haal Hi Ke Feedbacks</h2> 
+             <div id="average-rating-display"></div> <h2>Recent Feedbacks</h2> 
         </div>
     </div> 
 
@@ -314,13 +328,17 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
             
+            // Corner Triggers
             const loginIconTrigger = document.getElementById('login-icon-trigger');
             const userAvatarTrigger = document.getElementById('user-avatar-trigger');
-            const userAvatarTriggerImg = userAvatarTrigger.querySelector('img'); // Corrected
+            const userAvatarTriggerImg = userAvatarTrigger.querySelector('img');
+
+            // Auth Modals & Menu
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             const userMenu = document.getElementById('userMenu');
             
+            // Login Modal Elements
             const emailLoginForm = document.getElementById('email-login-form');
             const modalLoginEmailInput = document.getElementById('modal-login-email');
             const modalLoginPasswordInput = document.getElementById('modal-login-password');
@@ -328,6 +346,7 @@
             const modalCreateAccountLink = document.getElementById('modal-create-account-link');
             const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
             
+            // Signup Modal Elements
             const emailSignupForm = document.getElementById('email-signup-form');
             const modalSignupNameInput = document.getElementById('modal-signup-name');
             const modalSignupEmailInput = document.getElementById('modal-signup-email');
@@ -336,13 +355,15 @@
             const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
             const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
 
+            // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
             const menuViewProfileLink = document.getElementById('menu-view-profile');
             const menuLogoutLink = document.getElementById('menu-logout');
 
+            // Universal Stylish Popup Elements
             const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-            const stylishPopupCard = document.getElementById('stylishPopupCard'); // For overlay click check
+            const stylishPopupCard = document.getElementById('stylishPopupCard');
             const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
             const stylishPopupIcon = document.getElementById('stylishPopupIcon');
             const stylishPopupTitle = document.getElementById('stylishPopupTitle');
@@ -350,6 +371,7 @@
             const stylishPopupFormArea = document.getElementById('stylishPopupFormArea');
             const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
             
+            // Page Content Elements
             const ownerInfoEl = document.querySelector('.owner-info');
             const feedbackFormContainer = document.getElementById('feedback-form-container');
             const feedbackListContainer = document.getElementById('feedback-list-container');
@@ -361,8 +383,6 @@
             const submitButton = document.getElementById('submit-feedback');
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title'); 
-            // Confetti container is not in the stylish popup, it's in the old custom modal which is removed.
-            // const confettiContainer = document.querySelector('.confetti-container'); 
             
             let currentUser = null; 
             let currentSelectedRating = 0;
@@ -380,12 +400,12 @@
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
+                console.log("showStylishPopup called with:", type, title, message, options);
                 if(!stylishPopupOverlay || !stylishPopupCard || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) { 
-                    console.error("Stylish popup core elements not found!"); 
-                    alert(`${title}: ${message}`); // Fallback
+                    console.error("Stylish popup core elements not found! Cannot display popup."); 
+                    alert(`${title}: ${message}`); // Fallback alert
                     return; 
                 }
-                console.log(`Showing stylish popup: Type=${type}, Title=${title}`);
 
                 stylishPopupIcon.className = 'popup-icon-area'; 
                 stylishPopupIcon.innerHTML = ''; 
@@ -396,7 +416,7 @@
                 }
 
                 stylishPopupTitle.textContent = title;
-                stylishPopupMessage.innerHTML = message; 
+                stylishPopupMessage.innerHTML = message; // Already wrapped in <p> by caller
 
                 if (options.formHTML) {
                     stylishPopupFormArea.innerHTML = options.formHTML;
@@ -423,7 +443,10 @@
                     confirmBtn.id = 'stylishPopupPrimaryActionBtn'; 
                     confirmBtn.onclick = () => {
                         if (options.onConfirm) options.onConfirm(); 
-                        // Don't hide here, let onConfirm handle it or do it after onConfirm
+                        // Note: onConfirm should handle closing the modal if it's an async operation
+                        // or if further interaction is needed. Otherwise, close it here.
+                        // For simple confirms, we can close it:
+                        // if(!options.keepOpenAfterConfirm) stylishPopupOverlay.classList.remove('active');
                     };
                     stylishPopupButtonContainer.appendChild(confirmBtn);
                 } else {
@@ -436,7 +459,10 @@
                     };
                     stylishPopupButtonContainer.appendChild(okBtn);
                 }
+                
+                // if (type === 'success' && confettiContainer) launchConfetti(); // Confetti not part of this new popup
                 stylishPopupOverlay.classList.add('active');
+                console.log("Stylish popup overlay should be active now.");
             }
 
             if(closeStylishPopupBtn) {
@@ -446,7 +472,7 @@
             }
             if(stylishPopupOverlay) {
                 stylishPopupOverlay.addEventListener('click', e => { 
-                    if (e.target === stylishPopupOverlay) { // Click on overlay itself, not card
+                    if (e.target === stylishPopupOverlay) { 
                         stylishPopupOverlay.classList.remove('active');
                     }
                 });
@@ -482,23 +508,14 @@
                 }
             });
             
-
             async function apiRequest(url, method, body = null) {
                 const headers = { 'Content-Type': 'application/json' };
                 const token = localStorage.getItem('authToken');
                 if (token) headers['Authorization'] = `Bearer ${token}`;
-                let submitBtn; // For re-enabling
-                if(body && (url.includes('/api/auth/login') || url.includes('/api/auth/signup'))) {
-                    const formId = url.includes('/api/auth/login') ? 'email-login-form' : 'email-signup-form';
-                    const form = document.getElementById(formId);
-                    if(form) submitBtn = form.querySelector('button[type="submit"]');
-                } else if (body && url.includes('/api/auth/request-password-reset')) {
-                    const form = document.getElementById('forgot-password-form'); // This is for the old modal
-                    // For new stylish popup, need to get button differently if it's dynamic
-                    // This will be handled inside the onConfirm for forgot password
-                }
-
-
+                let submitBtn;
+                if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+                if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+                
                 try {
                     const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
                     const data = await response.json(); 
@@ -507,9 +524,13 @@
                 } catch (error) { 
                     console.error(`API request error to ${url}:`, error); 
                     if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
-                        showStylishPopup('error', 'Oops!', error.message || 'Server se communication mein error.');
+                        showStylishPopup('error', 'Error', error.message || 'Server communication error.');
                     }
-                    if(submitBtn) { submitBtn.disabled = false; submitBtn.textContent = method === 'POST' && url.includes('login') ? 'Login' : 'Sign Up';}
+                    if(submitBtn) { // Re-enable button on error
+                        submitBtn.disabled = false; 
+                        if(url.includes('login')) submitBtn.textContent = "Login";
+                        else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
+                    }
                     throw error; 
                 }
             }
@@ -519,7 +540,7 @@
                 if (signupModal) signupModal.classList.remove('active');
                 localStorage.setItem('authToken', data.token); currentUser = data.user; 
                 updateUIAfterLogin(); 
-                showStylishPopup('success', `SWAGAT HAI, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Aap Google se सफलतापूर्वक login ho gaye hain!' : 'Aap सफलतापूर्वक login ho gaye hain!');
+                showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
                 await fetchFeedbacks();
             }
 
@@ -528,14 +549,13 @@
                     e.preventDefault();
                     const email = modalLoginEmailInput.value.trim();
                     const password = modalLoginPasswordInput.value;
-                    if (!email || !password) return showStylishPopup('error', 'Khali Fields!', 'Email aur password zaroori hai.');
+                    if (!email || !password) return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.');
                     const submitBtn = emailLoginForm.querySelector('button[type="submit"]');
                     if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Logging in...";}
                     try {
                         const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                         handleAuthResponse(data);
                     } catch (error) { /* Handled by apiRequest */ }
-                    // finally will be handled by apiRequest for this button
                 });
             }
 
@@ -546,16 +566,15 @@
                     const email = modalSignupEmailInput.value.trim();
                     const password = modalSignupPasswordInput.value;
                     const confirmPassword = modalSignupConfirmPasswordInput.value;
-                    if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Khali Fields!', 'Sabhi fields bharna zaroori hai.');
-                    if (password !== confirmPassword) return showStylishPopup('error', 'Password Match Nahi Hua!', 'Dono password fields same hone chahiye.');
-                    if (password.length < 6) return showStylishPopup('error', 'Kamzor Password!', 'Password kam se kam 6 characters ka hona chahiye.');
+                    if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill all fields.');
+                    if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.');
+                    if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters.');
                     const submitBtn = emailSignupForm.querySelector('button[type="submit"]');
                     if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Signing up...";}
                     try {
                         const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                         handleAuthResponse(data);
                     } catch (error) { /* Handled */ }
-                    // finally will be handled by apiRequest for this button
                 });
             }
 
@@ -577,29 +596,29 @@
                 modalForgotPasswordLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (loginModal) loginModal.classList.remove('active');
-                    showStyledPopup('forgot_password', 'Password Bhool Gaye?', 
-                        'Apna registered email address daalein. Hum aapko password reset karne ke liye link bhejenge.', 
+                    showStyledPopup('forgot_password', 'Forgot Password?', 
+                        'Enter your registered email address. We will send you a link to reset your password.', 
                         {
-                            formHTML: `<div class="popup-form-input-group"><label for="popup-forgot-email" style="display:block; text-align:left; margin-bottom:5px; font-size:0.9em;">Email Address:</label><input type="email" id="popup-forgot-email" placeholder="email@example.com" required></div>`,
-                            isConfirm: true, confirmText: 'Reset Link Bhejein', cancelText: 'Cancel',
+                            formHTML: `<div class="popup-form-input-group"><label for="popup-forgot-email">Email Address:</label><input type="email" id="popup-forgot-email" placeholder="email@example.com" required></div>`,
+                            isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel',
                             onConfirm: async () => {
                                 const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                                 if (!forgotEmailVal) {
-                                    stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address daalna zaroori hai.</p>' + 'Apna registered email address daalein...';
-                                    document.getElementById('popup-forgot-email').focus();
+                                    showStylishPopup('error', 'Email Required', 'Please enter your email address to reset password.', { onConfirm: () => { modalForgotPasswordLink.click(); } }); // Re-open forgot password
                                     return; 
                                 }
-                                const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn'); // Get specific button
-                                if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Bhej Rahe Hain...";}
+                                const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+                                if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Sending...";}
                                 try {
                                     const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
                                     stylishPopupOverlay.classList.remove('active'); 
-                                    showStyledPopup('success', 'Link Bhej Diya!', data.message);
+                                    showStylishPopup('success', 'Link Sent!', data.message);
                                 } catch (error) {
-                                    if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Reset Link Bhejein";}
+                                    if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
+                                    // Error already shown by apiRequest. Re-show forgot password prompt.
+                                    setTimeout(() => modalForgotPasswordLink.click(), 500);
                                 }
-                            },
-                            onCancel: () => { /* Popup closes automatically */ }
+                            }
                         }
                     );
                 });
@@ -660,7 +679,7 @@
                 if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
                 if(nameInputInFeedbackForm) {
                     nameInputInFeedbackForm.value = ''; 
-                    nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';
+                    nameInputInFeedbackForm.placeholder = 'Please enter your name...';
                     nameInputInFeedbackForm.disabled = false; 
                 }
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest'; 
@@ -670,13 +689,13 @@
                 menuLogoutLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userMenu) userMenu.classList.remove('active'); 
-                    showStyledPopup('confirm', 'Logout Confirmation', 'Kya aap वाकई logout karna chahte hain?', {
-                        isConfirm: true, confirmText: 'Logout Karein', cancelText: 'Cancel',
+                    showStyledPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', {
+                        isConfirm: true, confirmText: 'Logout', cancelText: 'Cancel',
                         onConfirm: () => {
                             localStorage.removeItem('authToken'); currentUser = null;
                             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                             updateUIAfterLogout(); 
-                            showStyledPopup('info', 'LOGGED OUT!', 'Aap सफलतापूर्वक logout ho gaye hain.'); 
+                            showStyledPopup('info', 'Logged Out', 'You have been successfully logged out.'); 
                             fetchFeedbacks();
                         }
                     });
@@ -686,47 +705,47 @@
                 menuViewProfileLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     if(userMenu) userMenu.classList.remove('active');
-                    showStyledPopup('info', 'Profile Feature', 'Aapka profile edit section jald hi yahaan dikhega!');
+                    showStyledPopup('info', 'Profile Feature', 'Your profile editing section will be available here soon!');
                 });
             }
             
-            if (mainTitle) { /* ... (Typed.js) ... */
-                 new Typed('#main-title', { strings: ['✨ NOBITA Ka Feedback Portal ✨', '🚀 Apne Keemti Vichar Share Karo 🚀', '💡 Behtar Banane Mein Madad Karo! 💡'], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
-                 new Typed('#typed-output', { strings: ['Aapka feedback hamare liye anmol hai!', 'Aapki raay se hum aur behtar banenge.', 'Har star hamare liye mahatvapurna hai!'], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
+            if (mainTitle) {
+                 new Typed('#main-title', { strings: ["✨ NOBITA's Feedback Portal ✨", "🚀 Share Your Valuable Thoughts 🚀", "💡 Help Us Improve! 💡"], typeSpeed: 50, backSpeed: 25, loop: true, startDelay: 500, smartBackspace: true });
+                 new Typed('#typed-output', { strings: ["Your feedback is precious to us!", "With your opinion, we will improve.", "Every star is important to us!"], typeSpeed: 45, backSpeed: 20, loop: true, startDelay: 1500, showCursor: false });
             }
             function updateStarVisuals(ratingToShow) { starsElements.forEach(star => { const val = parseInt(star.getAttribute('data-value')); star.classList.toggle('selected', val <= ratingToShow); star.classList.remove('highlighted'); });}
             starsElements.forEach(star => { star.addEventListener('click', () => { currentSelectedRating = parseInt(star.getAttribute('data-value')); ratingInput.value = currentSelectedRating; updateStarVisuals(currentSelectedRating); }); star.addEventListener('mouseenter', () => { const hoverVal = parseInt(star.getAttribute('data-value')); starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));}); star.addEventListener('mouseleave', () => { starsElements.forEach(s => s.classList.remove('highlighted')); updateStarVisuals(currentSelectedRating); }); });
             
-            async function fetchFeedbacks() { /* ... (same as before) ... */
+            async function fetchFeedbacks() {
                  try { const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);  const h2Title = feedbackListContainer.querySelector('h2'); feedbackListContainer.innerHTML = ''; feedbackListContainer.appendChild(averageRatingDisplayEl); if(h2Title) feedbackListContainer.appendChild(h2Title); 
-                if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'Abhi tak koi feedback nahi aaya hai. Aap pehle ho sakte hain!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
+                if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0);
                 } else { const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0); const average = totalRatings / data.length; updateAverageRating(average, data.length); data.forEach((fb, index) => addFeedbackToDOM(fb, index));}
                 } catch (err) { /* handled */ }
             }
-            function updateAverageRating(avg, count) { /* ... (same as before) ... */ const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Sabka Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
+            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
             
-            if(submitButton) submitButton.addEventListener('click', async () => { /* ... (same as before, uses showStyledPopup) ... */
+            if(submitButton) submitButton.addEventListener('click', async () => {
                 const feedbackContent = feedbackTextarea.value.trim(); 
                 const ratingValue = ratingInput.value;
                 let nameValue = nameInputInFeedbackForm.value.trim();
-                if (!currentUser && !nameValue) { return showStyledPopup('error', 'Naam Zaroori!', 'Agar aap login nahi hain, toh kripya apna naam daalein.');}
-                if (!feedbackContent || ratingValue === '0') { return showStyledPopup('error', 'Khali Fields!', 'Feedback aur rating, sab kuch daalna zaroori hai!');}
-                if (!currentUser) { showStyledPopup('warning', 'Login Zaroori', 'Feedback jama karne ke liye kripya login icon se login karein.'); return; }
+                if (!currentUser && !nameValue) { return showStyledPopup('error', 'Name Required', 'If you are not logged in, please enter your name.');}
+                if (!feedbackContent || ratingValue === '0') { return showStyledPopup('error', 'Empty Fields!', 'Feedback and rating are required!');}
+                if (!currentUser) { showStyledPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.'); return; }
                 let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
                 const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
                 const method = isEditing ? 'PUT' : 'POST';
-                submitButton.disabled = true; submitButton.textContent = "Jama Ho Raha Hai...";
-                try { const data = await apiRequest(url, method, feedbackPayload); showStyledPopup('success', isEditing ? 'UPDATE HO GAYA!' : 'JAMA HO GAYA!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } 
+                submitButton.disabled = true; submitButton.textContent = "Submitting...";
+                try { const data = await apiRequest(url, method, feedbackPayload); showStyledPopup('success', isEditing ? 'UPDATED!' : 'SUBMITTED!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } 
                 catch (error) { /* handled */ }
-                finally { submitButton.disabled = false; submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "FEEDBACK JAMA KAREIN"; }
+                finally { submitButton.disabled = false; submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK"; }
             });
-            function resetFeedbackForm() { /* ... (same as before) ... */ 
+            function resetFeedbackForm() { 
                 if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; feedbackFormUsernameSpan.textContent = currentUser.name; nameInputInFeedbackForm.disabled = true; 
-                } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = 'Apna naam yahaan likhein...';} 
+                } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = 'Your name here...';} 
                 feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0); 
-                submitButton.textContent = 'FEEDBACK JAMA KAREIN'; isEditing = false; currentEditFeedbackId = null; 
+                submitButton.textContent = 'SUBMIT FEEDBACK'; isEditing = false; currentEditFeedbackId = null; 
             }
-            function addFeedbackToDOM(fbData, index) { /* ... (same as before) ... */
+            function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X'); avatarImg.onerror = function() { this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`; };
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details'; const strongName = document.createElement('strong'); 
@@ -737,13 +756,20 @@
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
                 const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars'; starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
                 const pFeedback = document.createElement('p'); pFeedback.textContent = fbData.feedback;
-                const timestampDiv = document.createElement('div'); timestampDiv.className = 'feedback-timestamp'; timestampDiv.textContent = `Jama kiya: ${new Date(fbData.timestamp).toLocaleString('hi-IN', { dateStyle:'short', timeStyle:'short' })}`;
+                const timestampDiv = document.createElement('div'); timestampDiv.className = 'feedback-timestamp'; 
+                // IST Time Display
+                try {
+                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                } catch(e) { // Fallback if timezone not supported by browser (very rare)
+                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', {dateStyle:'short', timeStyle:'short'})}`;
+                }
+
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
-                const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Is feedback ko edit karein';
+                const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Edit this feedback';
                 editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
                 editButton.addEventListener('click', (event) => { 
-                    event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showStyledPopup('error', 'Permission Nahi!', 'Aap sirf apna feedback edit kar sakte hain.');
-                    showStyledPopup('info', 'FEEDBACK EDIT KAREIN', 'Neeche form mein apna feedback edit karein.');
+                    event.stopPropagation(); if (!currentUser || currentUser.userId !== fbData.userId) return showStyledPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
+                    showStyledPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                     nameInputInFeedbackForm.value = fbData.name; feedbackFormUsernameSpan.textContent = fbData.name; nameInputInFeedbackForm.disabled = true; 
                     feedbackTextarea.value = fbData.feedback; currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
                     submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
@@ -751,7 +777,7 @@
                 });
                 item.appendChild(editButton);
                 if (fbData.replies && fbData.replies.length > 0) { 
-                    const latestReply = fbData.replies[fbData.replies.length - 1]; if (latestReply && latestReply.text) { const adminReplyDiv = document.createElement('div'); adminReplyDiv.className = 'admin-reply'; const adminAvatar = document.createElement('img'); adminAvatar.className = 'admin-reply-avatar'; adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAvatar.alt = 'Nobita'; const adminReplyContent = document.createElement('div'); adminReplyContent.className = 'admin-reply-content'; adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString('hi-IN', {dateStyle:'short', timeStyle:'short'})})</span>`; adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);}}
+                    const latestReply = fbData.replies[fbData.replies.length - 1]; if (latestReply && latestReply.text) { const adminReplyDiv = document.createElement('div'); adminReplyDiv.className = 'admin-reply'; const adminAvatar = document.createElement('img'); adminAvatar.className = 'admin-reply-avatar'; adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAvatar.alt = 'Nobita'; const adminReplyContent = document.createElement('div'); adminReplyContent.className = 'admin-reply-content'; adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})</span>`; adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);}}
                 item.append(avatarImg, detailsDiv); 
                  if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {} else { feedbackListContainer.appendChild(item); }
             }
@@ -762,4 +788,4 @@
         // === END: JavaScript Code ===
     </script>
 </body>
-                                                                                                                                                                                                                              </html>
+</html>
