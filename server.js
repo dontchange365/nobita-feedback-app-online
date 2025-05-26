@@ -6,26 +6,23 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ****** MongoDB Connection String ******
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dontchange365:DtUiOMFzQVM0tG9l@nobifeedback.9ntuipc.mongodb.net/?retryWrites=true&w=majority&appName=nobifeedback';
-
-// ****** Admin Credentials ******
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'samshaad365';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shizuka123';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
+const JWT_SECRET = process.env.JWT_SECRET || 'KOI_BAHUT_HI_SECRET_KEY_DALO_YAAR_REPLACE_THIS'; // IMPORTANT: Production mein .env file mein rakho!
 
-// ****** Google Client ID ******
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com'; // AAPKA CLIENT ID YAHAN DAAL DIYA HAI
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('MONGODB SE CONNECTION SAFAL! DATABASE AB READY HAI!'))
+  .then(() => console.log('MONGODB SE CONNECTION SAFAL!'))
   .catch(err => console.error('MONGODB CONNECTION MEIN LOHDA LAG GAYA:', err));
 
 function getDiceBearAvatarUrlServer(name, randomSeed = '') {
@@ -41,21 +38,10 @@ const feedbackSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
   avatarUrl: { type: String },
   userIp: { type: String },
-  googleId: { type: String, sparse: true }, // To store Google User's unique ID
+  googleId: { type: String, sparse: true },
   isEdited: { type: Boolean, default: false },
-  originalContent: {
-    name: String,
-    feedback: String,
-    rating: Number,
-    timestamp: Date
-  },
-  replies: [
-    {
-      text: { type: String, required: true },
-      timestamp: { type: Date, default: Date.now },
-      adminName: { type: String, default: 'Admin' }
-    }
-  ]
+  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
+  replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
 });
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
@@ -69,22 +55,53 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
-    req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if (req.clientIp === '::1' || req.clientIp === '::ffff:127.0.0.1') {
-        req.clientIp = '127.0.0.1';
-    }
-    if (req.clientIp && req.clientIp.includes(',')) {
-        req.clientIp = req.clientIp.split(',')[0].trim();
-    }
+    req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress?.replace('::ffff:', '');
+    if (req.clientIp === '::1') req.clientIp = '127.0.0.1';
+    if (req.clientIp && req.clientIp.includes(',')) req.clientIp = req.clientIp.split(',')[0].trim();
     next();
 });
 
-// Google Sign-In Verification Route
+// JWT Authentication Middleware
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (token == null) return res.sendStatus(401); // Agar token nahi hai
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            console.error("JWT Verification Error:", err.message);
+            return res.status(403).json({ message: "Token valid nahi hai ya expire ho gaya."}); // Token galat ya expire
+        }
+        req.user = user; // User info ko request object mein daal do
+        next();
+    });
+};
+
+// Optional Authentication Middleware (doesn't block if no token)
+const authenticateTokenOptional = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+        jwt.verify(token, JWT_SECRET, (err, user) => {
+            if (!err) {
+                req.user = user;
+            }
+            // Even if error, proceed without user
+            next();
+        });
+    } else {
+        next();
+    }
+};
+
+
+// Google Sign-In: Returns JWT
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
-    if (!token) {
-        return res.status(400).json({ message: 'Google ID token nahi mila.' });
-    }
+    if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
+
     try {
         const ticket = await googleClient.verifyIdToken({
             idToken: token,
@@ -92,13 +109,21 @@ app.post('/api/auth/google-signin', async (req, res) => {
         });
         const payload = ticket.getPayload();
         const { sub, name, email, picture } = payload;
-        res.status(200).json({ sub, name, email, picture });
+
+        const userForToken = { googleId: sub, name, email, picture };
+        const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' }); // Token 7 din tak valid
+
+        res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Google token verification fail hua:', error);
         res.status(401).json({ message: 'Google token invalid hai.', error: error.message });
     }
 });
 
+// Validate Token & Get User Info (for page load check)
+app.get('/api/auth/me', authenticateToken, (req, res) => {
+    res.status(200).json(req.user); // req.user is set by authenticateToken
+});
 
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 
@@ -107,116 +132,100 @@ app.get('/api/feedbacks', async (req, res) => {
         const allFeedbacks = await Feedback.find().sort({ timestamp: -1 });
         res.status(200).json(allFeedbacks);
     } catch (error) {
-        console.error('FEEDBACK FETCH KARTE WAQT ERROR AAYA:', error);
         res.status(500).json({ message: 'FEEDBACK FETCH NAHI HO PAYE.', error: error.message });
     }
 });
 
-app.post('/api/feedback', async (req, res) => {
-    const { name, feedback, rating, googleId, googleUserPicture } = req.body;
+// Submit Feedback (handles both anonymous and authenticated)
+app.post('/api/feedback', authenticateTokenOptional, async (req, res) => {
+    const { name, feedback, rating } = req.body; // Name from form
     const userIp = req.clientIp;
 
-    if (!name || !feedback || !rating || rating === '0') {
-        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE, BHAI!' });
+    if (!name && !req.user) return res.status(400).json({ message: 'NAAM CHAHIYE, BHAI!' });
+    if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'FEEDBACK AUR RATING BHARO!' });
+
+    let feedbackData = {
+        name: req.user ? req.user.name : name, // Use JWT name if authenticated, else form name
+        feedback: feedback,
+        rating: parseInt(rating),
+        userIp: userIp,
+        isEdited: false
+    };
+
+    if (req.user) { // Authenticated user
+        feedbackData.googleId = req.user.googleId;
+        feedbackData.avatarUrl = req.user.picture;
+    } else { // Anonymous user
+        feedbackData.avatarUrl = getDiceBearAvatarUrlServer(name);
     }
+
     try {
-        let avatarUrlToSave;
-
-        if (googleId && googleUserPicture) {
-            avatarUrlToSave = googleUserPicture;
-        } else if (googleId && !googleUserPicture) {
-            avatarUrlToSave = getDiceBearAvatarUrlServer(name);
-        } else {
-            const existingFeedbackByName = await Feedback.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
-            if (existingFeedbackByName && existingFeedbackByName.avatarUrl && !existingFeedbackByName.googleId) {
-                avatarUrlToSave = existingFeedbackByName.avatarUrl;
-            } else {
-                avatarUrlToSave = getDiceBearAvatarUrlServer(name);
-            }
-        }
-
-        const newFeedback = new Feedback({
-            name: name,
-            feedback: feedback,
-            rating: parseInt(rating),
-            avatarUrl: avatarUrlToSave,
-            userIp: userIp,
-            googleId: googleId || null,
-            isEdited: false
-        });
+        const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
-        console.log('NAYA FEEDBACK DATABASE MEIN SAVE HUA HAI:', newFeedback);
-        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA AUR SAVE HUA!', feedback: newFeedback });
+        res.status(201).json({ message: 'FEEDBACK SAFALTA-POORVAK JAMA KIYA GAYA!', feedback: newFeedback });
     } catch (error) {
-        console.error('FEEDBACK DATABASE MEIN SAVE KARTE WAQT ERROR AAYA:', error);
-        if (error.code === 11000) { // Duplicate key error for googleId if you made it unique
-             return res.status(400).json({ message: 'Yeh Google account se pehle hi feedback de diya gaya hai.', error: error.message });
-        }
         res.status(500).json({ message: 'FEEDBACK DATABASE MEIN SAVE NAHI HO PAYA.', error: error.message });
     }
 });
 
-app.put('/api/feedback/:id', async (req, res) => {
+// Update Feedback (strictly for authenticated Google users owning the feedback)
+app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
     const feedbackId = req.params.id;
-    const { name, feedback, rating, googleIdFromCurrentUser } = req.body;
-    const clientIp = req.clientIp;
+    const { feedback, rating } = req.body; // Name will be taken from JWT
+    const loggedInUser = req.user; // { googleId, name, ... } from JWT
 
-    if (!name || !feedback || !rating || rating === '0') {
-        return res.status(400).json({ message: 'NAAM, FEEDBACK, AUR RATING SAB CHAHIYE UPDATE KE LIYE!' });
+    if (!feedback || !rating || rating === '0') {
+        return res.status(400).json({ message: 'FEEDBACK AUR RATING BHARO UPDATE KE LIYE!' });
     }
 
     try {
         const existingFeedback = await Feedback.findById(feedbackId);
-        if (!existingFeedback) {
-            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, UPDATE KISKO KARUN?' });
-        }
+        if (!existingFeedback) return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI!' });
 
-        let authorized = false;
-        if (existingFeedback.googleId) {
-            if (googleIdFromCurrentUser && existingFeedback.googleId === googleIdFromCurrentUser) {
-                authorized = true;
-            }
-        } else {
-            if (existingFeedback.userIp === clientIp) {
-                authorized = true;
-            }
-        }
-
-        if (!authorized) {
-            console.warn(`UNAUTHORIZED ATTEMPT TO EDIT FEEDBACK ID: ${feedbackId} FROM IP: ${clientIp} / GoogleID: ${googleIdFromCurrentUser}. ORIGINAL IP: ${existingFeedback.userIp}, ORIGINAL GoogleID: ${existingFeedback.googleId}`);
-            return res.status(403).json({ message: 'TUM SIRF APNA FEEDBACK EDIT KAR SAKTE HO, DOOSRE KA NAHI!' });
+        // Authorization check: Only Google user who owns the feedback can edit
+        if (!existingFeedback.googleId || existingFeedback.googleId !== loggedInUser.googleId) {
+            return res.status(403).json({ message: 'TUM SIRF APNA GOOGLE SE SUBMIT KIYA HUA FEEDBACK EDIT KAR SAKTE HO!' });
         }
 
         const parsedRating = parseInt(rating);
-        const contentActuallyChanged = existingFeedback.name !== name || existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
+        const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating;
 
         if (contentActuallyChanged) {
             if (!existingFeedback.originalContent) {
                 existingFeedback.originalContent = {
-                    name: existingFeedback.name,
+                    name: existingFeedback.name, // Original name
                     feedback: existingFeedback.feedback,
                     rating: existingFeedback.rating,
                     timestamp: existingFeedback.timestamp
                 };
             }
-            // If it's a Google user, the name is derived from their profile and shouldn't change unless their profile name changes.
-            // The client should send the current Google name.
-            existingFeedback.name = name;
+            existingFeedback.name = loggedInUser.name; // Update name to current JWT name (in case Google Profile name changed)
             existingFeedback.feedback = feedback;
             existingFeedback.rating = parsedRating;
             existingFeedback.timestamp = Date.now();
             existingFeedback.isEdited = true;
+        } else { // If only name might have changed in Google Profile but not feedback/rating
+            if (existingFeedback.name !== loggedInUser.name) {
+                 if (!existingFeedback.originalContent) { // Still log original if only name changes for the first time
+                    existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp };
+                }
+                existingFeedback.name = loggedInUser.name;
+                existingFeedback.timestamp = Date.now(); // Update timestamp for name change as well
+                existingFeedback.isEdited = true; // Mark as edited if name changed
+            }
         }
+
 
         await existingFeedback.save();
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK UPDATE HUA!', feedback: existingFeedback });
 
     } catch (error) {
-        console.error(`FEEDBACK UPDATE KARTE WAQT ERROR AAYA (ID: ${feedbackId}):`, error);
         res.status(500).json({ message: 'FEEDBACK UPDATE NAHI HO PAYA.', error: error.message });
     }
 });
 
+
+// --- ADMIN PANEL (No changes for JWT here, uses Basic Auth) ---
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -549,17 +558,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
+
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id;
     try {
         const deletedFeedback = await Feedback.findByIdAndDelete(feedbackId);
-        if (!deletedFeedback) {
-            return res.status(404).json({ message: 'FEEDBACK NAHI MILA, BHAI. DELETE KISKO KARUN?' });
-        }
-        console.log('FEEDBACK DELETE KIYA GAYA:', deletedFeedback);
+        if (!deletedFeedback) return res.status(404).json({ message: 'FEEDBACK NAHI MILA, DELETE KISKO KARUN?' });
         res.status(200).json({ message: 'FEEDBACK SAFALTA-POORVAK DELETE HUA!', deletedFeedback });
     } catch (error) {
-        console.error('FEEDBACK DELETE KARTE WAQT ERROR AAYA:', error);
         res.status(500).json({ message: 'FEEDBACK DELETE NAHI HO PAYA.', error: error.message });
     }
 });
@@ -567,20 +573,15 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
     const { replyText, adminName } = req.body;
-    if (!replyText) {
-        return res.status(400).json({ message: 'REPLY TEXT BHEJ, BHAI! KUCH LIKHEGA YA NAHI?' });
-    }
+    if (!replyText) return res.status(400).json({ message: 'REPLY TEXT BHEJ, BHAI!' });
     try {
         const feedback = await Feedback.findById(id);
-        if (!feedback) {
-            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, REPLY KAISE KARUN? GADBAD HAI!' });
-        }
+        if (!feedback) return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, REPLY KAISE KARUN?' });
         feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
         await feedback.save();
         res.status(200).json({ message: 'REPLY SAFALTA-POORVAK JAMA HUA!', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) {
-        console.error('REPLY SAVE KARTE WAQT FATTI HAI:', error);
-        res.status(500).json({ message: 'REPLY SAVE NAHI HO PAYA. SERVER KI GANDI HAALAT HAI!', error: error.message });
+        res.status(500).json({ message: 'REPLY SAVE NAHI HO PAYA.', error: error.message });
     }
 });
 
@@ -588,31 +589,20 @@ app.put('/api/admin/feedback/:id/change-avatar', authenticateAdmin, async (req, 
     const { id } = req.params;
     try {
         const feedbackToUpdate = await Feedback.findById(id);
-        if (!feedbackToUpdate) {
-            return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
-        }
-         // Only allow changing avatar if it's not a Google User, as their avatar comes from Google.
-        if (feedbackToUpdate.googleId) {
-            return res.status(400).json({ message: 'GOOGLE USER KA AVATAR YAHAAN SE NAHI BADAL SAKTE, BHAI!' });
-        }
+        if (!feedbackToUpdate) return res.status(404).json({ message: 'FEEDBACK MILA NAHI BHAI, AVATAR KAISE BADLU?' });
+        if (feedbackToUpdate.googleId) return res.status(400).json({ message: 'GOOGLE USER KA AVATAR YAHAAN SE NAHI BADAL SAKTE!' });
+        
         const userName = feedbackToUpdate.name;
-        if (typeof userName !== 'string' || !userName) {
-             console.error(`[AVATAR CHANGE ERROR] User name is invalid for feedback ID ${id}:`, userName);
-             return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
-        }
+        if (typeof userName !== 'string' || !userName) return res.status(400).json({ message: 'USER KA NAAM THEEK NAHI HAI AVATAR GENERATE KARNE KE LIYE.' });
+        
         const newAvatarUrl = getDiceBearAvatarUrlServer(userName, Date.now().toString());
-        // Update avatar for all non-Google feedbacks by this user name
         await Feedback.updateMany({ name: userName, googleId: null }, { $set: { avatarUrl: newAvatarUrl } });
-        console.log(`[AVATAR CHANGE] Avatar updated for user ${userName} (triggered by feedback ID ${id}) to ${newAvatarUrl}`);
         res.status(200).json({ message: 'AVATAR SAFALTA-POORVAK BADLA GAYA!', newAvatarUrl: newAvatarUrl });
     } catch (error) {
-        console.error(`AVATAR BADALTE WAQT FATTI HAI (ID: ${id}):`, error);
-        res.status(500).json({ message: 'AVATAR BADAL NAHI PAYA. SERVER KI GANDI HAALAT HAI!', error: error.message });
+        res.status(500).json({ message: 'AVATAR BADAL NAHI PAYA.', error: error.message });
     }
 });
 
-
 app.listen(PORT, () => {
     console.log(`SERVER CHALU HO GAYA HAI PORT ${PORT} PAR: http://localhost:${PORT}`);
-    console.log('AB FRONTEND SE API CALL KAR SAKTE HAIN!');
 });
