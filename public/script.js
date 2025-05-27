@@ -701,4 +701,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     // updateUIAfterLogout(); // Set initial UI state, this is now handled by checkLoginStatus effectively
     // checkLoginStatus(); // This will run in window.onload
 });
-// === END: JavaScript Code ===
