@@ -2428,34 +2428,35 @@
         }
 
         // Send data to backend (replace with your actual API endpoint)
-        fetch('/api/user/change-password', {
+       fetch('/api/user/change-password', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + localStorage.getItem('token')  // <-- Token zaroor bhejein!
+    'Authorization': 'Bearer ' + localStorage.getItem('token')
   },
   body: JSON.stringify({
     currentPassword: currentPassword,
     newPassword: newPassword
   })
 })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Password changed successfully!');
-                // Optionally clear the password fields
-                document.getElementById('current-password').value = '';
-                document.getElementById('new-password-profile').value = '';
-                document.getElementById('confirm-new-password-profile').value = '';
-            } else {
-                alert('Password change failed: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while changing the password.');
-        });
-    });
+.then(response => response.json().then(data => ({
+  status: response.status,
+  body: data
+})))
+.then(({ status, body }) => {
+  if (status === 200) {
+    alert('Password changed successfully!');
+    // Optionally clear the password fields
+    document.getElementById('current-password').value = '';
+    document.getElementById('new-password-profile').value = '';
+    document.getElementById('confirm-new-password-profile').value = '';
+  } else {
+    alert('Password change failed: ' + (body.message || 'Unknown error'));
+  }
+})
+.catch(error => {
+  alert('Password change failed: ' + error.message);
+});
         // === END: JavaScript Code ===
     </script>
 </body>
