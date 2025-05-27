@@ -1,167 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
+<head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>✨ NOBITA's Feedback Portal ✨</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOBITA'S Professional Feedback Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
-    <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i>
-    </div>
-    <div id="user-avatar-trigger" class="corner-trigger avatar-mode" title="Profile Menu">
-        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
-    </div>
-
-    <div id="loginModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="loginModal">&times;</span>
-        <h2>Login</h2>
-        <form id="email-login-form" class="auth-modal-form">
-          <input type="email" id="modal-login-email" placeholder="Email" required>
-          <input type="password" id="modal-login-password" placeholder="Password" required>
-          <button type="submit">Login</button>
-          <div class="form-links">
-            <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
-            <a href="#" id="modal-create-account-link">Create New Account</a>
-          </div>
-          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Login with Google
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div id="signupModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
-        <h2>Create New Account</h2>
-        <form id="email-signup-form" class="auth-modal-form">
-          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
-          <input type="email" id="modal-signup-email" placeholder="Email" required>
-          <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
-          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
-          <button type="submit">Sign Up</button>
-          <div class="form-links" style="justify-content: center;">
-            <a href="#" id="modal-already-account-link">Already have an account? Login</a>
-          </div>
-           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Sign Up with Google
-          </button>
-        </form>
-      </div>
-    </div>
-    
-    <div id="userMenu" class="user-profile-menu">
-      <div class="menu-content">
-        <div class="menu-header">
-          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
-          <span class="username" id="menu-username">User Name</span>
-        </div>
-        <ul>
-          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
-          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
-        <div id="stylishPopupCard" class="stylish-popup-card">
-          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
-          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
-          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
-          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
-          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
-              </div>
-          <div class="popup-button-container" id="stylishPopupButtonContainer">
-            </div>
-        </div>
-    </div>
-
-    <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content profile-modal-content">
-            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
-            <h2 id="profile-modal-title">Your Profile</h2>
-            <div id="profile-display-area" class="profile-display-area">
-                <img id="profile-avatar-display" class="profile-avatar-large" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
-                <p><strong>Name:</strong> <span id="profile-name-display"></span></p>
-                <p><strong>Email:</strong> <span id="profile-email-display"></span></p>
-                <button type="button" id="edit-profile-btn" class="action-button">Edit Profile</button>
-                <button type="button" id="close-profile-view-btn" class="action-button secondary-action-button">Close</button>
-            </div>
-            
-            <div id="profile-edit-area" class="profile-edit-area" style="display:none;">
-                <div class="input-group">
-                    <label for="edit-avatar-upload">Edit Avatar:</label>
-                    <div class="avatar-upload-section">
-                        <img id="current-edit-avatar-preview" class="profile-avatar-large" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Current Avatar">
-                        <input type="file" id="edit-avatar-upload" accept="image/*">
-                        <p class="upload-tip">Click to choose image or drag & drop</p>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label for="edit-profile-name">Edit Name:</label>
-                    <input type="text" id="edit-profile-name" placeholder="Your Name">
-                </div>
-                <div class="input-group">
-                    <label for="edit-profile-email">Email (Cannot be changed):</label>
-                    <input type="email" id="edit-profile-email" disabled>
-                </div>
-                <button type="button" id="save-profile-changes-btn" class="action-button">Save Changes</button>
-                <button type="button" id="cancel-profile-edit-btn" class="action-button secondary-action-button">Cancel</button>
-            </div>
-            <div class="loading-spinner" id="profile-loading-spinner" style="display:none;"></div>
-        </div>
-    </div>
 
     <div class="page-content-wrapper">
-        <div class="owner-info"> 
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
-            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
+        <div class="owner-info">
+            <img src="images/nobita_avatar.png" alt="Nobita" class="owner-avatar"> <p class="owner-text">A Feedback System by Nobita</p>
         </div>
-        
-        <div id="feedback-form-container" class="main-container"> 
-            <h1 id="main-title"></h1>
-            <div id="typed-output"></div>
+
+        <div id="feedback-form-container" class="main-container">
+            <h1><span id="main-title-typed">Rate Your Experience</span></h1>
+            <p id="typed-output">Your feedback helps us improve!</p>
             <form id="feedback-form">
                 <div class="input-group">
-                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
-                    <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your name (or login to auto-fill)" required>
                 </div>
                 <div class="input-group">
-                    <label for="feedback">Your Feedback:</label>
-                    <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
-                </div>
-                <div class="input-group">
-                    <label>Rate Your Experience:</label>
-                    <div class="stars" id="star-rating">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
+                    <label for="rating">Rating:</label>
+                    <div class="stars" id="rating-stars">
+                        <span class="star" data-value="1"><i class="fas fa-star"></i></span>
+                        <span class="star" data-value="2"><i class="fas fa-star"></i></span>
+                        <span class="star" data-value="3"><i class="fas fa-star"></i></span>
+                        <span class="star" data-value="4"><i class="fas fa-star"></i></span>
+                        <span class="star" data-value="5"><i class="fas fa-star"></i></span>
                     </div>
-                    <input type="hidden" id="rating" value="0">
+                    <input type="hidden" id="rating" name="rating" required>
                 </div>
-                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
+                <div class="input-group">
+                    <label for="message">Feedback Message:</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Share your thoughts..." required></textarea>
+                </div>
+                <button type="submit" id="submit-feedback">Submit Feedback <i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
 
-        <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div>
-             <h2>Recent Feedbacks</h2>
-             </div>
-    </div> 
+        <div id="feedback-list-container" class="main-container">
+            <h2><i class="fas fa-comments"></i> What Others Are Saying</h2>
+            <div class="average-rating-container">
+                <h3>Overall Rating</h3>
+                <div class="average-number" id="avg-rating-num">0.0</div>
+                <div class="average-stars" id="avg-rating-stars">
+                    </div>
+                <div class="total-feedbacks-count"><span id="total-feedback-count">0</span> Feedbacks</div>
+            </div>
+            <div id="feedback-items-list">
+                </div>
+        </div>
+    </div>
 
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    <script src="script.js"></script>
+    <div class="corner-trigger" id="login-icon-trigger" style="display: flex;"> <i class="fas fa-sign-in-alt"></i> Login
+    </div>
+    <div class="corner-trigger avatar-mode" id="user-avatar-trigger" style="display: none;"> <img src="images/default-avatar.png" alt="User" id="user-avatar-trigger-img"> </div>
+
+    <div class="auth-modal-overlay" id="login-modal-overlay">
+        <div class="auth-modal-content">
+            <span class="close-modal-btn" data-target-modal="login-modal-overlay">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form id="login-form" class="auth-modal-form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <div class="form-links">
+                    <a href="#" id="forgot-password-link">Forgot Password?</a>
+                    <a href="#" id="show-signup-link">Need an account? Sign Up</a>
+                </div>
+                <button type="submit">Login <i class="fas fa-arrow-right"></i></button>
+                <button type="button" class="google-auth-btn" id="google-login-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google"> Sign in with Google
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="auth-modal-overlay" id="signup-modal-overlay">
+        <div class="auth-modal-content">
+            <span class="close-modal-btn" data-target-modal="signup-modal-overlay">&times;</span>
+            <h2>Create New Account</h2>
+            <form id="signup-form" class="auth-modal-form">
+                <input type="text" id="signup-name" placeholder="Full Name" required>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required>
+                <div class="form-links">
+                    <span></span> <a href="#" id="show-login-link">Already have an account? Login</a>
+                </div>
+                <button type="submit">Sign Up <i class="fas fa-user-plus"></i></button>
+                 <button type="button" class="google-auth-btn" id="google-signup-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google"> Sign up with Google
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="user-profile-menu" id="user-profile-menu">
+        <div class="menu-content">
+            <div class="menu-header">
+                <img src="images/default-avatar.png" alt="User Avatar" id="menu-avatar-img"> <div class="username" id="menu-username">User Name</div> </div>
+            <ul>
+                <li><a href="#" id="view-profile-link"><i class="fas fa-user-circle"></i> View Profile</a></li>
+                <li><a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="auth-modal-overlay" id="profile-modal-overlay"> <div class="auth-modal-content profile-modal-content">
+            <span class="close-modal-btn" data-target-modal="profile-modal-overlay">&times;</span>
+            <h2 id="profile-modal-title">Your Profile</h2>
+
+            <div class="profile-display-area" id="profile-display-view">
+                <img src="images/default-avatar.png" alt="User Avatar" class="profile-avatar-large" id="display-profile-avatar">
+                <p><strong>Name:</strong> <span id="display-profile-name">User Name</span></p>
+                <p><strong>Email:</strong> <span id="display-profile-email">user@example.com</span></p>
+                <button class="action-button" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</button>
+            </div>
+
+            <div class="profile-edit-area" id="profile-edit-view" style="display: none;">
+                <div class="avatar-upload-section" onclick="document.getElementById('avatar-upload-input').click();">
+                    <img src="images/default-avatar.png" alt="User Avatar" class="profile-avatar-large" id="modal-profile-avatar-img">
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
+                    <p class="upload-tip" style="margin-top: 10px;">Click avatar to change</p>
+                </div>
+
+                <div class="input-group">
+                    <label for="profile-name-input">Display Name:</label>
+                    <input type="text" id="profile-name-input" placeholder="Enter your display name">
+                </div>
+                <div class="input-group">
+                    <label for="profile-email-display-edit">Email:</label> <input type="email" id="profile-email-display-edit" readonly>
+                </div>
+
+                <div class="loading-spinner" style="margin: 20px auto;"></div> <div class="popup-button-container" style="margin-top: 20px;">
+                    <button class="popup-button primary" id="save-profile-button">
+                        <i class="fas fa-save" style="margin-right: 7px;"></i>Save Changes
+                    </button>
+                    <button type="button" class="popup-button secondary" id="cancel-edit-profile-button">
+                         <i class="fas fa-times" style="margin-right: 7px;"></i>Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="stylish-popup-overlay" id="stylish-popup-overlay">
+        <div class="stylish-popup-card" id="stylish-popup-card">
+            <span class="close-popup-btn-styled" id="close-stylish-popup-btn">&times;</span>
+            <div class="popup-icon-area" id="popup-icon-area">
+                </div>
+            <h2 class="popup-title" id="popup-title">Title</h2>
+            <p class="popup-message" id="popup-message">Message here.</p>
+            <div class="popup-form-input-group" id="popup-input-group-1" style="display: none;">
+                <label for="popup-input-field-1" id="popup-input-label-1">Label</label>
+                <input type="text" id="popup-input-field-1">
+            </div>
+             <div class="popup-form-input-group" id="popup-input-group-2" style="display:none;">
+                <label for="popup-input-field-2" id="popup-input-label-2">Label</label>
+                <textarea id="popup-input-field-2" rows="3"></textarea>
+            </div>
+            <div class="popup-button-container" id="popup-button-container">
+                </div>
+        </div>
+    </div>
+
+    <div class="confetti-container"></div>
+
+    <script src="script.js"></script> <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script>
+        // Basic Typed.js setup (if you use it for h1 and p#typed-output)
+        if (typeof Typed !== 'undefined') {
+            if(document.getElementById('main-title-typed')) {
+                new Typed('#main-title-typed', {
+                    strings: ['Rate Your Experience', 'Share Your Valuable Feedback', 'Help Us Improve Our Services'],
+                    typeSpeed: 70,
+                    backSpeed: 40,
+                    loop: true,
+                    smartBackspace: true,
+                    showCursor: true,
+                    cursorChar: '_',
+                    autoInsertCss: true // Prevents conflicts if Typed.js CSS is not loaded
+                });
+            }
+            if(document.getElementById('typed-output')) {
+                new Typed('#typed-output', {
+                    strings: ["Your opinion matters to us greatly.", "Let us know how we're doing.", "Every comment helps us grow.", "We appreciate your input!"],
+                    typeSpeed: 50,
+                    backSpeed: 25,
+                    loop: true,
+                    startDelay: 1000, // Start after the main title
+                    smartBackspace: true,
+                    showCursor: false
+                });
+            }
+        } else {
+            console.warn("Typed.js not loaded. Titles will not be animated.");
+        }
+
+        // Placeholder for owner avatar animation
+        const ownerInfo = document.querySelector('.owner-info');
+        if (ownerInfo) {
+            // Simple fade-in or use Intersection Observer for more complex animations
+            setTimeout(() => {
+                ownerInfo.classList.add('animate-in');
+            }, 300);
+        }
+        const formContainer = document.getElementById('feedback-form-container');
+        const listContainer = document.getElementById('feedback-list-container');
+        if(formContainer) setTimeout(() => formContainer.classList.add('animate-in'), 500);
+        if(listContainer) setTimeout(() => listContainer.classList.add('animate-in'), 700);
+
+
+        // Dummy function to illustrate profile view/edit toggle
+        // Actual implementation would be in your main script.js
+        const editProfileButton = document.getElementById('edit-profile-button');
+        const cancelEditProfileButton = document.getElementById('cancel-edit-profile-button');
+        const profileDisplayView = document.getElementById('profile-display-view');
+        const profileEditView = document.getElementById('profile-edit-view');
+        const profileModalTitle = document.getElementById('profile-modal-title');
+
+        if(editProfileButton) {
+            editProfileButton.addEventListener('click', () => {
+                if(profileDisplayView) profileDisplayView.style.display = 'none';
+                if(profileEditView) profileEditView.style.display = 'block';
+                if(profileModalTitle) profileModalTitle.textContent = "Edit Your Profile";
+                // Populate edit fields from display data or currentUser object (ensure your main script.js handles this)
+                document.getElementById('profile-name-input').value = document.getElementById('display-profile-name').textContent;
+                document.getElementById('modal-profile-avatar-img').src = document.getElementById('display-profile-avatar').src;
+                document.getElementById('profile-email-display-edit').value = document.getElementById('display-profile-email').textContent;
+
+            });
+        }
+
+        if(cancelEditProfileButton) {
+            cancelEditProfileButton.addEventListener('click', () => {
+                if(profileDisplayView) profileDisplayView.style.display = 'block';
+                if(profileEditView) profileEditView.style.display = 'none';
+                if(profileModalTitle) profileModalTitle.textContent = "Your Profile";
+            });
+        }
+         // Logic for closing modals with data-target-modal
+        document.querySelectorAll('.close-modal-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const modalId = this.getAttribute('data-target-modal');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+
+    </script>
 </body>
 </html>
