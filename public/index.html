@@ -2410,51 +2410,57 @@
             checkLoginStatus(); // Check if user is already logged in via token
         });
     
- document.getElementById('change-password-profile-btn').addEventListener('click', function() {
-        // Get password values
-        var currentPassword = document.getElementById('current-password').value;
-        var newPassword = document.getElementById('new-password-profile').value;
-        var confirmNewPassword = document.getElementById('confirm-new-password-profile').value;
+       
+document.getElementById('change-password-profile-btn').addEventListener('click', function() {
+    // Get password values
+    var currentPassword = document.getElementById('current-password').value;
+    var newPassword = document.getElementById('new-password-profile').value;
+    var confirmNewPassword = document.getElementById('confirm-new-password-profile').value;
 
-        // Basic validation
-        if (!currentPassword || !newPassword || !confirmNewPassword) {
-            alert('Please fill in all password fields.');
-            return;
+    // Basic validation
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        alert('Please fill in all password fields.');
+        return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        alert('New password and confirm password do not match.');
+        return;
+    }
+
+    // Send data to backend (replace with your actual API endpoint)
+    fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+            currentPassword: currentPassword,
+            newPassword: newPassword
+        })
+    })
+    .then(response => response.json().then(data => ({
+        status: response.status,
+        body: data
+    })))
+    .then(({ status, body }) => {
+        if (status === 200) {
+            alert('Password changed successfully!');
+            // Optionally clear the password fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password-profile').value = '';
+            document.getElementById('confirm-new-password-profile').value = '';
+        } else {
+            alert('Password change failed: ' + (body.message || 'Unknown error'));
         }
-
-        if (newPassword !== confirmNewPassword) {
-            alert('New password and confirm password do not match.');
-            return;
-        }
-
-        // Send data to backend (replace with your actual API endpoint)
-     fetch('/api/user/change-password', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + localStorage.getItem('token')
-  },
-  
-
-.then(response => response.json().then(data => ({
-  status: response.status,
-  body: data
-})))
-.then(({ status, body }) => {
-  if (status === 200) {
-    alert('Password changed successfully!');
-    // Optionally clear the password fields
-    document.getElementById('current-password').value = '';
-    document.getElementById('new-password-profile').value = '';
-    document.getElementById('confirm-new-password-profile').value = '';
-  } else {
-    alert('Password change failed: ' + (body.message || 'Unknown error'));
-  }
-})
-.catch(error => {
-  alert('Password change failed: ' + error.message);
+    })
+    .catch(error => {
+        alert('Password change failed: ' + error.message);
+    });
 });
-        // === END: JavaScript Code ===
+
+               // === END: JavaScript Code ===
     </script>
 </body>
 </html>
