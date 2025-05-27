@@ -32,7 +32,7 @@ const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 
-// Environment Variable Checks (console.logs for these are important for you to check on Render)
+// Environment Variable Checks
 console.log("--- Environment Variable Check (server.js start) ---");
 console.log("PORT (from process.env):", process.env.PORT, "Effective PORT:", PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
@@ -59,7 +59,7 @@ if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) console.warn("WARN
 if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) console.warn("WARNING: Cloudinary variables missing. Avatar upload will fail.");
 
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
-if (!googleClient && GOOGLE_CLIENT_ID) { // Only warn if ID was set but client failed
+if (!googleClient && GOOGLE_CLIENT_ID) {
     console.warn("WARNING: Google Client not initialized properly despite GOOGLE_CLIENT_ID being set.");
 }
 
@@ -108,10 +108,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: { type: String, default: undefined },
   resetPasswordExpires: { type: Date, default: undefined }
 });
-// Add a more specific error message for unique email constraint
+
 userSchema.post('save', function(error, doc, next) {
   if (error.name === 'MongoServerError' && error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-    next(new Error('This email address is already registered.'));
+    // This specific message is now being sent to the client, as reported.
+    next(new Error('Yeh email address pehle se register hai (duplicate key).'));
   } else {
     next(error);
   }
@@ -175,7 +176,7 @@ async function sendEmail(options) {
     const transporter = nodemailer.createTransport({
         host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465,
         auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-        tls: { rejectUnauthorized: false } // Be cautious with this in production
+        tls: { rejectUnauthorized: false }
     });
     const mailOptions = { from: `"Nobita Feedback App" <${EMAIL_USER}>`, to: options.email, subject: options.subject, text: options.message, html: options.html };
     try {
@@ -183,13 +184,13 @@ async function sendEmail(options) {
         console.log('Email safaltapoorvak bheja gaya! Message ID: %s', info.messageId);
     } catch (error) {
         console.error('Nodemailer error - Email send failed:', error);
-        throw error; // Re-throw to be handled by caller
+        throw error;
     }
 }
 
 // --- Auth Routes ---
 app.post('/api/auth/signup', async (req, res) => {
-    const requestedEmail = req.body.email || 'unknown_email_in_request';
+    const requestedEmail = req.body.email || 'unknown_email_in_request'; // For logging
     console.log(`[Signup - ${requestedEmail}] Attempt received.`);
     const { name, email, password } = req.body;
 
@@ -203,37 +204,41 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     try {
-        const lowerCaseEmail = email.toLowerCase();
-        console.log(`[Signup - ${lowerCaseEmail}] Step 1: Checking for existing user.`);
+        const trimmedName = name.trim();
+        const lowerCaseEmail = email.toLowerCase().trim(); // Ensure consistent processing
+
+        console.log(`[Signup - ${lowerCaseEmail}] Step 1: Checking for existing user with email: '${lowerCaseEmail}'`);
         const existingUser = await User.findOne({ email: lowerCaseEmail });
+
         if (existingUser) {
-            console.log(`[Signup - ${lowerCaseEmail}] Failed: Email already registered.`);
+            console.log(`[Signup - ${lowerCaseEmail}] Found existing user with ID: ${existingUser._id}. Registration aborted.`);
             return res.status(400).json({ message: "Yeh email address pehle se register hai." });
         }
+        console.log(`[Signup - ${lowerCaseEmail}] No existing user found by findOne. Proceeding to create new user.`);
 
         console.log(`[Signup - ${lowerCaseEmail}] Step 2: Hashing password.`);
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        console.log(`[Signup - ${lowerCaseEmail}] Step 3: Generating avatar URL for name: ${name}`);
-        const userAvatar = getGenericAvatarUrl(name);
+        console.log(`[Signup - ${lowerCaseEmail}] Step 3: Generating avatar URL for name: ${trimmedName}`);
+        const userAvatar = getGenericAvatarUrl(trimmedName);
 
-        console.log(`[Signup - ${lowerCaseEmail}] Step 4: Creating new user object.`);
+        console.log(`[Signup - ${lowerCaseEmail}] Step 4: Creating new user object instance.`);
         const newUser = new User({
-            name: name.trim(), // Ensure name is trimmed before saving
+            name: trimmedName,
             email: lowerCaseEmail,
             password: hashedPassword,
             avatarUrl: userAvatar,
             loginMethod: 'email'
         });
-        console.log(`[Signup - ${lowerCaseEmail}] Step 5: Attempting to save new user. Data:`, JSON.stringify(newUser.toObject()));
-        await newUser.save(); // This is where Mongoose validation (like 'required') will run.
-        console.log(`[Signup - ${lowerCaseEmail}] User saved successfully. ID: ${newUser._id}`);
+        console.log(`[Signup - ${lowerCaseEmail}] Step 5: Attempting to save new user. Data before save:`, JSON.stringify(newUser.toObject()));
+        await newUser.save(); // This is where Mongoose validation and the unique index check by MongoDB happens.
+        console.log(`[Signup - ${lowerCaseEmail}] User saved successfully. New User ID: ${newUser._id}`);
 
         const userForToken = { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email' };
         console.log(`[Signup - ${lowerCaseEmail}] Step 6: Generating JWT token.`);
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
 
-        console.log(`[Signup - ${lowerCaseEmail}] Signup successful.`);
+        console.log(`[Signup - ${lowerCaseEmail}] Signup process completed successfully.`);
         res.status(201).json({ token: appToken, user: userForToken });
 
     } catch (error) {
@@ -246,19 +251,19 @@ app.post('/api/auth/signup', async (req, res) => {
             const messages = Object.values(error.errors).map(e => e.message);
             errorMessageDetail = `Validation failed: ${messages.join('. ')}`;
             console.error(`[Signup - ${requestedEmail}] Mongoose Validation Error: ${errorMessageDetail}`);
-        } else if (error.message === 'This email address is already registered.') { // From post-save hook
+        } else if (error.message === 'Yeh email address pehle se register hai (duplicate key).') { // From post-save hook
+            statusCode = 400; // Correct status for this specific, known error
+            errorMessageDetail = error.message; // Use the custom message
+             console.error(`[Signup - ${requestedEmail}] Duplicate email error (from post-save hook or direct code 11000): ${errorMessageDetail}`);
+        } else if (error.code === 11000) { // MongoDB duplicate key error (direct, if hook didn't catch it first)
             statusCode = 400;
-            errorMessageDetail = error.message;
-             console.error(`[Signup - ${requestedEmail}] Duplicate email error (from hook): ${errorMessageDetail}`);
-        } else if (error.code === 11000) { // MongoDB duplicate key error
-            statusCode = 400;
-            errorMessageDetail = "Yeh email address pehle se register hai (duplicate key).";
+            errorMessageDetail = "Yeh email address pehle se register hai (MongoDB error code 11000).";
             console.error(`[Signup - ${requestedEmail}] MongoDB Duplicate Key Error (Code 11000):`, error.keyValue);
-        } else if (error.message) {
+        } else if (error.message) { // Other types of errors
             errorMessageDetail = error.message;
         }
         
-        console.error(`[Signup - ${requestedEmail}] Error Name: ${error.name}`);
+        console.error(`[Signup - ${requestedEmail}] Error Name: ${error.name}, Error Code: ${error.code || 'N/A'}`);
         console.error(`[Signup - ${requestedEmail}] Detailed Error Stack:`, error.stack);
 
         res.status(statusCode).json({
@@ -268,12 +273,11 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-
-app.post('/api/auth/login', async (req, res) => { /* ... (same as before) ... */
+app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email aur password zaroori hai." });
     try {
-        const user = await User.findOne({ email: email.toLowerCase() });
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
         if (!user) return res.status(401).json({ message: "Email ya password galat hai." });
         if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
         if (!user.password) return res.status(401).json({ message: "Is account ke liye password set nahi hai."});
@@ -287,7 +291,7 @@ app.post('/api/auth/login', async (req, res) => { /* ... (same as before) ... */
     } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch dikkat aa gayi.", error: error.message });}
 });
 
-app.post('/api/auth/google-signin', async (req, res) => { /* ... (same as before) ... */
+app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
     if (!googleClient) return res.status(500).json({ message: 'Google Sign-In server par configure nahi hai.' });
@@ -298,18 +302,19 @@ app.post('/api/auth/google-signin', async (req, res) => { /* ... (same as before
 
         const { sub: googleId, name, email, picture: googleAvatar } = payload;
         let user = await User.findOne({ googleId });
+        const lowerCaseEmail = email.toLowerCase().trim();
 
         if (!user) {
-            user = await User.findOne({ email: email.toLowerCase() });
+            user = await User.findOne({ email: lowerCaseEmail });
             if (user) {
                 user.googleId = googleId;
-                user.avatarUrl = googleAvatar || user.avatarUrl || getGenericAvatarUrl(name);
+                user.avatarUrl = googleAvatar || user.avatarUrl || getGenericAvatarUrl(name || user.name); // Ensure name is available
                 user.loginMethod = 'google';
-                if (!user.name && name) user.name = name; // Update name if missing and Google provides it
+                if (!user.name && name) user.name = name.trim();
             } else {
                 user = new User({
-                    googleId, name: name || "Google User", email: email.toLowerCase(),
-                    avatarUrl: googleAvatar || getGenericAvatarUrl(name),
+                    googleId, name: (name || "Google User").trim(), email: lowerCaseEmail,
+                    avatarUrl: googleAvatar || getGenericAvatarUrl(name || "Google User"),
                     loginMethod: 'google'
                 });
             }
@@ -323,7 +328,7 @@ app.post('/api/auth/google-signin', async (req, res) => { /* ... (same as before
     } catch (error) { console.error('Google signin mein error:', error); res.status(401).json({ message: 'Google token invalid hai ya server error.', error: error.message });}
 });
 
-app.get('/api/auth/me', authenticateToken, async (req, res) => { /* ... (same as before) ... */
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try {
         const userFromDb = await User.findById(req.user.userId).select('-password -resetPasswordToken -resetPasswordExpires');
         if (!userFromDb) {
@@ -340,7 +345,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => { /* ... (same as
     }
 });
 
-app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), async (req, res) => { /* ... (same as before) ... */
+app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'Koi image file upload nahi ki gayi.' });
     if (!CLOUDINARY_CLOUD_NAME) return res.status(500).json({message: "Cloudinary server par configure nahi hai."});
 
@@ -349,7 +354,6 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
     if (userMakingRequest.loginMethod === 'google') {
         return res.status(400).json({ message: 'Google login users apni profile picture Google se manage karein.' });
     }
-
     try {
         const stream = cloudinary.uploader.upload_stream({
             folder: `nobita_avatars`, public_id: `user_${req.user.userId}_${Date.now()}`,
@@ -358,7 +362,6 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
         }, async (error, result) => {
             if (error) { console.error('Cloudinary upload stream error:', error); return res.status(500).json({ message: 'Cloudinary upload mein dikkat aa gayi.', error: error.message }); }
             if (!result) { console.error('Cloudinary upload stream no result:', result); return res.status(500).json({ message: 'Cloudinary upload se koi result nahi mila.'}); }
-
 
             const oldAvatarUrl = userMakingRequest.avatarUrl;
             userMakingRequest.avatarUrl = result.secure_url;
@@ -381,7 +384,7 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
     }
 });
 
-app.put('/api/user/update-profile', authenticateToken, async (req, res) => { /* ... (same as before) ... */
+app.put('/api/user/update-profile', authenticateToken, async (req, res) => {
     const { name: newName } = req.body;
     if (!newName || typeof newName !== 'string' || newName.trim() === '') {
         return res.status(400).json({ message: "Name cannot be empty." });
@@ -415,7 +418,7 @@ app.put('/api/user/update-profile', authenticateToken, async (req, res) => { /* 
     }
 });
 
-app.post('/api/user/change-password', authenticateToken, async (req, res) => { /* ... (same as before) ... */
+app.post('/api/user/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
     if (!currentPassword || !newPassword || !confirmNewPassword) return res.status(400).json({ message: "Saare password fields zaroori hain." });
     if (newPassword.length < 6) return res.status(400).json({ message: "Naya password kam se kam 6 characters ka hona chahiye." });
@@ -450,25 +453,25 @@ app.post('/api/user/change-password', authenticateToken, async (req, res) => { /
     }
 });
 
-app.post('/api/auth/request-password-reset', async (req, res) => { /* ... (same as before) ... */
+app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
     if (!FRONTEND_URL) { console.error("CRITICAL: FRONTEND_URL missing."); return res.status(500).json({ message: "Server configuration error (FRONTEND_URL)." });}
     try {
-        const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email' });
+        const user = await User.findOne({ email: email.toLowerCase().trim(), loginMethod: 'email' });
         if (!user) return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayega." });
         const resetToken = crypto.randomBytes(32).toString('hex');
         user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL.replace(/\/$/, '')}${resetPagePath}?token=${resetToken}`;
-        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai...\n${resetUrl}\n\n...Dhanyawad,\nNobita Feedback App Team`;
-        const htmlMessage = `<div style="font-family:Arial,sans-serif;..."><p>Namaste ${user.name},</p>...<a href="${resetUrl}" ...>Password Reset Karein</a>...<p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p>...<p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) { console.error('Request password reset API mein error:', error); res.status(500).json({ message: "Password reset request process karne mein kuch dikkat aa gayi hai." }); }
 });
 
-app.post('/api/auth/reset-password', async (req, res) => { /* ... (same as before) ... */
+app.post('/api/auth/reset-password', async (req, res) => {
     const { token, password, confirmPassword } = req.body;
     if (!token || !password || !confirmPassword || password !== confirmPassword || password.length < 6) return res.status(400).json({ message: "Invalid input. Ensure passwords match and are at least 6 characters." });
     try {
@@ -477,20 +480,24 @@ app.post('/api/auth/reset-password', async (req, res) => { /* ... (same as befor
         user.password = await bcrypt.hash(password, 12);
         user.resetPasswordToken = undefined; user.resetPasswordExpires = undefined;
         await user.save();
-        try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: `...Aapka password reset ho gaya hai...`, html: `...Aapka password reset ho gaya hai...`});
+        const confirmationTextMessage = `Namaste ${user.name},\n\nAapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai...\nDhanyawad,\nNobita Feedback App Team`;
+        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;..."><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai...</p>...<p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`; // Truncated
+        try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
     } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/api/feedbacks', async (req, res) => { /* ... (same as before) ... */
+
+app.get('/api/feedbacks', async (req, res) => {
     try {
         const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'name email avatarUrl loginMethod' }).sort({ timestamp: -1 });
         res.status(200).json(allFeedbacks);
     } catch (error) { console.error("Feedbacks fetch error:", error); res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message }); }
 });
-app.post('/api/feedback', authenticateToken, async (req, res) => { /* ... (same as before) ... */
+
+app.post('/api/feedback', authenticateToken, async (req, res) => {
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user || !req.user.userId) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
@@ -503,7 +510,8 @@ app.post('/api/feedback', authenticateToken, async (req, res) => { /* ... (same 
         res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: populatedFeedback });
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message }); }
 });
-app.put('/api/feedback/:id', authenticateToken, async (req, res) => { /* ... (same as before) ... */
+
+app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
     const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
     try {
@@ -514,7 +522,7 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => { /* ... (sa
         if (!currentUserFromDb) return res.status(404).json({ message: "Editor user account not found." });
         const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parseInt(rating) || existingFeedback.name !== currentUserFromDb.name || existingFeedback.avatarUrl !== currentUserFromDb.avatarUrl;
         if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent) {
+            if (!existingFeedback.originalContent) { // Save original only once
                 existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp, avatarUrl: existingFeedback.avatarUrl };
             }
             existingFeedback.name = currentUserFromDb.name; existingFeedback.avatarUrl = currentUserFromDb.avatarUrl;
@@ -527,14 +535,11 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => { /* ... (sa
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message }); }
 });
 
-// Admin Panel Routes (Copied from original, with minor adjustments for consistency if any)
+
+// Admin Panel Routes
 const { ADMIN_USERNAME_ACTUAL, ADMIN_PASSWORD_ACTUAL } = (() => {
-    // Helper to avoid logging actual admin credentials if they are the default ones.
-    let adminUser = process.env.ADMIN_USERNAME;
-    let adminPass = process.env.ADMIN_PASSWORD;
-    if (!adminUser || adminUser === "admin" && (!adminPass || adminPass === "password")) {
-        // console.warn("Using default/missing admin credentials. THIS IS INSECURE for production.");
-    }
+    let adminUser = process.env.ADMIN_USERNAME; let adminPass = process.env.ADMIN_PASSWORD;
+    if (!adminUser || adminUser === "admin" && (!adminPass || adminPass === "password")) {}
     return { ADMIN_USERNAME_ACTUAL: adminUser || "admin", ADMIN_PASSWORD_ACTUAL: adminPass || "password" };
 })();
 
@@ -545,16 +550,17 @@ const adminAuthenticate = (req, res, next) => {
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
     if (username === ADMIN_USERNAME_ACTUAL && password === ADMIN_PASSWORD_ACTUAL) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });}
 };
-app.get('/admin-panel-nobita', adminAuthenticate, async (req, res) => { /* ... (same as before) ... */
+
+app.get('/admin-panel-nobita', adminAuthenticate, async (req, res) => { /* ... (same as before, ensure CSS/JS are self-contained or correctly linked if static) ... */
     try {
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email avatarUrl' }).sort({ timestamp: -1 });
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME_ACTUAL}:${ADMIN_PASSWORD_ACTUAL}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
-        const nobitaAvatarUrl = getGenericAvatarUrl('Nobita');
+        const nobitaAvatarUrl = getGenericAvatarUrl('Nobita'); // Admin avatar
 
         let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:flex-start;margin-bottom:20px;padding:0 10px}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background-color:#b02a37}@media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1><div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a></div><div class="feedback-grid">`;
         if (feedbacks.length === 0) { html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`; }
-        else { for (const fb of feedbacks) { /* ... HTML generation for each feedback card ... */
+        else { for (const fb of feedbacks) {
             let userTag = ''; let userDisplayName = fb.name; let userEmailDisplay = ''; let fbUserAvatar = fb.avatarUrl;
             if (fb.userId) { userTag = fb.userId.loginMethod === 'google' ? `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>` : `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`; userDisplayName = fb.userId.name || fb.name; userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : ''; fbUserAvatar = fb.userId.avatarUrl || fb.avatarUrl || getGenericAvatarUrl(userDisplayName); }
             else { userTag = `<span class="email-user-tag" title="User">U</span>`; fbUserAvatar = fb.avatarUrl || getGenericAvatarUrl(userDisplayName); }
@@ -563,22 +569,29 @@ app.get('/admin-panel-nobita', adminAuthenticate, async (req, res) => { /* ... (
             html += `</div></div>`;
         }}
         html += `</div><div id="adminModalOverlay" class="admin-modal-overlay"><div class="admin-custom-modal"><h3 id="adminModalTitle"></h3><p id="adminModalMessage"></p><div class="admin-modal-buttons"><button id="adminModalOkButton">OK</button><button id="adminModalConfirmButton" style="display:none;">Confirm</button><button id="adminModalCancelButton" style="display:none;">Cancel</button></div></div></div>`;
-        html += `<script>const AUTH_HEADER = '${authHeaderValue}'; /* ... rest of admin panel JS ... */ </script></body></html>`;
+        html += `<script>const AUTH_HEADER = '${authHeaderValue}';
+            const adminModalOverlay=document.getElementById('adminModalOverlay');const adminModalTitle=document.getElementById('adminModalTitle');const adminModalMessage=document.getElementById('adminModalMessage');const adminModalOkButton=document.getElementById('adminModalOkButton');const adminModalConfirmButton=document.getElementById('adminModalConfirmButton');const adminModalCancelButton=document.getElementById('adminModalCancelButton');let globalConfirmCallback=null;function showAdminModal(type,title,message,confirmCallbackFn=null){adminModalTitle.textContent=title;adminModalMessage.innerHTML=message;globalConfirmCallback=confirmCallbackFn;adminModalOkButton.style.display=type==='confirm'?'none':'inline-block';adminModalConfirmButton.style.display=type==='confirm'?'inline-block':'none';adminModalCancelButton.style.display=type==='confirm'?'inline-block':'none';adminModalOverlay.style.display='flex'}
+            adminModalOkButton.addEventListener('click',()=>adminModalOverlay.style.display='none');adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(true)});adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(false)});function flipCard(id){document.getElementById('card-'+id).classList.toggle('is-flipped')}
+            async function tryDeleteFeedback(id){showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch('/api/admin/feedback/'+id,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();showAdminModal('alert','Error!','Failed to delete: '+(err.message||res.statusText))}}catch(e){showAdminModal('alert','Fetch Error!','Error during delete: '+e.message)}}})}
+            async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?','Confirm reply: "'+replyText.substring(0,50)+'..."',async confirmed=>{if(confirmed){try{const res=await fetch('/api/admin/feedback/'+fbId+'/reply',{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟', adminAvatarUrl:'${nobitaAvatarUrl}'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();showAdminModal('alert','Error!','Failed to reply: '+(err.message||res.statusText))}}catch(e){showAdminModal('alert','Fetch Error!','Error during reply: '+e.message)}}})}
+            async function tryChangeUserAvatar(userId,userName){showAdminModal('confirm','Change Avatar?','Change avatar for '+userName+'? This will regenerate a default avatar for this email user.',async confirmed=>{if(confirmed){try{const res=await fetch('/api/admin/user/'+userId+'/change-avatar',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();showAdminModal('alert','Error!','Failed to change avatar: '+(err.message||res.statusText))}}catch(e){showAdminModal('alert','Fetch Error!','Error during avatar change: '+e.message)}}})}
+        </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
 });
-app.delete('/api/admin/feedback/:id', adminAuthenticate, async (req, res) => { /* ... (same as before) ... */
+
+app.delete('/api/admin/feedback/:id', adminAuthenticate, async (req, res) => {
     try { const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id); if (!deletedFeedback) return res.status(404).json({ message: 'Feedback ID mila nahi.' }); res.status(200).json({ message: 'Feedback delete ho gaya.' });
     } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
 });
-app.post('/api/admin/feedback/:id/reply', adminAuthenticate, async (req, res) => { /* ... (same as before) ... */
+app.post('/api/admin/feedback/:id/reply', adminAuthenticate, async (req, res) => {
     const feedbackId = req.params.id; const { replyText, adminName, adminAvatarUrl } = req.body;
     if (!replyText) return res.status(400).json({ message: 'Reply text daalo.' });
     try { const feedback = await Feedback.findById(feedbackId); if (!feedback) return res.status(404).json({ message: 'Feedback ID mila nahi.' });
     feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', adminAvatarUrl: adminAvatarUrl || getGenericAvatarUrl('Nobita'), timestamp: new Date() }); await feedback.save(); res.status(200).json({ message: 'Reply post ho gaya.', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) { console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error); res.status(500).json({ message: 'Reply save nahi ho paya.', error: error.message });}
 });
-app.put('/api/admin/user/:userId/change-avatar', adminAuthenticate, async (req, res) => { /* ... (same as before) ... */
+app.put('/api/admin/user/:userId/change-avatar', adminAuthenticate, async (req, res) => {
     const userId = req.params.userId;
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) return res.status(404).json({ message: 'User ID mila nahi.' });
     if (userToUpdate.loginMethod === 'google') return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });
