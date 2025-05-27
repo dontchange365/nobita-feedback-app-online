@@ -14,6 +14,7 @@
     --success-color: #28a745; /* Green */
     --error-color: #dc3545; /* Red */
     --info-color: var(--accent-color); /* Blue */
+    --warning-color: orange; /* Warning color for popups */
     --confirm-color: #fd7e14; /* Orange */
 
     --google-blue: #4285F4;
@@ -244,6 +245,9 @@ body {
 .profile-modal-content {
     max-width: 500px; /* Slightly wider for profile */
     padding: 35px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 90vh; /* Limit height to viewport height */
+    box-sizing: border-box; /* Include padding in height calculation */
 }
 
 .profile-avatar-section {
@@ -325,9 +329,11 @@ body {
 
 #profile-edit-form label,
 #change-password-form label {
+    display: block; /* Ensures label is on its own line */
     font-size: 0.9em;
     margin-bottom: 5px;
     color: var(--text-color-light);
+    text-align: left; /* Align labels to left */
 }
 
 #profile-name, #profile-email,
@@ -464,7 +470,7 @@ body {
     align-items: center;
     justify-content: center;
     opacity: 0; /* Start invisible for animation */
-    pointer-events: none; /* Don't block interaction when hidden */
+    pointer-events: none; /* Don't block interaction when invisible */
     transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
     z-index: 1005; /* Ensures it's on top of everything */
 }
@@ -505,7 +511,7 @@ body {
 .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
 .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
 .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
-.stylish-popup-card .popup-icon-area.warning { color: orange; } /* Warning color for popups */
+.stylish-popup-card .popup-icon-area.warning { color: var(--warning-color); } /* Using warning color variable */
 .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
 .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
 
