@@ -244,7 +244,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
     if (!FRONTEND_URL) { console.error("CRITICAL: FRONTEND_URL .env file mein set nahi hai. Password reset link nahi banega."); return res.status(500).json({ message: "Server configuration mein error hai (FRONTEND_URL missing)." });}
     try {
         const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email' });
-        if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila ya email/password account nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayega." });}
+        if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila ya email/password account nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayga." });}
         const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
         console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
@@ -253,7 +253,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) {
-        console.error('Request password reset API mein error:', error); // Log full error
+        console.error('Request password reset API mein error:', error);
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
              res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
@@ -280,59 +280,68 @@ app.post('/api/auth/reset-password', async (req, res) => {
     } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
 });
 
-// User Profile Update Route (New)
+// User Profile Update Route
 app.put('/api/user/profile', authenticateToken, upload.single('avatar'), async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { name } = req.body; // Name will come from req.body
-        let avatarUrl = req.user.avatarUrl; // Keep current avatar by default
+        const { name, avatarUrl: clientAvatarUrl } = req.body; // clientAvatarUrl will be passed for non-file updates
+        let finalAvatarUrl = req.user.avatarUrl; // Current avatar URL as default
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
-        if (user.loginMethod === 'google') {
-            if (req.file) { // Prevent Google users from uploading new avatars
+        // Handle avatar update if a file is uploaded AND user is not a Google user
+        if (req.file) {
+            if (user.loginMethod === 'google') {
                 return res.status(400).json({ message: "Google account se login kiye hue users avatar change nahi kar sakte." });
             }
-        } else { // Only for email/password users, handle avatar upload
-            if (req.file) {
-                // Upload image to Cloudinary
-                console.log("Attempting to upload avatar to Cloudinary...");
-                const result = await cloudinary.uploader.upload(req.file.path || `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
-                    folder: 'feedback_avatars', // Optional: specify a folder
-                    gravity: "face", // Detect and focus on faces if possible
-                    height: 150, // Resize to a reasonable dimension
-                    width: 150,
-                    crop: "thumb", // Crop to a thumbnail (smart crop)
-                    quality: "auto", // Optimize quality
-                    format: "auto" // Auto format conversion
-                });
-                console.log("Cloudinary upload result:", result);
-                if (result && result.secure_url) {
-                    avatarUrl = result.secure_url;
-                } else {
-                    return res.status(500).json({ message: "Avatar upload mein dikkat aa gayi. Kripya dobara try karein." });
-                }
-            } else if (req.body.avatarUrl && req.body.avatarUrl !== user.avatarUrl) {
-                // This else if handles cases where frontend might send avatarUrl directly without file upload (e.g. from DiceBear re-gen)
-                // For this project, we primarily focus on file upload for email users,
-                // and Google users' avatar comes from Google directly.
-                // If you want to allow email users to reset to DiceBear or change to a specific URL without upload,
-                // you would need to add more robust validation here.
-                // For now, if no file is uploaded, avatarUrl will remain the old one unless explicitly changed by an admin action.
+            console.log("Attempting to upload avatar to Cloudinary from buffer...");
+            const b64 = Buffer.from(req.file.buffer).toString('base64');
+            const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+
+            const result = await cloudinary.uploader.upload(dataURI, {
+                folder: 'feedback_avatars',
+                gravity: "face",
+                height: 150,
+                width: 150,
+                crop: "thumb",
+                quality: "auto",
+                format: "auto"
+            });
+            console.log("Cloudinary upload result:", result);
+            if (result && result.secure_url) {
+                finalAvatarUrl = result.secure_url;
+            } else {
+                return res.status(500).json({ message: "Avatar upload mein dikkat aa gayi. Kripya dobara try karein." });
             }
+        } else if (clientAvatarUrl && clientAvatarUrl !== user.avatarUrl) {
+            // This condition handles if client explicitly sends a new avatarUrl,
+            // e.g., if they chose a DiceBear generated one again or some other external URL.
+            // Ensure basic validation if allowing arbitrary URLs.
+            // For this project, we primarily rely on file uploads for avatar changes.
+            finalAvatarUrl = clientAvatarUrl;
         }
 
-        // Update name and avatarUrl
-        user.name = name || user.name; // Update name if provided, otherwise keep old name
-        user.avatarUrl = avatarUrl;
-        await user.save();
+        // Update name if provided and it's different
+        if (name && name !== user.name) {
+            user.name = name;
+        }
+        
+        // Update avatar URL if it changed
+        if (finalAvatarUrl !== user.avatarUrl) {
+            user.avatarUrl = finalAvatarUrl;
+        }
 
-        // Update name and avatar in all associated feedbacks
-        await Feedback.updateMany(
-            { userId: user._id },
-            { $set: { name: user.name, avatarUrl: user.avatarUrl } }
-        );
+        // Only save if actual changes were made to avoid unnecessary DB writes
+        if (user.isModified('name') || user.isModified('avatarUrl')) {
+            await user.save();
+
+            // Update name and avatar in all associated feedbacks
+            await Feedback.updateMany(
+                { userId: user._id },
+                { $set: { name: user.name, avatarUrl: user.avatarUrl } }
+            );
+        }
 
         // Generate a new token with updated user info
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
