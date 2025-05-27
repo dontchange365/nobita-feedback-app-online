@@ -352,15 +352,18 @@ body {
     box-shadow: 0 12px 40px rgba(0,0,0,0.3); /* Deeper shadow */
     text-align: center;
     transform: translateY(10px) scale(0.95); /* Slight movement/scale for animation */
-    opacity: 0; /* Start invisible for animation */
-    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important; /* Bouncy transition */
+    /* opacity: 0; */ /* DEBUG: Temporarily COMMENTED OUT or REMOVED */
+    /* transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important; */ /* DEBUG: Temporarily SIMPLIFIED */
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* DEBUG: ONLY TRANSFORM TRANSITION */
     position: relative; /* For close button positioning */
     color: var(--text-color-light); /* Light text */
+    visibility: visible !important; /* DEBUG: ADD THIS FOR DEBUGGING - forces visibility */
+    opacity: 1 !important; /* DEBUG: ADD THIS FOR DEBUGGING - forces opacity */
 }
 
 .stylish-popup-overlay.active .stylish-popup-card {
     transform: translateY(0) scale(1);
-    opacity: 1;
+    /* opacity: 1; */ /* DEBUG: TEMPORARILY COMMENTED OUT or REMOVED if base opacity is not 0 */
 }
 
 .stylish-popup-card .popup-icon-area {
@@ -373,8 +376,8 @@ body {
 .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
 .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
 .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
-.stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); } /* specific styling for forgot_password icon */
-.stylish-popup-card .popup-icon-area.warning { color: var(--confirm-color); } /* Using confirm color for warning for now */
+.stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); } 
+.stylish-popup-card .popup-icon-area.warning { color: var(--confirm-color); } 
 
 
 .stylish-popup-card h2.popup-title {
@@ -975,11 +978,11 @@ button#submit-feedback:hover {
         padding:0;
     }
 
-    .auth-modal-content h2{ /* This style is for the original modals, now hidden */
+    .auth-modal-content h2{ 
         font-size:1.5em;
     }
 
-    .user-profile-menu{ /* This style is for the original menu, now hidden */
+    .user-profile-menu{ 
         width:220px;
         top:65px;
     }
@@ -1013,7 +1016,6 @@ button#submit-feedback:hover {
         font-size: 0.9em;
     }
 
-    /* Styles for original modals, now hidden. Kept for reference if content structure is reused */
     .auth-modal-content{
         width:95%;
         padding:20px;
@@ -1029,8 +1031,6 @@ button#submit-feedback:hover {
         font-size: 0.95em;
     }
 
-
-    /* Styles for original user menu, now hidden */
     .user-profile-menu{
         width:calc(100vw - 40px); 
         right:10px;
