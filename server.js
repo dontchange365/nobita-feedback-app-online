@@ -10,6 +10,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const cloudinary = require('cloudinary').v2; // Cloudinary SDK
+const multer = require('multer'); // For handling file uploads
 
 dotenv.config(); // Yeh local .env file ke liye hai, Render isko ignore karega
 
@@ -28,9 +30,14 @@ const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
+// Cloudinary config
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
 // --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
-console.log("PORT (from process.env):", process.env.PORT); // Render yeh set karta hai
+console.log("PORT (from process.env):", process.env.PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
 console.log("JWT_SECRET (loaded):", JWT_SECRET ? "SET" : "NOT SET");
 console.log("FRONTEND_URL (loaded):", FRONTEND_URL ? "SET" : "NOT SET");
@@ -41,6 +48,9 @@ console.log("EMAIL_USER (loaded):", EMAIL_USER ? "SET" : "NOT SET");
 console.log("EMAIL_PASS (loaded):", EMAIL_PASS ? "SET (value hidden)" : "NOT SET");
 console.log("EMAIL_HOST (loaded):", EMAIL_HOST ? "SET" : "NOT SET");
 console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
+console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
 // Zaroori environment variables check karna
@@ -58,6 +68,16 @@ if (!GOOGLE_CLIENT_ID) {
 }
 if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
     console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Password reset email kaam nahi karega.");
+}
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    console.warn("WARNING: Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) poori tarah set nahi hain. Avatar upload kaam nahi karega.");
+} else {
+    cloudinary.config({
+        cloud_name: CLOUDINARY_CLOUD_NAME,
+        api_key: CLOUDINARY_API_KEY,
+        api_secret: CLOUDINARY_API_SECRET
+    });
+    console.log("Cloudinary configured.");
 }
 
 
@@ -81,7 +101,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String },
-  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
+  googleId: { type: String, sparse: true, unique: true },
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -106,12 +126,17 @@ const feedbackSchema = new mongoose.Schema({
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 app.use(cors({
-    origin: [FRONTEND_URL, `http://localhost:${PORT}`, 'https://accounts.google.com', 'https://*.google.com'],
+    origin: [FRONTEND_URL, `http://localhost:${PORT}`, 'https://accounts.google.com', 'https://*.google.com', 'https://res.cloudinary.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Multer setup for file uploads (memory storage for direct cloudinary upload)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 
 app.use((req, res, next) => {
     let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -167,7 +192,6 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Signup mein error:', error);
-        // Original error response (removed temporary debugging line)
         res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });
     }
 });
@@ -255,6 +279,73 @@ app.post('/api/auth/reset-password', async (req, res) => {
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
     } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
 });
+
+// User Profile Update Route (New)
+app.put('/api/user/profile', authenticateToken, upload.single('avatar'), async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { name } = req.body; // Name will come from req.body
+        let avatarUrl = req.user.avatarUrl; // Keep current avatar by default
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found.' });
+
+        if (user.loginMethod === 'google') {
+            if (req.file) { // Prevent Google users from uploading new avatars
+                return res.status(400).json({ message: "Google account se login kiye hue users avatar change nahi kar sakte." });
+            }
+        } else { // Only for email/password users, handle avatar upload
+            if (req.file) {
+                // Upload image to Cloudinary
+                console.log("Attempting to upload avatar to Cloudinary...");
+                const result = await cloudinary.uploader.upload(req.file.path || `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
+                    folder: 'feedback_avatars', // Optional: specify a folder
+                    gravity: "face", // Detect and focus on faces if possible
+                    height: 150, // Resize to a reasonable dimension
+                    width: 150,
+                    crop: "thumb", // Crop to a thumbnail (smart crop)
+                    quality: "auto", // Optimize quality
+                    format: "auto" // Auto format conversion
+                });
+                console.log("Cloudinary upload result:", result);
+                if (result && result.secure_url) {
+                    avatarUrl = result.secure_url;
+                } else {
+                    return res.status(500).json({ message: "Avatar upload mein dikkat aa gayi. Kripya dobara try karein." });
+                }
+            } else if (req.body.avatarUrl && req.body.avatarUrl !== user.avatarUrl) {
+                // This else if handles cases where frontend might send avatarUrl directly without file upload (e.g. from DiceBear re-gen)
+                // For this project, we primarily focus on file upload for email users,
+                // and Google users' avatar comes from Google directly.
+                // If you want to allow email users to reset to DiceBear or change to a specific URL without upload,
+                // you would need to add more robust validation here.
+                // For now, if no file is uploaded, avatarUrl will remain the old one unless explicitly changed by an admin action.
+            }
+        }
+
+        // Update name and avatarUrl
+        user.name = name || user.name; // Update name if provided, otherwise keep old name
+        user.avatarUrl = avatarUrl;
+        await user.save();
+
+        // Update name and avatar in all associated feedbacks
+        await Feedback.updateMany(
+            { userId: user._id },
+            { $set: { name: user.name, avatarUrl: user.avatarUrl } }
+        );
+
+        // Generate a new token with updated user info
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
+        const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({ message: 'Profile successfully updated!', user: userForToken, token: appToken });
+
+    } catch (error) {
+        console.error('Profile update API error:', error);
+        res.status(500).json({ message: 'Profile update mein dikkat aa gayi.', error: error.message });
+    }
+});
+
 
 // Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
