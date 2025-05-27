@@ -1133,3 +1133,52 @@ button#submit-feedback:hover {
 #loginModal, #signupModal, #userMenu {
     display: none !important;
 }
+
+/* == START: SUPER DEBUG OVERLAY FIX == */
+/* Ensure the main overlay is initially hidden and becomes visible */
+/* #stylishPopupOverlay {} */ /* Base style handles initial hide */
+
+#stylishPopupOverlay.active {
+    display: flex !important;
+    opacity: 1 !important;
+    background: rgba(10, 10, 20, 0.85) !important; /* Darker for test */
+    z-index: 20000 !important; /* Extremely high z-index */
+}
+
+/* Force the card within the active overlay to be visible */
+#stylishPopupOverlay.active #stylishPopupCard {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important; /* Bright background for test */
+    color: black !important; /* Contrasting text for test */
+    width: 80% !important;
+    max-width: 500px !important;
+    height: auto !important;
+    min-height: 100px !important; /* Ensure it has some height */
+    padding: 20px !important;
+    border: 5px solid red !important; /* Bright border for test */
+    transform: none !important; /* Disable transforms for test */
+    z-index: 20001 !important; /* Above its overlay's forced bg */
+    overflow-y: auto !important; /* Make card scrollable if content overflows */
+}
+
+/* Force visibility of some child elements if they exist */
+#stylishPopupOverlay.active #stylishPopupCard #stylishPopupTitle,
+#stylishPopupOverlay.active #stylishPopupCard #stylishPopupMessage,
+#stylishPopupOverlay.active #stylishPopupCard #stylishPopupFormArea,
+#stylishPopupOverlay.active #stylishPopupCard #stylishPopupButtonContainer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: black !important; /* Ensure text is visible on white card */
+    background: #eee !important; /* Light grey background for child areas for visibility */
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px dashed blue;
+}
+#stylishPopupOverlay.active #stylishPopupCard #stylishPopupMessage p {
+    color: black !important;
+}
+
+/* == END: SUPER DEBUG OVERLAY FIX == */
