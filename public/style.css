@@ -17,6 +17,8 @@
     --confirm-color: #fd7e14; /* Orange */
 
     --google-blue: #4285F4;
+    --progress-bg: #4a4a60;
+    --progress-fill-color: #27ae60;
 }
 
 html {
@@ -58,6 +60,7 @@ body {
     font-weight: 600;
     padding: 0 15px; /* Padding for text */
     border-radius: 8px; /* Slightly rounded corners */
+    z-index: 1000; /* Ensure it's above other content but below modals */
 }
 
 .corner-trigger.avatar-mode { /* Only when avatar is shown */
@@ -82,7 +85,7 @@ body {
     object-fit: cover;
 }
 
-/* --- Auth Modals (Login/Signup) --- */
+/* --- Auth Modals (Login/Signup/Profile) --- */
 .auth-modal-overlay {
     display: none; /* Hidden by default */
     position: fixed;
@@ -237,6 +240,137 @@ body {
     background: #f8f8f8;
 }
 
+/* --- User Profile Modal Specific Styles --- */
+.profile-modal-content {
+    max-width: 500px; /* Slightly wider for profile */
+    padding: 35px;
+}
+
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+#profile-display-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--secondary-color);
+    box-shadow: 0 0 15px rgba(255,215,0,0.5);
+    margin-bottom: 15px;
+}
+
+.upload-avatar-btn {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    padding: 8px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--secondary-color);
+}
+
+.upload-avatar-btn:hover {
+    background-color: #550a8a; /* Darker primary on hover */
+    transform: translateY(-2px);
+}
+
+.upload-avatar-btn i {
+    font-size: 1.1em;
+}
+
+.upload-progress-bar {
+    width: 80%;
+    height: 15px;
+    background-color: var(--progress-bg);
+    border-radius: 8px;
+    margin-top: 15px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--progress-fill-color);
+    border-radius: 8px;
+    transition: width 0.3s ease-out;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#profile-edit-form .input-group,
+#change-password-form .input-group {
+    margin-bottom: 15px;
+}
+
+#profile-edit-form label,
+#change-password-form label {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    color: var(--text-color-light);
+}
+
+#profile-name, #profile-email,
+#current-password, #new-password-profile, #confirm-new-password-profile {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text-color-light);
+    font-size: 0.9em;
+}
+
+#profile-email:disabled {
+    background: rgba(255, 255, 255, 0.04);
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+#save-profile-changes-btn, #change-password-btn {
+    background: linear-gradient(45deg, var(--accent-color), #2563EB);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#save-profile-changes-btn:hover, #change-password-btn:hover {
+    background: linear-gradient(45deg, #2563EB, var(--accent-color));
+    transform: translateY(-2px);
+}
+
+.profile-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 25px 0;
+}
+
 /* --- User Menu (Dropdown) --- */
 .user-profile-menu {
     display: none; /* Hidden by default */
@@ -371,7 +505,7 @@ body {
 .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
 .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
 .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
-.stylish-popup-card .popup-icon-area.warning { color: orange; }
+.stylish-popup-card .popup-icon-area.warning { color: orange; } /* Warning color for popups */
 .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
 .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
 
@@ -960,134 +1094,6 @@ button#submit-feedback:hover {
     100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;}
 }
 
-/* --- Profile Modal Specific Styles --- */
-.profile-modal-content {
-    max-width: 500px; /* Slightly wider than auth modals */
-    padding: 35px; /* More generous padding */
-}
-
-.profile-display-area, .profile-edit-area {
-    text-align: center;
-    padding-top: 15px;
-}
-
-.profile-avatar-large {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--secondary-color);
-    box-shadow: 0 0 15px rgba(255,215,0,0.5);
-    margin-bottom: 25px;
-    transition: transform 0.3s ease;
-}
-.profile-avatar-large:hover {
-    transform: scale(1.05);
-}
-
-.profile-display-area p {
-    font-size: 1.1em;
-    margin-bottom: 15px;
-    color: var(--text-color-light);
-}
-
-.profile-display-area p strong {
-    color: var(--secondary-color);
-    margin-right: 8px;
-}
-
-.action-button {
-    background: linear-gradient(45deg, var(--accent-color), #2563EB);
-    color: #fff;
-    border: none;
-    padding: 11px 20px;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 3px 10px rgba(59,130,246,0.3);
-    margin-top: 15px;
-    width: calc(100% - 20px); /* Adjust for padding on small screens */
-    max-width: 250px; /* Limit button width */
-    display: inline-block; /* For centering */
-}
-.action-button.secondary-action-button {
-    background: linear-gradient(45deg, #5a6268, #495057);
-}
-.action-button.secondary-action-button:hover {
-    background: linear-gradient(45deg, #495057, #5a6268);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.action-button:hover {
-    background: linear-gradient(45deg, #2563EB, var(--accent-color));
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59,130,246,0.45);
-}
-.action-button:disabled {
-    background: #555;
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-    transform: none;
-}
-
-
-.profile-edit-area .input-group label {
-    font-size: 1em; /* Slightly larger labels */
-    margin-bottom: 8px;
-}
-
-.profile-edit-area .input-group input[type="text"],
-.profile-edit-area .input-group input[type="email"] {
-    margin-bottom: 15px; /* Consistent spacing */
-}
-
-.profile-edit-area .avatar-upload-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-    border: 2px dashed var(--card-border);
-    border-radius: 10px;
-    padding: 20px;
-    background: rgba(255,255,255,0.05);
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-}
-.profile-edit-area .avatar-upload-section:hover {
-    background: rgba(255,255,255,0.08);
-    border-color: var(--accent-color);
-}
-
-.profile-edit-area input[type="file"] {
-    display: none; /* Hide default file input */
-}
-
-.profile-edit-area .upload-tip {
-    font-size: 0.85em;
-    color: rgba(255,255,255,0.7);
-    margin: 0;
-}
-
-.loading-spinner {
-    border: 4px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top: 4px solid var(--secondary-color);
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-    display: none;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 
 /* --- Responsive Design --- */
 @media (max-width: 768px) {
@@ -1113,18 +1119,19 @@ button#submit-feedback:hover {
         padding:0;
     }
 
+    .auth-modal-content{
+        padding: 20px;
+    }
     .auth-modal-content h2{
         font-size:1.5em;
+    }
+    .profile-modal-content {
+        padding: 25px; /* Adjust for smaller screens */
     }
 
     .user-profile-menu{
         width:220px;
         top:65px;
-    }
-
-    .action-button {
-        padding: 10px 15px;
-        font-size: 0.95em;
     }
 }
 
@@ -1146,12 +1153,17 @@ button#submit-feedback:hover {
         padding:20px;
     }
 
+    .profile-modal-content {
+        padding: 20px; /* Further adjust for very small screens */
+    }
+
     .user-profile-menu{
         width:calc(100vw - 40px); /* Fill almost full width */
         right:10px;
     }
 
-    .profile-modal-content {
-        padding: 25px;
+    .upload-avatar-btn {
+        font-size: 0.85em;
+        padding: 7px 12px;
     }
 }
