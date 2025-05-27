@@ -1133,4 +1133,11 @@ button#submit-feedback:hover {
         padding: 8px 18px;
         font-size: 0.85em;
     }
+
+/* Existing CSS ke neeche yeh add karein */
+
+/* Hide original modals and menu, they will be used by stylishPopup now */
+#loginModal, #signupModal, #userMenu {
+    display: none !important;
+}
 }
