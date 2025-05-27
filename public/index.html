@@ -4,60 +4,90 @@
   <meta charset="UTF-8">
   <title>Nobita Feedback App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:wght@400;600;900&display=swap">
+  <!-- FontAwesome & Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    /* --- Minimal Responsive CSS for Modern Look --- */
-    body{margin:0;padding:0;font-family:'Inter',sans-serif;background:#f6f7fb;color:#1c0038;}
-    header{background:#fff;box-shadow:0 2px 24px #a68fd944;padding:1em 1.2em .8em 1.2em;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
-    header h1{margin:0;font-size:1.35em;font-weight:900;background:linear-gradient(90deg,#6a0dad 0%,#b47ddb 100%);color:#fff;padding:.22em 1.6em;border-radius:12px;letter-spacing:1.2px;box-shadow:0 2px 10px #b47ddb33;}
+    body {margin:0;padding:0;font-family:'Inter',sans-serif;background:#f6f7fb;color:#1c0038;}
+    header{background:#fff;box-shadow:0 2px 24px #a68fd944;padding:1.1em 1.2em .8em 1.2em;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
+    header h1{margin:0;font-size:1.35em;font-weight:900;background:linear-gradient(90deg,#6a0dad 0%,#b47ddb 100%);color:#fff;padding:0.22em 1.6em;border-radius:12px;letter-spacing:1.2px;box-shadow:0 2px 10px #b47ddb33;}
     .profile-area{display:flex;align-items:center;gap:1em;}
     .avatar{border-radius:50%;width:41px;height:41px;object-fit:cover;border:3px solid #6a0dad;background:#fff;cursor:pointer;}
-    .user-menu{background:#fff;position:absolute;top:65px;right:1.2em;border-radius:12px;box-shadow:0 2px 24px #a68fd944;border:1px solid #ece2fa;padding:.3em 0;min-width:165px;z-index:2001;display:none;}
+    .user-menu{background:#fff;position:absolute;top:65px;right:1.2em;border-radius:12px;box-shadow:0 2px 24px #a68fd944;border:1px solid #ece2fa;padding:0.3em 0;min-width:165px;z-index:2001;display:none;}
     .user-menu.active{display:block;}
     .user-menu ul{list-style:none;margin:0;padding:0;}
-    .user-menu li{padding:.8em 1.2em;border-bottom:1px solid #ece2fa;cursor:pointer;font-size:1em;font-weight:600;display:flex;align-items:center;gap:.55em;}
+    .user-menu li{padding:0.8em 1.2em;border-bottom:1px solid #ece2fa;cursor:pointer;font-size:1em;font-weight:600;display:flex;align-items:center;gap:.55em;}
     .user-menu li:last-child{border-bottom:none;}
     .user-menu li:hover{background:#ece2fa;}
-    main{max-width:440px;width:100%;margin:2.5em auto 1.5em auto;background:rgba(255,255,255,0.75);padding:2.2em .7em 2.25em .7em;border-radius:17px;box-shadow:0 2px 24px #a68fd944;border:1.5px solid #ece2fa;display:flex;flex-direction:column;align-items:center;}
-    .section-heading{font-size:2em;font-weight:900;background:linear-gradient(90deg,#6a0dad 0%,#b47ddb 100%);color:#fff;padding:.1em 1.2em;border-radius:8px;margin:0 0 1.7em 0;box-shadow:0 2px 10px #b47ddb29;letter-spacing:1px;text-align:center;width:100%;}
-    #feedback-form-container{margin-bottom:1.3em;background:#fff;border-radius:11px;box-shadow:0 2px 16px #c0a8e922;padding:1.5em 1.2em 1.1em 1.2em;border:1.5px solid #ece2fa;width:100%;}
-    #feedback-form-title{font-size:1.22em;font-weight:700;color:#6a0dad;margin-bottom:.9em;letter-spacing:.7px;text-align:center;}
+    main{max-width:720px;width:100%;margin:2.5em auto 1.5em auto;background:rgba(255,255,255,0.95);padding:2em 0.7em 2em 0.7em;border-radius:17px;box-shadow:0 2px 24px #a68fd944;border:1.5px solid #ece2fa;}
+    @media (max-width:800px){main{max-width:99vw;padding:1.1em 2vw;}}
+    .section-heading{font-size:2em;font-weight:900;background:linear-gradient(90deg,#6a0dad 0%,#b47ddb 100%);color:#fff;padding:0.1em 1.2em;border-radius:8px;margin:0 0 1.7em 0;box-shadow:0 2px 10px #b47ddb29;letter-spacing:1px;text-align:center;width:100%;}
+    .btn-main{background:#6a0dad;color:#fff;border:none;padding:.7em 1.5em;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;transition:background .15s;}
+    .btn-main:hover{background:#b47ddb;}
+    .btn-close{background:none;border:none;font-size:1.3em;color:#888;cursor:pointer;position:absolute;top:.7em;right:.9em;}
+    .btn-close:hover{color:#6a0dad;}
+    .swal2-popup .swal2-loader{display:block;margin:1.2em auto;border:4px solid #e1d4f3;border-top:4px solid #6a0dad;border-radius:50%;width:38px;height:38px;animation:spin .8s linear infinite;}
+    @keyframes spin{100%{transform:rotate(360deg);}}
+    /* Google Button */
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      background: #fff; border: 1px solid #d0d0d0; border-radius: 6px;
+      color: #444; font-weight: 600; font-size: 1.05em; padding: 0.7em 0;
+      width: 100%; cursor: pointer; transition: box-shadow .15s, background .15s;
+      box-shadow: 0 1.5px 6px #e9e9e9;
+      margin-bottom:1em;
+    }
+    .google-btn:hover { background: #f6fafd; box-shadow: 0 2px 12px #d2e3fc55; }
+    .google-btn img { width: 22px; height: 22px; display: inline-block; }
+    /* Feedback Panel */
+    .feedback-panel {
+      background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 20px; max-width: 700px; margin: 0 auto 1.7em auto;
+    }
+    .overall-summary {text-align: center; margin-bottom: 32px;}
+    .overall-summary .label {font-size: 1rem;color: #666;text-transform: uppercase;letter-spacing: 0.05em;margin-bottom: 6px;}
+    .overall-summary .avg-rating {font-size: 2.5rem;font-weight: 700;color: #222;margin-bottom: 12px;}
+    .overall-summary .avg-stars {display: flex;justify-content: center;gap: 6px;font-size: 2rem;color: #f5a623;margin-bottom: 4px;}
+    .overall-summary .total-count {font-size: 0.9rem;color: #666;}
+    .recent-feedback h3 {margin-bottom: 16px;font-size: 1.4rem;color: #222;}
+    .feedback-item {display: flex;gap: 16px;padding: 16px 0;border-top: 1px solid #e0e0e0;font-size: 0.95rem;line-height: 1.4;}
+    .feedback-item:first-child {border-top: none;}
+    .user-avatar, .admin-avatar {width: 50px;height: 50px;border-radius: 50%;overflow: hidden;background: #ddd;flex-shrink: 0;}
+    .user-avatar img, .admin-avatar img {width: 100%;height: 100%;object-fit: cover;}
+    .feedback-content {flex: 1;}
+    .feedback-header {display: flex;align-items: center;gap: 8px;margin-bottom: 6px;font-weight: 600;font-size: 1rem;}
+    .feedback-header .verified {color: #1DA1F2;font-size: 1rem;}
+    .user-stars {margin-left: auto;color: #f5a623;font-size: 1rem;display: flex;gap: 2px;}
+    .feedback-text {margin-bottom: 12px;color: #444;}
+    .edited-note {font-size: 0.85rem;color: #888;margin-bottom: 8px;}
+    .admin-reply {background: #f7fbff;border-left: 3px solid #1DA1F2;padding: 12px 16px;border-radius: 4px;font-size: 0.95rem;margin-top:7px;}
+    .admin-meta {display: flex;align-items: center;gap: 8px;margin-bottom: 6px;font-weight: 600;font-size: 0.9rem;color: #333;}
+    .timestamp {margin-left: auto;font-weight: normal;font-size: 0.85rem;color: #666;}
+    .reply-text {color: #333;}
+    /* Form */
+    #feedback-form-container {background:#fff;border-radius:11px;box-shadow:0 2px 16px #c0a8e922;padding:1.5em 1.2em 1.1em 1.2em;border:1.5px solid #ece2fa;width:100%;max-width:470px;margin:1.8em auto;}
+    #feedback-form-title {font-size:1.22em;font-weight:700;color:#6a0dad;margin-bottom:0.9em;letter-spacing:0.7px;text-align:center;}
     .input-group{margin-bottom:1.12em;}
-    .input-group label{display:block;margin-bottom:.29em;font-weight:600;color:#6a0dad;}
-    .input-group input,.input-group textarea{width:100%;padding:.7em;border:1.2px solid #ece2fa;border-radius:6px;font-size:1em;background:#ece2fa;font-family:inherit;transition:border .13s;font-weight:600;}
+    .input-group label{display:block;margin-bottom:0.29em;font-weight:600;color:#6a0dad;}
+    .input-group input,.input-group textarea{width:100%;padding:0.7em;border:1.2px solid #ece2fa;border-radius:6px;font-size:1em;background:#ece2fa;font-family:inherit;transition:border .13s;font-weight:600;}
     .input-group input:focus,.input-group textarea:focus{border:1.2px solid #6a0dad;}
-    .stars{display:flex;gap:.18em;margin-bottom:.36em;justify-content:center;}
+    .stars{display:flex;gap:0.18em;margin-bottom:0.36em;}
     .star{font-size:2.1em;cursor:pointer;color:#d2c2e6;}
     .star.selected{color:#FFD700;}
-    #submit-feedback{background:#6a0dad;color:#fff;border:none;padding:.85em 2em;border-radius:8px;font-size:1.13em;font-weight:800;cursor:pointer;margin-top:.8em;box-shadow:0 2px 14px #b47ddb44;transition:background .15s;width:100%;}
-    #submit-feedback:hover{background:#b47ddb;}
-    #feedback-list-container{margin-top:1.7em;min-height:80px;width:100%;display:flex;flex-direction:column;align-items:center;}
-    .feedback-card{background:#fff;border-radius:13px;border:1.4px solid #ece2fa;box-shadow:0 2px 18px #b47ddb1b;padding:1.2em 1em 1em 1em;margin-bottom:1.1em;position:relative;width:98%;max-width:440px;}
-    .feedback-header{display:flex;align-items:center;gap:.7em;font-weight:700;font-size:1.08em;}
-    .feedback-header .avatar{width:38px;height:38px;}
-    .feedback-header .user-name{color:#6a0dad;font-weight:800;font-size:1.09em;}
-    .feedback-rating{color:#FFD700;font-size:1.13em;margin-left:1.1em;}
-    .feedback-meta{font-size:.93em;color:#999;margin-bottom:.2em;margin-left:3.2em;}
-    .feedback-content{font-size:1.13em;margin: .7em 0 .2em 0;color:#2a163b;}
-    @media (max-width:630px){main{max-width:98vw;padding:1.1em 2vw;}}
-    /* Modal simple */
-    .modal{display:none;position:fixed;z-index:2002;left:0;top:0;width:100%;height:100%;background:rgba(54,0,90,0.18);align-items:center;justify-content:center;}
-    .modal.active{display:flex;}
-    .modal-content{background:#fff;margin:auto;padding:2em 2em 1em 2em;border-radius:13px;max-width:355px;width:95vw;position:relative;box-shadow:0 2px 24px #a68fd944;border:1.5px solid #ece2fa;text-align:left;}
-    .close-modal-btn{position:absolute;top:.65em;right:.75em;background:none;border:none;font-size:1.18em;color:#888;cursor:pointer;}
+    .input-with-eye{position:relative;}
+    .eye-btn{position:absolute;right:.7em;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.15em;color:#999;}
+    .eye-btn:active{color:#6a0dad;}
     .avatar-upload-container{text-align:center;margin-bottom:1.1em;}
     .avatar-upload-label{display:block;margin-top:.2em;font-size:1.04em;color:#6a0dad;font-weight:700;cursor:pointer;}
     .avatar-upload-btn{display:inline-block;margin-top:.65em;background:#6a0dad;color:#fff;border:none;border-radius:7px;padding:.5em 1.5em;font-size:1.1em;font-weight:700;cursor:pointer;}
     #avatar-upload-input{display:none;}
-    .avatar-upload-preview{width:64px;height:64px;border-radius:50%;border:3px solid #6a0dad;object-fit:cover;margin-bottom:.1em;background:#fff;}
-    .input-with-eye{position:relative;}
-    .eye-btn{position:absolute;right:.7em;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.15em;color:#999;}
-    .eye-btn:active{color:#6a0dad;}
-    .swal2-popup .swal2-loader{display:block;margin:1.2em auto;border:4px solid #e1d4f3;border-top:4px solid #6a0dad;border-radius:50%;width:38px;height:38px;animation:spin .8s linear infinite;}
-    @keyframes spin{100%{transform:rotate(360deg);}}
+    .avatar-upload-preview{width:64px;height:64px;border-radius:50%;border:3px solid #6a0dad;object-fit-bottom:.1em;background:#fff;}
+    @media (max-width:540px){.feedback-panel{padding:8px;}.feedback-item{flex-direction:column;align-items:flex-start;}.user-avatar{margin-bottom:6px;}}
+    .modal{display:none;position:fixed;z-index:2002;left:0;top:0;width:100%;height:100%;background:rgba(54,0,90,0.18);align-items:center;justify-content:center;}
+    .modal.active{display:flex;}
+    .modal-content{background:#fff;margin:auto;padding:2em 2em 1em 2em;border-radius:13px;max-width:355px;width:95vw;position:relative;box-shadow:0 2px 24px #a68fd944;border:1.5px solid #ece2fa;text-align:left;}
   </style>
 </head>
 <body>
@@ -75,7 +105,7 @@
     </div>
   </header>
   <main>
-    <div class="section-heading">Share Your Feedback</div>
+    <div class="feedback-panel" id="feedback-panel"></div>
     <div id="feedback-form-container">
       <div id="feedback-form-title"><i class="fa fa-comments"></i> We value your feedback!</div>
       <form id="feedback-form" autocomplete="off">
@@ -97,18 +127,20 @@
             <span class="star" data-value="5">&#9733;</span>
           </div>
         </div>
-        <button type="submit" id="submit-feedback">SUBMIT FEEDBACK</button>
+        <button type="submit" class="btn-main" id="submit-feedback">SUBMIT FEEDBACK</button>
       </form>
     </div>
-    <div class="section-heading" style="font-size:1.2em;margin-top:2.2em;">Recent Feedbacks</div>
-    <div id="feedback-list-container"></div>
   </main>
-  <!-- LOGIN, SIGNUP, PROFILE, FORGOT MODALS - for brevity, use same structure as above -->
+
+  <!-- Modals -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
-      <button class="close-modal-btn" onclick="closeModal('loginModal')"><i class="fa fa-times"></i></button>
+      <button class="btn-close" onclick="closeModal('loginModal')"><i class="fa fa-times"></i></button>
       <h3 style="text-align:center;color:#6a0dad;font-weight:900;">Login</h3>
-      <div id="google-signin-btn"></div>
+      <button type="button" class="google-btn" id="google-login-btn">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google logo">
+        Sign in with Google
+      </button>
       <form id="email-login-form" autocomplete="off">
         <div class="input-group">
           <label for="modal-login-email">Email</label>
@@ -119,7 +151,7 @@
           <input type="password" id="modal-login-password" required autocomplete="current-password">
           <button type="button" class="eye-btn" tabindex="-1" onclick="togglePassword('modal-login-password',this)"><i class="fa fa-eye"></i></button>
         </div>
-        <button type="submit" style="width:100%;margin-top:1em;">Login</button>
+        <button type="submit" class="btn-main" style="width:100%;margin-top:1em;">Login</button>
         <div style="margin-top:0.7em;font-size:0.98em;">
           <a href="#" id="modal-forgot-password-link">Forgot password?</a>
           <span style="float:right;">
@@ -131,9 +163,12 @@
   </div>
   <div class="modal" id="signupModal">
     <div class="modal-content">
-      <button class="close-modal-btn" onclick="closeModal('signupModal')"><i class="fa fa-times"></i></button>
+      <button class="btn-close" onclick="closeModal('signupModal')"><i class="fa fa-times"></i></button>
       <h3 style="text-align:center;color:#6a0dad;font-weight:900;">Sign Up</h3>
-      <div id="google-signup-btn"></div>
+      <button type="button" class="google-btn" id="google-signup-btn">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google logo">
+        Sign up with Google
+      </button>
       <form id="email-signup-form" autocomplete="off">
         <div class="input-group">
           <label for="modal-signup-name">Name</label>
@@ -153,7 +188,7 @@
           <input type="password" id="modal-signup-confirm-password" required autocomplete="new-password">
           <button type="button" class="eye-btn" tabindex="-1" onclick="togglePassword('modal-signup-confirm-password',this)"><i class="fa fa-eye"></i></button>
         </div>
-        <button type="submit" style="width:100%;margin-top:1em;">Sign Up</button>
+        <button type="submit" class="btn-main" style="width:100%;margin-top:1em;">Sign Up</button>
         <div style="margin-top:.6em;font-size:.98em;">
           <a href="#" id="modal-already-account-link">Already have an account?</a>
         </div>
@@ -162,26 +197,26 @@
   </div>
   <div class="modal" id="forgotPasswordModal">
     <div class="modal-content">
-      <button class="close-modal-btn" onclick="closeModal('forgotPasswordModal')"><i class="fa fa-times"></i></button>
+      <button class="btn-close" onclick="closeModal('forgotPasswordModal')"><i class="fa fa-times"></i></button>
       <h3 style="text-align:center;color:#6a0dad;font-weight:900;">Forgot Password</h3>
       <form id="forgot-password-form">
         <div class="input-group">
           <label for="forgot-email">Your Email</label>
           <input type="email" id="forgot-email" required>
         </div>
-        <button type="submit" style="width:100%;">Send Reset Link</button>
+        <button type="submit" class="btn-main" style="width:100%;">Send Reset Link</button>
       </form>
     </div>
   </div>
   <div class="modal" id="userProfileModal">
     <div class="modal-content">
-      <button class="close-modal-btn" onclick="closeModal('userProfileModal')"><i class="fa fa-times"></i></button>
+      <button class="btn-close" onclick="closeModal('userProfileModal')"><i class="fa fa-times"></i></button>
       <h3 style="text-align:center;color:#6a0dad;font-weight:900;">Profile</h3>
       <div class="avatar-upload-container">
         <img id="profile-display-avatar" class="avatar-upload-preview" src="https://via.placeholder.com/80/FFFFFF/6a0dad?text=U">
         <label class="avatar-upload-label" for="avatar-upload-input">Change Avatar</label>
         <input id="avatar-upload-input" type="file" accept="image/*">
-        <button class="avatar-upload-btn" type="button" id="avatar-upload-btn">Upload Now</button>
+        <button class="avatar-upload-btn btn-main" type="button" id="avatar-upload-btn">Upload Now</button>
       </div>
       <form id="profile-edit-form">
         <div class="input-group">
@@ -192,28 +227,27 @@
           <label for="profile-email">Email</label>
           <input type="email" id="profile-email" readonly>
         </div>
-        <button type="submit" id="save-profile-changes-btn" style="width:100%;">Save Changes</button>
+        <button type="submit" class="btn-main" id="save-profile-changes-btn" style="width:100%;">Save Changes</button>
       </form>
     </div>
   </div>
   <script>
-    // ---- Config ----
     const API_BASE = "https://nobita-feedback-app-online.onrender.com";
     const CLOUDINARY_CLOUD_NAME = "dyv7xav3e";
     const CLOUDINARY_UPLOAD_PRESET = "nobita_avatar_unsigned";
     const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
-
+    let currentUser = null, currentRating = 0, editingFeedbackId = null;
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function showPopup(type, title, message) {
-      Swal.fire({title,html:message,icon:type,showConfirmButton:true,timer:type==='success'?1400:undefined,confirmButtonColor:'#6a0dad'});
+      Swal.fire({title,html:message,icon:type,showConfirmButton:true,
+        timer:type==='success'?1100:undefined,confirmButtonColor:'#6a0dad'});
     }
     function showLoader(msg="Loading...") {
-      Swal.fire({title:msg,html:'<div class="swal2-loader"></div>',showConfirmButton:false,allowOutsideClick:false,willOpen:()=>{Swal.showLoading();}});
+      Swal.fire({title:msg,html:'<div class="swal2-loader"></div>',showConfirmButton:false,
+        allowOutsideClick:false,willOpen:()=>{Swal.showLoading();}});
     }
     function hideLoader() { Swal.close(); }
-
-    let currentUser = null, currentRating = 0, editingFeedbackId = null;
-
+    // Modal logic
     document.getElementById('login-icon-trigger').onclick = ()=> {
       document.getElementById('loginModal').classList.add('active');
       document.getElementById('userMenu').classList.remove('active');
@@ -240,6 +274,7 @@
       currentUser = null;
       updateUIForUser();
       showPopup('info', 'Logged Out', 'You have been logged out.');
+      setTimeout(()=>window.location.reload(), 700);
     };
     document.getElementById('modal-create-account-link').onclick = e => {
       e.preventDefault();
@@ -269,6 +304,49 @@
       if(!res.ok) throw new Error(data.message || 'Server error');
       return data;
     }
+    // Google Login/Signup
+    function handleGoogleCredential(response, isLogin){
+      showLoader(isLogin ? "Logging in..." : "Signing up...");
+      fetch(API_BASE + '/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      }).then(res=>res.json()).then(data=>{
+        hideLoader();
+        if(data.token && data.user){
+          localStorage.setItem('authToken', data.token);
+          currentUser = data.user;
+          updateUIForUser();
+          closeModal(isLogin ? 'loginModal' : 'signupModal');
+          Swal.fire({icon:'success',title:'Welcome!',timer:1100,showConfirmButton:false});
+          setTimeout(()=>window.location.reload(),1100);
+        } else {
+          Swal.fire({icon:'error',title:'Google Login Failed',text:data.message||"Unknown error"});
+        }
+      }).catch(err=>{
+        hideLoader();
+        Swal.fire({icon:'error',title:'Google Login Failed',text:err.message||"Unknown error"});
+      });
+    }
+    window.onload = function(){
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response)=>handleGoogleCredential(response,true),
+        ux_mode:'popup'
+      });
+      document.getElementById('google-login-btn').onclick = ()=> {
+        google.accounts.id.prompt();
+      }
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response)=>handleGoogleCredential(response,false),
+        ux_mode:'popup'
+      });
+      document.getElementById('google-signup-btn').onclick = ()=> {
+        google.accounts.id.prompt();
+      }
+    }
+    // Login
     document.getElementById('email-login-form').onsubmit = async e => {
       e.preventDefault();
       const email = document.getElementById('modal-login-email').value.trim();
@@ -280,6 +358,7 @@
         localStorage.setItem('authToken', data.token); currentUser = data.user;
         hideLoader(); updateUIForUser(); closeModal('loginModal');
         showPopup('success', 'Welcome', 'Logged in successfully.');
+        setTimeout(()=>window.location.reload(), 1100);
       } catch(err) { hideLoader(); showPopup('error', 'Login Failed', err.message); }
     };
     document.getElementById('email-signup-form').onsubmit = async e=>{
@@ -300,16 +379,8 @@
         localStorage.setItem('authToken', data.token); currentUser = data.user;
         hideLoader(); updateUIForUser(); closeModal('signupModal');
         showPopup('success', 'Welcome', 'Account created and logged in!');
-      } catch(err) { hideLoader(); showPopup('error', 'Signup Failed', err.message); }
-    };
-    document.getElementById('forgot-password-form').onsubmit = async e=>{
-      e.preventDefault();
-      let email = document.getElementById('forgot-email').value.trim();
-      if(!email) return showPopup('error', 'Error', 'Enter your email.');
-      try {
-        showLoader("Sending email...");
-        await apiRequest('/api/auth/request-password-reset', 'POST', {email});
-        hideLoader(); closeModal('forgotPasswordModal');
+        setTimeout(()=>window.location.reload(), 1100);
+      } catch(err) { hideLoader(); showPopup('errorforgotPasswordModal');
         showPopup('success', 'Email Sent', 'Password reset link sent (if email exists).');
       } catch(err) { hideLoader(); showPopup('error', 'Failed', err.message);}
     };
@@ -341,44 +412,29 @@
       avatarPreviewUpload = file;
     };
     document.getElementById('avatar-upload-btn').onclick = async function() {
+      const btn = this;
       if(!avatarPreviewUpload) return showPopup('error','No File','Choose an image first.');
+      btn.textContent = 'Uploading...'; btn.disabled = true; showLoader("Uploading...");
       try {
-        showLoader("Uploading...");
         let fd = new FormData();
         fd.append('file', avatarPreviewUpload);
         fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        let r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: "POST", body: fd });
-        let d = await r.json();
+        let r = await fetch(`https = await r.json();
         if(!d.secure_url) throw new Error("Cloudinary upload failed");
         avatarCloudinaryURL = d.secure_url;
         let u = await apiRequest('/api/user/profile', 'PUT', { avatarUrl: avatarCloudinaryURL });
         currentUser = u.user; updateUIForUser();
         avatarPreviewUpload = null;
-        hideLoader();
+        document.getElementById('avatar-upload-input').value = "";
+        btn.textContent = 'Upload Now'; btn.disabled = false; hideLoader();
         showPopup('success', 'Avatar Updated', 'Avatar changed successfully!');
-      } catch(err) { hideLoader(); showPopup('error', 'Upload Failed', err.message);}
+      } catch(err) {
+        btn.textContent = 'Upload Now'; btn.disabled = false; hideLoader();
+        showPopup('error', 'Upload Failed', err.message);}
     }
+    // Star rating control
     let stars = document.querySelectorAll('.star');
-    stars.forEach(star=>{
-      star.onclick = function() { currentRating = +this.dataset.value; updateStars(); };
-      star.onmouseover = function() { updateStars(+this.dataset.value); };
-      star.onmouseout = function() { updateStars(); };
-    });
-    function updateStars(hover=0) {
-      stars.forEach(star=>{
-        let value = +star.dataset.value;
-        star.classList.toggle('selected', (hover? value <= hover : value <= currentRating));
-      });
-    }
-    document.getElementById('feedback-form').onsubmit = async e => {
-      e.preventDefault();
-      let name = document.getElementById('name').value.trim();
-      let feedback = document.getElementById('feedback').value.trim();
-      let rating = currentRating;
-      if(currentUser) name = currentUser.name;
-      if(!name || !feedback || !rating) return showPopup('error', 'Error', 'Please fill all fields and select a rating.');
-      try {
-        showLoader(editingFeedbackId ? "Updating..." : "Submitting...");
+    stars.forEach(star...");
         if(editingFeedbackId) {
           await apiRequest(`/api/feedback/${editingFeedbackId}`, 'PUT', {feedback, rating});
           showPopup('success', 'Feedback Updated', 'Your feedback has been updated!');
@@ -393,37 +449,75 @@
         fetchFeedbacks();
       } catch(err) { hideLoader(); showPopup('error', 'Error', err.message); }
     };
-    async function fetchFeedbacks() {
-      let container = document.getElementById('feedback-list-container');
-      container.innerHTML = '';
-      try {
-        let res = await fetch(API_BASE + '/api/feedbacks');
-        let data = await res.json();
-        if(!Array.isArray(data) || data.length === 0) {container.innerHTML = '<p>No feedbacks yet.</p>'; return;}
-        data.forEach(fb=>{
-          let card = document.createElement('div');
-          card.className = 'feedback-card';
-          card.innerHTML = `
-            <div class="feedback-header">
-              <img src="${fb.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U'}" class="avatar">
-              <span class="user-name">${escapeHtml(fb.name)}</span>
-              <span class="feedback-rating">${starHtml(fb.rating)}</span>
-            </div>
-            <div class="feedback-meta">${new Date(fb.timestamp).toLocaleString()}</div>
-            <div class="feedback-content">${escapeHtml(fb.feedback)}</div>
-          `;
-          container.appendChild(card);
-        });
-      } catch {
-        container.innerHTML = '<p style="color:#e74c3c">Could not load feedbacks.</p>';
+    // Feedback panel rendering
+    function renderFeedbackPanel(feedbackList) {
+      let avg = feedbackList.length
+        ? (feedbackList.reduce((sum,f)=>sum+f.rating,0)/feedbackList.length)
+        : 0;
+      let avgText = avg.toFixed(1);
+      let reviewsCount = feedbackList.length;
+      function bigStars(r) {
+        r = Math.round(r*2)/2;
+        let html="";
+        for(let i=1;i<=5;i++) {
+          if(r>=i) html += '<i class="fas fa-star"></i>';
+          else if(r>=i-.5) html += '<i class="fas fa-star-half-alt"></i>';
+          else html += '<i class="far fa-star"></i>';
+        }
+        return html;
       }
-    }
-    function starHtml(r) {
-      r = Math.round(r);
-      return [...Array(5)].map((_,i)=> `<span class="star${i<r?' selected':''}">&#9733;</span>`).join('');
-    }
-    function escapeHtml(str) {
-      if(!str) return '';
+      function smallStars(r) {
+        r = Math.round(r*2)/2;
+        let html="";
+        for(let i=1;i<=5;i++) {
+          if(r>=i) html += '<i class="fas fa-star"></i>';
+          else if(r>=i-.5) html += '<i class="fas fa-star-half-alt"></i>';
+          else html += '<i class="far fa-star"></i>';
+        }
+        return html;
+      }
+      let html = `
+      <div class="overall-summary">
+        <div class="label">Overall Rating</div>
+        <div class="avg-rating">${avgText} / 5</div>
+        <div class="avg-stars">
+          ${bigStars(avg)}
+        </div>
+        <div class="total-count">${reviewsCount} Review${reviewsCount!==1?'s':''}</div>
+      </div>
+      <div class="recent-feedback">
+        <h3>Recent Feedback</h3>
+      `;
+      for(const fb of feedbackList) {
+        html += `<div class="feedback-item">
+          <div class="user-avatar">
+            <img src="${fb.avatarUrl||'https://via.placeholder.com/50?text=U'}" alt="${escapeHtml(fb.name)}">
+          </div>
+          <div class="feedback-content">
+            <div class="feedback-header">
+              <span class="user-name">${escapeHtml(fb.name)}</span>
+              ${fb.verified ? '<i class="fas fa-check-circle verified" title="Verified User"></i>' : ''}
+              <div class="user-stars">${smallStars(fb.rating)}</div>
+            </div>
+            ${fb.isEdited?`<div class="edited-note">✎ Edited on ${new Date(fb.editTime||fb.timestamp).toLocaleDateString()}</div>`:""}
+            <div class="feedback-text">${escapeHtml(fb.feedback)}</div>
+            ${(fb.replies && fb.replies.length) ?
+              fb.replies.map(reply=>`
+                <div class="admin-reply">
+                  <div class="admin-meta">
+                    <div class="admin-avatar"><img src="${reply.adminAvatar||"https://via.placeholder.com/50?text=A"}"></div>
+                    <span class="admin-name">${reply.adminName||"Admin"}</span>
+                    <span class="timestamp">${new Date(reply.timestamp).toLocaleString()}</span>
+                  </div>
+                  <div class="reply-text">${escapeHtml(reply.text)}</div>
+                </div>
+              `).join('') : ''}
+          </div>
+        </div>`;
+      }
+      html += `</div>`;
+      document.getElementById('feedback-panel').innerHTML = html;
+ if(!str) return '';
       return str.replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
       }[m]));
@@ -433,57 +527,17 @@
       document.getElementById('login-icon-trigger').style.display = isLogged ? 'none' : 'inline-block';
       let avatar = document.getElementById('user-avatar-trigger');
       avatar.style.display = isLogged ? 'inline-block' : 'none';
-      avatar.src = currentUser?.avatarUrl || 'https://via.placeholder.com/41/FFFFFF/6a0dad?text=U';
+.placeholder.com/41/FFFFFF/6a0dad?text=U';
       document.getElementById('name').disabled = isLogged;
       document.getElementById('name').value = isLogged ? currentUser.name : '';
     }
-    function handleGoogleCredential(response, isLogin){
-      showLoader(isLogin ? "Logging in..." : "Signing up...");
-      fetch(API_BASE + '/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential })
-      }).then(res=>res.json()).then(data=>{
-        if(data.token && data.user){
-          localStorage.setItem('authToken', data.token);
-          currentUser = data.user;
-          updateUIForUser();
-          closeModal(isLogin ? 'loginModal' : 'signupModal');
-          hideLoader();
-          showPopup('success', 'Welcome', 'Logged in successfully!');
-        } else {
-          hideLoader();
-          showPopup('error', 'Google Auth Failed', data.message||"Unknown error");
-        }
-      }).catch(err=>{
-        hideLoader();
-        showPopup('error', 'Google Auth Failed', err.message||"Unknown error");
-      });
-    }
-    window.onload = function(){
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (response)=>handleGoogleCredential(response,true)
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById("google-signin-btn"),
-        { theme: "outline", size: "large", width: "100%", text:"signin_with" }
-      );
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (response)=>handleGoogleCredential(response,false)
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById("google-signup-btn"),
-        { theme: "outline", size: "large", width: "100%", text:"signup_with" }
-      );
-    }
-    async function checkLoginStatus() {
-      let token = localStorage.getItem('authToken');
-      if(token) {
-        try {
-          showLoader("Checking session...");
-          let data = await apiRequest('/api/auth/me', 'GET');
+    async function fetchFeedbacks() {
+      try {
+        let res = await fetch(API_BASE + '/api/feedbacks');
+        let data = await res.json();
+        renderFeedbackPanel(data);
+      } catch {
+        document.getElementById('feedback-panel').innerHTML = '<p style="color:#e74c3c;text-align:center">Could not load feedbacks.</p await apiRequest('/api/auth/me', 'GET');
           currentUser = data;
           hideLoader();
         } catch {
