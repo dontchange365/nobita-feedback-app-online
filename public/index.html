@@ -1,156 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
+<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>✨ NOBITA's Feedback Portal ✨</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>Nobita Feedback Portal ✨</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i>
-    </div>
-    <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
-        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
-    </div>
-
-    <div id="loginModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="loginModal">&times;</span>
-        <h2>Login</h2>
-        <form id="email-login-form" class="auth-modal-form">
-          <input type="email" id="modal-login-email" placeholder="Email" required>
-          <input type="password" id="modal-login-password" placeholder="Password" required>
-          <button type="submit">Login</button>
-          <div class="form-links">
-            <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
-            <a href="#" id="modal-create-account-link">Create New Account</a>
-          </div>
-          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Login with Google
-          </button>
-        </form>
-      </div>
+    <!-- Navbar Glass -->
+    <div class="navbar-glass">
+        <div class="navbar-brand">
+            <img src="https://i.ibb.co/LdQ8M3r/Nobita.jpg" alt="Nobita Logo" class="logo-img" />
+            <span class="brand-title">Nobita Feedback</span>
+        </div>
+        <div class="navbar-actions">
+            <div id="login-icon-trigger" class="icon-btn" title="Login / Sign Up">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div id="user-avatar-trigger" class="icon-btn avatar-btn" title="Profile Menu">
+                <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+            </div>
+        </div>
     </div>
 
-    <div id="signupModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
-        <h2>Create New Account</h2>
-        <form id="email-signup-form" class="auth-modal-form">
-          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
-          <input type="email" id="modal-signup-email" placeholder="Email" required>
-          <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
-          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
-          <button type="submit">Sign Up</button>
-          <div class="form-links" style="justify-content: center;">
-            <a href="#" id="modal-already-account-link">Already have an account? Login</a>
-          </div>
-           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Sign Up with Google
-          </button>
-        </form>
-      </div>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <span class="close-button">&times;</span>
+            <h2>Login</h2>
+            <form id="email-login-form">
+                <div class="input-row">
+                    <label for="modal-login-email">Email</label>
+                    <input type="email" id="modal-login-email" required>
+                </div>
+                <div class="input-row">
+                    <label for="modal-login-password">Password</label>
+                    <input type="password" id="modal-login-password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Login</button>
+                <div id="login-message" class="message-area"></div>
+            </form>
+            <div class="modal-links">
+                <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
+                <a href="#" id="modal-create-account-link">Create Account</a>
+            </div>
+            <div class="divider"><span>OR</span></div>
+            <button id="modal-google-login-btn" class="btn google-btn">
+                <i class="fab fa-google"></i> Sign in with Google
+            </button>
+        </div>
     </div>
-    
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal-overlay">
+        <div class="modal-content auth-modal">
+            <span class="close-button">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="email-signup-form">
+                <div class="input-row">
+                    <label for="modal-signup-username">Username</label>
+                    <input type="text" id="modal-signup-username" required>
+                </div>
+                <div class="input-row">
+                    <label for="modal-signup-email">Email</label>
+                    <input type="email" id="modal-signup-email" required>
+                </div>
+                <div class="input-row">
+                    <label for="modal-signup-password">Password</label>
+                    <input type="password" id="modal-signup-password" required minlength="6">
+                </div>
+                <div class="input-row">
+                    <label for="modal-signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="modal-signup-confirm-password" required minlength="6">
+                </div>
+                <button type="submit" class="btn primary-btn">Sign Up</button>
+                <div id="signup-message" class="message-area"></div>
+            </form>
+            <div class="modal-links">
+                <a href="#" id="modal-login-link">Already have an account? Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="userProfileModal" class="modal-overlay">
+        <div class="modal-content profile-modal">
+            <span class="close-button">&times;</span>
+            <h2>User Profile</h2>
+            <div class="profile-info">
+                <div class="profile-avatar-container">
+                    <img id="profile-avatar-display" src="" alt="User Avatar">
+                    <div class="avatar-upload-section">
+                        <label for="avatar-upload" class="upload-label">
+                            <i class="fas fa-camera"></i> Change Avatar
+                        </label>
+                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        <button id="upload-avatar-btn" class="btn secondary-btn" style="display: none;">Upload Avatar</button>
+                        <div id="avatar-upload-progress" class="upload-progress-bar" style="display: none;">
+                            <div class="progress-fill"></div>
+                            <span class="progress-text">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <p><strong>Username:</strong> <span id="profile-username"></span></p>
+                    <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                    <button id="edit-profile-btn" class="btn secondary-btn">Edit Profile</button>
+                    <button id="change-password-btn" class="btn secondary-btn">Change Password</button>
+                    <button id="delete-account-btn" class="btn danger-btn">Delete Account</button>
+                </div>
+            </div>
+            <form id="edit-profile-form" class="hidden">
+                <h3>Edit Profile</h3>
+                <div class="input-row">
+                    <label for="edit-username">Username</label>
+                    <input type="text" id="edit-username" required>
+                </div>
+                <div class="input-row">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Save Changes</button>
+                <button type="button" id="cancel-edit-btn" class="btn secondary-btn">Cancel</button>
+                <div id="edit-profile-message" class="message-area"></div>
+            </form>
+            <form id="change-password-form" class="hidden">
+                <h3>Change Password</h3>
+                <div class="input-row">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" required>
+                </div>
+                <div class="input-row">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" required minlength="6">
+                </div>
+                <div class="input-row">
+                    <label for="confirm-new-password">Confirm New Password</label>
+                    <input type="password" id="confirm-new-password" required minlength="6">
+                </div>
+                <button type="submit" class="btn primary-btn">Update Password</button>
+                <button type="button" id="cancel-password-change-btn" class="btn secondary-btn">Cancel</button>
+                <div id="change-password-message" class="message-area"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Menu Dropdown -->
     <div id="userMenu" class="user-profile-menu">
-      <div class="menu-content">
-        <div class="menu-header">
-          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
-          <span class="username" id="menu-username">User Name</span>
-        </div>
         <ul>
-          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
-          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li id="menu-profile"><i class="fas fa-user-circle"></i> Profile</li>
+            <li id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</li>
         </ul>
-      </div>
-    </div>
-    
-    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
-        <div id="stylishPopupCard" class="stylish-popup-card">
-          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
-          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
-          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
-          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
-          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
-              </div>
-          <div class="popup-button-container" id="stylishPopupButtonContainer">
-            </div>
-        </div>
     </div>
 
-    <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content profile-modal-content">
-            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
-            <h2>My Profile</h2>
-            <div class="profile-avatar-section">
-                <img id="profile-display-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
-                <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Choose Avatar</label>
-                <button type="button" id="upload-avatar-btn" style="display:none;margin-top:10px;">Upload</button>
-                <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <span class="progress-text" id="progress-text">0%</span>
+    <!-- Main Content -->
+    <main>
+        <section class="main-section glassy-card">
+            <div class="headline">
+                <img src="https://i.ibb.co/LdQ8M3r/Nobita.jpg" class="hero-avatar" alt="Nobita Avatar" />
+                <div>
+                    <h1>Nobita's Feedback Portal</h1>
+                    <span class="subtitle">Share your thoughts & help us improve</span>
                 </div>
             </div>
-            <form id="profile-edit-form" class="auth-modal-form">
-                <div class="input-group">
-                    <label for="profile-name">Name:</label>
-                    <input type="text" id="profile-name" placeholder="Your Name" required>
-                </div>
-                <div class="input-group">
-                    <label for="profile-email">Email:</label>
-                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
-                </div>
-                <button type="submit" id="save-profile-changes-btn">Save Changes</button>
-            </form>
-            <hr class="profile-divider">
-            <h3>Change Password</h3>
-            <form id="change-password-form" class="auth-modal-form">
-                <div class="input-group">
-                    <label for="current-password">Current Password:</label>
-                    <input type="password" id="current-password" placeholder="Current Password">
-                </div>
-                <div class="input-group">
-                    <label for="new-password-profile">New Password (min. 6 characters):</label>
-                    <input type="password" id="new-password-profile" placeholder="New Password" minlength="6">
-                </div>
-                <div class="input-group">
-                    <label for="confirm-new-password-profile">Confirm New Password:</label>
-                    <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
-                </div>
-                <button type="submit" id="change-password-btn">Change Password</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="page-content-wrapper">
-        <div class="owner-info"> 
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
-            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
-        </div>
-        
-        <div id="feedback-form-container" class="main-container"> 
-            <h1 id="main-title"></h1>
-            <div id="typed-output"></div>
-            <form id="feedback-form">
-                <div class="input-group">
-                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
+            <form id="feedback-form" class="feedback-form">
+                <div class="input-row">
+                    <label for="name">Your Name <span class="fade">( <span id="feedback-form-username">User</span> )</span></label>
                     <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
                 </div>
-                <div class="input-group">
-                    <label for="feedback">Your Feedback:</label>
+                <div class="input-row">
+                    <label for="feedback">Your Feedback</label>
                     <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
                 </div>
-                <div class="input-group">
-                    <label>Rate Your Experience:</label>
+                <div class="input-row">
+                    <label>Rate Your Experience</label>
                     <div class="stars" id="star-rating">
                         <span class="star" data-value="1">★</span>
                         <span class="star" data-value="2">★</span>
@@ -160,17 +188,14 @@
                     </div>
                     <input type="hidden" id="rating" value="0">
                 </div>
-                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
+                <button type="button" id="submit-feedback" class="btn primary-btn">SUBMIT FEEDBACK</button>
             </form>
-        </div>
-
-        <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div>
-             <h2>Recent Feedbacks</h2>
-             </div>
-    </div> 
-
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+        </section>
+        <section class="main-section glassy-card" id="feedback-list-container">
+            <div id="average-rating-display"></div>
+            <h2>Recent Feedbacks</h2>
+            <!-- Feedback list will be injected here -->
+        </section>
+    </main>
     <script src="script.js"></script>
-</body>
-</html>
+</body
