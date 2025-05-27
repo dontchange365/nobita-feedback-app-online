@@ -149,10 +149,10 @@
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-        .stylish-popup-card .popup-icon-area.profile { color: var(--accent-color); } /* Consistent with accent */
-        .stylish-popup-card .popup-icon-area.password_change { color: var(--secondary-color); } /* New icon type */
+        .stylish-popup-card .popup-icon-area.profile { color: var(--accent-color); }
+        .stylish-popup-card .popup-icon-area.password_change { color: var(--secondary-color); }
         .stylish-popup-card h2.popup-title { margin-top:0; margin-bottom: 12px; font-size: 1.5em; color: var(--secondary-color); font-family: 'Poppins', sans-serif; font-weight: 600; }
-        .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; }
+        .stylish-popup-card p.popup-message { margin-bottom: 25px; font-size: 0.95em; color: var(--text-color-light); line-height: 1.6; word-break: break-word;}
         .stylish-popup-card .popup-form-input-group { margin-bottom: 15px; text-align:left; }
         .stylish-popup-card .popup-form-input-group label { display:block; margin-bottom:5px; font-size:0.9em;}
         .stylish-popup-card .popup-form-input-group input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color-light); font-size: 0.95em; }
@@ -233,8 +233,9 @@
 </head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i> </div>
-    <div id="user-avatar-trigger" class="corner-trigger avatar-mode" title="Profile Menu"> <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+        <i class="fas fa-lock"></i> <span>Login</span></div>
+    <div id="user-avatar-trigger" class="corner-trigger avatar-mode" title="Profile Menu">
+        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
     </div>
 
     <div id="loginModal" class="auth-modal-overlay">
@@ -331,7 +332,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             console.log("DOM Fully Loaded and Parsed");
 
-            const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
+            const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com'; // Replace with your actual Google Client ID
 
             // Corner Triggers
             const loginIconTrigger = document.getElementById('login-icon-trigger');
@@ -394,7 +395,7 @@
             let isEditing = false;
             let currentEditFeedbackId = null;
 
-            const BASE_API_URL = window.location.origin;
+            const BASE_API_URL = window.location.origin; // Correct for same-origin deploys
             const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
             const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
             const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
@@ -409,24 +410,23 @@
 
             // --- Stylish Popup Functionality ---
             function showStylishPopup(type, title, message, options = {}) {
-                console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
                 if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
                     console.error("Stylish popup core HTML elements not found!");
-                    alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`);
+                    alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`); // Basic fallback
                     return;
                 }
 
-                stylishPopupIcon.className = 'popup-icon-area';
-                stylishPopupIcon.innerHTML = '';
+                stylishPopupIcon.className = 'popup-icon-area'; // Reset classes
+                stylishPopupIcon.innerHTML = ''; // Clear previous icon
                 const iconsFA = {
                     'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>',
                     'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>',
                     'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>',
-                    'profile': '<i class="fas fa-user-circle"></i>', 'password_change': '<i class="fas fa-shield-alt"></i>' // New icon for password change
+                    'profile': '<i class="fas fa-user-circle"></i>', 'password_change': '<i class="fas fa-shield-alt"></i>'
                 };
                 if(iconsFA[type]) {
                     stylishPopupIcon.innerHTML = iconsFA[type];
-                    stylishPopupIcon.classList.add(type);
+                    stylishPopupIcon.classList.add(type); // Add class for specific icon styling
                 }
 
                 stylishPopupTitle.textContent = title;
@@ -440,71 +440,63 @@
                     stylishPopupFormArea.style.display = 'none';
                 }
 
-                stylishPopupButtonContainer.innerHTML = '';
-                if (options.isConfirm || options.buttons) { // Allow custom buttons
-                    if (options.buttons) {
-                         options.buttons.forEach(btnConfig => {
-                            const btn = document.createElement('button');
-                            btn.textContent = btnConfig.text;
-                            btn.className = `popup-button ${btnConfig.class || 'secondary'}`;
-                            btn.id = btnConfig.id || '';
-                            if (btnConfig.disabled) btn.disabled = true;
-                            btn.onclick = () => {
-                                if (btnConfig.onClick) btnConfig.onClick();
-                                // Don't close popup automatically unless specified
-                                if (btnConfig.closesPopup !== false && !btnConfig.onClick) { // default close for simple buttons
-                                   stylishPopupOverlay.classList.remove('active');
-                                }
-                            };
-                            stylishPopupButtonContainer.appendChild(btn);
-                        });
-                    } else { // Default confirm/cancel
-                        const cancelBtn = document.createElement('button');
-                        cancelBtn.textContent = options.cancelText || 'Cancel';
-                        cancelBtn.className = 'popup-button secondary';
-                        cancelBtn.onclick = () => {
-                            stylishPopupOverlay.classList.remove('active');
-                            if (options.onCancel) options.onCancel();
-                        };
-                        stylishPopupButtonContainer.appendChild(cancelBtn);
-
-                        const confirmBtn = document.createElement('button');
-                        confirmBtn.textContent = options.confirmText || 'Confirm';
-                        confirmBtn.className = 'popup-button primary';
-                        confirmBtn.id = 'stylishPopupPrimaryActionBtn'; // Keep for potential direct selection
-                        confirmBtn.onclick = () => {
-                            if (options.onConfirm) {
-                                options.onConfirm(); // onConfirm should handle popup close if needed
-                            } else {
+                stylishPopupButtonContainer.innerHTML = ''; // Clear previous buttons
+                if (options.buttons) { // Custom buttons array
+                     options.buttons.forEach(btnConfig => {
+                        const btn = document.createElement('button');
+                        btn.textContent = btnConfig.text;
+                        btn.className = `popup-button ${btnConfig.class || 'secondary'}`;
+                        btn.id = btnConfig.id || '';
+                        if (btnConfig.disabled) btn.disabled = true;
+                        btn.onclick = () => {
+                            if (btnConfig.onClick) btnConfig.onClick();
+                            if (btnConfig.closesPopup !== false) { // Default close unless specified
                                stylishPopupOverlay.classList.remove('active');
                             }
                         };
-                        stylishPopupButtonContainer.appendChild(confirmBtn);
-                    }
+                        stylishPopupButtonContainer.appendChild(btn);
+                    });
+                } else if (options.isConfirm) { // Default confirm/cancel
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = options.cancelText || 'Cancel';
+                    cancelBtn.className = 'popup-button secondary';
+                    cancelBtn.onclick = () => {
+                        stylishPopupOverlay.classList.remove('active');
+                        if (options.onCancel) options.onCancel();
+                    };
+                    stylishPopupButtonContainer.appendChild(cancelBtn);
+
+                    const confirmBtn = document.createElement('button');
+                    confirmBtn.textContent = options.confirmText || 'Confirm';
+                    confirmBtn.className = 'popup-button primary';
+                    confirmBtn.id = options.confirmId || 'stylishPopupPrimaryActionBtn';
+                    confirmBtn.onclick = () => {
+                        // onConfirm should handle its own logic, including closing the popup if necessary
+                        if (options.onConfirm) options.onConfirm();
+                        // Default behavior: if onConfirm doesn't handle closing, it stays open.
+                        // To close by default after onConfirm: stylishPopupOverlay.classList.remove('active');
+                    };
+                    stylishPopupButtonContainer.appendChild(confirmBtn);
                 } else { // Default OK button
                     const okBtn = document.createElement('button');
                     okBtn.textContent = options.confirmText || 'OK';
                     okBtn.className = 'popup-button primary';
                     okBtn.onclick = () => {
                         stylishPopupOverlay.classList.remove('active');
-                        if (options.onConfirm) options.onConfirm();
+                        if (options.onConfirm) options.onConfirm(); // onConfirm here is like an onOK
                     };
                     stylishPopupButtonContainer.appendChild(okBtn);
                 }
-
                 stylishPopupOverlay.classList.add('active');
-                console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
-
-                // Add event listeners for toggle password icons if they exist in the form
                 stylishPopupFormArea.querySelectorAll('.toggle-password-icon').forEach(icon => {
-                    icon.removeEventListener('click', togglePasswordVisibilityHandler); // Prevent multiple listeners
+                    icon.removeEventListener('click', togglePasswordVisibilityHandler);
                     icon.addEventListener('click', togglePasswordVisibilityHandler);
                 });
             }
 
             function togglePasswordVisibilityHandler(event) {
                 const icon = event.target;
-                const input = icon.previousElementSibling;
+                const input = icon.closest('.password-input-wrapper').querySelector('input');
                 if (input.type === "password") {
                     input.type = "text";
                     icon.classList.remove("fa-eye");
@@ -515,7 +507,6 @@
                     icon.classList.add("fa-eye");
                 }
             }
-
 
             if(closeStylishPopupBtn) {
                 closeStylishPopupBtn.addEventListener('click', () => {
@@ -534,14 +525,14 @@
             if (loginIconTrigger) {
                 loginIconTrigger.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (loginModal) { loginModal.classList.add('active'); console.log("Login modal activated"); }
+                    if (loginModal) { loginModal.classList.add('active');}
                     if (userMenu) userMenu.classList.remove('active');
                 });
             }
             if (userAvatarTrigger) {
                 userAvatarTrigger.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (userMenu) { userMenu.classList.toggle('active'); console.log("User menu toggled"); }
+                    if (userMenu) { userMenu.classList.toggle('active');}
                     if (loginModal) loginModal.classList.remove('active');
                     if (signupModal) signupModal.classList.remove('active');
                 });
@@ -553,9 +544,7 @@
             });
             [loginModal, signupModal].forEach(modal => {
                 if (modal) {
-                    modal.addEventListener('click', e => {
-                        if (e.target === modal) modal.classList.remove('active');
-                    });
+                    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
                     const closeBtn = modal.querySelector('.close-modal-btn');
                     if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
                 }
@@ -576,32 +565,33 @@
                         reqOptions.body = JSON.stringify(body);
                     }
                 }
-
-                // Generic button disabling logic (can be improved if specific buttons need to be targeted)
-                let activeSubmitButton = document.querySelector('.auth-modal-form button[type="submit"]:disabled, .stylish-popup-card .popup-button.primary:disabled');
-                if (!activeSubmitButton && stylishPopupOverlay.classList.contains('active')) {
-                     activeSubmitButton = stylishPopupCard.querySelector('.popup-button.primary:not(:disabled), .popup-button.secondary:not(:disabled)');
-                }
-
-
                 try {
                     const response = await fetch(url, reqOptions);
-                    const data = await response.json(); // Try to parse JSON regardless of status for error messages
+                    // Try to parse JSON regardless of status, as our server sends JSON errors
+                    const data = await response.json().catch(e => {
+                        // If response.json() fails (e.g. server sent HTML for a 404, or empty response)
+                        console.error("Failed to parse server response as JSON:", e);
+                        if (!response.ok) { // If status code indicates error but parsing failed
+                           throw new Error(`Server responded with status ${response.status} but response was not valid JSON.`);
+                        }
+                        return {}; // Return empty object if parsing failed on a successful response (should not happen with JSON APIs)
+                    });
+
                     if (!response.ok) {
-                        console.error(`API Error (${response.status}) to ${url}:`, data.message || data.error || 'Unknown server error');
+                        console.error(`API Error Response from ${url} (Status: ${response.status}):`, data);
                         throw new Error(data.message || data.error || `Server error (${response.status})`);
                     }
                     return data;
                 } catch (error) {
-                    console.error(`API request error to ${url}:`, error);
-                     if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
-                         showStylishPopup('error', 'Error', error.message || 'A network or server error occurred.');
+                    console.error(`API Request Exception during fetch to ${url}:`, error);
+                    const errorMessage = error.message || 'A network error occurred, or the server response was not valid.';
+                     if (!(url.includes('/api/auth/me') && errorMessage.toLowerCase().includes("token valid nahi hai"))) { // Avoid showing token error on load
+                        showStylishPopup('error', 'API Communication Error', errorMessage);
                      }
-                    throw error; // Re-throw to be caught by caller
-                } finally {
-                   // Re-enable the specific button if needed, handled by calling functions
+                    throw new Error(errorMessage); // Re-throw
                 }
             }
+
 
             async function handleAuthResponse(data, fromGoogle = false) {
                 if (loginModal) loginModal.classList.remove('active');
@@ -625,7 +615,7 @@
                     try {
                         const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                         handleAuthResponse(data);
-                    } catch (error) { /* Handled by apiRequest */ }
+                    } catch (error) { /* Error popup shown by apiRequest */ }
                     finally { if(submitBtn) {submitBtn.disabled = false; submitBtn.textContent = originalText;} }
                 });
             }
@@ -637,34 +627,32 @@
                     const email = modalSignupEmailInput.value.trim();
                     const password = modalSignupPasswordInput.value;
                     const confirmPassword = modalSignupConfirmPasswordInput.value;
-                    if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill all fields.');
+
+                    let errorMessages = [];
+                    if (!name) errorMessages.push("Name is required.");
+                    if (!email) errorMessages.push("Email is required.");
+                    if (!password) errorMessages.push("Password is required.");
+                    if (!confirmPassword) errorMessages.push("Confirm Password is required.");
+                    if (errorMessages.length > 0) return showStylishPopup('error', 'Missing Fields!', errorMessages.join('<br>'));
+
                     if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.');
                     if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters.');
+
                     const submitBtn = emailSignupForm.querySelector('button[type="submit"]');
                     const originalText = submitBtn.textContent;
                     if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Signing up...";}
                     try {
                         const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                         handleAuthResponse(data);
-                    } catch (error) { /* Handled */ }
+                    } catch (error) { /* Error popup shown by apiRequest */ }
                     finally { if(submitBtn) {submitBtn.disabled = false; submitBtn.textContent = originalText;} }
                 });
             }
 
-            if (modalCreateAccountLink) {
-                modalCreateAccountLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (loginModal) loginModal.classList.remove('active');
-                    if (signupModal) signupModal.classList.add('active');
-                });
-            }
-            if (modalAlreadyAccountLink) {
-                modalAlreadyAccountLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (signupModal) signupModal.classList.remove('active');
-                    if (loginModal) loginModal.classList.add('active');
-                });
-            }
+
+            if (modalCreateAccountLink) modalCreateAccountLink.addEventListener('click', (e) => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.add('active'); });
+            if (modalAlreadyAccountLink) modalAlreadyAccountLink.addEventListener('click', (e) => { e.preventDefault(); if (signupModal) signupModal.classList.remove('active'); if (loginModal) loginModal.classList.add('active'); });
+
             if (modalForgotPasswordLink) {
                 modalForgotPasswordLink.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -673,7 +661,7 @@
                         'Enter your registered email address. We will send you a link to reset your password.',
                         {
                             formHTML: `<div class="popup-form-input-group"><label for="popup-forgot-email">Email Address:</label><input type="email" id="popup-forgot-email" placeholder="email@example.com" required></div>`,
-                            isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel',
+                            isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel', confirmId: 'sendResetLinkBtn',
                             onConfirm: async () => {
                                 const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                                 if (!forgotEmailVal) {
@@ -683,18 +671,15 @@
                                     document.getElementById('popup-forgot-email').focus();
                                     return; // Keep popup open
                                 }
-                                const primaryBtn = stylishPopupCard.querySelector('.popup-button.primary');
+                                const primaryBtn = document.getElementById('sendResetLinkBtn');
                                 const originalText = primaryBtn.textContent;
                                 if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Sending...";}
                                 try {
                                     const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
                                     stylishPopupOverlay.classList.remove('active'); // Close on success
                                     showStylishPopup('success', 'Link Sent!', data.message);
-                                } catch (error) {
-                                     // Popup remains open, error shown by apiRequest
-                                } finally {
-                                     if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = originalText;}
-                                }
+                                } catch (error) { /* Error handled by apiRequest, popup remains */ }
+                                finally { if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = originalText;} }
                             }
                         }
                     );
@@ -716,7 +701,7 @@
             window.onload = function () {
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse });
-                } else console.error("Google Identity Services script abhi load nahi hua hai.");
+                } else console.error("Google Identity Services script not loaded yet.");
                 checkLoginStatus();
                 if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
                 if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
@@ -724,16 +709,18 @@
             };
 
             async function handleGoogleCredentialResponse(response) {
-                showStylishPopup('info', 'Processing...', 'Verifying your Google Sign-In...');
+                // Close any existing stylish popup before showing processing
+                if (stylishPopupOverlay.classList.contains('active')) stylishPopupOverlay.classList.remove('active');
+                showStylishPopup('info', 'Processing...', 'Verifying your Google Sign-In...', { buttons: [] }); // No buttons for processing message
                 try {
                     const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
-                    if (stylishPopupOverlay.classList.contains('active')) stylishPopupOverlay.classList.remove('active'); // Close processing popup
+                    if (stylishPopupOverlay.classList.contains('active')) stylishPopupOverlay.classList.remove('active');
                     handleAuthResponse(data, true);
                 } catch (error) {
-                    // Error popup is shown by apiRequest, ensure processing popup is closed if still active
-                    if (stylishPopupOverlay.classList.contains('active') && stylishPopupTitle.textContent === 'Processing...') {
+                     if (stylishPopupOverlay.classList.contains('active') && stylishPopupTitle.textContent === 'Processing...') {
                         stylishPopupOverlay.classList.remove('active');
                     }
+                    // Further error display is handled by apiRequest
                 }
             }
 
@@ -745,65 +732,50 @@
                         currentUser = userData;
                         updateUIAfterLogin();
                     }
-                    catch (error) {
-                        localStorage.removeItem('authToken');
-                        currentUser = null;
-                        updateUIAfterLogout();
-                         // Don't show "token invalid" error on initial load
-                        if (error.message && !error.message.toLowerCase().includes("token valid nahi hai")) {
-                           // showStylishPopup('error', 'Session Error', error.message || 'Could not validate session.');
-                        }
+                    catch (error) { // apiRequest already showed popup for non-token errors
+                        localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout();
                     }
-                } else {
-                    updateUIAfterLogout();
-                }
+                } else { updateUIAfterLogout(); }
                 await fetchFeedbacks();
             }
 
             function updateUIAfterLogin() {
                 if (currentUser) {
-                    if(loginIconTrigger) loginIconTrigger.style.display = 'none';
-                    if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
-                    if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6a0dad&color=ffd700&bold=true&size=48`;
-
-                    if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6a0dad&color=ffd700&bold=true&size=70`;
-                    if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
-
-                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                    if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
-                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
-                    if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                    loginIconTrigger.style.display = 'none';
+                    userAvatarTrigger.style.display = 'flex';
+                    userAvatarTriggerImg.src = currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6a0dad&color=ffd700&bold=true&size=48`;
+                    menuAvatarImg.src = currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6a0dad&color=ffd700&bold=true&size=70`;
+                    menuUsernameSpan.textContent = currentUser.name;
+                    nameInputInFeedbackForm.value = currentUser.name;
+                    feedbackFormUsernameSpan.textContent = currentUser.name;
+                    nameInputInFeedbackForm.disabled = true;
                 }
             }
 
             function updateUIAfterLogout() {
-                if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
-                if(userAvatarTrigger) userAvatarTrigger.style.display = 'none';
-                if(userMenu) userMenu.classList.remove('active');
-
-                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Keep form visible for guests too
-                if(nameInputInFeedbackForm) {
-                    nameInputInFeedbackForm.value = '';
-                    nameInputInFeedbackForm.placeholder = 'Login to use your name...'; // Or 'Your name (Guest)'
-                    nameInputInFeedbackForm.disabled = true; // Guests cannot directly type name if we only allow logged-in feedback.
-                }
-                if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
-                currentUser = null; // Explicitly set to null
+                loginIconTrigger.style.display = 'flex';
+                userAvatarTrigger.style.display = 'none';
+                userMenu.classList.remove('active');
+                nameInputInFeedbackForm.value = '';
+                feedbackFormUsernameSpan.textContent = 'Guest';
+                nameInputInFeedbackForm.placeholder = 'Login to submit feedback with your name';
+                nameInputInFeedbackForm.disabled = true;
+                currentUser = null;
             }
 
             if(menuLogoutLink) {
                 menuLogoutLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if(userMenu) userMenu.classList.remove('active');
+                    userMenu.classList.remove('active');
                     showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', {
                         isConfirm: true, confirmText: 'Logout', cancelText: 'Cancel',
                         onConfirm: () => {
                             localStorage.removeItem('authToken');
                             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                             updateUIAfterLogout();
-                            stylishPopupOverlay.classList.remove('active'); // Close confirm popup first
+                            stylishPopupOverlay.classList.remove('active');
                             showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
-                            fetchFeedbacks(); // Refresh feedbacks (might show different edit buttons)
+                            fetchFeedbacks();
                         }
                     });
                 });
@@ -812,11 +784,8 @@
             if(menuSeeProfileDetailLink) {
                 menuSeeProfileDetailLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if(userMenu) userMenu.classList.remove('active');
-                    if (!currentUser) {
-                        showStylishPopup('error', 'Login Required', 'Please login to view profile details.');
-                        return;
-                    }
+                    userMenu.classList.remove('active');
+                    if (!currentUser) return showStylishPopup('error', 'Login Required', 'Please login to view profile details.');
                     showStylishProfileDetailPopup();
                 });
             }
@@ -827,13 +796,13 @@
                     <p style="text-align:left; margin-bottom:8px;"><strong>Email:</strong> ${currentUser.email}</p>
                     <p style="text-align:left;"><strong>Login Method:</strong> <span style="text-transform:capitalize;">${currentUser.loginMethod}</span></p>
                 `;
-                showStylishPopup('profile', 'Your Profile Details', '', {
-                    formHTML: profileDetailHTML, // Using formHTML to inject the details
+                showStylishPopup('profile', 'Your Profile Details', '', { // Message is empty as formHTML is used for content
+                    formHTML: profileDetailHTML,
                     buttons: [
                         { text: 'Close', class: 'secondary', onClick: () => stylishPopupOverlay.classList.remove('active') },
                         { text: 'Edit Profile', class: 'primary', onClick: () => {
-                            stylishPopupOverlay.classList.remove('active'); // Close this popup first
-                            setTimeout(showEditProfilePopup, 50); // Open edit popup
+                            stylishPopupOverlay.classList.remove('active');
+                            setTimeout(showEditProfilePopup, 50); // Timeout to ensure old popup is gone
                           }
                         }
                     ]
@@ -849,44 +818,41 @@
                     </div>
                     <div class="popup-form-input-group" id="change-avatar-group" style="${isGoogleUser ? 'display:none;' : ''}">
                         <label for="popup-avatar-file">Change Profile Picture (Max 2MB):</label>
-                        <input type="file" id="popup-avatar-file" accept="image/jpeg,image/png,image/gif">
-                        <button type="button" id="upload-avatar-btn" class="popup-button secondary" style="width:100%; margin-top:8px; background-color:var(--info-color);">Upload New Photo</button>
+                        <input type="file" id="popup-avatar-file" accept="image/jpeg,image/png,image/gif" style="margin-bottom:5px;">
+                        <button type="button" id="upload-avatar-btn" class="popup-button secondary" style="width:100%; background-color:var(--info-color); margin-top:5px;">Upload New Photo</button>
                     </div>
-                    <div class="popup-form-input-group" id="change-password-btn-container" style="${isGoogleUser ? 'display:none;' : 'margin-top:20px;'}">
+                    <div class="popup-form-input-group" id="change-password-btn-container" style="${isGoogleUser ? 'display:none;' : 'margin-top:15px;'}">
                         <button type="button" id="open-change-password-popup-btn" class="popup-button secondary" style="width:100%; background-color:var(--confirm-color);">Change Password</button>
                     </div>
                 `;
 
-                showStylishPopup('profile', 'Edit Your Profile', '', {
+                showStylishPopup('profile', 'Edit Your Profile', '', { // Message is empty
                     formHTML: editProfileHTML,
                     buttons: [
                         { text: 'Cancel', class: 'secondary', onClick: () => stylishPopupOverlay.classList.remove('active') },
                         { text: 'Save Name', class: 'primary', id: 'saveProfileNameBtn', onClick: async () => {
                             const newName = document.getElementById('popup-edit-name').value.trim();
                             if (!newName) {
-                                showStylishPopup('error', 'Name Required', 'Name cannot be empty. Changes not saved.'); return;
+                                // Re-show edit profile popup with an error message IN THE SAME POPUP
+                                stylishPopupMessage.innerHTML = '<p style="color:var(--error-color);">Name cannot be empty.</p>';
+                                return; // Keep popup open
                             }
                             if (newName === currentUser.name) {
-                                showStylishPopup('info', 'No Change', 'Name is the same. No changes saved.'); return;
+                                stylishPopupMessage.innerHTML = '<p style="color:var(--info-color);">Name is the same. No changes made.</p>';
+                                return; // Keep popup open
                             }
-
                             const saveBtn = document.getElementById('saveProfileNameBtn');
                             const originalText = saveBtn.textContent;
                             saveBtn.disabled = true; saveBtn.textContent = "Saving...";
-
                             try {
                                 const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
                                 currentUser.name = data.user.name;
                                 if(data.token) localStorage.setItem('authToken', data.token);
-                                updateUIAfterLogin();
-                                await fetchFeedbacks();
-                                stylishPopupOverlay.classList.remove('active'); // Close edit popup
+                                updateUIAfterLogin(); await fetchFeedbacks();
+                                stylishPopupOverlay.classList.remove('active'); // Close this popup
                                 showStylishPopup('success', 'Profile Updated!', 'Your name has been updated.');
-                            } catch (error) {
-                                // Error handled by apiRequest, popup remains open for correction
-                            } finally {
-                                saveBtn.disabled = false; saveBtn.textContent = originalText;
-                            }
+                            } catch (error) { /* Error handled by apiRequest, button re-enabled below */ }
+                            finally { saveBtn.disabled = false; saveBtn.textContent = originalText; }
                           }
                         }
                     ]
@@ -894,41 +860,32 @@
 
                 const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
                 const popupAvatarFile = document.getElementById('popup-avatar-file');
-                if (uploadAvatarBtn && popupAvatarFile) {
+                if (uploadAvatarBtn && popupAvatarFile && !isGoogleUser) {
                     uploadAvatarBtn.addEventListener('click', async () => {
                         const file = popupAvatarFile.files[0];
-                        if (!file) { showStylishPopup('warning', 'No File', 'Please choose an image file.'); return; }
-                        if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) { showStylishPopup('error', 'Invalid Type', 'Only JPG, PNG, GIF allowed.'); return; }
-                        if (file.size > 2 * 1024 * 1024) { showStylishPopup('error', 'Too Large', 'Image must be under 2MB.'); return; }
+                        if (!file) { stylishPopupMessage.innerHTML='<p style="color:var(--error-color);">Please select an image file first.</p>'; return; }
+                        if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) { stylishPopupMessage.innerHTML='<p style="color:var(--error-color);">Invalid file type. JPG, PNG, GIF only.</p>'; return; }
+                        if (file.size > 2 * 1024 * 1024) { stylishPopupMessage.innerHTML='<p style="color:var(--error-color);">File too large. Max 2MB.</p>'; return; }
 
-                        const formData = new FormData();
-                        formData.append('avatar', file);
-
+                        const formData = new FormData(); formData.append('avatar', file);
                         const originalText = uploadAvatarBtn.textContent;
                         uploadAvatarBtn.disabled = true; uploadAvatarBtn.textContent = "Uploading...";
-
                         try {
-                            const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true); // isFormData = true
+                            const data = await apiRequest(API_UPLOAD_AVATAR_URL, 'POST', formData, true);
                             currentUser.avatarUrl = data.newAvatarUrl;
                             if(data.token) localStorage.setItem('authToken', data.token);
-                            updateUIAfterLogin();
-                            await fetchFeedbacks();
-                             // Don't close the edit popup, just show success for avatar
-                            showStylishPopup('success', 'Avatar Updated!', 'Your new avatar is uploaded. You can continue editing or close.');
-                            popupAvatarFile.value = ''; // Clear file input
-                        } catch (error) {
-                            // Error handled by apiRequest
-                        } finally {
-                            uploadAvatarBtn.disabled = false; uploadAvatarBtn.textContent = originalText;
-                        }
+                            updateUIAfterLogin(); await fetchFeedbacks();
+                            stylishPopupMessage.innerHTML='<p style="color:var(--success-color);">Avatar updated successfully!</p>'; // Message inside current popup
+                            popupAvatarFile.value = '';
+                        } catch (error) { /* Error handled by apiRequest */ }
+                        finally { uploadAvatarBtn.disabled = false; uploadAvatarBtn.textContent = originalText; }
                     });
                 }
 
                 const openChangePasswordBtn = document.getElementById('open-change-password-popup-btn');
-                if (openChangePasswordBtn) {
+                if (openChangePasswordBtn && !isGoogleUser) {
                     openChangePasswordBtn.addEventListener('click', () => {
-                        // We don't close the 'Edit Profile' popup yet, user might want to save name changes separately
-                        // or come back to it.
+                        // Don't close edit profile popup, let user decide. Password change is separate.
                         showChangePasswordPopup();
                     });
                 }
@@ -958,53 +915,48 @@
                         </div>
                     </div>
                 `;
-                showStylishPopup('password_change', 'Change Your Password', '', {
+                showStylishPopup('password_change', 'Change Your Password', '', { // Message is empty
                     formHTML: changePasswordHTML,
                     buttons: [
                         { text: 'Cancel', class: 'secondary', onClick: () => {
-                            // This specific popup needs to be closed. Find it if multiple are somehow nested.
-                            const pwPopup = document.getElementById('stylishPopupOverlay');
-                            if(pwPopup && pwPopup.querySelector('#popup-current-password')) { // check if it's the password popup
-                                pwPopup.classList.remove('active');
+                            //This specific popup needs to be closed. Find it if multiple are somehow nested.
+                            const pwPopupCard = document.getElementById('stylishPopupCard');
+                            if(pwPopupCard && pwPopupCard.querySelector('#popup-current-password')) {
+                                stylishPopupOverlay.classList.remove('active');
                             }
-                          }
+                           }
                         },
                         { text: 'Submit Change', class: 'primary', id: 'submitPasswordChangeBtn', onClick: async () => {
                             const currentPassword = document.getElementById('popup-current-password').value;
                             const newPassword = document.getElementById('popup-new-password').value;
                             const confirmNewPassword = document.getElementById('popup-confirm-new-password').value;
 
+                            const msgArea = stylishPopupCard.querySelector('.popup-message p'); // For inline messages
+
                             if (!currentPassword || !newPassword || !confirmNewPassword) {
-                                showStylishPopup('error', 'Fields Missing', 'All password fields are required.'); return;
+                                if(msgArea) msgArea.innerHTML = '<span style="color:var(--error-color);">All password fields are required.</span>'; return;
                             }
                             if (newPassword.length < 6) {
-                                showStylishPopup('error', 'Weak Password', 'New password must be at least 6 characters.'); return;
+                                if(msgArea) msgArea.innerHTML = '<span style="color:var(--error-color);">New password must be at least 6 characters.</span>'; return;
                             }
                             if (newPassword !== confirmNewPassword) {
-                                showStylishPopup('error', 'Mismatch', 'New passwords do not match.'); return;
+                                if(msgArea) msgArea.innerHTML = '<span style="color:var(--error-color);">New passwords do not match.</span>'; return;
                             }
 
                             const submitBtn = document.getElementById('submitPasswordChangeBtn');
                             const originalText = submitBtn.textContent;
                             submitBtn.disabled = true; submitBtn.textContent = "Changing...";
-
                             try {
-                                const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', {
-                                    currentPassword, newPassword, confirmNewPassword
-                                });
-                                // Close the change password popup specifically
-                                const pwPopup = document.getElementById('stylishPopupOverlay');
-                                if(pwPopup && pwPopup.querySelector('#popup-current-password')) {
-                                     pwPopup.classList.remove('active');
+                                const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword, newPassword, confirmNewPassword });
+                                stylishPopupOverlay.classList.remove('active'); // Close this popup
+                                showStylishPopup('success', 'Password Changed!', data.message + (data.reloginRequired ? ' Please login again with your new password.' : ''));
+                                if (data.reloginRequired) { // Optional: force logout
+                                     localStorage.removeItem('authToken'); updateUIAfterLogout();
                                 }
-                                showStylishPopup('success', 'Password Changed!', data.message + ' You might need to login again with your new password if your session was reset.');
-                                // Optionally, force logout here or let the token handle it.
-                                // localStorage.removeItem('authToken'); updateUIAfterLogout();
                             } catch (error) {
-                                // Error handled by apiRequest, popup remains open
-                            } finally {
-                                submitBtn.disabled = false; submitBtn.textContent = originalText;
+                                if(msgArea) msgArea.innerHTML = `<span style="color:var(--error-color);">${error.message || 'Failed to change password.'}</span>`;
                             }
+                            finally { submitBtn.disabled = false; submitBtn.textContent = originalText; }
                           }
                         }
                     ]
@@ -1023,18 +975,15 @@
                  try {
                     const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);
                     const h2Title = feedbackListContainer.querySelector('h2');
-                    // Clear previous feedbacks but preserve average rating display and title
-                    while (feedbackListContainer.firstChild && feedbackListContainer.firstChild !== averageRatingDisplayEl && feedbackListContainer.firstChild !== h2Title) {
-                        if (feedbackListContainer.firstChild.nextSibling && feedbackListContainer.firstChild.nextSibling !== averageRatingDisplayEl && feedbackListContainer.firstChild.nextSibling !== h2Title) {
-                           feedbackListContainer.removeChild(feedbackListContainer.firstChild.nextSibling); // Clear items after title/avg
-                        } else if (feedbackListContainer.firstChild !== averageRatingDisplayEl && feedbackListContainer.firstChild !== h2Title) {
-                            feedbackListContainer.removeChild(feedbackListContainer.firstChild); // Clear items before title/avg
-                        } else {
-                             break; // Should not happen if structure is avg -> title -> items
-                        }
+
+                    let currentElement = averageRatingDisplayEl.nextElementSibling;
+                    if (h2Title && averageRatingDisplayEl.nextElementSibling !== h2Title) { // If h2 is not immediately after avg
+                         currentElement = h2Title.nextElementSibling;
+                    } else if (!h2Title) { // if no h2 title, start after avg display
+                        currentElement = averageRatingDisplayEl.nextElementSibling;
                     }
-                    // Clear items after H2 title if any exist
-                    let currentElement = h2Title ? h2Title.nextElementSibling : averageRatingDisplayEl.nextElementSibling;
+
+
                     while(currentElement) {
                         let next = currentElement.nextElementSibling;
                         feedbackListContainer.removeChild(currentElement);
@@ -1056,7 +1005,7 @@
                     }
                 } catch (err) { /* handled by apiRequest */ }
             }
-            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); const halfStar = (avgNum - fullStars >= 0.5) ? '½' : ''; starsHtml = '★'.repeat(fullStars) + halfStar + '☆'.repeat(5 - fullStars - (halfStar ? 1:0)) ; } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
+            function updateAverageRating(avg, count) { const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const fullStars = Math.floor(avgNum); const halfStar = (avgNum - fullStars >= 0.25 && avgNum - fullStars < 0.75) ? '½' : ''; const effectiveStars = fullStars + (halfStar ? 0.5 : 0); starsHtml = '★'.repeat(fullStars) + halfStar + '☆'.repeat(5 - Math.ceil(effectiveStars)); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} feedbacks)</div></div>`; setTimeout(() => { const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container'); if (avgContainer && !avgContainer.classList.contains('animate-in')) avgContainer.classList.add('animate-in'); }, 50);}
 
             if(submitButton) submitButton.addEventListener('click', async () => {
                 const feedbackContent = feedbackTextarea.value.trim();
@@ -1064,10 +1013,13 @@
 
                 if (!currentUser) {
                      showStylishPopup('warning', 'Login Required', 'Please login to submit feedback. You can login/signup using the icon at the top right.', {
-                        confirmText: 'Login Now',
-                        onConfirm: () => {
-                            if(loginIconTrigger) loginIconTrigger.click();
-                        }
+                        buttons: [
+                            {text: 'Cancel', class:'secondary', closesPopup: true},
+                            {text: 'Login Now', class: 'primary', closesPopup: true, onClick: () => {
+                                if(loginIconTrigger && getComputedStyle(loginIconTrigger).display !== 'none') loginIconTrigger.click();
+                                else if (loginModal) loginModal.classList.add('active');
+                            }}
+                        ]
                      });
                      return;
                 }
@@ -1088,12 +1040,12 @@
                 catch (error) { /* handled by apiRequest */ }
                 finally {
                     submitButton.disabled = false;
-                    submitButton.textContent = originalButtonText; // Use original text
+                    submitButton.textContent = originalButtonText;
                 }
             });
             function resetFeedbackForm() {
                 if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; feedbackFormUsernameSpan.textContent = currentUser.name; nameInputInFeedbackForm.disabled = true;
-                } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.placeholder = 'Login to use your name...';}
+                } else { nameInputInFeedbackForm.value = ''; feedbackFormUsernameSpan.textContent = 'Guest'; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.placeholder = 'Login to submit feedback with your name';}
                 feedbackTextarea.value = ''; ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0);
                 submitButton.textContent = 'SUBMIT FEEDBACK'; isEditing = false; currentEditFeedbackId = null;
             }
@@ -1102,14 +1054,19 @@
                 const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img';
                 avatarImg.src = fbData.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name : 'User')}&background=3B82F6&color=FFFFFF&bold=true&size=50`;
                 avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'U');
-                avatarImg.onerror = function() { this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name : 'User')}&background=3B82F6&color=FFFFFF&bold=true&size=50`; }; // Fallback for broken images
+                avatarImg.onerror = function() { this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name : 'User')}&background=3B82F6&color=FFFFFF&bold=true&size=50`; };
 
                 const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
                 const strongName = document.createElement('strong');
                 let nameContent = fbData.name; let userTypeTag = '';
-                if (fbData.userId && fbData.userId.loginMethod === 'google') userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                else if (fbData.userId && fbData.userId.loginMethod === 'email') userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
-                else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Guest/Legacy">U</span>`; // Fallback
+
+                // Safely access nested properties for userId
+                const loginMethod = fbData.userId ? fbData.userId.loginMethod : null;
+
+                if (loginMethod === 'google') userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                else if (loginMethod === 'email') userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
+                else if (fbData.googleIdSubmitter) userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User (Legacy)">G</span>`;
+                else userTypeTag = `<span class="user-type-indicator email-user-indicator" title="User">U</span>`;
 
                 strongName.innerHTML = `${nameContent} ${userTypeTag}`;
                 if (fbData.isEdited) { const editedTag = document.createElement('span'); editedTag.className = 'edited-tag'; editedTag.textContent = 'Edited'; strongName.appendChild(editedTag); }
@@ -1119,39 +1076,26 @@
                 const timestampDiv = document.createElement('div'); timestampDiv.className = 'feedback-timestamp';
                 try {
                     timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
-                } catch(e) {
-                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString()}`; // Fallback locale
-                }
+                } catch(e) { timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString()}`; }
 
                 detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-                if (currentUser && currentUser.userId === fbData.userId?._id) { // Check if userId from feedback matches current logged in user's ID
-                    const editButton = document.createElement('button');
-                    editButton.className = 'edit-feedback-btn';
-                    editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-                    editButton.title = 'Edit this feedback';
+                if (currentUser && fbData.userId && currentUser.userId === fbData.userId._id) {
+                    const editButton = document.createElement('button'); editButton.className = 'edit-feedback-btn'; editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editButton.title = 'Edit this feedback';
                     editButton.addEventListener('click', (event) => {
                         event.stopPropagation();
-                        // Double check before allowing edit
-                        if (!currentUser || currentUser.userId !== fbData.userId?._id) {
-                           return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
-                        }
+                        if (!currentUser || !fbData.userId || currentUser.userId !== fbData.userId._id) return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                         showStylishPopup('info', 'Editing Feedback', 'You can edit your feedback in the form above. Scroll up if needed.', {confirmText: 'Got it!'});
-                        nameInputInFeedbackForm.value = fbData.name; // Should be currentUser.name
+                        nameInputInFeedbackForm.value = currentUser.name; // Use current user's name for consistency
                         feedbackFormUsernameSpan.textContent = currentUser.name;
                         nameInputInFeedbackForm.disabled = true;
                         feedbackTextarea.value = fbData.feedback;
-                        currentSelectedRating = fbData.rating;
-                        ratingInput.value = fbData.rating;
-                        updateStarVisuals(fbData.rating);
-                        submitButton.textContent = 'UPDATE FEEDBACK';
-                        isEditing = true;
-                        currentEditFeedbackId = fbData._id;
+                        currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
+                        submitButton.textContent = 'UPDATE FEEDBACK'; isEditing = true; currentEditFeedbackId = fbData._id;
                         if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     });
                     item.appendChild(editButton);
                 }
-
 
                 if (fbData.replies && fbData.replies.length > 0) {
                     const latestReply = fbData.replies[fbData.replies.length - 1];
@@ -1161,23 +1105,20 @@
                         adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAvatar.alt = 'Nobita';
                         const adminReplyContent = document.createElement('div'); adminReplyContent.className = 'admin-reply-content';
                         let replyTimestampText = '';
-                        try {
-                             replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
-                        } catch(e) { replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString()})`; } // Fallback
+                        try { replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
+                        } catch(e) { replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString()})`; }
                         adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
-                        adminReplyDiv.append(adminAvatar, adminReplyContent);
-                        detailsDiv.appendChild(adminReplyDiv);
+                        adminReplyDiv.append(adminAvatar, adminReplyContent); detailsDiv.appendChild(adminReplyDiv);
                     }
                 }
                 item.append(avatarImg, detailsDiv);
-                // Avoid duplicate feedbacks if fetchFeedbacks is called multiple times rapidly
                 if(!feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
                     feedbackListContainer.appendChild(item);
                 }
             }
 
-            updateUIAfterLogout(); // Initial UI state
-            checkLoginStatus(); // Check login and fetch initial feedbacks
+            updateUIAfterLogout();
+            checkLoginStatus();
         });
         // === END: JavaScript Code ===
     </script>
