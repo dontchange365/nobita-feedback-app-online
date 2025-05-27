@@ -1,260 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOBITA'S Professional Feedback Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nobita Feedback App</title>
+  <style>
+    /* Reset & base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fc; color: #333; }
+    a { text-decoration: none; color: inherit; }
+    /* Container */
+    .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    header { text-align: center; margin-bottom: 30px; }
+    h1 { font-size: 2.5rem; color: #1e212d; margin-bottom: 10px; }
+    /* Forms */
+    .form-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; transition: transform .3s; }
+    .form-card:hover { transform: translateY(-5px); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .star-rating { display: flex; gap: 5px; margin-top: 5px; }
+    .star-rating span { font-size: 1.5rem; cursor: pointer; transition: transform .2s; }
+    .star-rating span:hover { transform: scale(1.2); }
+    button { padding: 10px 20px; border: none; border-radius: 4px; background: #6a0dad; color: #fff; font-weight: bold; cursor: pointer; transition: background .3s; }
+    button:hover { background: #5809a1; }
+    /* Feedback List */
+    .feedback-list { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .feedback-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; transition: transform .3s; }
+    .feedback-card:hover { transform: translateY(-5px); }
+    .avatar { flex-shrink: 0; width: 80px; height: 80px; border-radius: 50%; margin: 15px; border: 2px solid #6a0dad; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .feedback-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+    .feedback-header { display: flex; justify-content: space-between; align-items: center; }
+    .feedback-name { font-weight: 700; font-size: 1.1rem; color: #1e212d; }
+    .feedback-stars { color: #f1c40f; }
+    .feedback-body { margin-top: 10px; flex-grow: 1; line-height: 1.4; }
+    .feedback-time { font-size: 0.85rem; color: #777; margin-top: 10px; text-align: right; }
+    /* Hidden sections */
+    #feedback-section, #logout-btn { display: none; }
+    /* Animations */
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
 <body>
+  <div class="container">
+    <header>
+      <h1>Nobita Feedback App</h1>
+      <nav>
+        <button id="show-login">Login</button>
+        <button id="show-signup">Sign Up</button>
+        <button id="logout-btn">Logout</button>
+      </nav>
+    </header><!-- Login Form -->
+<div id="login-card" class="form-card fade-in">
+  <h2>Login</h2>
+  <div class="form-group"><label>Email</label><input type="email" id="login-email" /></div>
+  <div class="form-group"><label>Password</label><input type="password" id="login-password" /></div>
+  <button id="login-btn">Login</button>
+</div>
 
-    <div class="page-content-wrapper">
-        <div class="owner-info">
-            <img src="images/nobita_avatar.png" alt="Nobita" class="owner-avatar"> <p class="owner-text">A Feedback System by Nobita</p>
-        </div>
+<!-- Signup Form -->
+<div id="signup-card" class="form-card fade-in" style="display:none;">
+  <h2>Sign Up</h2>
+  <div class="form-group"><label>Name</label><input type="text" id="signup-name" /></div>
+  <div class="form-group"><label>Email</label><input type="email" id="signup-email" /></div>
+  <div class="form-group"><label>Password</label><input type="password" id="signup-password" /></div>
+  <button id="signup-btn">Sign Up</button>
+</div>
 
-        <div id="feedback-form-container" class="main-container">
-            <h1><span id="main-title-typed">Rate Your Experience</span></h1>
-            <p id="typed-output">Your feedback helps us improve!</p>
-            <form id="feedback-form">
-                <div class="input-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" placeholder="Enter your name (or login to auto-fill)" required>
-                </div>
-                <div class="input-group">
-                    <label for="rating">Rating:</label>
-                    <div class="stars" id="rating-stars">
-                        <span class="star" data-value="1"><i class="fas fa-star"></i></span>
-                        <span class="star" data-value="2"><i class="fas fa-star"></i></span>
-                        <span class="star" data-value="3"><i class="fas fa-star"></i></span>
-                        <span class="star" data-value="4"><i class="fas fa-star"></i></span>
-                        <span class="star" data-value="5"><i class="fas fa-star"></i></span>
-                    </div>
-                    <input type="hidden" id="rating" name="rating" required>
-                </div>
-                <div class="input-group">
-                    <label for="message">Feedback Message:</label>
-                    <textarea id="message" name="message" rows="4" placeholder="Share your thoughts..." required></textarea>
-                </div>
-                <button type="submit" id="submit-feedback">Submit Feedback <i class="fas fa-paper-plane"></i></button>
-            </form>
-        </div>
+<!-- Feedback Submission -->
+<div id="feedback-section" class="form-card fade-in">
+  <h2>Submit Feedback</h2>
+  <div class="form-group"><label>Your Feedback</label><textarea id="feedback-text" rows="3"></textarea></div>
+  <div class="form-group"><label>Rating</label><div id="star-widget" class="star-rating"></div></div>
+  <button id="submit-feedback">Submit</button>
+</div>
 
-        <div id="feedback-list-container" class="main-container">
-            <h2><i class="fas fa-comments"></i> What Others Are Saying</h2>
-            <div class="average-rating-container">
-                <h3>Overall Rating</h3>
-                <div class="average-number" id="avg-rating-num">0.0</div>
-                <div class="average-stars" id="avg-rating-stars">
-                    </div>
-                <div class="total-feedbacks-count"><span id="total-feedback-count">0</span> Feedbacks</div>
-            </div>
-            <div id="feedback-items-list">
-                </div>
-        </div>
-    </div>
+<!-- Feedback List -->
+<div id="feedback-list" class="feedback-list fade-in"></div>
 
-    <div class="corner-trigger" id="login-icon-trigger" style="display: flex;"> <i class="fas fa-sign-in-alt"></i> Login
-    </div>
-    <div class="corner-trigger avatar-mode" id="user-avatar-trigger" style="display: none;"> <img src="images/default-avatar.png" alt="User" id="user-avatar-trigger-img"> </div>
+  </div>  <script>
+    const apiBase = 'https://nobita-feedback-app-online.onrender.com';
+    let token = localStorage.getItem('token') || '';
+    let selectedRating = 0;
 
-    <div class="auth-modal-overlay" id="login-modal-overlay">
-        <div class="auth-modal-content">
-            <span class="close-modal-btn" data-target-modal="login-modal-overlay">&times;</span>
-            <h2>Login to Your Account</h2>
-            <form id="login-form" class="auth-modal-form">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <div class="form-links">
-                    <a href="#" id="forgot-password-link">Forgot Password?</a>
-                    <a href="#" id="show-signup-link">Need an account? Sign Up</a>
-                </div>
-                <button type="submit">Login <i class="fas fa-arrow-right"></i></button>
-                <button type="button" class="google-auth-btn" id="google-login-btn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google"> Sign in with Google
-                </button>
-            </form>
-        </div>
-    </div>
+    // Elements
+    const loginCard = document.getElementById('login-card');
+    const signupCard = document.getElementById('signup-card');
+    const feedbackSection = document.getElementById('feedback-section');
+    const feedbackList = document.getElementById('feedback-list');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    <div class="auth-modal-overlay" id="signup-modal-overlay">
-        <div class="auth-modal-content">
-            <span class="close-modal-btn" data-target-modal="signup-modal-overlay">&times;</span>
-            <h2>Create New Account</h2>
-            <form id="signup-form" class="auth-modal-form">
-                <input type="text" id="signup-name" placeholder="Full Name" required>
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required>
-                <div class="form-links">
-                    <span></span> <a href="#" id="show-login-link">Already have an account? Login</a>
-                </div>
-                <button type="submit">Sign Up <i class="fas fa-user-plus"></i></button>
-                 <button type="button" class="google-auth-btn" id="google-signup-btn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google"> Sign up with Google
-                </button>
-            </form>
-        </div>
-    </div>
+    // Navigation
+    document.getElementById('show-login').onclick = () => { loginCard.style.display = 'block'; signupCard.style.display = 'none'; };
+    document.getElementById('show-signup').onclick = () => { signupCard.style.display = 'block'; loginCard.style.display = 'none'; };
+    logoutBtn.onclick = () => { token=''; localStorage.removeItem('token'); window.location.reload(); };
 
-    <div class="user-profile-menu" id="user-profile-menu">
-        <div class="menu-content">
-            <div class="menu-header">
-                <img src="images/default-avatar.png" alt="User Avatar" id="menu-avatar-img"> <div class="username" id="menu-username">User Name</div> </div>
-            <ul>
-                <li><a href="#" id="view-profile-link"><i class="fas fa-user-circle"></i> View Profile</a></li>
-                <li><a href="#" id="settings-link"><i class="fas fa-cog"></i> Settings</a></li>
-                <li><a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </div>
-    </div>
+    // Initialize star rating widget
+    const starWidget = document.getElementById('star-widget');
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement('span');
+      star.innerHTML = '★';
+      star.onclick = () => { setRating(i); };
+      starWidget.appendChild(star);
+    }
+    function setRating(r) {
+      selectedRating = r;
+      Array.from(starWidget.children).forEach((s, idx) => s.style.color = idx < r ? '#f1c40f' : '#ccc');
+    }
 
-    <div class="auth-modal-overlay" id="profile-modal-overlay"> <div class="auth-modal-content profile-modal-content">
-            <span class="close-modal-btn" data-target-modal="profile-modal-overlay">&times;</span>
-            <h2 id="profile-modal-title">Your Profile</h2>
+    // Auth & UI toggle
+    if (token) showApp(); else showLogin();
 
-            <div class="profile-display-area" id="profile-display-view">
-                <img src="images/default-avatar.png" alt="User Avatar" class="profile-avatar-large" id="display-profile-avatar">
-                <p><strong>Name:</strong> <span id="display-profile-name">User Name</span></p>
-                <p><strong>Email:</strong> <span id="display-profile-email">user@example.com</span></p>
-                <button class="action-button" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</button>
-            </div>
+    // Functions
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const res = await fetch(`${apiBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
+      const data = await res.json(); if (res.ok) { token = data.token; localStorage.setItem('token', token); showApp(); } else alert(data.message);
+    }
+    async function signup() {
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const res = await fetch(`${apiBase}/api/auth/signup`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ name, email, password }) });
+      const data = await res.json(); if (res.ok) { token = data.token; localStorage.setItem('token', token); showApp(); } else alert(data.message);
+    }
+    async function submitFeedback() {
+      const feedback = document.getElementById('feedback-text').value;
+      if (!feedback || selectedRating < 1) return alert('Feedback aur rating zaroori hai');
+      const res = await fetch(`${apiBase}/api/feedback`, { method: 'POST', headers: {
+        'Content-Type':'application/json', 'Authorization': 'Bearer ' + token
+      }, body: JSON.stringify({ feedback, rating: selectedRating }) });
+      const data = await res.json();
+      if (res.ok) { renderFeedbacks(); document.getElementById('feedback-text').value=''; setRating(0); } else alert(data.message);
+    }
+    async function renderFeedbacks() {
+      feedbackList.innerHTML = '';
+      const res = await fetch(`${apiBase}/api/feedbacks`);
+      const all = await res.json();
+      all.forEach(fb => {
+        const card = document.createElement('div'); card.className='feedback-card fade-in';
+        const avatarDiv = document.createElement('div'); avatarDiv.className='avatar';
+        const img = document.createElement('img');
+        // DiceBear avatar
+        img.src = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(fb.name)}&flip=true&radius=50&scale=90`;
+        avatarDiv.appendChild(img);
+        const content = document.createElement('div'); content.className='feedback-content';
+        content.innerHTML = `
+          <div class='feedback-header'>
+            <div class='feedback-name'>${fb.name}</div>
+            <div class='feedback-stars'>${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</div>
+          </div>
+          <div class='feedback-body'>${fb.feedback}</div>
+          <div class='feedback-time'>${new Date(fb.timestamp).toLocaleString()}</div>
+        `;
+        card.appendChild(avatarDiv); card.appendChild(content);
+        feedbackList.appendChild(card);
+      });
+    }
 
-            <div class="profile-edit-area" id="profile-edit-view" style="display: none;">
-                <div class="avatar-upload-section" onclick="document.getElementById('avatar-upload-input').click();">
-                    <img src="images/default-avatar.png" alt="User Avatar" class="profile-avatar-large" id="modal-profile-avatar-img">
-                    <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
-                    <p class="upload-tip" style="margin-top: 10px;">Click avatar to change</p>
-                </div>
+    function showLogin() { loginCard.style.display='block'; signupCard.style.display='none'; feedbackSection.style.display='none'; logoutBtn.style.display='none'; }
+    function showApp() { loginCard.style.display='none'; signupCard.style.display='none'; feedbackSection.style.display='block'; logoutBtn.style.display='inline-block'; renderFeedbacks(); }
 
-                <div class="input-group">
-                    <label for="profile-name-input">Display Name:</label>
-                    <input type="text" id="profile-name-input" placeholder="Enter your display name">
-                </div>
-                <div class="input-group">
-                    <label for="profile-email-display-edit">Email:</label> <input type="email" id="profile-email-display-edit" readonly>
-                </div>
-
-                <div class="loading-spinner" style="margin: 20px auto;"></div> <div class="popup-button-container" style="margin-top: 20px;">
-                    <button class="popup-button primary" id="save-profile-button">
-                        <i class="fas fa-save" style="margin-right: 7px;"></i>Save Changes
-                    </button>
-                    <button type="button" class="popup-button secondary" id="cancel-edit-profile-button">
-                         <i class="fas fa-times" style="margin-right: 7px;"></i>Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="stylish-popup-overlay" id="stylish-popup-overlay">
-        <div class="stylish-popup-card" id="stylish-popup-card">
-            <span class="close-popup-btn-styled" id="close-stylish-popup-btn">&times;</span>
-            <div class="popup-icon-area" id="popup-icon-area">
-                </div>
-            <h2 class="popup-title" id="popup-title">Title</h2>
-            <p class="popup-message" id="popup-message">Message here.</p>
-            <div class="popup-form-input-group" id="popup-input-group-1" style="display: none;">
-                <label for="popup-input-field-1" id="popup-input-label-1">Label</label>
-                <input type="text" id="popup-input-field-1">
-            </div>
-             <div class="popup-form-input-group" id="popup-input-group-2" style="display:none;">
-                <label for="popup-input-field-2" id="popup-input-label-2">Label</label>
-                <textarea id="popup-input-field-2" rows="3"></textarea>
-            </div>
-            <div class="popup-button-container" id="popup-button-container">
-                </div>
-        </div>
-    </div>
-
-    <div class="confetti-container"></div>
-
-    <script src="script.js"></script> <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
-    <script>
-        // Basic Typed.js setup (if you use it for h1 and p#typed-output)
-        if (typeof Typed !== 'undefined') {
-            if(document.getElementById('main-title-typed')) {
-                new Typed('#main-title-typed', {
-                    strings: ['Rate Your Experience', 'Share Your Valuable Feedback', 'Help Us Improve Our Services'],
-                    typeSpeed: 70,
-                    backSpeed: 40,
-                    loop: true,
-                    smartBackspace: true,
-                    showCursor: true,
-                    cursorChar: '_',
-                    autoInsertCss: true // Prevents conflicts if Typed.js CSS is not loaded
-                });
-            }
-            if(document.getElementById('typed-output')) {
-                new Typed('#typed-output', {
-                    strings: ["Your opinion matters to us greatly.", "Let us know how we're doing.", "Every comment helps us grow.", "We appreciate your input!"],
-                    typeSpeed: 50,
-                    backSpeed: 25,
-                    loop: true,
-                    startDelay: 1000, // Start after the main title
-                    smartBackspace: true,
-                    showCursor: false
-                });
-            }
-        } else {
-            console.warn("Typed.js not loaded. Titles will not be animated.");
-        }
-
-        // Placeholder for owner avatar animation
-        const ownerInfo = document.querySelector('.owner-info');
-        if (ownerInfo) {
-            // Simple fade-in or use Intersection Observer for more complex animations
-            setTimeout(() => {
-                ownerInfo.classList.add('animate-in');
-            }, 300);
-        }
-        const formContainer = document.getElementById('feedback-form-container');
-        const listContainer = document.getElementById('feedback-list-container');
-        if(formContainer) setTimeout(() => formContainer.classList.add('animate-in'), 500);
-        if(listContainer) setTimeout(() => listContainer.classList.add('animate-in'), 700);
-
-
-        // Dummy function to illustrate profile view/edit toggle
-        // Actual implementation would be in your main script.js
-        const editProfileButton = document.getElementById('edit-profile-button');
-        const cancelEditProfileButton = document.getElementById('cancel-edit-profile-button');
-        const profileDisplayView = document.getElementById('profile-display-view');
-        const profileEditView = document.getElementById('profile-edit-view');
-        const profileModalTitle = document.getElementById('profile-modal-title');
-
-        if(editProfileButton) {
-            editProfileButton.addEventListener('click', () => {
-                if(profileDisplayView) profileDisplayView.style.display = 'none';
-                if(profileEditView) profileEditView.style.display = 'block';
-                if(profileModalTitle) profileModalTitle.textContent = "Edit Your Profile";
-                // Populate edit fields from display data or currentUser object (ensure your main script.js handles this)
-                document.getElementById('profile-name-input').value = document.getElementById('display-profile-name').textContent;
-                document.getElementById('modal-profile-avatar-img').src = document.getElementById('display-profile-avatar').src;
-                document.getElementById('profile-email-display-edit').value = document.getElementById('display-profile-email').textContent;
-
-            });
-        }
-
-        if(cancelEditProfileButton) {
-            cancelEditProfileButton.addEventListener('click', () => {
-                if(profileDisplayView) profileDisplayView.style.display = 'block';
-                if(profileEditView) profileEditView.style.display = 'none';
-                if(profileModalTitle) profileModalTitle.textContent = "Your Profile";
-            });
-        }
-         // Logic for closing modals with data-target-modal
-        document.querySelectorAll('.close-modal-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const modalId = this.getAttribute('data-target-modal');
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.remove('active');
-                }
-            });
-        });
-
-
-    </script>
-</body>
+    // Event Listeners
+    document.getElementById('login-btn').onclick = login;
+    document.getElementById('signup-btn').onclick = signup;
+    document.getElementById('submit-feedback').onclick = submitFeedback;
+  </script></body>
 </html>
