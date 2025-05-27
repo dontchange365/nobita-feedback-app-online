@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>âœ¨ NOBITA's Feedback Portal âœ¨</title>
+    <title>✨ NOBITA's Feedback Portal ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -1108,7 +1108,7 @@
     <div class="page-content-wrapper">
         <div class="owner-info"> 
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
-            <span class="owner-text">Created by: ðŸ‘‰ð™‰ð™Šð˜½ð™„ð™ð˜¼ðŸ¤Ÿ</span>
+            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
         </div>
         
         <div id="feedback-form-container" class="main-container"> 
@@ -1124,11 +1124,11 @@
                 <div class="input-group">
                     <label>Rate Your Experience:</label>
                     <div class="stars" id="star-rating">
-                        <span class="star" data-value="1">â˜…</span>
-                        <span class="star" data-value="2">â˜…</span>
-                        <span class="star" data-value="3">â˜…</span>
-                        <span class="star" data-value="4">â˜…</span>
-                        <span class="star" data-value="5">â˜…</span>
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
                     </div>
                     <input type="hidden" id="rating" value="0">
                 </div>
@@ -1624,7 +1624,7 @@
             // Typed.js for main title and subtitle
             if (mainTitle) {
                  new Typed('#main-title', {
-                    strings: ["âœ¨ NOBITA's Feedback Portal âœ¨", "ðŸš€ Share Your Valuable Thoughts ðŸš€", "ðŸ’¡ Help Us Improve! ðŸ’¡"],
+                    strings: ["✨ NOBITA's Feedback Portal ✨", "🚀 Share Your Valuable Thoughts 🚀", "💡 Help Us Improve! 💡"],
                     typeSpeed: 50,
                     backSpeed: 25,
                     loop: true,
@@ -1697,10 +1697,10 @@
             // Update Average Rating Display
             function updateAverageRating(avg, count) {
                 const avgNum = parseFloat(avg);
-                let starsHtml = 'â˜†â˜†â˜†â˜†â˜†'; // Default to empty stars
+                let starsHtml = '☆☆☆☆☆'; // Default to empty stars
                 if (!isNaN(avgNum) && avgNum > 0) {
                     const fullStars = Math.floor(avgNum);
-                    starsHtml = 'â˜…'.repeat(fullStars) + 'â˜†'.repeat(5 - fullStars);
+                    starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
                 }
                 averageRatingDisplayEl.innerHTML = `
                     <div class="average-rating-container">
@@ -1819,7 +1819,7 @@
 
                 const starsDiv = document.createElement('div');
                 starsDiv.className = 'feedback-stars';
-                starsDiv.textContent = 'â˜…'.repeat(fbData.rating) + 'â˜†'.repeat(5 - fbData.rating);
+                starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
 
                 const pFeedback = document.createElement('p');
                 pFeedback.textContent = fbData.feedback;
