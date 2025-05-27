@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Assuming GOOGLE_CLIENT_ID is hardcoded here or loaded from a meta tag
     const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
-    
+
     // Cloudinary Configuration (Yeh values server-side honi chahiye, client-side exposed nahi)
     // Client-side upload ke liye yeh keys aapko server se deni hongi ya unsafe way mein directly yahan rakhni hongi.
     // Recommended: Server se signed upload URL ya credentials fetch karein.
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginModal = document.getElementById('loginModal');
     const signupModal = document.getElementById('signupModal');
     const userMenu = document.getElementById('userMenu');
-    
+
     // Login Modal Elements
     const emailLoginForm = document.getElementById('email-login-form');
     const modalLoginEmailInput = document.getElementById('modal-login-email');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalForgotPasswordLink = document.getElementById('modal-forgot-password-link');
     const modalCreateAccountLink = document.getElementById('modal-create-account-link');
     const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
-    
+
     // Signup Modal Elements
     const emailSignupForm = document.getElementById('email-signup-form');
     const modalSignupNameInput = document.getElementById('modal-signup-name');
@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditing = false;
     let currentEditFeedbackId = null;
     let selectedFile = null; // For avatar upload
+    let avatarUploadInProgress = false; // Flag to track upload status
 
     // API Endpoints
     const BASE_API_URL = window.location.origin;
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Stylish Popup Functionality ---
     // Generic function to show a styled popup for various messages (success, error, info, confirm, etc.)
     function showStylishPopup(type, title, message, options = {}) {
-        console.log("[showStylishPopup] Called. Type:", type, "Title:", title); // DEBUG log
+        console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
         if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) { 
             console.error("Stylish popup core HTML elements not found!"); 
             alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`); // Fallback to basic alert
@@ -128,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'info': '<i class="fas fa-info-circle"></i>',
             'warning':'<i class="fas fa-exclamation-triangle"></i>',
             'confirm': '<i class="fas fa-question-circle"></i>',
-            'forgot_password': '<i class="fas fa-key"></i>' // Specific icon for forgot password
+            'forgot_password': '<i class="fas fa-key"></i>'
         };
         if(iconsFA[type]) {
             stylishPopupIcon.innerHTML = iconsFA[type];
@@ -136,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         stylishPopupTitle.textContent = title;
-        stylishPopupMessage.innerHTML = `<p>${message}</p>`; // Ensure message is wrapped in p for styling
+        stylishPopupMessage.innerHTML = `<p>${message}</p>`;
 
         // Handle form HTML
         if (options.formHTML) {
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         // Clear existing buttons and add new ones based on options
-        stylishPopupButtonContainer.innerHTML = ''; // Clear existing buttons
+        stylishPopupButtonContainer.innerHTML = '';
         if (options.isConfirm) {
             const cancelBtn = document.createElement('button');
             cancelBtn.textContent = options.cancelText || 'Cancel';
@@ -160,15 +161,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             stylishPopupButtonContainer.appendChild(cancelBtn);
 
             const confirmBtn = document.createElement('button');
-            confirmBtn.textContent = options.confirmText || 'OK'; // Changed default to OK
+            confirmBtn.textContent = options.confirmText || 'OK';
             confirmBtn.className = 'popup-button primary';
-            confirmBtn.id = 'stylishPopupPrimaryActionBtn'; // Add an ID for easy access if needed
+            confirmBtn.id = 'stylishPopupPrimaryActionBtn';
             confirmBtn.onclick = () => {
-                // Let onConfirm decide if popup should be closed or if it handles it
                 if (options.onConfirm) {
                     options.onConfirm();
                 } else {
-                   stylishPopupOverlay.classList.remove('active'); // Default close if no onConfirm
+                   stylishPopupOverlay.classList.remove('active');
                 }
             };
             stylishPopupButtonContainer.appendChild(confirmBtn);
@@ -178,13 +178,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             okBtn.className = 'popup-button primary';
             okBtn.onclick = () => {
                 stylishPopupOverlay.classList.remove('active');
-                if (options.onConfirm) options.onConfirm(); // Call onConfirm even for OK, useful for chaining
+                if (options.onConfirm) options.onConfirm();
             };
             stylishPopupButtonContainer.appendChild(okBtn);
         }
         
         stylishPopupOverlay.classList.add('active');
-        console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display); // DEBUG log
+        console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
     }
 
     // Close popup on close button click
@@ -196,38 +196,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Close popup on overlay click (if not clicking the card itself)
     if(stylishPopupOverlay) {
         stylishPopupOverlay.addEventListener('click', e => { 
-            if (e.target === stylishPopupOverlay) { // Only close if clicking the background, not the card
+            if (e.target === stylishPopupOverlay) {
                 stylishPopupOverlay.classList.remove('active');
             }
         });
     }
 
-    // --- New UI Trigger Logic & Modal Control ---
-    // Show login modal when login icon is clicked
+    // --- UI Trigger Logic & Modal Control ---
     if (loginIconTrigger) {
         loginIconTrigger.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent document click from immediately closing it
-            if (loginModal) { loginModal.classList.add('active'); console.log("Login modal activated"); }
-            if (userMenu) userMenu.classList.remove('active'); // Close user menu if open
-            if (userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal if open
+            e.stopPropagation();
+            if (loginModal) { loginModal.classList.add('active'); }
+            if (userMenu) userMenu.classList.remove('active');
+            if (userProfileModal) userProfileModal.classList.remove('active');
         });
     }
-    // Show/hide user menu when user avatar is clicked
     if (userAvatarTrigger) {
         userAvatarTrigger.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent document click from immediately closing it
-            if (userMenu) { userMenu.classList.toggle('active'); console.log("User menu toggled"); }
-            if (loginModal) loginModal.classList.remove('active'); // Close login modal if open
-            if (userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal if open
+            e.stopPropagation();
+            if (userMenu) { userMenu.classList.toggle('active'); }
+            if (loginModal) loginModal.classList.remove('active');
+            if (userProfileModal) userProfileModal.classList.remove('active');
         });
     }
-    // Close user menu when clicking anywhere else on the document
     document.addEventListener('click', (e) => { 
         if (userMenu && userMenu.classList.contains('active') && userAvatarTrigger && !userAvatarTrigger.contains(e.target) && !userMenu.contains(e.target)) {
             userMenu.classList.remove('active');
         }
     });
-    // Close auth modals & profile modal when clicking outside or on close button
     [loginModal, signupModal, userProfileModal].forEach(modal => {
         if (modal) {
             modal.addEventListener('click', e => {
@@ -250,36 +246,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             requestBody = body ? JSON.stringify(body) : null;
         }
 
-        // Select the correct submit button to disable/enable
-        let submitBtn; 
+        let submitBtn = null;
         if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
         else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
         else if(url.includes('/api/auth/request-password-reset')) submitBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-        else if(url.includes('/api/feedback')) submitBtn = submitButton; // Main feedback form
+        else if(url.includes('/api/feedback')) submitBtn = submitButton;
         else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
 
-
         try {
-            if(submitBtn) { // Show spinner for relevant actions
+            if(submitBtn) {
                 if(submitBtn === saveProfileChangesBtn || submitBtn === submitButton) profileLoadingSpinner.style.display = 'block';
-                submitBtn.disabled = true; 
+                submitBtn.disabled = true;
                 submitBtn.textContent = "Processing...";
             }
 
             const response = await fetch(url, { method, headers, body: requestBody });
-            const data = await response.json(); 
+            const data = await response.json();
             if (!response.ok) throw new Error(data.message || `Server error (${response.status})`);
             return data;
-        } catch (error) { 
-            console.error(`API request error to ${url}:`, error); 
-            // Don't show popup for token validation failure on page load, it's handled by checkLoginStatus
+        } catch (error) {
+            console.error(`API request error to ${url}:`, error);
             if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                 showStylishPopup('error', 'Error', error.message || 'Server communication error.');
             }
+            throw error; // Re-throw to be caught by specific handlers
         } finally {
-            if(submitBtn) { // Re-enable button on error/completion
+            if(submitBtn) {
                 if(submitBtn === saveProfileChangesBtn || submitBtn === submitButton) profileLoadingSpinner.style.display = 'none';
-                submitBtn.disabled = false; 
+                submitBtn.disabled = false;
                 if(url.includes('login')) submitBtn.textContent = "Login";
                 else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
                 else if(url.includes('request-password-reset')) submitBtn.textContent = "Send Reset Link";
@@ -289,7 +283,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Function to handle common actions after successful authentication
     async function handleAuthResponse(data) { 
         if (loginModal) loginModal.classList.remove('active');
         if (signupModal) signupModal.classList.remove('active');
@@ -297,10 +290,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUser = data.user; 
         updateUIAfterLogin(); 
         showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
-        await fetchFeedbacks(); // Refresh feedbacks after login
+        await fetchFeedbacks();
     }
 
-    // Email Login Form Submission
     if (emailLoginForm) {
         emailLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -312,13 +304,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                 if(data) handleAuthResponse(data);
-            } catch (error) { 
-                // Error handled by apiRequest function already, so nothing explicit here
-            }
+            } catch (error) { }
         });
     }
 
-    // Email Signup Form Submission
     if (emailSignupForm) {
         emailSignupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -338,13 +327,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                 if(data) handleAuthResponse(data);
-            } catch (error) { 
-                // Error handled
-            }
+            } catch (error) { }
         });
     }
 
-    // Navigation between login/signup modals
     if (modalCreateAccountLink) {
         modalCreateAccountLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -360,11 +346,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // Forgot Password Link Handler
     if (modalForgotPasswordLink) {
         modalForgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if (loginModal) loginModal.classList.remove('active'); // Close login modal first
+            if (loginModal) loginModal.classList.remove('active');
             showStylishPopup('forgot_password', 'Forgot Password?', 
                 'Enter your registered email address. We will send you a link to reset your password.', 
                 {
@@ -375,35 +360,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     onConfirm: async () => {
                         const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                         if (!forgotEmailVal) {
-                            // Update message in current popup
                             stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' + 
                                                             'Enter your registered email address. We will send you a link to reset your password.';
                             document.getElementById('popup-forgot-email').focus();
-                            return; // Keep popup open
+                            return;
                         }
                         try {
                             const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
                             if(data) {
-                                stylishPopupOverlay.classList.remove('active'); // Close this popup
+                                stylishPopupOverlay.classList.remove('active');
                                 showStylishPopup('success', 'Link Sent!', data.message);
                             }
-                        } catch (error) {
-                            // Error already shown by apiRequest. Keep dialog open.
-                        }
+                        } catch (error) { }
                     }
                 }
             );
         });
     }
 
-    // Google Sign-In Initialization and Callback
     const triggerGoogleSignIn = () => {
-        // Hide existing modals before showing Google prompt
         if (loginModal) loginModal.classList.remove('active');
         if (signupModal) signupModal.classList.remove('active');
         if (userProfileModal) userProfileModal.classList.remove('active');
         google.accounts.id.prompt((notification) => {
-            // Optional: Handle notification for UX, e.g., if prompt is not displayed
             if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
                 console.warn('Google Sign-In prompt was not displayed/skipped.');
             }
@@ -413,17 +392,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
 
     window.onload = function () {
-        // Initialize Google Sign-In only if the script is loaded
         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
             google.accounts.id.initialize({
                 client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleCredentialResponse // Our custom callback
+                callback: handleGoogleCredentialResponse
             });
         } else {
             console.error("Google Identity Services script abhi load nahi hua hai.");
         }
-        checkLoginStatus(); // Check user's login status on page load
-        // Animate elements in
+        checkLoginStatus();
         if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
         if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
         if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
@@ -433,12 +410,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
             if(data) handleAuthResponse(data);
-        } catch (error) { 
-            // Error handled by apiRequest
-        }
+        } catch (error) { }
     }
 
-    // Check Login Status from local storage and validate token
     async function checkLoginStatus() {
         const token = localStorage.getItem('authToken');
         if (token) {
@@ -449,7 +423,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateUIAfterLogin();
                 }
             } catch (error) {
-                // Token invalid or expired, clear and update UI
                 localStorage.removeItem('authToken');
                 currentUser = null;
                 updateUIAfterLogout();
@@ -457,50 +430,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             updateUIAfterLogout();
         }
-        await fetchFeedbacks(); // Always fetch feedbacks regardless of login status
+        await fetchFeedbacks();
     }
 
-    // Update UI based on logged in user
     function updateUIAfterLogin() {
         if (currentUser) {
             if(loginIconTrigger) loginIconTrigger.style.display = 'none';
             if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
             if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
-            userAvatarTrigger.classList.add('avatar-mode'); // Add avatar specific styling
+            userAvatarTrigger.classList.add('avatar-mode');
 
             if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
             if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
             
-            if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name; 
-            if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name; 
-            if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true; // Disable name input when logged in
-            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure form is visible
+            if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
+            if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
+            if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
+            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+
+            // Disable save changes button initially in profile edit if no file selected
+            saveProfileChangesBtn.disabled = true;
         }
     }
 
-    // Update UI after logout
     function updateUIAfterLogout() {
         if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
         if(userAvatarTrigger) userAvatarTrigger.style.display = 'none';
-        if(userMenu) userMenu.classList.remove('active'); // Close menu on logout
-        if(userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal on logout
+        if(userMenu) userMenu.classList.remove('active');
+        if(userProfileModal) userProfileModal.classList.remove('active');
 
-        if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Form always visible
+        if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
         if(nameInputInFeedbackForm) {
-            nameInputInFeedbackForm.value = ''; 
+            nameInputInFeedbackForm.value = '';
             nameInputInFeedbackForm.placeholder = 'Please enter your name...';
-            nameInputInFeedbackForm.disabled = false; // Enable name input for guests
+            nameInputInFeedbackForm.disabled = false;
         }
-        if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest'; 
-        // Reset name in feedback form
+        if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
         resetFeedbackForm();
     }
 
-    // Logout functionality
     if(menuLogoutLink) {
         menuLogoutLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if(userMenu) userMenu.classList.remove('active'); // Close menu
+            if(userMenu) userMenu.classList.remove('active');
             showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', {
                 isConfirm: true,
                 confirmText: 'Logout',
@@ -508,29 +480,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 onConfirm: () => {
                     localStorage.removeItem('authToken');
                     currentUser = null;
-                    // Also disable Google's auto-select for future logins
                     if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                         google.accounts.id.disableAutoSelect();
                     }
-                    updateUIAfterLogout(); 
-                    showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.'); 
-                    fetchFeedbacks(); // Refresh feedbacks after logout
+                    updateUIAfterLogout();
+                    showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
+                    fetchFeedbacks();
                 }
             });
         });
     }
 
-    // View Profile functionality (New)
     if(menuViewProfileLink) {
         menuViewProfileLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if(userMenu) userMenu.classList.remove('active'); // Close user menu
+            if(userMenu) userMenu.classList.remove('active');
             if (!currentUser) {
                 showStylishPopup('error', 'Login Required', 'Please login to view your profile.');
                 return;
             }
             
-            // Populate profile display area
             profileAvatarDisplay.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
             profileNameDisplay.textContent = currentUser.name;
             profileEmailDisplay.textContent = currentUser.email;
@@ -542,83 +511,106 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Close Profile View Button
     if(closeProfileViewBtn) {
         closeProfileViewBtn.addEventListener('click', () => {
             userProfileModal.classList.remove('active');
         });
     }
 
-    // Edit Profile Button (from view profile)
     if(editProfileBtn) {
         editProfileBtn.addEventListener('click', () => {
-            if (!currentUser) return; // Should not happen if button is shown correctly
+            if (!currentUser) return;
 
-            // Populate edit profile form
             currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
             editProfileName.value = currentUser.name;
-            editProfileEmail.value = currentUser.email; // Email is disabled, just for display
+            editProfileEmail.value = currentUser.email;
 
-            // For file input, clear previous selection
             editAvatarUpload.value = '';
             selectedFile = null;
+            avatarUploadInProgress = false; // Reset upload flag
+            saveProfileChangesBtn.disabled = true; // Disable save button initially in edit mode
 
             profileDisplayArea.style.display = 'none';
             profileEditArea.style.display = 'block';
             profileModalTitle.textContent = 'Edit Profile';
 
-            // Disable avatar upload if login method is Google
             if (currentUser.loginMethod === 'google') {
                 editAvatarUpload.disabled = true;
-                editAvatarUpload.parentElement.classList.add('disabled-upload'); // Add class for styling
+                editAvatarUpload.parentElement.classList.add('disabled-upload');
                 editAvatarUpload.nextElementSibling.textContent = 'Google users cannot change avatar here.';
-                currentEditAvatarPreview.style.border = '4px solid gray'; // Indicate it's not editable
+                currentEditAvatarPreview.style.border = '4px solid gray';
             } else {
                 editAvatarUpload.disabled = false;
                 editAvatarUpload.parentElement.classList.remove('disabled-upload');
                 editAvatarUpload.nextElementSibling.textContent = 'Click to choose image or drag & drop';
                 currentEditAvatarPreview.style.border = '4px solid var(--secondary-color)';
             }
+            // Check if name changed to enable save button
+            editProfileName.addEventListener('input', updateSaveButtonState);
+            updateSaveButtonState(); // Initial check
         });
     }
 
-    // Cancel Profile Edit Button
     if(cancelProfileEditBtn) {
         cancelProfileEditBtn.addEventListener('click', () => {
-            // Revert to view profile state
             profileDisplayArea.style.display = 'block';
             profileEditArea.style.display = 'none';
             profileModalTitle.textContent = 'Your Profile';
         });
     }
 
-    // Handle file selection for avatar upload
+    // Function to update Save Changes button state
+    function updateSaveButtonState() {
+        const newName = editProfileName.value.trim();
+        const originalName = currentUser.name;
+        
+        const nameChanged = newName !== originalName;
+        const fileSelected = selectedFile !== null;
+        const uploadPending = avatarUploadInProgress; // Check if upload is still in progress
+
+        // Enable button if name changed OR a file is selected and not already uploading
+        saveProfileChangesBtn.disabled = !(nameChanged || (fileSelected && !uploadPending));
+    }
+
     if (editAvatarUpload) {
-        editAvatarUpload.addEventListener('change', (event) => {
+        const avatarUploadSection = editAvatarUpload.parentElement; // The div around input file
+
+        editAvatarUpload.addEventListener('change', async (event) => {
             selectedFile = event.target.files[0];
             if (selectedFile) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentEditAvatarPreview.src = e.target.result;
-                };
-                reader.readAsDataURL(selectedFile);
+                if (selectedFile.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        currentEditAvatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(selectedFile);
+                    await uploadAvatarToCloudinary(); // Immediately try to upload
+                } else {
+                    showStylishPopup('error', 'Invalid File Type', 'Please choose an image file (PNG, JPG, GIF).');
+                    selectedFile = null;
+                    editAvatarUpload.value = ''; // Clear file input
+                    updateSaveButtonState();
+                }
+            } else {
+                selectedFile = null;
+                updateSaveButtonState();
             }
         });
 
         // Drag and drop functionality
-        const avatarUploadSection = editAvatarUpload.parentElement;
         if (avatarUploadSection) {
             avatarUploadSection.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                avatarUploadSection.style.borderColor = 'var(--accent-color)';
+                if (currentUser.loginMethod !== 'google') avatarUploadSection.style.borderColor = 'var(--accent-color)';
             });
             avatarUploadSection.addEventListener('dragleave', (e) => {
                 e.preventDefault();
-                avatarUploadSection.style.borderColor = 'var(--card-border)';
+                if (currentUser.loginMethod !== 'google') avatarUploadSection.style.borderColor = 'var(--card-border)';
             });
-            avatarUploadSection.addEventListener('drop', (e) => {
+            avatarUploadSection.addEventListener('drop', async (e) => {
                 e.preventDefault();
-                avatarUploadSection.style.borderColor = 'var(--card-border)';
+                if (currentUser.loginMethod !== 'google') avatarUploadSection.style.borderColor = 'var(--card-border)';
+                
                 if (currentUser.loginMethod === 'google') {
                     showStylishPopup('warning', 'Cannot Change Avatar', 'Google users cannot change avatar here.');
                     return;
@@ -632,9 +624,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             currentEditAvatarPreview.src = e.target.result;
                         };
                         reader.readAsDataURL(selectedFile);
+                        await uploadAvatarToCloudinary(); // Immediately try to upload
                     } else {
                         showStylishPopup('error', 'Invalid File Type', 'Please drop an image file.');
                         selectedFile = null;
+                        updateSaveButtonState();
                     }
                 }
             });
@@ -649,6 +643,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // New function for avatar upload to Cloudinary (client-side direct upload)
+    async function uploadAvatarToCloudinary() {
+        if (!selectedFile || currentUser.loginMethod === 'google') {
+            return;
+        }
+
+        avatarUploadInProgress = true;
+        updateSaveButtonState(); // Disable save button
+        profileLoadingSpinner.style.display = 'block';
+        editAvatarUpload.disabled = true; // Disable file input during upload
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('folder', 'feedback_avatars'); // Optional: specify a folder
+        formData.append('gravity', "face");
+        formData.append('height', 150);
+        formData.append('width', 150);
+        formData.append('crop', "thumb");
+        formData.append('quality', "auto");
+        formData.append('format', "auto");
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', CLOUDINARY_API_URL);
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                stylishPopupMessage.innerHTML = `<p>Uploading avatar... ${percent}%</p>`;
+                stylishPopupIcon.className = 'popup-icon-area info';
+                stylishPopupIcon.innerHTML = `<i class="fas fa-sync fa-spin"></i>`; // Spinner icon
+                if(!stylishPopupOverlay.classList.contains('active')) {
+                    showStylishPopup('info', 'Uploading Avatar', `Uploading avatar... ${percent}%`, { confirmText: 'OK', isConfirm: false });
+                }
+            }
+        });
+
+        xhr.onload = async () => {
+            profileLoadingSpinner.style.display = 'none';
+            editAvatarUpload.disabled = false;
+            avatarUploadInProgress = false;
+
+            if (xhr.status === 200) {
+                const uploadData = JSON.parse(xhr.responseText);
+                if (uploadData && uploadData.secure_url) {
+                    showStylishPopup('success', 'Upload Complete!', 'Avatar uploaded successfully!');
+                    // Update currentEditAvatarPreview with the new URL
+                    currentEditAvatarPreview.src = uploadData.secure_url;
+                    // We don't save to `currentUser` yet, only when Save Changes is clicked
+                    // Set a temporary URL on selectedFile to be sent to server later
+                    selectedFile.cloudinaryUrl = uploadData.secure_url;
+                    updateSaveButtonState(); // Re-enable save button
+                } else {
+                    showStylishPopup('error', 'Upload Failed', 'Cloudinary response missing URL.');
+                    selectedFile = null;
+                    currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name); // Revert preview
+                    updateSaveButtonState();
+                }
+            } else {
+                const errorData = JSON.parse(xhr.responseText);
+                showStylishPopup('error', 'Upload Error', errorData.error?.message || `Avatar upload failed: ${xhr.statusText}`);
+                selectedFile = null;
+                currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+                updateSaveButtonState();
+            }
+        };
+
+        xhr.onerror = () => {
+            profileLoadingSpinner.style.display = 'none';
+            editAvatarUpload.disabled = false;
+            avatarUploadInProgress = false;
+            showStylishPopup('error', 'Network Error', 'Could not connect to Cloudinary. Check your internet.');
+            selectedFile = null;
+            currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+            updateSaveButtonState();
+        };
+
+        xhr.send(formData);
+    }
+
 
     // Save Profile Changes Button
     if(saveProfileChangesBtn) {
@@ -657,19 +731,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const newName = editProfileName.value.trim();
             const originalName = currentUser.name;
-            const originalAvatarUrl = currentUser.avatarUrl;
-            let newAvatarUrl = originalAvatarUrl;
+            let newAvatarUrl = currentEditAvatarPreview.src; // Get URL from preview
 
             let nameChanged = newName !== originalName;
-            let avatarChanged = selectedFile !== null;
+            let avatarChanged = selectedFile && selectedFile.cloudinaryUrl; // Check if file was selected AND successfully uploaded to Cloudinary
 
             if (!nameChanged && !avatarChanged) {
                 userProfileModal.classList.remove('active');
                 return showStylishPopup('info', 'No Changes', 'No changes detected.');
             }
-
             if (newName === '') {
                 return showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
+            }
+            if (avatarUploadInProgress) {
+                return showStylishPopup('warning', 'Upload Pending', 'Please wait for avatar upload to complete before saving changes.');
             }
 
             profileLoadingSpinner.style.display = 'block';
@@ -677,67 +752,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveProfileChangesBtn.textContent = 'Saving...';
 
             try {
-                // 1. Upload new avatar if selected and not a Google user
-                if (avatarChanged && currentUser.loginMethod !== 'google') {
-                    const formData = new FormData();
-                    formData.append('file', selectedFile);
-                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                    
-                    // Show message during upload
-                    showStylishPopup('info', 'Uploading Avatar', 'Please wait while your avatar is being uploaded...', { confirmText: 'OK', isConfirm: false });
+                // If avatar was changed and uploaded, use that URL. Otherwise, use existing one.
+                const finalAvatarUrl = avatarChanged ? selectedFile.cloudinaryUrl : currentUser.avatarUrl;
 
-                    const uploadResponse = await fetch(CLOUDINARY_API_URL, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const uploadData = await uploadResponse.json();
-
-                    if (!uploadResponse.ok) {
-                        throw new Error(uploadData.error?.message || 'Avatar upload failed.');
-                    }
-                    newAvatarUrl = uploadData.secure_url;
-                } else if (avatarChanged && currentUser.loginMethod === 'google') {
-                    // This case should be prevented by UI, but as a fallback
-                    showStylishPopup('warning', 'Cannot Change Avatar', 'Google users cannot change avatar via this option.');
-                    selectedFile = null; // Clear selected file as it won't be used
-                }
-
-
-                // 2. Update user profile on your backend
                 const updatePayload = {
                     name: newName,
-                    avatarUrl: newAvatarUrl // Will be original if no new avatar or Google user
+                    avatarUrl: finalAvatarUrl
                 };
 
                 const updateData = await apiRequest(API_UPDATE_USER_PROFILE_URL, 'PUT', updatePayload);
                 
                 if(updateData) {
-                    // Update local currentUser and UI
                     currentUser.name = updateData.user.name;
                     currentUser.avatarUrl = updateData.user.avatarUrl;
-                    localStorage.setItem('authToken', updateData.token); // Update token if it changed
+                    localStorage.setItem('authToken', updateData.token);
 
-                    updateUIAfterLogin(); // Refresh all UI elements that display user info
+                    updateUIAfterLogin();
                     
-                    // Close profile modal and show success
                     userProfileModal.classList.remove('active');
                     showStylishPopup('success', 'Profile Updated!', 'Your profile has been updated successfully!');
-                    await fetchFeedbacks(); // Re-fetch feedbacks to update avatar/name in list
+                    await fetchFeedbacks();
                 }
 
             } catch (error) {
                 console.error('Profile update error:', error);
-                // Error message already shown by apiRequest or custom upload error
-                // If the error was from avatar upload, reset preview/selection
-                if (error.message.includes('Avatar upload failed')) {
-                    currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
-                    selectedFile = null;
-                }
             } finally {
                 profileLoadingSpinner.style.display = 'none';
                 saveProfileChangesBtn.disabled = false;
                 saveProfileChangesBtn.textContent = 'Save Changes';
                 selectedFile = null; // Clear selected file after attempt
+                avatarUploadInProgress = false; // Reset flag
             }
         });
     }
@@ -747,7 +791,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         starsElements.forEach(star => {
             const val = parseInt(star.getAttribute('data-value'));
             star.classList.toggle('selected', val <= ratingToShow);
-            star.classList.remove('highlighted'); // Remove highlight on update
+            star.classList.remove('highlighted');
         });
     }
     starsElements.forEach(star => {
@@ -761,21 +805,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             starsElements.forEach(s => s.classList.toggle('highlighted', parseInt(s.getAttribute('data-value')) <= hoverVal));
         });
         star.addEventListener('mouseleave', () => {
-            // Revert to selected state or no state if no rating
             starsElements.forEach(s => s.classList.remove('highlighted'));
             updateStarVisuals(currentSelectedRating);
         });
     });
     
-    // Fetch and Display Feedbacks
     async function fetchFeedbacks() {
          try {
-            const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true); // No body needed for GET
-            // Clear previous feedbacks before adding new ones
-            const h2Title = feedbackListContainer.querySelector('h2'); // Keep the H2 title
-            feedbackListContainer.innerHTML = ''; // Clear all content
-            feedbackListContainer.appendChild(averageRatingDisplayEl); // Add average rating div back
-            if(h2Title) feedbackListContainer.appendChild(h2Title); // Add H2 title back
+            const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true);
+            const h2Title = feedbackListContainer.querySelector('h2');
+            feedbackListContainer.innerHTML = '';
+            feedbackListContainer.appendChild(averageRatingDisplayEl);
+            if(h2Title) feedbackListContainer.appendChild(h2Title);
 
             if (data.length === 0) {
                 const msgP = document.createElement('p');
@@ -783,22 +824,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 msgP.style.textAlign='center';
                 msgP.style.padding='20px';
                 feedbackListContainer.appendChild(msgP);
-                updateAverageRating(0, 0); // Display 0 average if no feedbacks
+                updateAverageRating(0, 0);
             } else {
                 const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
                 const average = totalRatings / data.length;
                 updateAverageRating(average, data.length);
                 data.forEach((fb, index) => addFeedbackToDOM(fb, index));
             }
-        } catch (err) {
-            // Error handled by apiRequest function
-        }
+        } catch (err) { }
     }
 
-    // Update Average Rating Display
     function updateAverageRating(avg, count) {
         const avgNum = parseFloat(avg);
-        let starsHtml = '☆☆☆☆☆'; // Default to empty stars
+        let starsHtml = '☆☆☆☆☆';
         if (!isNaN(avgNum) && avgNum > 0) {
             const fullStars = Math.floor(avgNum);
             starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
@@ -811,7 +849,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="total-feedbacks-count">(${count} feedbacks)</div>
             </div>
         `;
-        // Animate the average rating container in if it's new/hidden
         setTimeout(() => {
             const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
             if (avgContainer && !avgContainer.classList.contains('animate-in')) {
@@ -820,9 +857,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 50);
     }
     
-    // Submit/Edit Feedback
     if(submitButton) submitButton.addEventListener('click', async () => {
-        const feedbackContent = feedbackTextarea.value.trim(); 
+        const feedbackContent = feedbackTextarea.value.trim();
         const ratingValue = ratingInput.value;
         let nameValue = nameInputInFeedbackForm.value.trim();
 
@@ -832,43 +868,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!feedbackContent || ratingValue === '0') {
             return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');
         }
-        // If not logged in, prompt to log in via the icon
         if (!currentUser) {
             showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
             return;
         }
 
         let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
-        // If editing, use PUT method and existing ID
         const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
         const method = isEditing ? 'PUT' : 'POST';
 
-        submitButton.disabled = true;
-        submitButton.textContent = "Submitting...";
-
-        try { 
-            const data = await apiRequest(url, method, feedbackPayload); 
+        try {
+            const data = await apiRequest(url, method, feedbackPayload);
             if(data) {
-                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message); 
-                resetFeedbackForm(); // Clear form after submission/edit
-                await fetchFeedbacks(); // Refresh feedbacks to show new/updated one
+                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message);
+                resetFeedbackForm();
+                await fetchFeedbacks();
             }
-        } 
-        catch (error) { 
-            // Error handled by apiRequest function
-        }
-        finally { 
-            submitButton.disabled = false; 
-            submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK"; 
+        } catch (error) { }
+        finally {
+            submitButton.disabled = false;
+            submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
         }
     });
 
-    // Reset Feedback Form
-    function resetFeedbackForm() { 
+    function resetFeedbackForm() {
         if (currentUser) {
             nameInputInFeedbackForm.value = currentUser.name;
             feedbackFormUsernameSpan.textContent = currentUser.name;
-            nameInputInFeedbackForm.disabled = true; // Keep disabled if logged in
+            nameInputInFeedbackForm.disabled = true;
         } else {
             nameInputInFeedbackForm.value = '';
             feedbackFormUsernameSpan.textContent = 'Guest';
@@ -878,32 +905,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         feedbackTextarea.value = '';
         ratingInput.value = '0';
         currentSelectedRating = 0;
-        updateStarVisuals(0); // Reset stars
-        submitButton.textContent = 'SUBMIT FEEDBACK'; // Reset button text
-        isEditing = false; // Reset editing state
-        currentEditFeedbackId = null; // Clear edit ID
+        updateStarVisuals(0);
+        submitButton.textContent = 'SUBMIT FEEDBACK';
+        isEditing = false;
+        currentEditFeedbackId = null;
     }
 
-    // Function to generate DiceBear avatar URL (client-side for placeholders)
     function getDiceBearAvatarUrl(name, randomSeed = '') {
         const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
         const seed = encodeURIComponent(seedName + randomSeed);
         return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
     }
 
-    // Add Feedback to DOM
     function addFeedbackToDOM(fbData, index) {
         const item = document.createElement('div');
         item.className = 'feedback-item';
-        item.dataset.feedbackId = fbData._id; // Store ID for potential updates/deletions
+        item.dataset.feedbackId = fbData._id;
 
         const avatarImg = document.createElement('img');
         avatarImg.className = 'avatar-img';
         avatarImg.src = fbData.avatarUrl || getDiceBearAvatarUrl(fbData.name);
         avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
-        // Fallback for broken image links
         avatarImg.onerror = function() {
-            this.src = getDiceBearAvatarUrl(fbData.name); // Fallback to DiceBear
+            this.src = getDiceBearAvatarUrl(fbData.name);
         };
 
         const detailsDiv = document.createElement('div');
@@ -912,14 +936,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const strongName = document.createElement('strong'); 
         let nameContent = fbData.name;
         let userTypeTag = '';
-        // If googleIdSubmitter is present, it's a Google user. Otherwise, it's email/password or guest.
-        // For guest, googleIdSubmitter won't be set and userId might be absent or not populate.
-        // Simplified check based on existing data in feedback object.
         if (fbData.googleIdSubmitter) {
             userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-        } else if (fbData.userId) { // If userId exists and no googleId, assume email user
+        } else if (fbData.userId) {
             userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
-        } else { // Fallback for old/guest feedbacks without userId/googleIdSubmitter
+        } else {
             userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Guest/Unknown User">U</span>`;
         }
         strongName.innerHTML = `${nameContent} ${userTypeTag}`;
@@ -942,43 +963,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         const timestampDiv = document.createElement('div');
         timestampDiv.className = 'feedback-timestamp';
         try {
-            // Indian Time Zone for timestamp
             timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
         } catch(e) { 
-            timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
+            timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
         }
 
         detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-        // Edit Button
         const editButton = document.createElement('button');
         editButton.className = 'edit-feedback-btn';
         editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editButton.title = 'Edit this feedback';
-        // Disable edit button if not the current user's feedback
         editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
 
         editButton.addEventListener('click', (event) => { 
-            event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
+            event.stopPropagation();
             if (!currentUser || currentUser.userId !== fbData.userId) {
                 return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
             }
             showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
-            // Populate the form for editing
             nameInputInFeedbackForm.value = fbData.name;
             feedbackFormUsernameSpan.textContent = fbData.name;
-            nameInputInFeedbackForm.disabled = true; // Keep disabled as user is logged in
+            nameInputInFeedbackForm.disabled = true;
             
             feedbackTextarea.value = fbData.feedback;
             currentSelectedRating = fbData.rating;
             ratingInput.value = fbData.rating;
             updateStarVisuals(fbData.rating);
 
-            submitButton.textContent = 'UPDATE FEEDBACK'; // Change button text
-            isEditing = true; // Set editing mode
-            currentEditFeedbackId = fbData._id; // Store ID of feedback being edited
+            submitButton.textContent = 'UPDATE FEEDBACK';
+            isEditing = true;
+            currentEditFeedbackId = fbData._id;
 
-            // Smooth scroll to the form
             if(feedbackFormContainer) {
                 feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -986,16 +1002,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         item.appendChild(editButton);
 
 
-        // Admin Reply (if exists)
         if (fbData.replies && fbData.replies.length > 0) { 
-            const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
+            const latestReply = fbData.replies[fbData.replies.length - 1];
             if (latestReply && latestReply.text) {
                 const adminReplyDiv = document.createElement('div');
                 adminReplyDiv.className = 'admin-reply';
 
                 const adminAvatar = document.createElement('img');
                 adminAvatar.className = 'admin-reply-avatar';
-                adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
+                adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
                 adminAvatar.alt = 'Nobita';
 
                 const adminReplyContent = document.createElement('div');
@@ -1014,17 +1029,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         item.append(avatarImg, detailsDiv); 
-        // Check if the item already exists to prevent duplicates on re-fetch
         if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
-            // If it exists, you might want to update it instead of re-adding, or do nothing
-            // For now, if it exists, we assume it's already rendered correctly, or a full refresh is desired
         } else {
             feedbackListContainer.appendChild(item);
         }
     }
     
-    // Initial calls on load
-    updateUIAfterLogout(); // Set initial UI state (guest mode)
-    checkLoginStatus(); // Check if user is already logged in via token
+    updateUIAfterLogout();
+    checkLoginStatus();
 });
 // === END: JavaScript Code ===
