@@ -52,6 +52,21 @@
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
+     .profile-password-btns-row .popup-button.primary {
+    background: linear-gradient(45deg, var(--accent-color), #2563EB);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.profile-password-btns-row  .popup-button.primary:hover {
+    background: linear-gradient(45deg, #2563EB, var(--accent-color));
+    transform: translateY(-2px);
+}
         /* --- Corner Triggers (Login Icon / User Avatar) --- */
         .corner-trigger {
             position: fixed;
@@ -1298,8 +1313,8 @@
             </div>
         </form>
         <div class="profile-password-btns-row">
-          <button type="button" class="popup-button primary" style="font-size: 0.8em; padding: 8px 16px;">Change Password</button>
-          <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="font-size: 0.8em; padding: 8px 16px;">Close</button>
+  <button type="button" class="popup-button primary" id = "change-password-profile-btn">Change Password</button>
+  <button type="button" class="popup-button secondary" data-modal-close="userProfileModal">Close</button>
         </div>
     </div>
     </div>
@@ -2393,6 +2408,52 @@
             updateUIAfterLogout(); // Set initial UI state (guest mode)
             checkLoginStatus(); // Check if user is already logged in via token
         });
+    
+ document.getElementById('change-password-profile-btn').addEventListener('click', function() {
+     // Get password values
+     var currentPassword = document.getElementById('current-password').value;
+     var newPassword = document.getElementById('new-password-profile').value;
+     var confirmNewPassword = document.getElementById('confirm-new-password-profile').value;
+
+     // Basic validation
+     if (!currentPassword || !newPassword || !confirmNewPassword) {
+         alert('Please fill in all password fields.');
+         return;
+     }
+
+     if (newPassword !== confirmNewPassword) {
+         alert('New password and confirm password do not match.');
+         return;
+     }
+
+     // Send data to backend (replace with your actual API endpoint)
+     fetch('/api/change-password', {
+         method: 'POST',
+         headers: {
+             'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+             currentPassword: currentPassword,
+             newPassword: newPassword
+         })
+     })
+     .then(response => response.json())
+     .then(data => {
+         if (data.success) {
+             alert('Password changed successfully!');
+             // Optionally clear the password fields
+             document.getElementById('current-password').value = '';
+             document.getElementById('new-password-profile').value = '';
+             document.getElementById('confirm-new-password-profile').value = '';
+         } else {
+             alert('Password change failed: ' + data.message);
+         }
+     })
+     .catch(error => {
+         console.error('Error:', error);
+         alert('An error occurred while changing the password.');
+     });
+ });
         // === END: JavaScript Code ===
     </script>
 </body>
