@@ -1,3 +1,4 @@
+// index.html
 <!DOCTYPE html>
 <html lang="en">
  <head>
@@ -22,7 +23,7 @@
     <div id="loginModal" class="auth-modal-overlay">
       <div class="auth-modal-content">
           <span class="close-button">&times;</span>
-          <h2>Login</h2>
+          <h2>Login to Continue</h2>
           <form id="email-login-form">
               <div class="input-group">
                   <label for="modal-login-email">Email:</label>
@@ -33,131 +34,130 @@
                   <input type="password" id="modal-login-password" required>
               </div>
               <button type="submit" class="action-button">Login</button>
-              <div class="spinner" id="login-spinner"></div>
+              <div id="login-message" class="message-area"></div>
           </form>
-          <div class="auth-links">
+          <div class="modal-links">
               <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
-              <a href="#" id="modal-create-account-link">Create an account</a>
+              <a href="#" id="modal-create-account-link">Create Account</a>
           </div>
           <div class="divider">OR</div>
-          <button id="modal-google-login-btn" class="google-button">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
-              Login with Google
+          <button id="modal-google-login-btn" class="google-login-button">
+              <i class="fab fa-google"></i> Sign in with Google
           </button>
       </div>
     </div>
 
     <div id="signupModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-          <span class="close-button">&times;</span>
-          <h2>Sign Up</h2>
-          <form id="email-signup-form">
-              <div class="input-group">
-                  <label for="modal-signup-username">Username:</label>
-                  <input type="text" id="modal-signup-username" required>
-              </div>
-              <div class="input-group">
-                  <label for="modal-signup-email">Email:</label>
-                  <input type="email" id="modal-signup-email" required>
-              </div>
-              <div class="input-group">
-                  <label for="modal-signup-password">Password (min. 6 characters):</label>
-                  <input type="password" id="modal-signup-password" required minlength="6">
-              </div>
-              <button type="submit" class="action-button">Sign Up</button>
-              <div class="spinner" id="signup-spinner"></div>
-          </form>
-          <div class="auth-links">
-              <a href="#" id="modal-login-from-signup-link">Already have an account? Login</a>
-          </div>
-      </div>
+        <div class="auth-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="email-signup-form">
+                <div class="input-group">
+                    <label for="modal-signup-username">Username:</label>
+                    <input type="text" id="modal-signup-username" required>
+                </div>
+                <div class="input-group">
+                    <label for="modal-signup-email">Email:</label>
+                    <input type="email" id="modal-signup-email" required>
+                </div>
+                <div class="input-group">
+                    <label for="modal-signup-password">Password (min. 6 characters):</label>
+                    <input type="password" id="modal-signup-password" required minlength="6">
+                </div>
+                <div class="input-group">
+                    <label for="modal-signup-confirm-password">Confirm Password:</label>
+                    <input type="password" id="modal-signup-confirm-password" required minlength="6">
+                </div>
+                <button type="submit" class="action-button">Sign Up</button>
+                <div id="signup-message" class="message-area"></div>
+            </form>
+            <div class="modal-links">
+                <a href="#" id="modal-login-link">Already have an account? Login</a>
+            </div>
+        </div>
     </div>
 
     <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="profile-modal-content scrollable-content">
+        <div class="profile-modal-content">
             <span class="close-button">&times;</span>
-            <h2>My Profile</h2>
-            <div class="profile-details">
-                <div class="avatar-section">
-                    <img id="profile-avatar-preview" src="#" alt="User Avatar" style="display:none;">
-                    <div id="avatar-preview-container">
-                        <label for="avatar-input" class="action-button upload-avatar-label">
+            <h2>User Profile</h2>
+            <div class="profile-info">
+                <div class="profile-avatar-container">
+                    <img id="profile-avatar-display" src="" alt="User Avatar">
+                    <div class="avatar-upload-section">
+                        <label for="avatar-upload" class="upload-label">
                             <i class="fas fa-camera"></i> Change Avatar
                         </label>
-                        <input type="file" id="avatar-input" accept="image/*" style="display: none;">
-                        <button type="button" id="upload-avatar-btn" class="action-button" style="margin-top: 10px; display: none;">Upload Avatar</button>
-                        <div id="avatar-upload-progress" style="margin-top: 10px; color: var(--text-color-light); font-size: 0.9em; display: none;">Uploading: 0%</div>
+                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        <button id="upload-avatar-btn" class="action-button" style="display: none;">Upload Avatar</button>
+                        <div id="avatar-upload-progress" class="upload-progress-bar" style="display: none;">
+                            <div class="progress-fill"></div>
+                            <span class="progress-text">0%</span>
+                        </div>
                     </div>
                 </div>
-
-                <div class="input-group">
-                    <label>Username:</label>
-                    <span id="profile-username"></span>
-                </div>
-                <div class="input-group">
-                    <label>Email:</label>
-                    <span id="profile-email"></span>
-                </div>
-                <div class="input-group">
-                    <label>Account Type:</label>
-                    <span id="profile-account-type"></span>
-                </div>
-                <div class="input-group google-id-group">
-                    <label>Google ID:</label>
-                    <span id="profile-google-id"></span>
+                <div class="profile-details">
+                    <p><strong>Username:</strong> <span id="profile-username"></span></p>
+                    <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                    <button id="edit-profile-btn" class="action-button">Edit Profile</button>
+                    <button id="change-password-btn" class="action-button">Change Password</button>
+                    <button id="delete-account-btn" class="action-button delete-button">Delete Account</button>
                 </div>
             </div>
 
-            <h3>Edit Profile</h3>
-            <form id="edit-profile-form">
+            <form id="edit-profile-form" class="hidden">
+                <h3>Edit Profile</h3>
                 <div class="input-group">
-                    <label for="edit-profile-username">Naya Username:</label>
-                    <input type="text" id="edit-profile-username">
+                    <label for="edit-username">Username:</label>
+                    <input type="text" id="edit-username" required>
                 </div>
                 <div class="input-group">
-                    <label for="current-password">Current Password (agar password change kar rahe hain):</label>
-                    <input type="password" id="current-password">
+                    <label for="edit-email">Email:</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <button type="submit" class="action-button">Save Changes</button>
+                <button type="button" id="cancel-edit-btn" class="action-button secondary">Cancel</button>
+                <div id="edit-profile-message" class="message-area"></div>
+            </form>
+
+            <form id="change-password-form" class="hidden">
+                <h3>Change Password</h3>
+                <div class="input-group">
+                    <label for="current-password">Current Password:</label>
+                    <input type="password" id="current-password" required>
                 </div>
                 <div class="input-group">
-                    <label for="new-password">Naya Password (agar password change kar rahe hain, min. 6 characters):</label>
-                    <input type="password" id="new-password" minlength="6">
+                    <label for="new-password">New Password (min. 6 characters):</label>
+                    <input type="password" id="new-password" required minlength="6">
                 </div>
-                <button type="button" id="save-profile-changes-btn" class="action-button">Save Changes</button>
-                <div class="spinner" id="profile-spinner"></div>
+                <div class="input-group">
+                    <label for="confirm-new-password">Confirm New Password:</label>
+                    <input type="password" id="confirm-new-password" required minlength="6">
+                </div>
+                <button type="submit" class="action-button">Update Password</button>
+                <button type="button" id="cancel-password-change-btn" class="action-button secondary">Cancel</button>
+                <div id="change-password-message" class="message-area"></div>
             </form>
         </div>
     </div>
 
-    <div id="toast-container"></div>
 
-    <div class="user-profile-menu" id="userMenu">
-        <ul id="user-menu-list">
-            <li id="view-profile-menu-item">View Profile</li>
-            <li id="logout-menu-item">Logout</li>
+    <div id="userMenu" class="user-profile-menu">
+        <ul>
+            <li id="menu-profile"><i class="fas fa-user-circle"></i> Profile</li>
+            <li id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</li>
         </ul>
     </div>
 
-    <header>
-        <h1 class="logo">Nobita</h1>
-        <nav>
-            <ul>
-                <li><a href="#feedback-form-container">Feedback</a></li>
-                <li><a href="#feedback-list-container">View Feedbacks</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <main>
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1>Welcome to <span class="typed-text"></span></h1>
-                <p>Share your valuable thoughts and help us improve!</p>
-                <a href="#feedback-form-container" class="action-button">Give Feedback</a>
-            </div>
-        </section>
-
+    <div class="container">
         <div id="feedback-form-container" class="main-container">
-            <h1>Your Feedback Matters!</h1>
+            <h1 class="owner-name-animated">
+                <span class="owner-avatar"></span>
+                <span class="owner-name-text">✨ NOBITA's Feedback Portal ✨</span>
+            </h1>
+            <p>Welcome to Nobita's Feedback Portal! Share your thoughts and help us improve.</p>
+
             <form id="feedback-form">
                 <div class="input-group">
                     <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
