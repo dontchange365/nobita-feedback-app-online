@@ -7,7 +7,7 @@
     <title>✨ NOBITA's Feedback Portal ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
@@ -29,6 +29,18 @@
             --confirm-color: #fd7e14; /* Orange */
 
             --google-blue: #4285F4;
+
+            /* New Template Colors */
+            --template-bg: #fff;
+            --template-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            --template-text-dark: #222;
+            --template-text-medium: #444;
+            --template-text-light: #666;
+            --template-text-lighter: #888;
+            --template-star-color: #f5a623;
+            --template-border-color: #e0e0e0;
+            --template-verified-color: #1DA1F2;
+            --template-admin-reply-bg: #f7fbff;
         }
 
         html {
@@ -70,6 +82,7 @@
             font-weight: 600;
             padding: 0 15px; /* Padding for text */
             border-radius: 8px; /* Slightly rounded corners */
+            z-index: 1001; /* Ensure it's above other page content */
         }
 
         .corner-trigger.avatar-mode { /* Only when avatar is shown */
@@ -342,7 +355,7 @@
             align-items: center;
             justify-content: center;
             opacity: 0; /* Start invisible for animation */
-            pointer-events: none; /* Don't block interaction when hidden */
+            pointer-events: none; /* Don't block interaction when invisible */
             transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
             z-index: 1005; /* Ensures it's on top of everything */
         }
@@ -547,13 +560,9 @@
         }
 
         #feedback-form-container.main-container {
-            margin-bottom: 3px; /* Smaller gap between form and list */
+            margin-bottom: 25px; /* Added margin here */
         }
-        #feedback-list-container.main-container {
-            margin-top: 0; /* No top margin needed, gap controlled by form's bottom margin */
-            margin-bottom: 25px;
-        }
-
+       
         .main-container.animate-in {
             opacity: 1;
             transform: translateY(0);
@@ -699,17 +708,16 @@
             box-shadow: 0 7px 18px rgba(59,130,246,0.55);
         }
 
-        /* --- Feedback List Styles --- */
+        /* --- NEW Feedback List Styles (Based on your provided template) --- */
         #feedback-list-container {
-            background: rgba(255, 255, 255, 0.07); /* Lighter semi-transparent */
-            backdrop-filter: blur(7px); /* Slight blur */
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 22px;
-            text-align: left;
-            box-shadow: var(--shadow-deep);
-            width: 90%;
-            max-width: 750px;
+            background: var(--template-bg); /* White background */
+            border-radius: 8px;
+            box-shadow: var(--template-shadow);
+            padding: 20px;
+            max-width: 700px;
+            margin: 25px auto; /* Centered, with margin */
+            font-family: 'Segoe UI', Tahoma, sans-serif; /* Specified font */
+            color: var(--template-text-dark); /* Dark text color */
             opacity: 0; /* Start hidden for animation */
             transform: translateY(40px); /* Start below for animation */
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -720,188 +728,137 @@
             transform: translateY(0);
         }
 
-        #feedback-list-container h2 {
-            color: var(--secondary-color);
-            margin-bottom: 18px;
-            border-bottom: 1.5px solid rgba(255, 255, 255, 0.18);
-            padding-bottom: 10px;
-            font-size: 1.8em;
-            font-weight: 500;
-            text-shadow: 0 0 9px rgba(255,215,0,0.25);
-        }
-
-        /* Average Rating Display */
-        .average-rating-container {
-            background: rgba(255, 215, 0, 0.09); /* Subtle gold background */
-            border: 1px solid var(--secondary-color);
-            border-radius: 13px;
-            padding: 16px 22px;
-            margin-bottom: 22px;
+        /* Overall Rating Section (new style) */
+        .overall-summary {
             text-align: center;
-            box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); /* Gold shadow */
+            margin-bottom: 32px;
+        }
+        .overall-summary .label {
+            font-size: 1rem;
+            color: var(--template-text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .overall-summary .avg-rating {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--template-text-dark);
+            margin-bottom: 12px;
+        }
+        .overall-summary .avg-stars {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            gap: 4px;
-            color: var(--text-color-light);
-            opacity: 0; /* Start hidden for animation */
-            transform: translateY(25px); /* Start below for animation */
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            gap: 6px;
+            font-size: 2rem;
+            color: var(--template-star-color);
+            margin-bottom: 4px;
+        }
+        .overall-summary .total-count {
+            font-size: 0.9rem;
+            color: var(--template-text-light);
         }
 
-        .average-rating-container.animate-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .average-rating-container h3 {
-            color: var(--secondary-color);
-            font-size: 1.5em;
-            margin: 0;
-            margin-bottom: 7px;
-        }
-
-        .average-number {
-            font-size: 3.2em;
-            font-weight: 600;
-            color: var(--secondary-color);
-            text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.65);
-            line-height: 1; /* Tighter line height */
-            margin-bottom: 7px;
-        }
-
-        .average-stars {
-            font-size: 2em;
-            color: var(--secondary-color);
-            letter-spacing: 4px; /* Space out stars */
-            text-shadow: 0 0 13px rgba(255,215,0,0.65);
-        }
-
-        .total-feedbacks-count {
-            font-size: 0.95em;
-            color: rgba(255, 255, 255, 0.75);
-            font-weight: 300;
-            margin-top: 7px;
-        }
-
-        /* Individual Feedback Item */
-        .feedback-item {
-            background: rgba(255, 255, 255, 0.045); /* Very subtle background */
-            border: 1px solid rgba(255, 255, 255, 0.09);
-            border-radius: 13px;
+        /* Recent Feedback Heading */
+        .recent-feedback-heading { /* Renamed to avoid conflict with template's div */
             margin-bottom: 16px;
-            padding: 16px;
+            font-size: 1.4rem;
+            color: var(--template-text-dark);
+            text-align: left; /* Align with feedback items */
+        }
+
+        /* Feedback Items */
+        .feedback-item {
             display: flex;
-            align-items: flex-start; /* Align avatar to top of text */
             gap: 16px;
-            box-shadow: 0 3.5px 9px rgba(0,0,0,0.18);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            padding: 16px 0;
+            border-top: 1px solid var(--template-border-color);
+            font-size: 0.95rem;
+            line-height: 1.4;
             position: relative; /* For edit button positioning */
-            overflow: hidden; /* For inner content layout */
         }
-
-        .feedback-item:hover {
-            transform: translateY(-4px) scale(1.005); /* Slight lift and enlarge */
-            box-shadow: 0 7px 18px rgba(0,0,0,0.28);
+        .feedback-item:first-child {
+            border-top: none;
         }
-
-        .avatar-img {
+        .user-avatar, .admin-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            flex-shrink: 0; /* Prevent shrinking */
-            border: 2.5px solid var(--accent-color);
-            box-shadow: 0 0 9px rgba(59,130,246,0.45);
-            object-fit: cover;
-        }
-
-        .feedback-details {
-            flex-grow: 1; /* Take remaining space */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .feedback-details strong {
-            color: var(--secondary-color);
-            font-size: 1.1em;
-            display: block; /* Make it block for easier margin control */
-            margin-bottom: 4px;
-            text-transform: capitalize; /* Capitalize user names */
-        }
-
-        .user-type-indicator {
-            font-size: 0.65em;
-            color: white;
-            padding: 1.5px 5.5px;
-            border-radius: 3.5px;
-            margin-left: 7px;
-            vertical-align: middle;
-            font-weight: normal; /* Override bold from strong */
-        }
-
-        .google-user-indicator { background-color: var(--google-blue); }
-        .email-user-indicator { background-color: var(--primary-color); }
-
-
-        .feedback-stars {
-            color: var(--secondary-color);
-            font-size: 1.5em;
-            letter-spacing: 2.5px;
-            margin-bottom: 5.5px;
-            text-shadow: 0 0 7px rgba(255,215,0,0.45);
-        }
-
-        .feedback-details p {
-            margin-top: 4px;
-            margin-bottom: 7px;
-            word-wrap: break-word; /* Ensure long words break */
-            white-space: pre-wrap; /* Preserve newlines from textarea */
-            color: var(--text-color-light);
-            line-height: 1.55;
-            font-size: 0.95em;
-        }
-
-        .feedback-timestamp {
-            font-size: 0.7em;
-            color: rgba(255, 255, 255, 0.55);
-            margin-top: 4px;
-            text-align: right;
-        }
-
-        /* Admin Reply Styling */
-        .admin-reply {
-            margin-top: 10px;
-            padding: 9px 11px;
-            background-color: rgba(255, 215, 0, 0.09); /* Light gold background */
-            border-left: 3.5px solid var(--secondary-color); /* Gold border */
-            border-radius: 7px;
-            font-size: 0.85em;
-            display: flex;
-            align-items: flex-start;
-            gap: 7px;
-        }
-
-        .admin-reply-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1.5px solid #9B59B6; /* Admin purple border */
+            overflow: hidden;
+            background: #ddd; /* Placeholder background */
             flex-shrink: 0;
+            border: 2px solid var(--template-verified-color); /* Added border */
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .user-avatar img, .admin-avatar img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
-
-        .admin-reply-content strong {
-            color: #9B59B6; /* Admin name purple */
-            font-size: 0.95em;
-            display: inline; /* Keep strong inline */
+        .feedback-content {
+            flex: 1;
         }
-        .admin-reply-content .reply-timestamp {
-            font-size: 0.65em;
-            color: rgba(255, 255, 255, 0.45);
-            margin-left: 7px;
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
         }
-
+        .feedback-header .user-name {
+            color: var(--template-text-dark);
+        }
+        .feedback-header .verified {
+            color: var(--template-verified-color);
+            font-size: 1rem;
+            margin-left: -4px; /* Adjust spacing */
+        }
+        .user-stars {
+            margin-left: auto; /* Pushes stars to the right */
+            color: var(--template-star-color);
+            font-size: 1rem;
+            display: flex;
+            gap: 2px;
+        }
+        .feedback-text {
+            margin-bottom: 12px;
+            color: var(--template-text-medium);
+        }
+        .edited-note {
+            font-size: 0.85rem;
+            color: var(--template-text-lighter);
+            margin-top: -4px; /* Pull closer to text */
+            margin-bottom: 8px;
+            display: block; /* Ensure it takes full width below header */
+        }
+        .admin-reply {
+            background: var(--template-admin-reply-bg);
+            border-left: 3px solid var(--template-verified-color);
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            margin-top: 10px; /* Space from feedback text */
+        }
+        .admin-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--template-text-dark);
+        }
+        .timestamp {
+            margin-left: auto;
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: var(--template-text-light);
+        }
+        .reply-text {
+            color: var(--template-text-medium);
+        }
         .edit-feedback-btn {
             background: none;
             border: none;
@@ -909,39 +866,20 @@
             cursor: pointer;
             font-size: 1.25em;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 16px; /* Align with feedback item padding */
+            right: 16px; /* Align with feedback item padding */
             padding: 4px; /* Make click area larger */
             opacity: 0.75;
             z-index: 10; /* Ensure it's clickable */
             transition: color 0.25s ease, transform 0.15s;
         }
-
         .edit-feedback-btn:hover {
             color: #31b0d5; /* Darker blue on hover */
             transform: scale(1.08) rotate(4deg); /* Pop and slight rotate */
             opacity: 1;
         }
-
         .edit-feedback-btn[disabled] {
             display: none !important; /* Hide completely when disabled */
-        }
-
-        .edited-tag {
-            background-color: #f0ad4e; /* Orange-yellow */
-            color: white;
-            padding: 2.5px 7px;
-            border-radius: 4.5px;
-            font-size: 0.65em;
-            font-weight: bold;
-            margin-left: 7px;
-            vertical-align: middle; /* Align with text */
-            animation: fadeIn 0.45s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         /* Confetti animation */
@@ -1004,6 +942,40 @@
                 width:220px;
                 top:65px;
             }
+
+            .overall-summary .avg-rating {
+                font-size: 2rem;
+            }
+            .overall-summary .avg-stars {
+                font-size: 1.8rem;
+            }
+            .recent-feedback-heading {
+                font-size: 1.2em;
+            }
+            .feedback-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .user-avatar {
+                margin-right: auto; /* Center avatar in column layout */
+            }
+            .feedback-header {
+                width: 100%; /* Take full width for better wrapping */
+            }
+            .user-stars {
+                margin-left: 0; /* Remove auto-margin */
+                margin-top: 5px; /* Add some space if it wraps */
+            }
+             .edit-feedback-btn {
+                position: static; /* Remove absolute positioning */
+                margin-top: 10px; /* Add some space below content */
+                display: block; /* Make it a block element */
+                width: 100px; /* Example width */
+                text-align: left; /* Align icon to left */
+                padding: 0; /* Remove padding */
+                margin-left: 0;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1028,6 +1000,12 @@
                 width:calc(100vw - 40px); /* Fill almost full width */
                 right:10px;
             }
+            .overall-summary .avg-rating {
+                font-size: 2.2rem;
+            }
+            .overall-summary .avg-stars {
+                font-size: 1.6rem;
+            }
         }
     </style>
 </head>
@@ -1050,10 +1028,12 @@
             <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
             <a href="#" id="modal-create-account-link">Create New Account</a>
           </div>
-          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Login with Google
-          </button>
+          <div id="g_id_onload"
+             data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
+             data-callback="handleGoogleCredentialResponse"
+             data-auto_prompt="false">
+          </div>
+          <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" style="margin-top: 15px; display: flex; justify-content: center;"></div>
         </form>
       </div>
     </div>
@@ -1071,10 +1051,7 @@
           <div class="form-links" style="justify-content: center;">
             <a href="#" id="modal-already-account-link">Already have an account? Login</a>
           </div>
-           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Sign Up with Google
-          </button>
+          <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="signup_with" data-shape="rectangular" data-logo_alignment="left" style="margin-top: 15px; display: flex; justify-content: center;"></div>
         </form>
       </div>
     </div>
@@ -1136,9 +1113,16 @@
             </form>
         </div>
 
-        <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div> <h2>Recent Feedbacks</h2> 
-             </div>
+        <div id="feedback-list-container">
+            <div class="overall-summary" id="overall-rating-display">
+                </div>
+
+            <div class="recent-feedback">
+                <h3 class="recent-feedback-heading">Recent Feedback</h3>
+                <div id="feedback-items-container">
+                    </div>
+            </div>
+        </div>
     </div> 
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
@@ -1166,7 +1150,6 @@
             const modalLoginPasswordInput = document.getElementById('modal-login-password');
             const modalForgotPasswordLink = document.getElementById('modal-forgot-password-link');
             const modalCreateAccountLink = document.getElementById('modal-create-account-link');
-            const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
             
             // Signup Modal Elements
             const emailSignupForm = document.getElementById('email-signup-form');
@@ -1175,8 +1158,8 @@
             const modalSignupPasswordInput = document.getElementById('modal-signup-password');
             const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password');
             const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
-            const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
-
+            // Google Sign-In button is now rendered by GSI library in a div, no need to get the old button element
+            
             // User Menu Content Elements
             const menuAvatarImg = document.getElementById('menu-avatar');
             const menuUsernameSpan = document.getElementById('menu-username');
@@ -1197,7 +1180,8 @@
             const ownerInfoEl = document.querySelector('.owner-info');
             const feedbackFormContainer = document.getElementById('feedback-form-container');
             const feedbackListContainer = document.getElementById('feedback-list-container');
-            const averageRatingDisplayEl = document.getElementById('average-rating-display');
+            const overallRatingDisplayEl = document.getElementById('overall-rating-display'); // Changed from average-rating-display
+            const feedbackItemsContainer = document.getElementById('feedback-items-container'); // New container for individual feedback items
             const nameInputInFeedbackForm = document.getElementById('name'); // The name input in the main feedback form
             const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
             const feedbackTextarea = document.getElementById('feedback');
@@ -1272,7 +1256,7 @@
                     stylishPopupButtonContainer.appendChild(cancelBtn);
 
                     const confirmBtn = document.createElement('button');
-                    confirmBtn.textContent = options.confirmText || 'Confirm';
+                    confirmBtn.textContent = options.confirmText || 'OK'; // Changed default to OK
                     confirmBtn.className = 'popup-button primary';
                     confirmBtn.id = 'stylishPopupPrimaryActionBtn'; // Add an ID for easy access if needed
                     confirmBtn.onclick = () => {
@@ -1497,45 +1481,26 @@
 
 
             // Google Sign-In Initialization and Callback
-            const triggerGoogleSignIn = () => {
-                // Hide existing modals before showing Google prompt
-                if (loginModal) loginModal.classList.remove('active');
-                if (signupModal) signupModal.classList.remove('active');
-                google.accounts.id.prompt((notification) => {
-                    // Optional: Handle notification for UX, e.g., if prompt is not displayed
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.warn('Google Sign-In prompt was not displayed/skipped.');
-                    }
-                });
-            };
-            if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn;
-            if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
-
-            window.onload = function () {
-                // Initialize Google Sign-In only if the script is loaded
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                    google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: handleGoogleCredentialResponse // Our custom callback
-                    });
-                } else {
-                    console.error("Google Identity Services script abhi load nahi hua hai.");
-                }
-                checkLoginStatus(); // Check user's login status on page load
-                // Animate elements in
-                if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
-                if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
-                if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
-            };
-
-            async function handleGoogleCredentialResponse(response) {
+            // The GSI (Google Sign-In) buttons are now rendered automatically by the GSI client library
+            // within the `g_id_signin` divs. We just need to make sure the `g_id_onload` div
+            // has the correct client_id and callback, which it does.
+            window.handleGoogleCredentialResponse = async (response) => {
                 try {
                     const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
                     handleAuthResponse(data);
                 } catch (error) { 
                     // Error handled by apiRequest
                 }
-            }
+            };
+
+            window.onload = function () {
+                // No need for manual google.accounts.id.initialize call here, as it's done via g_id_onload div.
+                checkLoginStatus(); // Check user's login status on page load
+                // Animate elements in
+                if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
+                if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
+                if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
+            };
 
             // Check Login Status from local storage and validate token
             async function checkLoginStatus() {
@@ -1671,52 +1636,42 @@
                  try {
                     const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true); // No body needed for GET
                     // Clear previous feedbacks before adding new ones
-                    const h2Title = feedbackListContainer.querySelector('h2'); // Keep the H2 title
-                    feedbackListContainer.innerHTML = ''; // Clear all content
-                    feedbackListContainer.appendChild(averageRatingDisplayEl); // Add average rating div back
-                    if(h2Title) feedbackListContainer.appendChild(h2Title); // Add H2 title back
-
+                    feedbackItemsContainer.innerHTML = ''; // Clear only the feedback items, keep overall summary
+                    
                     if (data.length === 0) {
                         const msgP = document.createElement('p');
                         msgP.textContent = 'No feedback yet. Be the first one!';
                         msgP.style.textAlign='center';
                         msgP.style.padding='20px';
-                        feedbackListContainer.appendChild(msgP);
-                        updateAverageRating(0, 0); // Display 0 average if no feedbacks
+                        msgP.style.color = var(--template-text-light); // Match template text color
+                        feedbackItemsContainer.appendChild(msgP);
+                        updateOverallRating(0, 0); // Display 0 average if no feedbacks
                     } else {
                         const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
                         const average = totalRatings / data.length;
-                        updateAverageRating(average, data.length);
-                        data.forEach((fb, index) => addFeedbackToDOM(fb, index));
+                        updateOverallRating(average, data.length);
+                        data.forEach((fb) => addFeedbackToDOM(fb)); // Index not needed for addFeedbackToDOM
                     }
                 } catch (err) {
                     // Error handled by apiRequest function
                 }
             }
 
-            // Update Average Rating Display
-            function updateAverageRating(avg, count) {
+            // Update Overall Rating Display (New Style)
+            function updateOverallRating(avg, count) {
                 const avgNum = parseFloat(avg);
-                let starsHtml = '☆☆☆☆☆'; // Default to empty stars
-                if (!isNaN(avgNum) && avgNum > 0) {
-                    const fullStars = Math.floor(avgNum);
-                    starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-                }
-                averageRatingDisplayEl.innerHTML = `
-                    <div class="average-rating-container">
-                        <h3>Overall Average Rating</h3>
-                        <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
-                        <div class="average-stars">${starsHtml}</div>
-                        <div class="total-feedbacks-count">(${count} feedbacks)</div>
+                const fullStars = Math.floor(avgNum);
+                const hasHalfStar = (avgNum % 1) >= 0.25 && (avgNum % 1) <= 0.75; // Consider half star for .25 to .75
+                const displayStars = '★'.repeat(fullStars) + (hasHalfStar ? '<i class="fas fa-star-half-alt"></i>' : '') + '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+                
+                overallRatingDisplayEl.innerHTML = `
+                    <div class="label">Overall Rating</div>
+                    <div class="avg-rating">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)} / 5</div>
+                    <div class="avg-stars">
+                        ${displayStars}
                     </div>
+                    <div class="total-count">${count} Reviews</div>
                 `;
-                // Animate the average rating container in if it's new/hidden
-                setTimeout(() => {
-                    const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
-                    if (avgContainer && !avgContainer.classList.contains('animate-in')) {
-                        avgContainer.classList.add('animate-in');
-                    }
-                }, 50);
             }
             
             // Submit/Edit Feedback
@@ -1781,68 +1736,131 @@
                 currentEditFeedbackId = null; // Clear edit ID
             }
 
-            // Add Feedback to DOM
-            function addFeedbackToDOM(fbData, index) {
+            // Add Feedback to DOM (Adapted to new template structure)
+            function addFeedbackToDOM(fbData) {
                 const item = document.createElement('div');
                 item.className = 'feedback-item';
-                item.dataset.feedbackId = fbData._id; // Store ID for potential updates/deletions
+                item.dataset.feedbackId = fbData._id;
 
+                const userAvatarDiv = document.createElement('div');
+                userAvatarDiv.className = 'user-avatar';
                 const avatarImg = document.createElement('img');
-                avatarImg.className = 'avatar-img';
-                avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
-                avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
-                // Fallback for broken image links
-                avatarImg.onerror = function() {
-                    this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
+                avatarImg.src = fbData.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(fbData.name || 'guest')}&flip=true&radius=50&doodle=true&scale=90`;
+                avatarImg.alt = fbData.name || 'User';
+                avatarImg.onerror = function() { // Fallback for broken avatar URLs
+                    this.src = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(fbData.name || 'guest')}&flip=true&radius=50&doodle=true&scale=90`;
                 };
+                userAvatarDiv.appendChild(avatarImg);
 
-                const detailsDiv = document.createElement('div');
-                detailsDiv.className = 'feedback-details';
+                const feedbackContentDiv = document.createElement('div');
+                feedbackContentDiv.className = 'feedback-content';
 
-                const strongName = document.createElement('strong'); 
-                let nameContent = fbData.name;
-                let userTypeTag = '';
-                if (fbData.googleIdSubmitter) {
-                    userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                } else {
-                    userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
+                const feedbackHeaderDiv = document.createElement('div');
+                feedbackHeaderDiv.className = 'feedback-header';
+
+                const userNameSpan = document.createElement('span');
+                userNameSpan.className = 'user-name';
+                userNameSpan.textContent = fbData.name;
+                feedbackHeaderDiv.appendChild(userNameSpan);
+
+                // Verified icon if logged in and Google user
+                if (fbData.userId && fbData.userId.loginMethod === 'google') { // Check if userId exists and has loginMethod
+                    const verifiedIcon = document.createElement('i');
+                    verifiedIcon.className = 'fas fa-check-circle verified';
+                    verifiedIcon.title = 'Verified User';
+                    feedbackHeaderDiv.appendChild(verifiedIcon);
+                } else if (fbData.userId && fbData.userId.loginMethod === 'email') {
+                    // For email users, you can add a different icon or just no icon for "verified"
+                    // For now, only Google users get the checkmark as per template
                 }
-                strongName.innerHTML = `${nameContent} ${userTypeTag}`;
 
 
+                const userStarsDiv = document.createElement('div');
+                userStarsDiv.className = 'user-stars';
+                userStarsDiv.innerHTML = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating); // Use solid/empty stars
+                feedbackHeaderDiv.appendChild(userStarsDiv);
+                
+                feedbackContentDiv.appendChild(feedbackHeaderDiv);
+
+                // Edited note
                 if (fbData.isEdited) {
-                    const editedTag = document.createElement('span');
-                    editedTag.className = 'edited-tag';
-                    editedTag.textContent = 'Edited';
-                    strongName.appendChild(editedTag);
+                    const editedNote = document.createElement('div');
+                    editedNote.className = 'edited-note';
+                    let originalTimestamp = '';
+                    if (fbData.originalContent && fbData.originalContent.timestamp) {
+                         originalTimestamp = new Date(fbData.originalContent.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                    }
+                    editedNote.innerHTML = `✎ Edited on ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })} <small>(Original: ${originalTimestamp || 'N/A'})</small>`;
+                    feedbackContentDiv.appendChild(editedNote);
                 }
 
-                const starsDiv = document.createElement('div');
-                starsDiv.className = 'feedback-stars';
-                starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
+                const feedbackTextDiv = document.createElement('div');
+                feedbackTextDiv.className = 'feedback-text';
+                feedbackTextDiv.textContent = fbData.feedback;
+                feedbackContentDiv.appendChild(feedbackTextDiv);
 
-                const pFeedback = document.createElement('p');
-                pFeedback.textContent = fbData.feedback;
+                // Admin Reply (if exists)
+                if (fbData.replies && fbData.replies.length > 0) { 
+                    const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
+                    if (latestReply && latestReply.text) {
+                        const adminReplyDiv = document.createElement('div');
+                        adminReplyDiv.className = 'admin-reply';
 
-                const timestampDiv = document.createElement('div');
-                timestampDiv.className = 'feedback-timestamp';
+                        const adminMetaDiv = document.createElement('div');
+                        adminMetaDiv.className = 'admin-meta';
+
+                        const adminAvatarDiv = document.createElement('div');
+                        adminAvatarDiv.className = 'admin-avatar';
+                        const adminAvatarImg = document.createElement('img');
+                        adminAvatarImg.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
+                        adminAvatarImg.alt = 'Nobita';
+                        adminAvatarDiv.appendChild(adminAvatarImg);
+                        adminMetaDiv.appendChild(adminAvatarDiv);
+
+                        const adminNameSpan = document.createElement('span');
+                        adminNameSpan.className = 'admin-name';
+                        adminNameSpan.textContent = latestReply.adminName || 'Admin';
+                        adminMetaDiv.appendChild(adminNameSpan);
+
+                        const timestampSpan = document.createElement('span');
+                        timestampSpan.className = 'timestamp';
+                        try {
+                            timestampSpan.textContent = new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' });
+                        } catch(e) {
+                            timestampSpan.textContent = new Date(latestReply.timestamp).toLocaleString('en-US'); // Fallback
+                        }
+                        adminMetaDiv.appendChild(timestampSpan);
+                        adminReplyDiv.appendChild(adminMetaDiv);
+
+                        const replyTextDiv = document.createElement('div');
+                        replyTextDiv.className = 'reply-text';
+                        replyTextDiv.textContent = latestReply.text;
+                        adminReplyDiv.appendChild(replyTextDiv);
+                        
+                        feedbackContentDiv.appendChild(adminReplyDiv);
+                    }
+                }
+
+                // Timestamp for the feedback itself (at the bottom, original or last edited)
+                const mainTimestampDiv = document.createElement('div');
+                mainTimestampDiv.className = 'timestamp';
                 try {
-                    // Indian Time Zone for timestamp
-                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
-                } catch(e) { 
-                    timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
+                    mainTimestampDiv.textContent = fbData.isEdited 
+                        ? `Last Updated: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`
+                        : `Submitted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                } catch(e) {
+                    mainTimestampDiv.textContent = `Submitted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
                 }
+                feedbackContentDiv.appendChild(mainTimestampDiv);
 
-                detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-                // Edit Button
+                // Edit Button (positioned absolutely inside feedback-item for top-right)
                 const editButton = document.createElement('button');
                 editButton.className = 'edit-feedback-btn';
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 editButton.title = 'Edit this feedback';
-                // Disable edit button if not the current user's feedback
-                editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
-
+                editButton.disabled = !(currentUser && currentUser.userId === fbData.userId); // Enable/disable based on user
+                
                 editButton.addEventListener('click', (event) => { 
                     event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
                     if (!currentUser || currentUser.userId !== fbData.userId) {
@@ -1868,44 +1886,10 @@
                         feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
-                item.appendChild(editButton);
+                item.appendChild(editButton); // Append edit button directly to the item
 
-
-                // Admin Reply (if exists)
-                if (fbData.replies && fbData.replies.length > 0) { 
-                    const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
-                    if (latestReply && latestReply.text) {
-                        const adminReplyDiv = document.createElement('div');
-                        adminReplyDiv.className = 'admin-reply';
-
-                        const adminAvatar = document.createElement('img');
-                        adminAvatar.className = 'admin-reply-avatar';
-                        adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
-                        adminAvatar.alt = 'Nobita';
-
-                        const adminReplyContent = document.createElement('div');
-                        adminReplyContent.className = 'admin-reply-content';
-                        let replyTimestampText = '';
-                        try {
-                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
-                        } catch(e) {
-                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`;
-                        }
-                        adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
-                        
-                        adminReplyDiv.append(adminAvatar, adminReplyContent);
-                        detailsDiv.appendChild(adminReplyDiv);
-                    }
-                }
-
-                item.append(avatarImg, detailsDiv); 
-                // Check if the item already exists to prevent duplicates on re-fetch
-                if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
-                    // If it exists, you might want to update it instead of re-adding, or do nothing
-                    // For now, if it exists, we assume it's already rendered correctly, or a full refresh is desired
-                } else {
-                    feedbackListContainer.appendChild(item);
-                }
+                item.append(userAvatarDiv, feedbackContentDiv); 
+                feedbackItemsContainer.appendChild(item); // Append to the new container
             }
             
             // Initial calls on load
