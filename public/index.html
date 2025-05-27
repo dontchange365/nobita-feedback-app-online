@@ -1,171 +1,176 @@
-<!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nobita Feedback App</title>
-  <style>
-    /* Reset & base */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fc; color: #333; }
-    a { text-decoration: none; color: inherit; }
-    /* Container */
-    .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-    header { text-align: center; margin-bottom: 30px; }
-    h1 { font-size: 2.5rem; color: #1e212d; margin-bottom: 10px; }
-    /* Forms */
-    .form-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; transition: transform .3s; }
-    .form-card:hover { transform: translateY(-5px); }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .star-rating { display: flex; gap: 5px; margin-top: 5px; }
-    .star-rating span { font-size: 1.5rem; cursor: pointer; transition: transform .2s; }
-    .star-rating span:hover { transform: scale(1.2); }
-    button { padding: 10px 20px; border: none; border-radius: 4px; background: #6a0dad; color: #fff; font-weight: bold; cursor: pointer; transition: background .3s; }
-    button:hover { background: #5809a1; }
-    /* Feedback List */
-    .feedback-list { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    .feedback-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; transition: transform .3s; }
-    .feedback-card:hover { transform: translateY(-5px); }
-    .avatar { flex-shrink: 0; width: 80px; height: 80px; border-radius: 50%; margin: 15px; border: 2px solid #6a0dad; overflow: hidden; }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .feedback-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-    .feedback-header { display: flex; justify-content: space-between; align-items: center; }
-    .feedback-name { font-weight: 700; font-size: 1.1rem; color: #1e212d; }
-    .feedback-stars { color: #f1c40f; }
-    .feedback-body { margin-top: 10px; flex-grow: 1; line-height: 1.4; }
-    .feedback-time { font-size: 0.85rem; color: #777; margin-top: 10px; text-align: right; }
-    /* Hidden sections */
-    #feedback-section, #logout-btn { display: none; }
-    /* Animations */
-    .fade-in { animation: fadeIn 0.6s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  </style>
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>✨ NOBITA's Feedback Portal ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Nobita Feedback App</h1>
-      <nav>
-        <button id="show-login">Login</button>
-        <button id="show-signup">Sign Up</button>
-        <button id="logout-btn">Logout</button>
-      </nav>
-    </header><!-- Login Form -->
-<div id="login-card" class="form-card fade-in">
-  <h2>Login</h2>
-  <div class="form-group"><label>Email</label><input type="email" id="login-email" /></div>
-  <div class="form-group"><label>Password</label><input type="password" id="login-password" /></div>
-  <button id="login-btn">Login</button>
-</div>
+    <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
+        <i class="fas fa-lock"></i>
+    </div>
+    <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
+        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+    </div>
 
-<!-- Signup Form -->
-<div id="signup-card" class="form-card fade-in" style="display:none;">
-  <h2>Sign Up</h2>
-  <div class="form-group"><label>Name</label><input type="text" id="signup-name" /></div>
-  <div class="form-group"><label>Email</label><input type="email" id="signup-email" /></div>
-  <div class="form-group"><label>Password</label><input type="password" id="signup-password" /></div>
-  <button id="signup-btn">Sign Up</button>
-</div>
-
-<!-- Feedback Submission -->
-<div id="feedback-section" class="form-card fade-in">
-  <h2>Submit Feedback</h2>
-  <div class="form-group"><label>Your Feedback</label><textarea id="feedback-text" rows="3"></textarea></div>
-  <div class="form-group"><label>Rating</label><div id="star-widget" class="star-rating"></div></div>
-  <button id="submit-feedback">Submit</button>
-</div>
-
-<!-- Feedback List -->
-<div id="feedback-list" class="feedback-list fade-in"></div>
-
-  </div>  <script>
-    const apiBase = 'https://nobita-feedback-app-online.onrender.com';
-    let token = localStorage.getItem('token') || '';
-    let selectedRating = 0;
-
-    // Elements
-    const loginCard = document.getElementById('login-card');
-    const signupCard = document.getElementById('signup-card');
-    const feedbackSection = document.getElementById('feedback-section');
-    const feedbackList = document.getElementById('feedback-list');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    // Navigation
-    document.getElementById('show-login').onclick = () => { loginCard.style.display = 'block'; signupCard.style.display = 'none'; };
-    document.getElementById('show-signup').onclick = () => { signupCard.style.display = 'block'; loginCard.style.display = 'none'; };
-    logoutBtn.onclick = () => { token=''; localStorage.removeItem('token'); window.location.reload(); };
-
-    // Initialize star rating widget
-    const starWidget = document.getElementById('star-widget');
-    for (let i = 1; i <= 5; i++) {
-      const star = document.createElement('span');
-      star.innerHTML = '★';
-      star.onclick = () => { setRating(i); };
-      starWidget.appendChild(star);
-    }
-    function setRating(r) {
-      selectedRating = r;
-      Array.from(starWidget.children).forEach((s, idx) => s.style.color = idx < r ? '#f1c40f' : '#ccc');
-    }
-
-    // Auth & UI toggle
-    if (token) showApp(); else showLogin();
-
-    // Functions
-    async function login() {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const res = await fetch(`${apiBase}/api/auth/login`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ email, password }) });
-      const data = await res.json(); if (res.ok) { token = data.token; localStorage.setItem('token', token); showApp(); } else alert(data.message);
-    }
-    async function signup() {
-      const name = document.getElementById('signup-name').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const res = await fetch(`${apiBase}/api/auth/signup`, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ name, email, password }) });
-      const data = await res.json(); if (res.ok) { token = data.token; localStorage.setItem('token', token); showApp(); } else alert(data.message);
-    }
-    async function submitFeedback() {
-      const feedback = document.getElementById('feedback-text').value;
-      if (!feedback || selectedRating < 1) return alert('Feedback aur rating zaroori hai');
-      const res = await fetch(`${apiBase}/api/feedback`, { method: 'POST', headers: {
-        'Content-Type':'application/json', 'Authorization': 'Bearer ' + token
-      }, body: JSON.stringify({ feedback, rating: selectedRating }) });
-      const data = await res.json();
-      if (res.ok) { renderFeedbacks(); document.getElementById('feedback-text').value=''; setRating(0); } else alert(data.message);
-    }
-    async function renderFeedbacks() {
-      feedbackList.innerHTML = '';
-      const res = await fetch(`${apiBase}/api/feedbacks`);
-      const all = await res.json();
-      all.forEach(fb => {
-        const card = document.createElement('div'); card.className='feedback-card fade-in';
-        const avatarDiv = document.createElement('div'); avatarDiv.className='avatar';
-        const img = document.createElement('img');
-        // DiceBear avatar
-        img.src = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(fb.name)}&flip=true&radius=50&scale=90`;
-        avatarDiv.appendChild(img);
-        const content = document.createElement('div'); content.className='feedback-content';
-        content.innerHTML = `
-          <div class='feedback-header'>
-            <div class='feedback-name'>${fb.name}</div>
-            <div class='feedback-stars'>${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</div>
+    <div id="loginModal" class="auth-modal-overlay">
+      <div class="auth-modal-content">
+        <span class="close-modal-btn" data-modal-close="loginModal">&times;</span>
+        <h2>Login</h2>
+        <form id="email-login-form" class="auth-modal-form">
+          <input type="email" id="modal-login-email" placeholder="Email" required>
+          <input type="password" id="modal-login-password" placeholder="Password" required>
+          <button type="submit">Login</button>
+          <div class="form-links">
+            <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
+            <a href="#" id="modal-create-account-link">Create New Account</a>
           </div>
-          <div class='feedback-body'>${fb.feedback}</div>
-          <div class='feedback-time'>${new Date(fb.timestamp).toLocaleString()}</div>
-        `;
-        card.appendChild(avatarDiv); card.appendChild(content);
-        feedbackList.appendChild(card);
-      });
-    }
+          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Login with Google
+          </button>
+        </form>
+      </div>
+    </div>
 
-    function showLogin() { loginCard.style.display='block'; signupCard.style.display='none'; feedbackSection.style.display='none'; logoutBtn.style.display='none'; }
-    function showApp() { loginCard.style.display='none'; signupCard.style.display='none'; feedbackSection.style.display='block'; logoutBtn.style.display='inline-block'; renderFeedbacks(); }
+    <div id="signupModal" class="auth-modal-overlay">
+      <div class="auth-modal-content">
+        <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
+        <h2>Create New Account</h2>
+        <form id="email-signup-form" class="auth-modal-form">
+          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
+          <input type="email" id="modal-signup-email" placeholder="Email" required>
+          <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
+          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
+          <button type="submit">Sign Up</button>
+          <div class="form-links" style="justify-content: center;">
+            <a href="#" id="modal-already-account-link">Already have an account? Login</a>
+          </div>
+           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Sign Up with Google
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <div id="userMenu" class="user-profile-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+          <span class="username" id="menu-username">User Name</span>
+        </div>
+        <ul>
+          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
+              </div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer">
+            </div>
+        </div>
+    </div>
 
-    // Event Listeners
-    document.getElementById('login-btn').onclick = login;
-    document.getElementById('signup-btn').onclick = signup;
-    document.getElementById('submit-feedback').onclick = submitFeedback;
-  </script></body>
+    <div id="userProfileModal" class="auth-modal-overlay">
+        <div class="auth-modal-content profile-modal-content">
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2>My Profile</h2>
+            <div class="profile-avatar-section">
+                <img id="profile-display-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
+                <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
+                <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <span class="progress-text" id="progress-text">0%</span>
+                </div>
+            </div>
+            <form id="profile-edit-form" class="auth-modal-form">
+                <div class="input-group">
+                    <label for="profile-name">Name:</label>
+                    <input type="text" id="profile-name" placeholder="Your Name" required>
+                </div>
+                <div class="input-group">
+                    <label for="profile-email">Email:</label>
+                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
+                </div>
+                <button type="submit" id="save-profile-changes-btn">Save Changes</button>
+            </form>
+            <hr class="profile-divider">
+            <h3>Change Password</h3>
+            <form id="change-password-form" class="auth-modal-form">
+                <div class="input-group">
+                    <label for="current-password">Current Password:</label>
+                    <input type="password" id="current-password" placeholder="Current Password">
+                </div>
+                <div class="input-group">
+                    <label for="new-password-profile">New Password (min. 6 characters):</label>
+                    <input type="password" id="new-password-profile" placeholder="New Password" minlength="6">
+                </div>
+                <div class="input-group">
+                    <label for="confirm-new-password-profile">Confirm New Password:</label>
+                    <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
+                </div>
+                <button type="submit" id="change-password-btn">Change Password</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="page-content-wrapper">
+        <div class="owner-info"> 
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
+            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
+        </div>
+        
+        <div id="feedback-form-container" class="main-container"> 
+            <h1 id="main-title"></h1>
+            <div id="typed-output"></div>
+            <form id="feedback-form">
+                <div class="input-group">
+                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
+                    <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
+                </div>
+                <div class="input-group">
+                    <label for="feedback">Your Feedback:</label>
+                    <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Rate Your Experience:</label>
+                    <div class="stars" id="star-rating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                    <input type="hidden" id="rating" value="0">
+                </div>
+                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
+            </form>
+        </div>
+
+        <div id="feedback-list-container" class="main-container"> 
+             <div id="average-rating-display"></div>
+             <h2>Recent Feedbacks</h2>
+             </div>
+    </div> 
+
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="script.js"></script>
+</body>
 </html>
