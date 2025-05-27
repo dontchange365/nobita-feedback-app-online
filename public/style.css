@@ -1,3 +1,4 @@
+/* style.css */
 :root {
     --primary-color: #6a0dad; /* Dark Purple */
     --secondary-color: #FFD700; /* Gold */
@@ -18,159 +19,115 @@
 
     --google-blue: #4285F4;
     --google-blue-hover: #357ae8;
-    --google-text: #fff;
 }
 
+/* Base Styles */
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
     background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
     color: var(--text-color-light);
-    line-height: 1.6;
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
-}
-
-/* Header Styles */
-header {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow-deep);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid var(--card-border);
-}
-
-.logo {
-    font-family: 'Luckiest Guy', cursive;
-    color: var(--secondary-color);
-    font-size: 2.5rem;
-    text-shadow: 3px 3px var(--primary-color);
-    margin: 0;
-    letter-spacing: 2px;
-}
-
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-}
-
-nav ul li {
-    margin-left: 25px;
-}
-
-nav ul li a {
-    color: var(--text-color-light);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.1em;
-    padding: 5px 0;
-    position: relative;
-}
-
-nav ul li a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    background-color: var(--secondary-color);
-    left: 0;
-    bottom: 0;
-    transition: width 0.3s ease-in-out;
-}
-
-nav ul li a:hover::after {
-    width: 100%;
-}
-
-/* Hero Section */
-.hero-section {
-    position: relative;
-    height: 60vh;
-    display: flex;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-    overflow: hidden;
-    color: var(--text-color-light);
-    box-shadow: var(--shadow-deep);
-    margin-bottom: 30px;
+    align-items: flex-start; /* Align to top initially, allow scroll */
+    padding-top: 20px;
+    box-sizing: border-box;
 }
 
-.hero-content {
-    z-index: 1;
-    max-width: 800px;
-    padding: 20px;
-}
-
-.hero-content h1 {
-    font-size: 3.5em;
-    margin-bottom: 15px;
-    font-family: 'Luckiest Guy', cursive;
-    color: var(--secondary-color);
-    text-shadow: 4px 4px var(--primary-color);
-}
-
-.hero-content p {
-    font-size: 1.3em;
-    margin-bottom: 30px;
-}
-
-.typed-text {
-    color: var(--accent-color);
-}
-
-/* Main Containers */
-.main-container {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 40px;
-    margin: 20px auto;
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
     max-width: 900px;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-bottom: 50px; /* Add some space at the bottom */
+}
+
+.main-container {
+    background-color: var(--card-bg);
+    border-radius: 15px;
+    padding: 30px;
     box-shadow: var(--shadow-deep);
-    animation: fadeIn 0.8s ease-out;
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-#feedback-form-container h1,
-#feedback-list-container h2 {
-    text-align: center;
+/* Headings */
+h1, h2, h3 {
     color: var(--secondary-color);
-    margin-bottom: 30px;
-    font-size: 2.8em;
-    text-shadow: 2px 2px var(--primary-color);
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Luckiest Guy', cursive;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
+
+h1 {
+    font-size: 3em;
+    color: var(--primary-color);
+    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.owner-name-animated .owner-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-image: url('https://i.ibb.co/LdQ8M3r/Nobita.jpg'); /* Your image URL */
+    background-size: cover;
+    background-position: center;
+    margin-right: 15px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); /* Gold glow */
+    border: 3px solid var(--secondary-color);
+    animation: pulse 2s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+    100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
+}
+
+.owner-name-text {
+    background: linear-gradient(45deg, var(--primary-color), #8a2be2, var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.2em; /* Adjust as needed */
+    animation: neon-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neon-glow {
+    0% {
+        text-shadow: 0 0 5px var(--secondary-color), 0 0 10px var(--secondary-color), 0 0 15px var(--secondary-color);
+    }
+    100% {
+        text-shadow: 0 0 10px var(--secondary-color), 0 0 20px var(--secondary-color), 0 0 30px var(--primary-color);
+    }
+}
+
 
 /* Form Styles */
-#feedback-form .input-group {
-    margin-bottom: 25px;
+.input-group {
+    margin-bottom: 18px;
 }
 
-#feedback-form label {
+.input-group label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-weight: 600;
-    color: var(--accent-color);
-    font-size: 1.1em;
+    color: var(--text-color-light);
 }
 
-#feedback-form input[type="text"],
-#feedback-form textarea {
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group textarea {
     width: calc(100% - 20px);
     padding: 12px;
     border: 1px solid var(--card-border);
@@ -179,58 +136,33 @@ nav ul li a:hover::after {
     color: var(--text-color-light);
     font-size: 1em;
     outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-#feedback-form input[type="text"]:focus,
-#feedback-form textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.3);
+.input-group input:focus,
+.input-group textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
-#feedback-form textarea {
+.input-group textarea {
     resize: vertical;
-    min-height: 120px;
+    min-height: 100px;
 }
 
-/* Star Rating */
-.stars {
-    display: flex;
-    justify-content: center;
-    margin-top: 15px;
-    margin-bottom: 25px;
-}
-
-.star {
-    font-size: 3.5em;
-    color: #ccc;
-    cursor: pointer;
-    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
-    margin: 0 5px;
-}
-
-.star.selected,
-.star:hover,
-.star.hovered {
-    color: var(--secondary-color);
-    transform: scale(1.1);
-}
-
-/* Action Button */
 .action-button {
-    display: block;
-    width: 100%;
-    padding: 15px;
     background-color: var(--primary-color);
     color: var(--text-color-light);
+    padding: 12px 25px;
     border: none;
     border-radius: 8px;
-    font-size: 1.2em;
-    font-weight: 700;
     cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    text-align: center;
-    text-decoration: none; /* For links styled as buttons */
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 10px;
 }
 
 .action-button:hover {
@@ -238,10 +170,41 @@ nav ul li a:hover::after {
     transform: translateY(-2px);
 }
 
-.action-button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    transform: none;
+.action-button.secondary {
+    background-color: #555;
+}
+
+.action-button.secondary:hover {
+    background-color: #777;
+}
+
+.action-button.delete-button {
+    background-color: var(--error-color);
+}
+
+.action-button.delete-button:hover {
+    background-color: #e0444c;
+}
+
+/* Star Rating */
+.stars {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.star {
+    font-size: 3.5em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star:hover,
+.star.selected {
+    color: var(--secondary-color);
+    transform: scale(1.1);
 }
 
 /* Feedback List */
@@ -250,295 +213,134 @@ nav ul li a:hover::after {
 }
 
 #feedback-list-container h2 {
-    margin-top: 0;
+    color: var(--accent-color);
+    margin-bottom: 25px;
+}
+
+#average-rating-display {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin-bottom: 25px;
+    padding: 10px;
+    background-color: rgba(255, 215, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .feedback-item {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
+    display: flex;
+    align-items: flex-start;
+    background-color: rgba(60, 80, 100, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 20px;
-    display: flex;
-    align-items: flex-start;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
-    transition: transform 0.2s ease-in-out;
+    overflow: hidden;
+    transition: transform 0.2s ease;
 }
 
 .feedback-item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 .feedback-avatar {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 20px;
-    border: 3px solid var(--accent-color);
-    flex-shrink: 0;
+    margin-right: 15px;
+    border: 2px solid var(--secondary-color);
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.feedback-details {
+    flex-grow: 1;
+}
+
+.feedback-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.feedback-username {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 1.1em;
+    margin-right: 10px;
+}
+
+.feedback-rating {
+    display: flex;
+    gap: 2px;
+    margin-right: 10px;
+}
+
+.star-display {
+    color: #bbb;
+    font-size: 1.2em;
+}
+
+.star-display.selected {
+    color: var(--secondary-color);
+}
+
+.feedback-timestamp {
+    font-size: 0.85em;
+    color: #aaa;
 }
 
 .feedback-content {
-    flex-grow: 1;
-}
-
-.feedback-content h3 {
-    margin-top: 0;
-    margin-bottom: 5px;
-    color: var(--secondary-color);
-    font-size: 1.3em;
-}
-
-.feedback-meta {
-    font-size: 0.9em;
+    line-height: 1.6;
     color: var(--text-color-light);
-    margin-bottom: 10px;
-    opacity: 0.8;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    word-wrap: break-word; /* Ensure long words break */
 }
 
-.feedback-rating .star {
-    font-size: 1.2em;
-    color: var(--secondary-color);
-    margin: 0 2px;
-}
-
-.feedback-text {
-    margin-top: 15px;
-    color: var(--text-color-light);
-    font-size: 1em;
-}
-
-.owner-badge {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-size: 0.75em;
-    font-weight: 600;
-    margin-left: 10px;
-    vertical-align: middle;
-}
-
-.timestamp {
-    font-size: 0.8em;
-    color: var(--text-color-light);
-    opacity: 0.6;
-    margin-left: 10px;
-}
-
-/* Admin Reply Section */
-.admin-reply-section {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed var(--card-border);
-}
-
-.admin-reply-section h4 {
-    color: var(--accent-color);
-    margin-bottom: 10px;
-    font-size: 1.1em;
-}
-
-.admin-reply-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.admin-reply-form textarea {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    background-color: var(--input-bg);
-    color: var(--text-color-light);
-    font-size: 0.9em;
-    resize: vertical;
-    min-height: 50px;
-    outline: none;
-}
-
-.admin-reply-form button {
-    padding: 10px 15px;
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-weight: 600;
-    white-space: nowrap; /* Prevent text wrapping */
-}
-
-.admin-reply-form button:hover {
-    background-color: #5a9bff; /* Lighter blue */
-}
-
-.admin-reply-form button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.existing-admin-reply {
-    background-color: rgba(59, 130, 246, 0.1); /* Light blue background */
-    border-left: 4px solid var(--accent-color);
-    padding: 10px 15px;
-    border-radius: 0 8px 8px 0;
-    margin-top: 10px;
+/* Admin Reply */
+.admin-reply {
     display: flex;
     align-items: flex-start;
+    background-color: rgba(26, 33, 46, 0.7); /* Darker background for reply */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.existing-admin-reply strong {
-    color: var(--accent-color);
-}
-
-.admin-reply-avatar {
-    width: 35px;
-    height: 35px;
+.admin-avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 10px;
-    border: 2px solid var(--accent-color);
-    flex-shrink: 0;
+    border: 2px solid var(--primary-color);
 }
 
 .admin-reply-content {
     flex-grow: 1;
-    color: var(--text-color-light);
     font-size: 0.95em;
+    color: var(--text-color-light);
+}
+
+.admin-reply-content strong {
+    color: var(--primary-color);
 }
 
 .reply-timestamp {
-    font-size: 0.75em;
-    color: var(--text-color-light);
-    opacity: 0.7;
-    margin-left: 8px;
+    font-size: 0.8em;
+    color: #999;
+    margin-left: 5px;
 }
 
-
-/* Admin Actions */
-.admin-actions {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    display: flex;
-    gap: 10px;
-    opacity: 0; /* Hidden by default */
-    transition: opacity 0.3s ease-in-out;
-}
-
-.feedback-item:hover .admin-actions {
-    opacity: 1; /* Show on hover */
-}
-
-.admin-actions button {
-    background: none;
-    border: none;
-    color: var(--text-color-light);
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: color 0.3s ease;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-.admin-actions button:hover {
-    color: var(--secondary-color);
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.admin-actions .delete-btn {
-    color: var(--error-color);
-}
-
-.admin-actions .delete-btn:hover {
-    background-color: rgba(220, 53, 69, 0.2);
-}
-
-.admin-actions .edit-btn {
-    color: var(--info-color);
-}
-
-.admin-actions .edit-btn:hover {
-    background-color: rgba(59, 130, 246, 0.2);
-}
-
-/* Average Rating Display */
-#average-rating-display {
-    text-align: center;
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    font-size: 1.4em;
-    font-weight: 600;
-    box-shadow: var(--shadow-deep);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-#average-rating-display .star {
-    font-size: 1.5em;
-    color: var(--secondary-color);
-}
-
-/* Toast Notification */
-#toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-}
-
-.toast {
-    background-color: var(--card-bg-popup);
-    color: var(--text-color-light);
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    min-width: 250px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-left: 5px solid;
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.toast.success { border-color: var(--success-color); }
-.toast.error { border-color: var(--error-color); }
-.toast.info { border-color: var(--info-color); }
-.toast.confirm { border-color: var(--confirm-color); }
-
-.toast .icon {
-    font-size: 1.4em;
-}
-
-/* Footer (optional, for completeness) */
-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: auto;
-    background: var(--card-bg);
-    color: var(--text-color-light);
-    border-top: 1px solid var(--card-border);
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Auth Modals (Login/Signup) */
+/* --- Auth Modals (Login/Signup/Profile) --- */
 .auth-modal-overlay {
     position: fixed;
     top: 0;
@@ -549,10 +351,10 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2000;
+    z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .auth-modal-overlay.active {
@@ -560,363 +362,128 @@ footer {
     visibility: visible;
 }
 
-.auth-modal-content, .profile-modal-content {
-    background: var(--card-bg-popup);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
+.auth-modal-content,
+.profile-modal-content {
+    background-color: var(--card-bg-popup);
     padding: 40px;
-    width: 90%;
-    max-width: 500px;
+    border-radius: 15px;
     box-shadow: var(--shadow-deep);
+    border: 1px solid var(--card-border);
+    max-width: 450px;
+    width: 90%;
     position: relative;
     transform: translateY(-20px);
-    transition: transform 0.3s ease-out;
-    color: var(--text-color-light);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    box-sizing: border-box;
+    max-height: 90vh; /* Allow modal to take up to 90% of viewport height */
+    overflow-y: auto; /* Enable scrolling for content that exceeds max-height */
 }
 
 .auth-modal-overlay.active .auth-modal-content,
 .auth-modal-overlay.active .profile-modal-content {
     transform: translateY(0);
+    opacity: 1;
 }
 
-.auth-modal-content .close-button,
-.profile-modal-content .close-button {
+.close-button {
     position: absolute;
     top: 15px;
     right: 20px;
     font-size: 2em;
     color: var(--text-color-light);
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
 }
 
-.auth-modal-content .close-button:hover,
-.profile-modal-content .close-button:hover {
+.close-button:hover {
     color: var(--error-color);
 }
 
-.auth-modal-content h2, .profile-modal-content h2 {
-    text-align: center;
+.auth-modal-content h2,
+.profile-modal-content h2 {
     color: var(--secondary-color);
-    margin-bottom: 30px;
-    font-size: 2em;
-    text-shadow: 1px 1px var(--primary-color);
+    margin-bottom: 25px;
 }
 
-.auth-modal-content .input-group, .profile-modal-content .input-group {
-    margin-bottom: 20px;
-}
-
-.auth-modal-content label, .profile-modal-content label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--accent-color);
-    font-size: 1em;
-}
-
-.auth-modal-content input[type="email"],
-.auth-modal-content input[type="password"],
-.auth-modal-content input[type="text"],
-.profile-modal-content input[type="text"],
-.profile-modal-content input[type="password"] {
-    width: calc(100% - 20px);
-    padding: 12px;
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    background-color: var(--input-bg);
-    color: var(--text-color-light);
-    font-size: 1em;
-    outline: none;
-}
-
-.auth-modal-content .action-button, .profile-modal-content .action-button {
+.modal-links {
+    text-align: center;
     margin-top: 15px;
 }
 
-.auth-links {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.auth-links a {
+.modal-links a {
     color: var(--accent-color);
     text-decoration: none;
     margin: 0 10px;
-    font-size: 0.9em;
+    font-size: 0.95em;
+    transition: color 0.2s ease;
 }
 
-.auth-links a:hover {
+.modal-links a:hover {
+    color: var(--primary-color);
     text-decoration: underline;
 }
 
 .divider {
     text-align: center;
-    margin: 25px 0;
+    margin: 20px 0;
     position: relative;
-    color: var(--text-color-light);
-    opacity: 0.7;
+    color: #aaa;
+    font-size: 0.9em;
 }
 
-.divider::before, .divider::after {
+.divider::before,
+.divider::after {
     content: '';
     position: absolute;
     top: 50%;
     width: 40%;
     height: 1px;
-    background-color: var(--card-border);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
-.divider::before { left: 0; }
-.divider::after { right: 0; }
+.divider::before {
+    left: 0;
+}
 
-.google-button {
+.divider::after {
+    right: 0;
+}
+
+.google-login-button {
+    background-color: var(--google-blue);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    padding: 12px;
-    background-color: var(--google-blue);
-    color: var(--google-text);
-    border: none;
+    gap: 10px;
+    padding: 12px 20px;
     border-radius: 8px;
+    border: none;
+    cursor: pointer;
     font-size: 1.1em;
     font-weight: 600;
-    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
     transition: background-color 0.3s ease;
 }
 
-.google-button img {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-}
-
-.google-button:hover {
+.google-login-button:hover {
     background-color: var(--google-blue-hover);
 }
 
-/* Corner Triggers */
-.corner-trigger {
-    position: fixed;
-    top: 20px;
-    height: 50px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 15px;
-    cursor: pointer;
-    box-shadow: var(--shadow-deep);
-    z-index: 1500;
-    transition: background-color 0.3s ease;
-}
-
-.corner-trigger:hover {
-    background-color: rgba(44, 62, 80, 0.95);
-}
-
-#login-icon-trigger {
-    left: 20px;
-}
-
-#login-icon-trigger i {
-    color: var(--text-color-light);
-    font-size: 1.5em;
-}
-
-#user-avatar-trigger {
-    right: 20px;
-    width: 50px; /* Make it square */
-    padding: 0; /* Remove padding for perfect circle with img */
-}
-
-#user-avatar-trigger img {
-    width: 44px; /* Slightly smaller than parent to show border */
-    height: 44px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--accent-color);
-}
-
-
-/* User Profile Menu */
-.user-profile-menu {
-    position: fixed;
-    top: 75px; /* Adjust based on header/trigger height */
-    right: 20px;
-    background: var(--card-bg-popup);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-deep);
-    width: 250px;
-    z-index: 1600;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: opacity 0.3s ease-out, visibility 0.3s ease-out, transform 0.3s ease-out;
-}
-
-.user-profile-menu.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.user-profile-menu ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.user-profile-menu ul li {
-    padding: 15px 20px;
-    color: var(--text-color-light);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-weight: 500;
-}
-
-.user-profile-menu ul li:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-.user-profile-menu ul li:first-child {
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-}
-
-.user-profile-menu ul li:last-child {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-}
-
-/* User Profile Modal */
-.profile-modal-content h3 {
-    text-align: center;
-    color: var(--secondary-color);
-    margin-top: 30px;
-    margin-bottom: 20px;
-    font-size: 1.6em;
-    text-shadow: 1px 1px var(--primary-color);
-}
-
-.profile-details {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.profile-details .input-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 350px; /* Limit width for better readability */
-    margin-bottom: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--card-border);
-}
-
-.profile-details .input-group label {
-    margin-bottom: 0;
-    font-size: 0.95em;
-    color: var(--accent-color);
-    font-weight: 500;
-}
-
-.profile-details .input-group span {
-    color: var(--text-color-light);
-    font-weight: 400;
-    word-break: break-all; /* For long IDs/emails */
-    text-align: right;
-}
-
-.profile-details .input-group:last-child {
-    border-bottom: none;
-}
-
-.profile-modal-content .google-id-group {
-    display: none; /* Hide by default, show if Google account */
-}
-
-/* Avatar Section in Profile Modal */
-.avatar-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-#profile-avatar-preview {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--secondary-color);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-    margin-bottom: 15px;
-}
-
-.upload-avatar-label {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--accent-color);
-    color: var(--text-color-light);
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-}
-
-.upload-avatar-label:hover {
-    background-color: #5a9bff;
-}
-
-.upload-avatar-label i {
-    margin-right: 8px;
-}
-
-#avatar-preview-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-/* Spinner Styles */
-.spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid var(--secondary-color);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
-    display: none; /* Hidden by default */
-    margin: 15px auto;
-}
-
-.spinner.active {
-    display: block;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.google-login-button .fab {
+    font-size: 1.2em;
 }
 
 .message-area {
-    margin-top: 20px;
-    padding: 10px;
-    border-radius: 5px;
     text-align: center;
-    font-weight: bold;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: none; /* Hidden by default */
+    word-wrap: break-word; /* Ensure message breaks lines if too long */
 }
 
 .message-area.success {
@@ -931,71 +498,258 @@ footer {
     border: 1px solid var(--error-color);
 }
 
-/* For reset-password.html (if applicable, ensure this is in a separate CSS file or handled carefully) */
-/* This part of CSS is typically in reset-password-style.css */
-.reset-password-container {
-    background: var(--card-bg-popup);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 40px;
-    width: 90%;
-    max-width: 500px;
+.message-area.info {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--info-color);
+    border: 1px solid var(--info-color);
+}
+
+/* Corner Triggers (Login Icon and User Avatar) */
+.corner-trigger {
+    position: fixed;
+    top: 20px;
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
     box-shadow: var(--shadow-deep);
-    color: var(--text-color-light);
-    text-align: center;
-    margin: 50px auto; /* Center the container */
-}
-
-.reset-password-container h2 {
-    color: var(--secondary-color);
-    margin-bottom: 30px;
-}
-
-.reset-password-container .input-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.reset-password-container label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--accent-color);
-}
-
-.reset-password-container input[type="password"] {
-    width: calc(100% - 20px);
-    padding: 12px;
     border: 1px solid var(--card-border);
-    border-radius: 8px;
-    background-color: var(--input-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    z-index: 999;
+}
+
+.corner-trigger:hover {
+    background-color: #8a2be2;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+}
+
+#login-icon-trigger {
+    left: 20px;
+    font-size: 1.5em;
+    display: flex; /* Initially flex to show */
+}
+
+#user-avatar-trigger {
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    display: none; /* Hidden by default, shown on login */
+    border: 2px solid var(--secondary-color);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+}
+
+#user-avatar-trigger img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* User Menu */
+.user-profile-menu {
+    position: fixed;
+    top: 80px; /* Adjust based on avatar trigger height + padding */
+    right: 20px;
+    background-color: var(--card-bg-popup);
+    border-radius: 10px;
+    box-shadow: var(--shadow-deep);
+    border: 1px solid var(--card-border);
+    width: 250px;
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.user-profile-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-profile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-profile-menu ul li {
+    padding: 15px 20px;
     color: var(--text-color-light);
-    font-size: 1em;
-    outline: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.reset-password-container .action-button {
-    margin-top: 20px;
+.user-profile-menu ul li:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
-.reset-password-container .home-link {
-    display: block;
-    margin-top: 20px;
+.user-profile-menu ul li:last-child {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.user-profile-menu ul li:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-menu ul li i {
+    font-size: 1.1em;
     color: var(--accent-color);
-    text-decoration: none;
 }
 
-.reset-password-container .home-link:hover {
-    text-decoration: underline;
+/* Profile Modal Specifics */
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
+.profile-avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 15px rgba(106, 13, 173, 0.7);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
 
-/* Confetti for success */
-.confetti {
+#profile-avatar-display {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%; /* Ensure the image itself is round */
+}
+
+.avatar-upload-section {
     position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    padding: 5px 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-avatar-container:hover .avatar-upload-section {
+    opacity: 1;
+}
+
+.upload-label {
+    cursor: pointer;
+    color: var(--text-color-light);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.upload-label:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.upload-label i {
+    font-size: 1.1em;
+}
+
+#upload-avatar-btn {
+    margin-top: 5px;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    width: auto; /* Override 100% width */
+    display: none; /* Hidden by default */
+}
+
+.upload-progress-bar {
+    width: 80%;
+    height: 10px;
+    background-color: #555;
+    border-radius: 5px;
+    margin-top: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none; /* Hidden by default */
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--accent-color);
+    border-radius: 5px;
+    transition: width 0.2s ease;
+}
+
+.progress-text {
+    position: absolute;
+    color: white;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+
+.profile-details {
+    text-align: center;
+}
+
+.profile-details p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: var(--text-color-light);
+}
+
+.profile-details strong {
+    color: var(--secondary-color);
+}
+
+.profile-details button {
+    margin-top: 15px;
+    width: auto;
+    display: inline-block;
+    min-width: 150px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Confetti Animation (for fun, not essential for bugs) */
+.confetti {
+    position: fixed;
     width: 10px;
     height: 10px;
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     border-radius: 50%;
     opacity: 0;
     animation: confetti-fall 2.8s ease-out forwards;
@@ -1004,32 +758,6 @@ footer {
 @keyframes confetti-fall {
     0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;}
     100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;}
-}
-
-/* Scrollable Content for Profile Modal */
-.scrollable-content {
-    max-height: 80vh; /* Adjust as needed, ensure it fits within viewport */
-    overflow-y: auto;
-    padding-right: 15px; /* For scrollbar space */
-}
-
-/* Optional: Scrollbar styling for better aesthetics */
-.scrollable-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.scrollable-content::-webkit-scrollbar-track {
-    background: var(--card-bg-popup);
-    border-radius: 10px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
-    border-radius: 10px;
-}
-
-.scrollable-content::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
 }
 
 
@@ -1076,29 +804,11 @@ footer {
 @media (max-width: 480px) {
     #feedback-form-container h1 {
         font-size: 1.8em;
+        flex-direction: column; /* Stack avatar and text */
+        gap: 10px;
     }
-
-    .hero-content h1 {
-        font-size: 2.5em;
-    }
-
-    header {
-        flex-direction: column;
-        padding: 1rem;
-    }
-
-    nav ul {
-        margin-top: 15px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    nav ul li {
-        margin: 5px 10px;
-    }
-
-    .main-container {
-        padding: 25px;
+    .owner-avatar {
+        margin-right: 0;
     }
 
     .feedback-item {
@@ -1106,16 +816,52 @@ footer {
         align-items: center;
         text-align: center;
     }
-
     .feedback-avatar {
         margin-right: 0;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+    }
+    .feedback-header {
+        justify-content: center;
+    }
+    .feedback-username {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    .feedback-rating {
+        margin-right: 0;
+        margin-bottom: 5px;
     }
 
-    .admin-actions {
-        position: static; /* Adjust for better visibility on small screens */
-        opacity: 1;
-        margin-top: 15px;
-        justify-content: center;
+    .corner-trigger {
+        top: 10px;
+        padding: 8px 12px;
+        font-size: 1.2em;
+    }
+
+    #login-icon-trigger {
+        left: 10px;
+    }
+    #user-avatar-trigger {
+        right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-profile-menu{
+        top: 60px;
+        right: 10px;
+        width: 180px;
+    }
+
+    .auth-modal-content, .profile-modal-content {
+        padding: 15px;
+        width: 95%; /* Make modals take up more width */
+    }
+
+    .profile-details button {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 10px;
     }
 }
