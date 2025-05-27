@@ -1,182 +1,611 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>✨ NOBITA's Feedback Portal ✨</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="style.css">
+<head>
+  <meta charset="UTF-8">
+  <title>Nobita Feedback App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6a0dad;
+      --secondary: #f6e6ff;
+      --error: #e74c3c;
+      --success: #27ae60;
+      --info: #3498db;
+      --bg: #faf9fd;
+      --text: #222;
+      --card: #fff;
+      --border: #e3d5ec;
+      --modal: #fff;
+      --overlay: rgba(54, 0, 90, 0.2);
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1.2em 0.8em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.4em;
+      letter-spacing: 1px;
+    }
+    .avatar, .user-avatar, .profile-avatar, .menu-avatar {
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      object-fit: cover;
+      border: 2px solid #fff;
+    }
+    .user-avatar {
+      cursor: pointer;
+      margin-left: 10px;
+      display: none;
+    }
+    #login-icon-trigger {
+      cursor: pointer;
+    }
+    main {
+      max-width: 600px;
+      margin: 2.2em auto;
+      background: var(--card);
+      padding: 2em 1.4em;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px #e3d5ec42;
+    }
+    #feedback-form-container {
+      margin-bottom: 2em;
+    }
+    .stars {
+      display: flex;
+      gap: 0.25em;
+      margin-bottom: 0.5em;
+    }
+    .star {
+      color: #ccc;
+      font-size: 1.6em;
+      cursor: pointer;
+      transition: color .2s;
+    }
+    .star      margin-bottom: 0.3em;
+      font-weight: 500;
+    }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      padding: 0.7em;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1em;
+      background: var(--secondary);
+    }
+    #submit-feedback {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.8em 1.8em;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+    #feedback-list-container {
+      margin-top: 2em;
+    }
+    .feedback-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10 align-items: center;
+      gap: 0.7em;
+      font-weight: 600;
+    }
+    .feedback-rating {
+      color: #FFD700;
+      margin-left: auto;
+    }
+    .feedback-meta {
+      font-size: 0.9em;
+      color: #888;
+      margin-bottom: 0.3em;
+    }
+    .feedback-content {
+      font-size: 1.08em;
+      margin: 0.6em 0 0.2em 0;
+    }
+    /* Stylish Popup */
+    #stylishPopupOverlay {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: var(--overlay);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #styl;
+    }
+    .popup-icon-area.success { color: var(--success);}
+    .popup-icon-area.error { color: var(--error);}
+    .popup-icon-area.info { color: var(--info);}
+    .popup-icon-area.warning { color: #f1c40f;}
+    #stylishPopupTitle {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 0.3em;
+    }
+    #stylishPopupMessage {
+      margin-bottom: 1.2em;
+      font-size: 1em;
+    }
+    #stylishPopupButtonContainer {
+      display: flex;
+      gap: 0.7em;
+      justify-content: center;
+    }
+    .popup-button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 0.7em 1.2em;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .popup-button.secondary {
+      background: var(--border);
+      color: var(--primary);
+    }
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background: rgba(54,0,90,0.13);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--modal);
+      margin: auto;
+      padding: 2em 2em 1em 2em;
+      border-radius: 10px;
+      max-width: 340px;
+      width: 100%;
+      position: relative;
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 0.7em; right: 0.7em;
+      background: none;
+      border: none;
+      font-size: 1.1em;
+      color: #888;
+      cursor: pointer;
+    }
+    .user-menu {
+      display: none;
+      position: absolute;
+      right: 1em; top: 68px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      box-shadow: 0 2px 16px #e3d5ec42;
+      min-width: 160px;
+      z-index: 1002;
+    }
+    .user-menu.active { display: block; }
+    .user-menu ul {
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    .user-menu li {
+      padding: 0.9em 1em;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .user-menu li:last-child { border-bottom: none;}
+    .user-menu li:hover { background: var(--secondary);}
+    /* Responsive */
+    @media (max-width: 600px){
+      main { padding: 1em 2vw;}
+      .modal-content { padding: 1.2em;}
+    }
+  </style>
 </head>
 <body>
-    <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
-        <i class="fas fa-lock"></i>
+  <header>
+    <h1>Nobita Feedback App</h1>
+    <div style="display:flex; align-items:center; gap:0.6em;">
+      <img src="https://via.placeholder.com/38/FFFFFF/6a0dad?text=N" id="user-avatar-trigger" class="user-avatar" alt="User Avatar">
+      <span id="login-icon-trigger" title="Login"><i class="fa fa-user-circle fa-2x"></i></span>
     </div>
-    <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
-        <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+    <div id="userMenu" class="user-menu">
+      <ul>
+        <li id="menu-username" style="font-weight:bold;"><img id="menu-avatar" class="menu-avatar" src="https://via.placeholder.com/38/FFFFFF/6a0dad?text=N" style="width:28px;vertical-align:middle;margin-right:6px;"> User</li>
+        <li id="menu-view-profile">View Profile</li>
+        <li id="menu-logout">Logout</li>
+      </ul>
     </div>
-
-    <div id="loginModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="loginModal">&times;</span>
-        <h2>Login</h2>
-        <form id="email-login-form" class="auth-modal-form">
-          <input type="email" id="modal-login-email" placeholder="Email" required>
-          <input type="password" id="modal-login-password" placeholder="Password" required>
-          <button type="submit">Login</button>
-          <div class="form-links">
-            <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
-            <a href="#" id="modal-create-account-link">Create New Account</a>
+  </header>
+  <main>
+    <div id="feedback-form-container">
+      <form id="feedback-form">
+        <div class="input-group">
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="Your name">
+        </div>
+        <div class="input-group">
+          <label for="feedback">Feedback</label>
+          <textarea id="feedback" rows="3" placeholder="Type your feedback"></textarea>
+        </div>
+        <div class="input-group">
+          <label>Rating</label>
+          <div class="stars" id="rating-stars">
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="2">&#9733;</span>
+            <span class="star" data-value="3">&#9733;</span>
+            <span class="star" data-value="4">&#9733;</span>
+            <span class="star" data-value="5">&#9733;</span>
           </div>
-          <button type="button" id="modal-google-login-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Login with Google
-          </button>
-        </form>
-      </div>
+        </div>
+        <button type="submit" id="submit-feedback">SUBMIT FEEDBACK</button>
+      </form>
     </div>
+    <h2 style="margin-bottom:0.7em;">Feedbacks</h2>
+    <div id="feedback-list-container"></div>
+  </main>
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModal('loginModal')"><i class="fa fa-times"></i></button>
+      <h3>Login</h3>
+      <form id="email-login-form">
+        <div class="input-group">
+          <label for="modal-login-email">Email</label>
+          <input type="email" id="modal-login-email" required>
+        </div>
+        <div class="input-group">
+          <label for="modal-login-password">Password</label>
+          <input type="password" id="modal-login-password" required>
+        </div>
+        <button type="submit">Login</button>
+        <div style="margin-top:0.7em;font-size:0.97em;">
+          <a href="#" id="modal-forgot-password-link">Forgot password?</a>
+          <span style="float:right;">
+            <a href="#" id="modal-create-account-link">Sign Up</a>
+          </span>
+        </div>
+      </form>
+      <button style="margin-top:1em; width:100%;background:#fff;color:#222;border:1px solid #ddd;" id="modal-google-login-btn"><i class="fab fa-google"></i> Login with Google</button>
+    </div>
+  </div>
+  <!-- Signup Modal -->
+  <div class="modal" id="signupModal">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModal('signupModal')"><i class="fa fa-times"></i></button>
+      <h3>Sign Up</h3>
+      <form id="email-signup-form">
+        <div class="input-group">
+          <label for="modal-signup-name">Name</label>
+          <input type="text" id="modal-signup-name" required>
+        </div>
+        <div class="input-group">
+          <label for="modal-signup-email">Email</label>
+          <input type="email" id="modal-signup-email" required>
+        </div>
+        <div class="input-group">
+          <label for="modal-signup-password">Password</label>
+          <input type="password" id="modal-signup-password" required>
+        </div>
+        <div class="input-group">
+          <label for="modal-signup-confirm-password">Confirm Password</label>
+          <input type="password" id="modal-signup-confirm-password" required>
+        </div>
+        <button type="submit">Sign Up</button>
+        <div style="margin-top:0.6em;font-size:0.97em;">
+          <a href="#" id="modal-already-account-link">Already have an account?</a>
+        </div>
+      </form>
+      <button style="margin-top:1em; width:100%;background:#fff;color:#222;border:1px solid #ddd;" id="modal-google-signup-btn"><i class="fab fa-google"></i> Sign Up with Google</button>
+    </div>
+  </div>
+  <!-- Profile Modal -->
+  <div class="modal" id="userProfileModal">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModal('userProfileModal')"><i class="fa fa-times"></i></button>
+      <h3>Profile</h3>
+      <div style="text-align:center;">
+        <img id="profile-display-avatar" class="profile-avatar" src="https://via.placeholder.com/80/FFFFFF/6a0dad?text=U" style="width:80px;height:80px;border:3px solid var(--primary);margin-bottom:0.7em;">
+      </div>
+      <form id="profile-edit-form">
+        <div class="input-group">
+          <label for="profile-name">Name</label>
+          <input type="text" id="profile-name">
+        </div>
+        <div class="input-group">
+          <label for="profile-email">Email</label>
+          <input type="email" id="profile-email" readonly>
+        </div>
+        <button type="submit" id="save-profile-changes-btn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- Stylish Popup -->
+  <div id="stylishPopupOverlay">
+    <div id="stylishPopupCard">
+      <div id="stylishPopupIcon" class="popup-icon-area"></div>
+      <div id="stylishPopupTitle"></div>
+      <div id="stylishPopupMessage"></div>
+      <div id="stylishPopupButtonContainer"></div>
+    </div>
+  </div>
+  <script>
+    // --- UI helpers ---
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    function showStylishPopup(type, title, message, options={}) {
+      const overlay = document.getElementById('stylishPopupOverlay');
+      const icon = document.getElementById('stylishPopupIcon');
+      const titleEl = document.getElementById('stylishPopupTitle');
+      const msgEl = document.getElementById('stylishPopupMessage');
+      const btns = document.getElementById('stylishPopupButtonContainer');
+      icon.className = 'popup-icon-area ' + type;
+      icon.innerHTML = {
+        'success':'<i class="fas fa-check-circle"></i>',
+        'error':'<i class="fas fa-times-circle"></i>',
+        'info':'<i class="fas fa-info-circle"></i>',
+        'warning':'<i class="fas fa-exclamation-triangle"></i>'
+      }[type] || '';
+      titleEl.textContent = title;
+      msgEl.innerHTML = message;
+      btns.innerHTML = '';
+      let btn = document.createElement('button');
+      btn.className = 'popup-button primary';
+      btn.textContent = 'OK';
+      btn.onclick = ()=>overlay.classList.remove('active');
+      btns.appendChild(btn);
+      overlay.classList.add('active');
+    }
+    document.getElementById('stylishPopupOverlay').onclick = e => {
+      if(e.target === document.getElementById('stylishPopupOverlay')) e.target.classList.remove('active');
+    };
 
-    <div id="signupModal" class="auth-modal-overlay">
-      <div class="auth-modal-content">
-        <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
-        <h2>Create New Account</h2>
-        <form id="email-signup-form" class="auth-modal-form">
-          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
-          <input type="email" id="modal-signup-email" placeholder="Email" required>
-          <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
-          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
-          <button type="submit">Sign Up</button>
-          <div class="form-links" style="justify-content: center;">
-            <a href="#" id="modal-already-account-link">Already have an account? Login</a>
+    // --- State ---
+    let currentUser = null;
+    let currentRating = 0;
+
+    // --- Auth UI ---
+    document.getElementById('login-icon-trigger').onclick = ()=> {
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('userMenu').classList.remove('active');
+    };
+    document.getElementById('user-avatar-trigger').onclick = e => {
+      document.getElementById('userMenu').classList.toggle('active');
+      document.getElementById('loginModal').classList.remove('active');
+    };
+    document.addEventListener('click', e=>{
+      const menu = document.getElementById('userMenu');
+      const avatar = document.getElementById('user-avatar-trigger');
+      if(menu.classList.contains('active') && !avatar.contains(e.target) && !menu.contains(e.target)) menu.classList.remove('active');
+    });
+    // Modal transitions
+    document.getElementById('modal-create-account-link').onclick = e => {
+      e.preventDefault();
+      document.getElementById('loginModal').classList.remove('active');
+      document.getElementById('signupModal').classList.add('active');
+    };
+    document.getElementById('modal-already-account-link').onclick = e => {
+      e.preventDefault();
+      document.getElementById('signupModal').classList.remove('active');
+      document.getElementById('loginModal').classList.add('active');
+    };
+
+    // --- Auth API ---
+    async function apiRequest(url, method, body=null) {
+      let headers = {'Content-Type':'application/json'};
+      if(localStorage.getItem('authToken')) headers['Authorization'] = 'Bearer '+localStorage.getItem('authToken');
+      let res = await fetch(url, {
+        method: method,
+        headers,
+        body: body ? JSON.stringify(body) : null
+      });
+      let data = await res.json();
+      if(!res.ok) throw new Error(data.message || 'Server error');
+      return data;
+    }
+
+    // Login
+    document.getElementById('email-login-form').onsubmit = async e => {
+      e.preventDefault();
+      const email = document.getElementById('modal-login-email').value.trim();
+      const password = document.getElementById('modal-login-password').value;
+      if(!email || !password) return showStylishPopup('error', 'Error', 'Fill all fields.');
+      try {
+        let data = await apiRequest('/api/auth/login', 'POST', {email, password});
+        localStorage.setItem('authToken', data.token);
+        currentUser = data.user;
+        updateUIForUser();
+        closeModal('loginModal');
+        showStylishPopup('success', 'Welcome', 'Logged in successfully.');
+      } catch(err) { showStylishPopup('error', 'Login Failed', err.message); }
+    };
+    // Signup
+    document.getElementById('email-signup-form').onsubmit = async e=>{
+      e.preventDefault();
+      const name = document.getElementById('modal-signup-name').value.trim();
+      const email = document.getElementById('modal-signup-email').value.trim();
+      const password = document.getElementById('modal-signup-password').value;
+      const confirm = document.getElementById('modal-signup-confirm-password').value;
+      if(!name || !email || !password || !confirm)
+        return showStylishPopup('error', 'Error', 'Fill all fields.');
+      if(password !== confirm)
+        return showStylishPopup('error', 'Password Mismatch', 'Passwords do not match!');
+      if(password.length < 6)
+        return showStylishPopup('error', 'Weak Password', 'At least 6 characters.');
+      try {
+        let data = await apiRequest('/api/auth/signup', 'POST', {name, email, password});
+        localStorage.setItem('authToken', data.token);
+        currentUser = data.user;
+        updateUIForUser();
+        closeModal('signupModal');
+        showStylishPopup('success', 'Welcome', 'Account created and logged in!');
+      } catch(err) { showStylishPopup('error', 'Signup Failed', err.message); }
+    };
+
+    // Logout
+    document.getElementById('menu-logout').onclick = () => {
+      localStorage.removeItem('authToken');
+      currentUser = null;
+      updateUIForUser();
+      showStylishPopup('info', 'Logged Out', 'You have been logged out.');
+    };
+
+    // Profile
+    document.getElementById('menu-view-profile').onclick = () => {
+      document.getElementById('userMenu').classList.remove('active');
+      document.getElementById('userProfileModal').classList.add('active');
+      document.getElementById('profile-name').value = currentUser?.name || '';
+      document.getElementById('profile-email').value = currentUser?.email || '';
+      document.getElementById('profile-display-avatar').src = currentUser?.avatarUrl || 'https://via.placeholder.com/80/FFFFFF/6a0dad?text=U';
+    };
+    document.getElementById('profile-edit-form').onsubmit = async e => {
+      e.preventDefault();
+      let name = document.getElementById('profile-name').value.trim();
+      if(!name) return showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
+      try {
+        let data = await apiRequest('/api/user/profile', 'PUT', {name});
+        currentUser = data.user;
+        updateUIForUser();
+        closeModal('userProfileModal');
+        showStylishPopup('success', 'Profile Updated', 'Profile updated!');
+      } catch(err) { showStylishPopup('error', 'Update Failed', err.message); }
+    };
+
+    // --- Forgot password (simplified) ---
+    document.getElementById('modal-forgot-password-link').onclick = e => {
+      e.preventDefault();
+      showStylishPopup('info', 'Forgot Password', 'Please use the password reset feature on the main site. (Functionality placeholder)');
+    };
+
+    // --- Google Sign-In Placeholder ---
+    document.getElementById('modal-google-login-btn').onclick =
+    document.getElementById('modal-google-signup-btn').onclick = () => {
+      showStylishPopup('info', 'Google Sign-In', 'Google Sign-In is a placeholder in this demo.');
+    };
+
+    // --- Rating Stars ---
+    let stars = document.querySelectorAll('.star');
+    stars.forEach(star=>{
+      star.onclick = function() {
+        currentRating = +this.dataset.value;
+        updateStars();
+      };
+      star.onmouseover = function() {
+        updateStars(+this.dataset.value);
+      };
+      star.onmouseout = function() {
+        updateStars();
+      };
+    });
+    function updateStars(hover=0) {
+      stars.forEach(star=>{
+        let value = +star.dataset.value;
+        star.classList.toggle('selected', (hover? value <= hover : value <= currentRating));
+      });
+    }
+
+    // --- Feedback Form ---
+    document.getElementById('feedback-form').onsubmit = async e => {
+      e.preventDefault();
+      let name = document.getElementById('name').value.trim();
+      let feedback = document.getElementById('feedback').value.trim();
+      let rating = currentRating;
+      if(currentUser) name = currentUser.name;
+      if(!name || !feedback || !rating) return showStylishPopup('error', 'Error', 'Please fill all fields and select a rating.');
+      try {
+        await apiRequest('/api/feedback', 'POST', {feedback, rating});
+        document.getElementById('feedback').value = '';
+        currentRating = 0; updateStars();
+        showStylishPopup('success', 'Thank you!', 'Feedback submitted!');
+        fetchFeedbacks();
+      } catch(err) { showStylishPopup('error', 'Error', err.message); }
+    };
+
+    // --- Feedback List ---
+    async function fetchFeedbacks() {
+      let res = await fetch('/api/feedbacks');
+      let data = await res.json();
+      let container = document.getElementById('feedback-list-container');
+      container.innerHTML = '';
+      if(!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = '<p>No feedbacks yet.</p>';
+        return;
+      }
+      data.forEach(fb=>{
+        let card = document.createElement('div');
+        card.className = 'feedback-card';
+        card.innerHTML = `
+          <div class="feedback-header">
+            <img src="${fb.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U'}" class="avatar">
+            <span>${escapeHtml(fb.name)}</span>
+            <span class="feedback-rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</span>
           </div>
-           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
-            Sign Up with Google
-          </button>
-        </form>
-      </div>
-    </div>
-    
-    <div id="userMenu" class="user-profile-menu">
-      <div class="menu-content">
-        <div class="menu-header">
-          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
-          <span class="username" id="menu-username">User Name</span>
-        </div>
-        <ul>
-          <li><a href="#" id="menu-view-profile"><i class="fas fa-user-circle"></i> View Profile</a></li>
-          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
-        <div id="stylishPopupCard" class="stylish-popup-card">
-          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
-          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
-          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
-          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
-          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
-              </div>
-          <div class="popup-button-container" id="stylishPopupButtonContainer">
-            </div>
-        </div>
-    </div>
+          <div class="feedback-meta">${new Date(fb.timestamp).toLocaleString()}</div>
+          <div class="feedback-content">${escapeHtml(fb.feedback)}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    // --- Utility: Escape HTML
+    function escapeHtml(str) {
+      if(!str) return '';
+      return str.replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[m]));
+    }
 
-    <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content profile-modal-content">
-            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
-            <h2>My Profile</h2>
-            <div class="profile-avatar-section">
-                <img id="profile-display-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
-                <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
-                <button type="button" id="direct-avatar-upload-btn" class="upload-avatar-btn" style="margin-top:10px;">
-                    <i class="fas fa-upload"></i> Upload Avatar
-                </button>
-                <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <span class="progress-text" id="progress-text">0%</span>
-                </div>
-            </div>
-            <form id="profile-edit-form" class="auth-modal-form">
-                <div class="input-group">
-                    <label for="profile-name">Name:</label>
-                    <input type="text" id="profile-name" placeholder="Your Name" required>
-                </div>
-                <div class="input-group">
-                    <label for="profile-email">Email:</label>
-                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
-                </div>
-                <button type="submit" id="save-profile-changes-btn">Save Changes</button>
-            </form>
-            <hr class="profile-divider">
-            <h3>Change Password</h3>
-            <form id="change-password-form" class="auth-modal-form">
-                <div class="input-group">
-                    <label for="current-password">Current Password:</label>
-                    <input type="password" id="current-password" placeholder="Current Password">
-                </div>
-                <div class="input-group">
-                    <label for="new-password-profile">New Password (min. 6 characters):</label>
-                    <input type="password" id="new-password-profile" placeholder="New Password" minlength="6">
-                </div>
-                <div class="input-group">
-                    <label for="confirm-new-password-profile">Confirm New Password:</label>
-                    <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
-                </div>
-                <div class="profile-password-btns-row">
-                    <button type="submit" id="change-password-btn">Change Password</button>
-                    <button type="button" id="close-profile-modal-btn" class="secondary">Close</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    // --- User UI ---
+    function updateUIForUser() {
+      let isLogged = !!currentUser;
+      document.getElementById('login-icon-trigger').style.display = isLogged ? 'none' : 'inline-block';
+      let avatar = document.getElementById('user-avatar-trigger');
+      avatar.style.display = isLogged ? 'inline-block' : 'none';
+      avatar.src = currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U';
+      document.getElementById('name').disabled = isLogged;
+      document.getElementById('name').value = isLogged ? currentUser.name : '';
+      document.getElementById('menu-avatar').src = currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U';
+      document.getElementById('menu-username').innerHTML = `<img id="menu-avatar" class="menu-avatar" src="${currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U'}" style="width:28px;vertical-align:middle;margin-right:6px;"> ${currentUser?.name || 'User'}`;
+    }
 
-
-    <div class="page-content-wrapper">
-        <div class="owner-info"> 
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
-            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
-        </div>
-        
-        <div id="feedback-form-container" class="main-container"> 
-            <h1 id="main-title"></h1>
-            <div id="typed-output"></div>
-            <form id="feedback-form">
-                <div class="input-group">
-                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
-                    <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
-                </div>
-                <div class="input-group">
-                    <label for="feedback">Your Feedback:</label>
-                    <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
-                </div>
-                <div class="input-group">
-                    <label>Rate Your Experience:</label>
-                    <div class="stars" id="star-rating">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
-                    </div>
-                    <input type="hidden" id="rating" value="0">
-                </div>
-                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
-            </form>
-        </div>
-
-        <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div>
-             <h2>Recent Feedbacks</h2>
-             </div>
-    </div> 
-
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    <script src="script.js"></script>
+    // --- Check login (token) & fetch feedbacks ---
+    async function checkLoginStatus() {
+      let token = localStorage.getItem('authToken');
+      if(token) {
+        try {
+          let data = await apiRequest('/api/auth/me', 'GET');
+          currentUser = data;
+        } catch {
+          localStorage.removeItem('authToken');
+          currentUser = null;
+        }
+      }
+      updateUIForUser();
+      fetchFeedbacks();
+    }
+    checkLoginStatus();
+  </script>
 </body>
-</html>
