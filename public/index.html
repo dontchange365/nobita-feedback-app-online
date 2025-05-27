@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -330,7 +329,7 @@
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
-        // === START: JavaScript Code ===
+        // === START: JavaScript Code (same as previous version) ===
         document.addEventListener('DOMContentLoaded', async () => {
             console.log("DOM Fully Loaded and Parsed");
 
@@ -469,7 +468,6 @@
                     });
                     if (!response.ok) {
                         console.error(`API Error Response from ${url} (Status: ${response.status}):`, data);
-                        // Use data.error if it's more specific than data.message, otherwise data.message, then fallback
                         const errorMessage = (data.error && typeof data.error === 'string' && data.error !== data.message) ? data.error : (data.message || `Server error (${response.status})`);
                         throw new Error(errorMessage);
                     }
@@ -601,7 +599,7 @@
                  try {
                     const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false); const h2Title = feedbackListContainer.querySelector('h2');
                     let firstChildToKeep = averageRatingDisplayEl; let secondChildToKeep = h2Title;
-                    if (!h2Title) { secondChildToKeep = null; } // If h2 doesn't exist, only keep avg display
+                    if (!h2Title) { secondChildToKeep = null; }
                     let child = feedbackListContainer.lastChild;
                     while(child) { let toRemove = child; child = child.previousSibling; if (toRemove !== firstChildToKeep && toRemove !== secondChildToKeep) feedbackListContainer.removeChild(toRemove); }
                     if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedback yet. Be the first one!'; msgP.style.textAlign='center'; msgP.style.padding='20px'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0); }
@@ -634,6 +632,7 @@
             }
             updateUIAfterLogout(); checkLoginStatus();
         });
+        // === END: JavaScript Code ===
     </script>
 </body>
 </html>
