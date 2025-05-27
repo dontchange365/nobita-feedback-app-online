@@ -59,7 +59,7 @@ if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) console.warn("WARN
 if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) console.warn("WARNING: Cloudinary variables missing. Avatar upload will fail.");
 
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
-if (!googleClient && GOOGLE_CLIENT_ID) {
+if (!googleClient && GOOGLE_CLIENT_ID) { // Only warn if ID was set but client failed
     console.warn("WARNING: Google Client not initialized properly despite GOOGLE_CLIENT_ID being set.");
 }
 
@@ -111,7 +111,6 @@ const userSchema = new mongoose.Schema({
 
 userSchema.post('save', function(error, doc, next) {
   if (error.name === 'MongoServerError' && error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-    // This specific message is now being sent to the client, as reported.
     next(new Error('Yeh email address pehle se register hai (duplicate key).'));
   } else {
     next(error);
@@ -231,7 +230,7 @@ app.post('/api/auth/signup', async (req, res) => {
             loginMethod: 'email'
         });
         console.log(`[Signup - ${lowerCaseEmail}] Step 5: Attempting to save new user. Data before save:`, JSON.stringify(newUser.toObject()));
-        await newUser.save(); // This is where Mongoose validation and the unique index check by MongoDB happens.
+        await newUser.save();
         console.log(`[Signup - ${lowerCaseEmail}] User saved successfully. New User ID: ${newUser._id}`);
 
         const userForToken = { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email' };
@@ -251,15 +250,15 @@ app.post('/api/auth/signup', async (req, res) => {
             const messages = Object.values(error.errors).map(e => e.message);
             errorMessageDetail = `Validation failed: ${messages.join('. ')}`;
             console.error(`[Signup - ${requestedEmail}] Mongoose Validation Error: ${errorMessageDetail}`);
-        } else if (error.message === 'Yeh email address pehle se register hai (duplicate key).') { // From post-save hook
-            statusCode = 400; // Correct status for this specific, known error
-            errorMessageDetail = error.message; // Use the custom message
+        } else if (error.message === 'Yeh email address pehle se register hai (duplicate key).') {
+            statusCode = 400;
+            errorMessageDetail = error.message;
              console.error(`[Signup - ${requestedEmail}] Duplicate email error (from post-save hook or direct code 11000): ${errorMessageDetail}`);
-        } else if (error.code === 11000) { // MongoDB duplicate key error (direct, if hook didn't catch it first)
+        } else if (error.code === 11000) {
             statusCode = 400;
             errorMessageDetail = "Yeh email address pehle se register hai (MongoDB error code 11000).";
             console.error(`[Signup - ${requestedEmail}] MongoDB Duplicate Key Error (Code 11000):`, error.keyValue);
-        } else if (error.message) { // Other types of errors
+        } else if (error.message) {
             errorMessageDetail = error.message;
         }
         
@@ -267,8 +266,8 @@ app.post('/api/auth/signup', async (req, res) => {
         console.error(`[Signup - ${requestedEmail}] Detailed Error Stack:`, error.stack);
 
         res.status(statusCode).json({
-            message: "Account banane mein kuch dikkat aa gayi.", // Generic message to client
-            error: errorMessageDetail // More specific error message for client
+            message: "Account banane mein kuch dikkat aa gayi.",
+            error: errorMessageDetail
         });
     }
 });
@@ -308,7 +307,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
             user = await User.findOne({ email: lowerCaseEmail });
             if (user) {
                 user.googleId = googleId;
-                user.avatarUrl = googleAvatar || user.avatarUrl || getGenericAvatarUrl(name || user.name); // Ensure name is available
+                user.avatarUrl = googleAvatar || user.avatarUrl || getGenericAvatarUrl(name || user.name);
                 user.loginMethod = 'google';
                 if (!user.name && name) user.name = name.trim();
             } else {
@@ -404,7 +403,7 @@ app.put('/api/user/update-profile', authenticateToken, async (req, res) => {
         if (nameChanged) {
             await user.save();
             const feedbackUpdateFields = { name: user.name };
-            if (user.loginMethod === 'email' && (!req.user.avatarUrl || !req.user.avatarUrl.includes('cloudinary.com'))) {
+            if (user.loginMethod === 'email' && (!req.user.avatarUrl || !req.user.avatarUrl.includes('cloudinary.com'))) { // Check JWT avatar, not current DB
                  feedbackUpdateFields.avatarUrl = user.avatarUrl;
             }
             await Feedback.updateMany({ userId: user._id }, { $set: feedbackUpdateFields });
@@ -434,7 +433,7 @@ app.post('/api/user/change-password', authenticateToken, async (req, res) => {
             const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) return res.status(401).json({ message: "Aapka current password galat hai." });
         }
-        if (currentPassword === newPassword && user.password) {
+        if (user.password && await bcrypt.compare(newPassword, user.password)) { // Check if new is same as old only if old exists
             return res.status(400).json({ message: "Naya password current password jaisa nahi ho sakta." });
         }
         user.password = await bcrypt.hash(newPassword, 12);
@@ -464,7 +463,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL.replace(/\/$/, '')}${resetPagePath}?token=${resetToken}`;
-        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai...\n${resetUrl}\n\n...Dhanyawad,\nNobita Feedback App Team`;
         const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
@@ -481,7 +480,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         user.resetPasswordToken = undefined; user.resetPasswordExpires = undefined;
         await user.save();
         const confirmationTextMessage = `Namaste ${user.name},\n\nAapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai...\nDhanyawad,\nNobita Feedback App Team`;
-        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;..."><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai...</p>...<p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`; // Truncated
+        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;..."><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai...</p>...<p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
@@ -522,7 +521,7 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
         if (!currentUserFromDb) return res.status(404).json({ message: "Editor user account not found." });
         const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parseInt(rating) || existingFeedback.name !== currentUserFromDb.name || existingFeedback.avatarUrl !== currentUserFromDb.avatarUrl;
         if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent) { // Save original only once
+            if (!existingFeedback.originalContent) {
                 existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp, avatarUrl: existingFeedback.avatarUrl };
             }
             existingFeedback.name = currentUserFromDb.name; existingFeedback.avatarUrl = currentUserFromDb.avatarUrl;
@@ -535,11 +534,9 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message }); }
 });
 
-
 // Admin Panel Routes
 const { ADMIN_USERNAME_ACTUAL, ADMIN_PASSWORD_ACTUAL } = (() => {
     let adminUser = process.env.ADMIN_USERNAME; let adminPass = process.env.ADMIN_PASSWORD;
-    if (!adminUser || adminUser === "admin" && (!adminPass || adminPass === "password")) {}
     return { ADMIN_USERNAME_ACTUAL: adminUser || "admin", ADMIN_PASSWORD_ACTUAL: adminPass || "password" };
 })();
 
@@ -550,13 +547,12 @@ const adminAuthenticate = (req, res, next) => {
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
     if (username === ADMIN_USERNAME_ACTUAL && password === ADMIN_PASSWORD_ACTUAL) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });}
 };
-
-app.get('/admin-panel-nobita', adminAuthenticate, async (req, res) => { /* ... (same as before, ensure CSS/JS are self-contained or correctly linked if static) ... */
+app.get('/admin-panel-nobita', adminAuthenticate, async (req, res) => {
     try {
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email avatarUrl' }).sort({ timestamp: -1 });
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME_ACTUAL}:${ADMIN_PASSWORD_ACTUAL}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
-        const nobitaAvatarUrl = getGenericAvatarUrl('Nobita'); // Admin avatar
+        const nobitaAvatarUrl = getGenericAvatarUrl('Nobita');
 
         let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:flex-start;margin-bottom:20px;padding:0 10px}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background-color:#b02a37}@media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1><div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a></div><div class="feedback-grid">`;
         if (feedbacks.length === 0) { html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`; }
@@ -607,11 +603,15 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({message: "API endpoint not found."});
   }
+  // Serve specific HTML files if requested directly
   if (req.path.toLowerCase() === '/reset-password.html') {
-    res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
-  } else {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    return res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
   }
+  if (req.path.toLowerCase() === '/create-account.html') {
+    return res.sendFile(path.join(__dirname, 'public', 'create-account.html'));
+  }
+  // Default to main site for other routes
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
