@@ -2,145 +2,390 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Nobita Feedback App</title>
+  <title>Nobita Modern Feedback</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     :root {
-      --primary: #6a0dad;
-      --secondary: #f6e6ff;
-      --error: #e74c3c;
-      --success: #27ae60;
+      --main: #6a0dad;
+      --main-light: #e4d9f7;
+      --bg: #f6f7fb;
+      --white: #fff;
+      --shadow: 0 2px 24px #a68fd944;
+      --glass: rgba(255,255,255,0.7);
+      --border: #eae0f5;
+      --success: #1abc9c;
+      --danger: #e74c3c;
+      --warning: #f1c40f;
       --info: #3498db;
-      --bg: #faf9fd;
-      --text: #222;
-      --card: #fff;
-      --border: #e3d5ec;
-      --modal: #fff;
-      --overlay: rgba(54, 0, 90, 0.2);
+      --gray: #999;
+      --accent: linear-gradient(90deg, #6a0dad 0%, #b47ddb 100%);
     }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    html,body {
       margin: 0;
       padding: 0;
+      font-family: 'Segoe UI', 'Montserrat', 'Arial', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: #222;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
-      background: var(--primary);
-      color: #fff;
+      background: var(--white);
+      box-shadow: var(--shadow);
       padding: 1.2em 0.8em;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
     header h1 {
       margin: 0;
-      font-size: 1.4em;
-      letter-spacing: 1px;
-    }
-    .avatar, .user-avatar, .profile-avatar, .menu-avatar {
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      object-fit: cover;
-      border: 2px solid #fff;
-    }
-    .user-avatar {
-      cursor: pointer;
-      margin-left: 10px;
-      display: none;
-    }
-    #login-icon-trigger {
-      cursor: pointer;
-    }
-    main {
-      max-width: 600px;
-      margin: 2.2em auto;
-      background: var(--card);
-      padding: 2em 1.4em;
+      font-size: 1.5em;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.2em 1.2em;
       border-radius: 12px;
-      box-shadow: 0 2px 16px #e3d5ec42;
+      letter-spacing: 1.2px;
+      font-weight: 700;
+      box-shadow: 0 2px 12px #b47ddb33;
+      text-shadow: 0 1px 3px #b47ddb66;
     }
+    .profile-area {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+    .avatar {
+      border-radius: 50%;
+      width: 41px;
+      height: 41px;
+      object-fit: cover;
+      border: 3px solid var(--main);
+      box-shadow: 0 2px 6px #b47ddb22;
+      background: #fff;
+      cursor: pointer;
+      transition: transform .18s;
+    }
+    .avatar:hover { transform: scale(1.07); }
+    .user-menu {
+      background: var(--white);
+      position: absolute;
+      top: 68px;
+      right: 1.2em;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 0.6em 0;
+      min-width: 160px;
+      z-index: 2001;
+      display: none;
+      animation: fadeIn .18s;
+    }
+    .user-menu.active { display: block;}
+    .user-menu ul {
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    .user-menu li {
+      padding: 0.8em 1.2em;
+      border-bottom: 1px solid var(--main-light);
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 500;
+      transition: background .13s;
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+    }
+    .user-menu li:last-child { border-bottom: none;}
+    .user-menu li:hover { background: var(--main-light);}
+    main {
+      max-width: 568px;
+      margin: 2.5em auto 1.5em auto;
+      background: var(--glass);
+      padding: 2em 1.4em;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(5px);
+      border: 1.5px solid var(--border);
+    }
+    .section-heading {
+      font-size: 2em;
+      font-weight: 800;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.1em 1em;
+      border-radius: 8px;
+      margin: 0 0 1.6em 0;
+      box-shadow: 0 2px 10px #b47ddb29;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #b47ddb33;
+      text-align: center;
+    }
+    /* Feedback Form */
     #feedback-form-container {
       margin-bottom: 2em;
+      background: var(--white);
+      border-radius: 11px;
+      box-shadow: 0 2px 16px #c0a8e922;
+      padding: 1.5em 1.2em;
+      border: 1.5px solid var(--border);
+      position: relative;
     }
-    .stars {
-      display: flex;
-      gap: 0.25em;
-      margin-bottom: 0.5em;
+    #feedback-form-title {
+      font-size: 1.22em;
+      font-weight: 700;
+      color: var(--main);
+      margin-bottom: 0.9em;
+      letter-spacing: 0.7px;
     }
-    .star {
-      color: #ccc;
-      font-size: 1.6em;
-      cursor: pointer;
-      transition: color .2s;
+    .input-group {
+      margin-bottom: 1.1em;
     }
-    .star      margin-bottom: 0.3em;
+    .input-group label {
+      display: block;
+      margin-bottom: 0.32em;
       font-weight: 500;
+      color:var(--main);
     }
     .input-group input, .input-group textarea {
       width: 100%;
       padding: 0.7em;
-      border: 1px solid var(--border);
+      border: 1.2px solid var(--border);
       border-radius: 6px;
       font-size: 1em;
-      background: var(--secondary);
+      background: var(--main-light);
+      font-family: inherit;
+      transition: border .13s;
     }
-    #submit-feedback {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 0.8em 1.8em;
-      border-radius: 6px;
-      font-size: 1em;
-      cursor: pointer;
-      margin-top: 0.5em;
-    }
-    #feedback-list-container {
-      margin-top: 2em;
-    }
-    .feedback-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10 align-items: center;
-      gap: 0.7em;
-      font-weight: 600;
-    }
-    .feedback-rating {
-      color: #FFD700;
-      margin-left: auto;
-    }
-    .feedback-meta {
-      font-size: 0.9em;
-      color: #888;
+    .input-group input:focus, .input-group textarea:focus { border:1.2px solid var(--main);}
+    .stars {
+      display: flex;
+      gap: 0.18em;
       margin-bottom: 0.3em;
     }
-    .feedback-content {
+    .star {
+      font-size: 2.1em;
+      cursor: pointer;
+      color: #d6c5eb;
+      transition: color 0.19s, transform 0.22s;
+      filter: drop-shadow(0 1px 0 #b47ddb55);
+      will-change: color, transform;
+      animation: popIn .18s;
+    }
+    .star.selected,
+    .star.active {
+      color: #FFD700;
+      text-shadow: 0 2px 8px #ffe06688;
+      animation: popStar .23s;
+      transform: scale(1.25) rotate(-6deg);
+    }
+    .star:hover { color: #efc400; transform: scale(1.25) rotate(7deg);}
+    @keyframes popStar {
+      0% { transform: scale(0.88);}
+      70% { transform: scale(1.25) rotate(11deg);}
+      100% { transform: scale(1.15) rotate(-6deg);}
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.7);}
+      100% { opacity: 1; transform: scale(1);}
+    }
+    .feedback-edit-action {
+      background: var(--main-light);
+      color: var(--main);
+      border: none;
+      border-radius: 5px;
+      padding: 0.27em 0.8em;
+      font-size: 0.98em;
+      cursor: pointer;
+      margin-left: 0.6em;
+      transition: background 0.15s;
+    }
+    .feedback-edit-action:hover {
+      background: var(--main);
+      color: #fff;
+    }
+    #submit-feedback {
+      background: var(--main);
+      color: #fff;
+      border: none;
+      padding: 0.85em 2em;
+      border-radius: 8px;
+      font-size: 1.13em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.8em;
+      box-shadow: 0 2px 14px #b47ddb44;
+      transition: background .15s;
+      letter-spacing: 0.5px;
+    }
+    #submit-feedback:hover { background: #b47ddb;}
+    /* Feedback Cards */
+    #feedback-list-container {
+      margin-top: 2em;
+      min-height: 80px;
+    }
+    .feedback-card {
+      background: var(--white);
+      border-radius: 14px;
+      border: 1.4px solid var(--main-light);
+      box-shadow: 0 2px 18px #b47ddb1b;
+      padding: 1.2em 1em 1em 1em;
+      margin-bottom: 1.4em;
+      position: relative;
+      animation: fadeIn .3s;
+      transition: box-shadow .15s, border .18s;
+    }
+    .feedback-card.my-feedback { border:2px solid var(--main);}
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 0.7em;
+      font-weight: 700;
       font-size: 1.08em;
-      margin: 0.6em 0 0.2em 0;
+    }
+    .feedback-header .avatar {
+      width: 38px; height: 38px; border-width:2px;
+    }
+    .feedback-header .user-name {
+      color: var(--main);
+      font-weight: 700;
+      font-size:1.08em;
+      letter-spacing: 0.3px;
+      margin-right: 0.2em;
+    }
+    .feedback-badges {
+      display: flex;
+      gap: 0.6em;
+      margin-left: auto;
+      align-items: center;
+    }
+    .badge {
+      padding: 0.15em 0.7em;
+      border-radius: 6px;
+      font-size: 0.86em;
+      font-weight: 600;
+      color: #fff;
+      background: var(--main);
+      margin-left: 0.2em;
+      text-shadow: 0 1px 5px #b47ddb88;
+      letter-spacing: 0.2px;
+    }
+    .badge.edited { background: var(--info);}
+    .badge.admin-reply { background: var(--success);}
+    .feedback-rating {
+      color: #FFD700;
+      font-size:1.19em;
+      margin-left: 1em;
+      letter-spacing:0.1em;
+    }
+    .feedback-meta {
+      font-size: 0.93em;
+      color: var(--gray);
+      margin-bottom: 0.2em;
+      margin-left: 3.2em;
+    }
+    .feedback-content {
+      font-size: 1.13em;
+      margin: 0.7em 0 0.2em 0;
+      color: #2a163b;
+      word-break: break-word;
+    }
+    .admin-reply-block {
+      background: var(--main-light);
+      border-radius: 8px;
+      margin-top: 0.7em;
+      padding: 0.7em 1em;
+      font-size: 1em;
+      color: #333;
+      display: flex;
+      gap:0.7em;
+      align-items:flex-start;
+      border-left: 4px solid var(--main);
+      position: relative;
+    }
+    .admin-reply-block .fa-shield-alt {
+      color: var(--success);
+      margin-right: 0.4em;
+      font-size:1.2em;
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2002;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(54,0,90,0.14);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active { display: flex;}
+    .modal-content {
+      background: var(--white);
+      margin: auto;
+      padding: 2em 2em 1em 2em;
+      border-radius: 13px;
+      max-width: 355px;
+      width: 95vw;
+      position: relative;
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      text-align: left;
+    }
+    .close-modal-btn {
+      position: absolute;
+      top: 0.65em; right: 0.75em;
+      background: none;
+      border: none;
+      font-size: 1.18em;
+      color: #888;
+      cursor: pointer;
     }
     /* Stylish Popup */
     #stylishPopupOverlay {
       position: fixed;
       top:0; left:0; right:0; bottom:0;
-      background: var(--overlay);
-      z-index: 1000;
+      background: rgba(54,0,90,0.15);
+      z-index: 9999;
       display: none;
       align-items: center;
       justify-content: center;
     }
-    #styl;
+    #stylishPopupOverlay.active {display:flex;}
+    #stylishPopupCard {
+      background: var(--white);
+      border-radius: 13px;
+      box-shadow: 0 4px 32px #6a0dad22;
+      padding: 2em 2em 1.2em 2em;
+      min-width: 320px;
+      max-width: 92vw;
+      position: relative;
+      text-align: center;
+    }
+    .popup-icon-area {
+      font-size: 2.25em;
+      margin-bottom: 0.65em;
     }
     .popup-icon-area.success { color: var(--success);}
-    .popup-icon-area.error { color: var(--error);}
+    .popup-icon-area.error { color: var(--danger);}
     .popup-icon-area.info { color: var(--info);}
-    .popup-icon-area.warning { color: #f1c40f;}
+    .popup-icon-area.warning { color: var(--warning);}
     #stylishPopupTitle {
       font-weight: bold;
-      font-size: 1.2em;
-      margin-bottom: 0.3em;
+      font-size: 1.12em;
+      margin-bottom: 0.25em;
     }
     #stylishPopupMessage {
       margin-bottom: 1.2em;
@@ -152,7 +397,7 @@
       justify-content: center;
     }
     .popup-button {
-      background: var(--primary);
+      background: var(--main);
       color: #fff;
       border: none;
       border-radius: 5px;
@@ -162,94 +407,68 @@
     }
     .popup-button.secondary {
       background: var(--border);
-      color: var(--primary);
+      color: var(--main);
     }
-    /* Modal styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1001;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      overflow: auto;
-      background: rgba(54,0,90,0.13);
-      align-items: center;
-      justify-content: center;
+    /* Avatar upload preview */
+    .avatar-upload-container {
+      text-align:center;
+      margin-bottom: 1.1em;
     }
-    .modal.active { display: flex; }
-    .modal-content {
-      background: var(--modal);
-      margin: auto;
-      padding: 2em 2em 1em 2em;
-      border-radius: 10px;
-      max-width: 340px;
-      width: 100%;
-      position: relative;
-    }
-    .close-modal-btn {
-      position: absolute;
-      top: 0.7em; right: 0.7em;
-      background: none;
-      border: none;
-      font-size: 1.1em;
-      color: #888;
+    .avatar-upload-label {
+      display: block;
+      margin-top: 0.6em;
+      font-size: 0.98em;
+      color: var(--main);
+      font-weight: 500;
       cursor: pointer;
     }
-    .user-menu {
+    #avatar-upload-input {
       display: none;
-      position: absolute;
-      right: 1em; top: 68px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      box-shadow: 0 2px 16px #e3d5ec42;
-      min-width: 160px;
-      z-index: 1002;
     }
-    .user-menu.active { display: block; }
-    .user-menu ul {
-      list-style: none;
-      margin: 0; padding: 0;
+    .avatar-upload-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid var(--main);
+      object-fit: cover;
+      margin-bottom: 0.2em;
+      background: #fff;
+      box-shadow: 0 2px 8px #b47ddb44;
     }
-    .user-menu li {
-      padding: 0.9em 1em;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .user-menu li:last-child { border-bottom: none;}
-    .user-menu li:hover { background: var(--secondary);}
     /* Responsive */
-    @media (max-width: 600px){
+    @media (max-width: 650px){
       main { padding: 1em 2vw;}
-      .modal-content { padding: 1.2em;}
+      .section-heading { font-size: 1.25em;}
+      .modal-content { padding: 1em;}
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Nobita Feedback App</h1>
-    <div style="display:flex; align-items:center; gap:0.6em;">
-      <img src="https://via.placeholder.com/38/FFFFFF/6a0dad?text=N" id="user-avatar-trigger" class="user-avatar" alt="User Avatar">
-      <span id="login-icon-trigger" title="Login"><i class="fa fa-user-circle fa-2x"></i></span>
-    </div>
-    <div id="userMenu" class="user-menu">
-      <ul>
-        <li id="menu-username" style="font-weight:bold;"><img id="menu-avatar" class="menu-avatar" src="https://via.placeholder.com/38/FFFFFF/6a0dad?text=N" style="width:28px;vertical-align:middle;margin-right:6px;"> User</li>
-        <li id="menu-view-profile">View Profile</li>
-        <li id="menu-logout">Logout</li>
-      </ul>
+    <h1>Nobita Feedback</h1>
+    <div class="profile-area">
+      <img src="https://via.placeholder.com/41/FFFFFF/6a0dad?text=N" id="user-avatar-trigger" class="avatar" alt="User Avatar" style="display:none;">
+      <span id="login-icon-trigger" title="Login" style="font-size:2em;cursor:pointer;"><i class="fa fa-user-circle"></i></span>
+      <div id="userMenu" class="user-menu">
+        <ul>
+          <li id="menu-profile"><i class="fa fa-user"></i> Profile</li>
+          <li id="menu-logout"><i class="fa fa-sign-out-alt"></i> Logout</li>
+        </ul>
+      </div>
     </div>
   </header>
   <main>
+    <div class="section-heading">Share Your Feedback</div>
     <div id="feedback-form-container">
+      <div id="feedback-form-title"><i class="fa fa-comments"></i> We value your feedback!</div>
       <form id="feedback-form">
         <div class="input-group">
-          <label for="name">Name</label>
-          <input id="name" type="text" placeholder="Your name">
+          <label for="name">Your Name</label>
+          <input id="name" type="text" placeholder="Enter your name">
         </div>
         <div class="input-group">
           <label for="feedback">Feedback</label>
-          <textarea id="feedback" rows="3" placeholder="Type your feedback"></textarea>
+          <textarea id="feedback" rows="3" placeholder="Write your feedback..."></textarea>
         </div>
         <div class="input-group">
           <label>Rating</label>
@@ -264,14 +483,14 @@
         <button type="submit" id="submit-feedback">SUBMIT FEEDBACK</button>
       </form>
     </div>
-    <h2 style="margin-bottom:0.7em;">Feedbacks</h2>
+    <div class="section-heading" style="font-size:1.2em;margin-top:2.2em;">Recent Feedbacks</div>
     <div id="feedback-list-container"></div>
   </main>
   <!-- Login Modal -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <button class="close-modal-btn" onclick="closeModal('loginModal')"><i class="fa fa-times"></i></button>
-      <h3>Login</h3>
+      <h3 style="text-align:center;color:var(--main);">Login</h3>
       <form id="email-login-form">
         <div class="input-group">
           <label for="modal-login-email">Email</label>
@@ -281,7 +500,7 @@
           <label for="modal-login-password">Password</label>
           <input type="password" id="modal-login-password" required>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" style="width:100%;">Login</button>
         <div style="margin-top:0.7em;font-size:0.97em;">
           <a href="#" id="modal-forgot-password-link">Forgot password?</a>
           <span style="float:right;">
@@ -289,14 +508,13 @@
           </span>
         </div>
       </form>
-      <button style="margin-top:1em; width:100%;background:#fff;color:#222;border:1px solid #ddd;" id="modal-google-login-btn"><i class="fab fa-google"></i> Login with Google</button>
     </div>
   </div>
   <!-- Signup Modal -->
   <div class="modal" id="signupModal">
     <div class="modal-content">
       <button class="close-modal-btn" onclick="closeModal('signupModal')"><i class="fa fa-times"></i></button>
-      <h3>Sign Up</h3>
+      <h3 style="text-align:center;color:var(--main);">Sign Up</h3>
       <form id="email-signup-form">
         <div class="input-group">
           <label for="modal-signup-name">Name</label>
@@ -314,21 +532,36 @@
           <label for="modal-signup-confirm-password">Confirm Password</label>
           <input type="password" id="modal-signup-confirm-password" required>
         </div>
-        <button type="submit">Sign Up</button>
+        <button type="submit" style="width:100%;">Sign Up</button>
         <div style="margin-top:0.6em;font-size:0.97em;">
           <a href="#" id="modal-already-account-link">Already have an account?</a>
         </div>
       </form>
-      <button style="margin-top:1em; width:100%;background:#fff;color:#222;border:1px solid #ddd;" id="modal-google-signup-btn"><i class="fab fa-google"></i> Sign Up with Google</button>
+    </div>
+  </div>
+  <!-- Forgot Password Modal -->
+  <div class="modal" id="forgotPasswordModal">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModal('forgotPasswordModal')"><i class="fa fa-times"></i></button>
+      <h3 style="text-align:center;color:var(--main);">Forgot Password</h3>
+      <form id="forgot-password-form">
+        <div class="input-group">
+          <label for="forgot-email">Your Email</label>
+          <input type="email" id="forgot-email" required>
+        </div>
+        <button type="submit" style="width:100%;">Send Reset Link</button>
+      </form>
     </div>
   </div>
   <!-- Profile Modal -->
   <div class="modal" id="userProfileModal">
     <div class="modal-content">
       <button class="close-modal-btn" onclick="closeModal('userProfileModal')"><i class="fa fa-times"></i></button>
-      <h3>Profile</h3>
-      <div style="text-align:center;">
-        <img id="profile-display-avatar" class="profile-avatar" src="https://via.placeholder.com/80/FFFFFF/6a0dad?text=U" style="width:80px;height:80px;border:3px solid var(--primary);margin-bottom:0.7em;">
+      <h3 style="text-align:center;color:var(--main);">Profile</h3>
+      <div class="avatar-upload-container">
+        <img id="profile-display-avatar" class="avatar-upload-preview" src="https://via.placeholder.com/80/FFFFFF/6a0dad?text=U">
+        <label class="avatar-upload-label" for="avatar-upload-input"><i class="fa fa-camera"></i> Change Avatar</label>
+        <input id="avatar-upload-input" type="file" accept="image/*">
       </div>
       <form id="profile-edit-form">
         <div class="input-group">
@@ -339,7 +572,7 @@
           <label for="profile-email">Email</label>
           <input type="email" id="profile-email" readonly>
         </div>
-        <button type="submit" id="save-profile-changes-btn">Save Changes</button>
+        <button type="submit" id="save-profile-changes-btn" style="width:100%;">Save Changes</button>
       </form>
     </div>
   </div>
@@ -383,11 +616,10 @@
     document.getElementById('stylishPopupOverlay').onclick = e => {
       if(e.target === document.getElementById('stylishPopupOverlay')) e.target.classList.remove('active');
     };
-
     // --- State ---
     let currentUser = null;
     let currentRating = 0;
-
+    let editingFeedbackId = null;
     // --- Auth UI ---
     document.getElementById('login-icon-trigger').onclick = ()=> {
       document.getElementById('loginModal').classList.add('active');
@@ -395,13 +627,25 @@
     };
     document.getElementById('user-avatar-trigger').onclick = e => {
       document.getElementById('userMenu').classList.toggle('active');
-      document.getElementById('loginModal').classList.remove('active');
     };
     document.addEventListener('click', e=>{
       const menu = document.getElementById('userMenu');
       const avatar = document.getElementById('user-avatar-trigger');
       if(menu.classList.contains('active') && !avatar.contains(e.target) && !menu.contains(e.target)) menu.classList.remove('active');
     });
+    document.getElementById('menu-profile').onclick = () => {
+      document.getElementById('userMenu').classList.remove('active');
+      document.getElementById('userProfileModal').classList.add('active');
+      document.getElementById('profile-name').value = currentUser?.name || '';
+      document.getElementById('profile-email').value = currentUser?.email || '';
+      document.getElementById('profile-display-avatar').src = currentUser?.avatarUrl || 'https://via.placeholder.com/80/FFFFFF/6a0dad?text=U';
+    };
+    document.getElementById('menu-logout').onclick = () => {
+      localStorage.removeItem('authToken');
+      currentUser = null;
+      updateUIForUser();
+      showStylishPopup('info', 'Logged Out', 'You have been logged out.');
+    };
     // Modal transitions
     document.getElementById('modal-create-account-link').onclick = e => {
       e.preventDefault();
@@ -413,21 +657,26 @@
       document.getElementById('signupModal').classList.remove('active');
       document.getElementById('loginModal').classList.add('active');
     };
-
+    document.getElementById('modal-forgot-password-link').onclick = e => {
+      e.preventDefault();
+      closeModal('loginModal');
+      document.getElementById('forgotPasswordModal').classList.add('active');
+    };
     // --- Auth API ---
-    async function apiRequest(url, method, body=null) {
-      let headers = {'Content-Type':'application/json'};
+    async function apiRequest(url, method, body=null, isFormData=false) {
+      let headers = {};
+      if(!isFormData) headers['Content-Type']='application/json';
       if(localStorage.getItem('authToken')) headers['Authorization'] = 'Bearer '+localStorage.getItem('authToken');
       let res = await fetch(url, {
         method: method,
         headers,
-        body: body ? JSON.stringify(body) : null
+        body: body ? (isFormData ? body : JSON.stringify(body)) : null
       });
-      let data = await res.json();
+      let data;
+      try { data = await res.json(); } catch { data = {}; }
       if(!res.ok) throw new Error(data.message || 'Server error');
       return data;
     }
-
     // Login
     document.getElementById('email-login-form').onsubmit = async e => {
       e.preventDefault();
@@ -465,23 +714,18 @@
         showStylishPopup('success', 'Welcome', 'Account created and logged in!');
       } catch(err) { showStylishPopup('error', 'Signup Failed', err.message); }
     };
-
-    // Logout
-    document.getElementById('menu-logout').onclick = () => {
-      localStorage.removeItem('authToken');
-      currentUser = null;
-      updateUIForUser();
-      showStylishPopup('info', 'Logged Out', 'You have been logged out.');
+    // Forgot password
+    document.getElementById('forgot-password-form').onsubmit = async e=>{
+      e.preventDefault();
+      let email = document.getElementById('forgot-email').value.trim();
+      if(!email) return showStylishPopup('error', 'Error', 'Enter your email.');
+      try {
+        await apiRequest('/api/auth/request-password-reset', 'POST', {email});
+        closeModal('forgotPasswordModal');
+        showStylishPopup('success', 'Email Sent', 'Password reset link sent (if email exists).');
+      } catch(err) { showStylishPopup('error', 'Failed', err.message);}
     };
-
     // Profile
-    document.getElementById('menu-view-profile').onclick = () => {
-      document.getElementById('userMenu').classList.remove('active');
-      document.getElementById('userProfileModal').classList.add('active');
-      document.getElementById('profile-name').value = currentUser?.name || '';
-      document.getElementById('profile-email').value = currentUser?.email || '';
-      document.getElementById('profile-display-avatar').src = currentUser?.avatarUrl || 'https://via.placeholder.com/80/FFFFFF/6a0dad?text=U';
-    };
     document.getElementById('profile-edit-form').onsubmit = async e => {
       e.preventDefault();
       let name = document.getElementById('profile-name').value.trim();
@@ -494,20 +738,30 @@
         showStylishPopup('success', 'Profile Updated', 'Profile updated!');
       } catch(err) { showStylishPopup('error', 'Update Failed', err.message); }
     };
-
-    // --- Forgot password (simplified) ---
-    document.getElementById('modal-forgot-password-link').onclick = e => {
-      e.preventDefault();
-      showStylishPopup('info', 'Forgot Password', 'Please use the password reset feature on the main site. (Functionality placeholder)');
+    // Avatar Upload
+    document.getElementById('avatar-upload-input').onchange = async function() {
+      let file = this.files[0];
+      if(!file) return;
+      if(!file.type.startsWith('image/')) {
+        showStylishPopup('error', 'Invalid File', 'Only image files allowed.');
+        return;
+      }
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('profile-display-avatar').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      // Upload to server
+      let formData = new FormData();
+      formData.append('avatar', file);
+      try {
+        let data = await apiRequest('/api/user/upload-avatar', 'POST', formData, true);
+        currentUser.avatarUrl = data.avatarUrl;
+        updateUIForUser();
+        showStylishPopup('success', 'Avatar Updated', 'Avatar changed successfully!');
+      } catch(err) { showStylishPopup('error', 'Upload Failed', err.message); }
     };
-
-    // --- Google Sign-In Placeholder ---
-    document.getElementById('modal-google-login-btn').onclick =
-    document.getElementById('modal-google-signup-btn').onclick = () => {
-      showStylishPopup('info', 'Google Sign-In', 'Google Sign-In is a placeholder in this demo.');
-    };
-
-    // --- Rating Stars ---
+    // --- Star Animation/Selection ---
     let stars = document.querySelectorAll('.star');
     stars.forEach(star=>{
       star.onclick = function() {
@@ -527,7 +781,6 @@
         star.classList.toggle('selected', (hover? value <= hover : value <= currentRating));
       });
     }
-
     // --- Feedback Form ---
     document.getElementById('feedback-form').onsubmit = async e => {
       e.preventDefault();
@@ -537,14 +790,21 @@
       if(currentUser) name = currentUser.name;
       if(!name || !feedback || !rating) return showStylishPopup('error', 'Error', 'Please fill all fields and select a rating.');
       try {
-        await apiRequest('/api/feedback', 'POST', {feedback, rating});
+        if(editingFeedbackId) {
+          // Edit mode
+          await apiRequest(`/api/feedback/${editingFeedbackId}`, 'PUT', {feedback, rating});
+          showStylishPopup('success', 'Feedback Updated', 'Your feedback has been updated!');
+          editingFeedbackId = null;
+          document.getElementById('submit-feedback').textContent = 'SUBMIT FEEDBACK';
+        } else {
+          await apiRequest('/api/feedback', 'POST', {feedback, rating});
+          showStylishPopup('success', 'Thank you!', 'Feedback submitted!');
+        }
         document.getElementById('feedback').value = '';
         currentRating = 0; updateStars();
-        showStylishPopup('success', 'Thank you!', 'Feedback submitted!');
         fetchFeedbacks();
       } catch(err) { showStylishPopup('error', 'Error', err.message); }
     };
-
     // --- Feedback List ---
     async function fetchFeedbacks() {
       let res = await fetch('/api/feedbacks');
@@ -558,39 +818,64 @@
       data.forEach(fb=>{
         let card = document.createElement('div');
         card.className = 'feedback-card';
+        if(currentUser && fb.userId && fb.userId._id === currentUser.userId) card.classList.add('my-feedback');
         card.innerHTML = `
           <div class="feedback-header">
             <img src="${fb.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U'}" class="avatar">
-            <span>${escapeHtml(fb.name)}</span>
-            <span class="feedback-rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</span>
+            <span class="user-name">${escapeHtml(fb.name)}</span>
+            <span class="feedback-rating">${starHtml(fb.rating)}</span>
+            <div class="feedback-badges">
+              ${fb.isEdited ? '<span class="badge edited">Edited</span>' : ''}
+              ${(fb.replies && fb.replies.length) ? '<span class="badge admin-reply">Admin Reply</span>' : ''}
+            </div>
           </div>
           <div class="feedback-meta">${new Date(fb.timestamp).toLocaleString()}</div>
           <div class="feedback-content">${escapeHtml(fb.feedback)}</div>
+          ${fb.replies && fb.replies.length ? adminReplyBlock(fb.replies) : ''}
+          ${(currentUser && fb.userId && fb.userId._id === currentUser.userId) ? `<button class="feedback-edit-action" onclick="editFeedback('${fb._id}','${escapeHtml(fb.feedback).replace(/'/g,'&#39;')}',${fb.rating})">Edit</button>` : ''}
         `;
         container.appendChild(card);
       });
     }
-    // --- Utility: Escape HTML
+    window.editFeedback = function(id, feedback, rating) {
+      document.getElementById('feedback').value = feedback.replace(/&#39;/g,"'");
+      currentRating = rating;
+      updateStars();
+      editingFeedbackId = id;
+      document.getElementById('submit-feedback').textContent = 'UPDATE FEEDBACK';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    function starHtml(r) {
+      r = Math.round(r);
+      return [...Array(5)].map((_,i)=> `<span class="star${i<r?' selected':''}">&#9733;</span>`).join('');
+    }
+    function adminReplyBlock(replies) {
+      if(!replies || !replies.length) return '';
+      return replies.map(reply=>`
+        <div class="admin-reply-block"><i class="fa fa-shield-alt"></i>
+          <div>
+            <b>Admin:</b> ${escapeHtml(reply.text)}<br>
+            <span style="font-size:0.93em;color:var(--gray);">at ${new Date(reply.timestamp).toLocaleString()}</span>
+          </div>
+        </div>
+      `).join('');
+    }
     function escapeHtml(str) {
       if(!str) return '';
       return str.replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
       }[m]));
     }
-
     // --- User UI ---
     function updateUIForUser() {
       let isLogged = !!currentUser;
       document.getElementById('login-icon-trigger').style.display = isLogged ? 'none' : 'inline-block';
       let avatar = document.getElementById('user-avatar-trigger');
       avatar.style.display = isLogged ? 'inline-block' : 'none';
-      avatar.src = currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U';
+      avatar.src = currentUser?.avatarUrl || 'https://via.placeholder.com/41/FFFFFF/6a0dad?text=U';
       document.getElementById('name').disabled = isLogged;
       document.getElementById('name').value = isLogged ? currentUser.name : '';
-      document.getElementById('menu-avatar').src = currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U';
-      document.getElementById('menu-username').innerHTML = `<img id="menu-avatar" class="menu-avatar" src="${currentUser?.avatarUrl || 'https://via.placeholder.com/38/FFFFFF/6a0dad?text=U'}" style="width:28px;vertical-align:middle;margin-right:6px;"> ${currentUser?.name || 'User'}`;
     }
-
     // --- Check login (token) & fetch feedbacks ---
     async function checkLoginStatus() {
       let token = localStorage.getItem('authToken');
