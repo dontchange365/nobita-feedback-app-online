@@ -58,7 +58,6 @@ body {
     font-weight: 600;
     padding: 0 15px; /* Padding for text */
     border-radius: 8px; /* Slightly rounded corners */
-    z-index: 1001; /* Ensure triggers are above general content */
 }
 
 .corner-trigger.avatar-mode { /* Only when avatar is shown */
@@ -141,8 +140,8 @@ body {
     font-size: 26px;
     color: var(--text-color-light);
     line-height: 1;
-    transition: color 0.2s;
     padding:5px;
+    transition: color 0.2s;
 }
 
 .auth-modal-content .close-modal-btn:hover {
@@ -249,7 +248,7 @@ body {
     border: 1px solid var(--card-border);
     border-radius: 10px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* Soft shadow */
-    z-index: 1000; /* Ensure menu is above overlay triggers but below active modals */
+    z-index: 1000;
     opacity: 0; /* Start invisible */
     pointer-events:none; /* Don't block clicks */
     transform: translateY(-10px) scale(0.95); /* Slightly off for animation */
@@ -352,18 +351,15 @@ body {
     box-shadow: 0 12px 40px rgba(0,0,0,0.3); /* Deeper shadow */
     text-align: center;
     transform: translateY(10px) scale(0.95); /* Slight movement/scale for animation */
-    /* opacity: 0; */ /* DEBUG: Temporarily COMMENTED OUT or REMOVED */
-    /* transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important; */ /* DEBUG: Temporarily SIMPLIFIED */
-    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* DEBUG: ONLY TRANSFORM TRANSITION */
+    opacity: 0; /* Start invisible for animation */
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important; /* Bouncy transition */
     position: relative; /* For close button positioning */
     color: var(--text-color-light); /* Light text */
-    visibility: visible !important; /* DEBUG: ADD THIS FOR DEBUGGING - forces visibility */
-    opacity: 1 !important; /* DEBUG: ADD THIS FOR DEBUGGING - forces opacity */
 }
 
 .stylish-popup-overlay.active .stylish-popup-card {
     transform: translateY(0) scale(1);
-    /* opacity: 1; */ /* DEBUG: TEMPORARILY COMMENTED OUT or REMOVED if base opacity is not 0 */
+    opacity: 1;
 }
 
 .stylish-popup-card .popup-icon-area {
@@ -376,9 +372,7 @@ body {
 .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
 .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
 .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
-.stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); } 
-.stylish-popup-card .popup-icon-area.warning { color: var(--confirm-color); } 
-
+.stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
 
 .stylish-popup-card h2.popup-title {
     margin-top:0;
@@ -695,13 +689,24 @@ button#submit-feedback:hover {
 
 /* --- Feedback List Styles --- */
 #feedback-list-container {
+    background: rgba(255, 255, 255, 0.07); /* Lighter semi-transparent */
+    backdrop-filter: blur(7px); /* Slight blur */
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
     padding: 22px;
     text-align: left;
-    width: 100%; 
-    max-width: 100%; 
+    box-shadow: var(--shadow-deep);
+    width: 90%;
+    max-width: 750px;
+    opacity: 0; /* Start hidden for animation */
+    transform: translateY(40px); /* Start below for animation */
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
+#feedback-list-container.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
 
 #feedback-list-container h2 {
     color: var(--secondary-color);
@@ -715,21 +720,21 @@ button#submit-feedback:hover {
 
 /* Average Rating Display */
 .average-rating-container {
-    background: rgba(255, 215, 0, 0.09); 
+    background: rgba(255, 215, 0, 0.09); /* Subtle gold background */
     border: 1px solid var(--secondary-color);
     border-radius: 13px;
     padding: 16px 22px;
     margin-bottom: 22px;
     text-align: center;
-    box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); 
+    box-shadow: 0 4px 18px rgba(255, 215, 0, 0.18); /* Gold shadow */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
     color: var(--text-color-light);
-    opacity: 0; 
-    transform: translateY(25px); 
+    opacity: 0; /* Start hidden for animation */
+    transform: translateY(25px); /* Start below for animation */
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
@@ -750,14 +755,14 @@ button#submit-feedback:hover {
     font-weight: 600;
     color: var(--secondary-color);
     text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.65);
-    line-height: 1; 
+    line-height: 1; /* Tighter line height */
     margin-bottom: 7px;
 }
 
 .average-stars {
     font-size: 2em;
     color: var(--secondary-color);
-    letter-spacing: 4px; 
+    letter-spacing: 4px; /* Space out stars */
     text-shadow: 0 0 13px rgba(255,215,0,0.65);
 }
 
@@ -770,22 +775,22 @@ button#submit-feedback:hover {
 
 /* Individual Feedback Item */
 .feedback-item {
-    background: rgba(255, 255, 255, 0.045); 
+    background: rgba(255, 255, 255, 0.045); /* Very subtle background */
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: 13px;
     margin-bottom: 16px;
     padding: 16px;
     display: flex;
-    align-items: flex-start; 
+    align-items: flex-start; /* Align avatar to top of text */
     gap: 16px;
     box-shadow: 0 3.5px 9px rgba(0,0,0,0.18);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
-    position: relative; 
-    overflow: hidden; 
+    position: relative; /* For edit button positioning */
+    overflow: hidden; /* For inner content layout */
 }
 
 .feedback-item:hover {
-    transform: translateY(-4px) scale(1.005); 
+    transform: translateY(-4px) scale(1.005); /* Slight lift and enlarge */
     box-shadow: 0 7px 18px rgba(0,0,0,0.28);
 }
 
@@ -793,14 +798,14 @@ button#submit-feedback:hover {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    flex-shrink: 0; 
+    flex-shrink: 0; /* Prevent shrinking */
     border: 2.5px solid var(--accent-color);
     box-shadow: 0 0 9px rgba(59,130,246,0.45);
     object-fit: cover;
 }
 
 .feedback-details {
-    flex-grow: 1; 
+    flex-grow: 1; /* Take remaining space */
     display: flex;
     flex-direction: column;
 }
@@ -808,9 +813,9 @@ button#submit-feedback:hover {
 .feedback-details strong {
     color: var(--secondary-color);
     font-size: 1.1em;
-    display: block; 
+    display: block; /* Make it block for easier margin control */
     margin-bottom: 4px;
-    text-transform: capitalize; 
+    text-transform: capitalize; /* Capitalize user names */
 }
 
 .user-type-indicator {
@@ -820,7 +825,7 @@ button#submit-feedback:hover {
     border-radius: 3.5px;
     margin-left: 7px;
     vertical-align: middle;
-    font-weight: normal; 
+    font-weight: normal; /* Override bold from strong */
 }
 
 .google-user-indicator { background-color: var(--google-blue); }
@@ -838,8 +843,8 @@ button#submit-feedback:hover {
 .feedback-details p {
     margin-top: 4px;
     margin-bottom: 7px;
-    word-wrap: break-word; 
-    white-space: pre-wrap; 
+    word-wrap: break-word; /* Ensure long words break */
+    white-space: pre-wrap; /* Preserve newlines from textarea */
     color: var(--text-color-light);
     line-height: 1.55;
     font-size: 0.95em;
@@ -856,8 +861,8 @@ button#submit-feedback:hover {
 .admin-reply {
     margin-top: 10px;
     padding: 9px 11px;
-    background-color: rgba(255, 215, 0, 0.09); 
-    border-left: 3.5px solid var(--secondary-color); 
+    background-color: rgba(255, 215, 0, 0.09); /* Light gold background */
+    border-left: 3.5px solid var(--secondary-color); /* Gold border */
     border-radius: 7px;
     font-size: 0.85em;
     display: flex;
@@ -869,15 +874,15 @@ button#submit-feedback:hover {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1.5px solid #9B59B6; 
+    border: 1.5px solid #9B59B6; /* Admin purple border */
     flex-shrink: 0;
     object-fit: cover;
 }
 
 .admin-reply-content strong {
-    color: #9B59B6; 
+    color: #9B59B6; /* Admin name purple */
     font-size: 0.95em;
-    display: inline; 
+    display: inline; /* Keep strong inline */
 }
 .admin-reply-content .reply-timestamp {
     font-size: 0.65em;
@@ -888,37 +893,37 @@ button#submit-feedback:hover {
 .edit-feedback-btn {
     background: none;
     border: none;
-    color: #5bc0de; 
+    color: #5bc0de; /* Light blue */
     cursor: pointer;
     font-size: 1.25em;
     position: absolute;
     top: 10px;
     right: 10px;
-    padding: 4px; 
+    padding: 4px; /* Make click area larger */
     opacity: 0.75;
-    z-index: 10; 
+    z-index: 10; /* Ensure it's clickable */
     transition: color 0.25s ease, transform 0.15s;
 }
 
 .edit-feedback-btn:hover {
-    color: #31b0d5; 
-    transform: scale(1.08) rotate(4deg); 
+    color: #31b0d5; /* Darker blue on hover */
+    transform: scale(1.08) rotate(4deg); /* Pop and slight rotate */
     opacity: 1;
 }
 
 .edit-feedback-btn[disabled] {
-    display: none !important; 
+    display: none !important; /* Hide completely when disabled */
 }
 
 .edited-tag {
-    background-color: #f0ad4e; 
+    background-color: #f0ad4e; /* Orange-yellow */
     color: white;
     padding: 2.5px 7px;
     border-radius: 4.5px;
     font-size: 0.65em;
     font-weight: bold;
     margin-left: 7px;
-    vertical-align: middle; 
+    vertical-align: middle; /* Align with text */
     animation: fadeIn 0.45s ease-out;
 }
 
@@ -927,6 +932,7 @@ button#submit-feedback:hover {
     to { opacity: 1; transform: scale(1); }
 }
 
+/* Confetti animation */
 .confetti-container {
     position: absolute;
     top: 0;
@@ -934,15 +940,15 @@ button#submit-feedback:hover {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    pointer-events: none; 
-    z-index: 1; 
+    pointer-events: none; /* Don't block clicks */
+    z-index: 1; /* Behind content */
 }
 
 .confetti {
     position: absolute;
     width: 9px;
     height: 9px;
-    background-color: var(--confetti-color); 
+    background-color: var(--confetti-color); /* Set by JS */
     border-radius: 50%;
     opacity: 0;
     animation: confetti-fall 2.8s ease-out forwards;
@@ -966,7 +972,7 @@ button#submit-feedback:hover {
     }
 
     .star {
-        font-size: 2.8em; 
+        font-size: 2.8em;
     }
 
     .corner-trigger{
@@ -978,17 +984,13 @@ button#submit-feedback:hover {
         padding:0;
     }
 
-    .auth-modal-content h2{ 
+    .auth-modal-content h2{
         font-size:1.5em;
     }
 
-    .user-profile-menu{ 
+    .user-profile-menu{
         width:220px;
         top:65px;
-    }
-
-    .main-container {
-        padding: 25px; 
     }
 }
 
@@ -996,189 +998,22 @@ button#submit-feedback:hover {
     #feedback-form-container h1 {
         font-size: 1.7em;
     }
-    #typed-output {
-        font-size: 0.95em;
-        min-height: calc(0.95em * 1.35 * 2); 
-    }
 
     .star {
-        font-size: 2.3em; 
+        font-size: 2.3em;
     }
 
     .owner-info {
         margin-bottom: 15px;
-    }
-    .owner-avatar {
-        width: 50px;
-        height: 50px;
-    }
-    .owner-text {
-        font-size: 0.9em;
     }
 
     .auth-modal-content{
         width:95%;
         padding:20px;
     }
-     .auth-modal-form input[type="email"],
-    .auth-modal-form input[type="password"],
-    .auth-modal-form input[type="text"] {
-        padding: 10px 12px;
-        font-size: 0.9em;
-    }
-    .auth-modal-form button {
-        padding: 10px;
-        font-size: 0.95em;
-    }
 
     .user-profile-menu{
-        width:calc(100vw - 40px); 
+        width:calc(100vw - 40px); /* Fill almost full width */
         right:10px;
-        top: 60px;
-    }
-    .user-profile-menu .menu-header img {
-        width: 60px;
-        height: 60px;
-    }
-    .user-profile-menu .menu-header .username {
-        font-size: 1em;
-    }
-    .user-profile-menu ul li a {
-        font-size: 0.9em;
-        padding: 8px 15px;
-    }
-
-    .main-container {
-        padding: 20px 15px; 
-        border-radius: 18px;
-    }
-    #feedback-form-container.main-container {
-        margin-bottom: 20px; 
-    }
-
-    .input-group label {
-        font-size: 0.9em;
-    }
-    .input-group input, .input-group textarea {
-        padding: 10px 12px;
-        font-size: 0.9em;
-    }
-    button#submit-feedback {
-        padding: 10px 22px;
-        font-size: 0.95em;
-    }
-
-    #feedback-list-container h2 {
-        font-size: 1.6em;
-    }
-    .average-rating-container {
-        padding: 12px 18px;
-    }
-    .average-number {
-        font-size: 2.8em;
-    }
-    .average-stars {
-        font-size: 1.8em;
-    }
-    .feedback-item {
-        padding: 12px;
-        gap: 12px;
-    }
-    .avatar-img {
-        width: 40px;
-        height: 40px;
-    }
-    .feedback-details strong {
-        font-size: 1em;
-    }
-    .feedback-stars {
-        font-size: 1.3em;
-    }
-    .feedback-details p {
-        font-size: 0.9em;
-    }
-    .edit-feedback-btn {
-        font-size: 1.1em;
-        top: 8px;
-        right: 8px;
-    }
-    .admin-reply {
-        padding: 7px 9px;
-        font-size: 0.8em;
-    }
-    .admin-reply-avatar {
-        width: 28px;
-        height: 28px;
-    }
-
-    .stylish-popup-card {
-        padding: 20px;
-    }
-    .stylish-popup-card h2.popup-title {
-        font-size: 1.3em;
-    }
-    .stylish-popup-card p.popup-message {
-        font-size: 0.9em;
-    }
-    .stylish-popup-card .popup-icon-area {
-        font-size: 2.4em;
-    }
-    .stylish-popup-card .popup-button {
-        padding: 8px 18px;
-        font-size: 0.85em;
     }
 }
-
-/* Hide original modals and menu, they will be used by stylishPopup now */
-#loginModal, #signupModal, #userMenu {
-    display: none !important;
-}
-
-/* == START: SUPER DEBUG OVERLAY FIX == */
-/* Ensure the main overlay is initially hidden and becomes visible */
-/* #stylishPopupOverlay {} */ /* Base style handles initial hide */
-
-#stylishPopupOverlay.active {
-    display: flex !important;
-    opacity: 1 !important;
-    background: rgba(10, 10, 20, 0.85) !important; /* Darker for test */
-    z-index: 20000 !important; /* Extremely high z-index */
-}
-
-/* Force the card within the active overlay to be visible */
-#stylishPopupOverlay.active #stylishPopupCard {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: white !important; /* Bright background for test */
-    color: black !important; /* Contrasting text for test */
-    width: 80% !important;
-    max-width: 500px !important;
-    height: auto !important;
-    min-height: 100px !important; /* Ensure it has some height */
-    padding: 20px !important;
-    border: 5px solid red !important; /* Bright border for test */
-    transform: none !important; /* Disable transforms for test */
-    z-index: 20001 !important; /* Above its overlay's forced bg */
-    overflow-y: auto !important; /* Make card scrollable if content overflows */
-}
-
-/* Force visibility of some child elements if they exist */
-#stylishPopupOverlay.active #stylishPopupCard #stylishPopupTitle,
-#stylishPopupOverlay.active #stylishPopupCard #stylishPopupMessage,
-#stylishPopupOverlay.active #stylishPopupCard #stylishPopupFormArea,
-#stylishPopupOverlay.active #stylishPopupCard #stylishPopupButtonContainer {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: black !important; /* Ensure text is visible on white card */
-    background: #eee !important; /* Light grey background for child areas for visibility */
-    padding: 5px;
-    margin-bottom: 5px;
-    border: 1px dashed blue;
-}
-#stylishPopupOverlay.active #stylishPopupCard #stylishPopupMessage p {
-    color: black !important;
-}
-
-/* == END: SUPER DEBUG OVERLAY FIX == */
