@@ -1283,21 +1283,16 @@
             <hr class="profile-divider">
             <h3>Change Password</h3>
             <form id="change-password-form" class="auth-modal-form">
-                <div class="input-group">
-                    <label for="current-password">Current Password:</label>
-                    <input type="password" id="current-password" placeholder="Current Password">
-                </div>
-                <div class="input-group">
-                    <label for="new-password-profile">New Password (min. 6 characters):</label>
-                    <input type="password" id="new-password-profile" placeholder="New Password" minlength="6">
-                </div>
-                <div class="input-group">
-                    <label for="confirm-new-password-profile">Confirm New Password:</label>
-                    <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
-                </div>
-                <button type="submit" id="change-password-btn">Change Password</button>
-            </form>
+                            <div class="input-group">
+                <label for="confirm-new-password-profile">Confirm New Password:</label>
+                <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
+            </div>
+        </form>
+        <div class="profile-password-btns-row">
+          <button type="button" class="popup-button primary" style="font-size: 0.8em; padding: 8px 16px;">Change Password</button>
+          <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="font-size: 0.8em; padding: 8px 16px;">Close</button>
         </div>
+    </div>
     </div>
 
 
