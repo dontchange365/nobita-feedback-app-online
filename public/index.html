@@ -118,20 +118,21 @@
         }
 
         .auth-modal-content {
-            background: var(--bg-gradient-end); /* Dark background */
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 25px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-            color: var(--text-color-light);
-            transform: scale(0.95); /* Slightly smaller for animation */
-            opacity:0; /* Start invisible for animation */
-            transition: transform 0.25s ease-out, opacity 0.2s ease-out;
-        }
-
+    background: var(--bg-gradient-end);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 25px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    color: var(--text-color-light);\
+    transform: scale(0.95);
+    opacity:0;
+    transition: transform 0.25s ease-out, opacity 0.2s ease-out;
+    overflow-y: auto; /* Add vertical scroll */
+    max-height: 80vh; /* Limit modal height */
+     }
         .auth-modal-overlay.active .auth-modal-content {
             transform: scale(1); /* Scale up to normal size */
             opacity: 1; /* Fade in */
