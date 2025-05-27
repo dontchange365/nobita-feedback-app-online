@@ -119,10 +119,21 @@
             </form>
         </div>
 
-        <div id="feedback-list-container" class="main-container"> 
-             <div id="average-rating-display"></div>
-             <h2>Recent Feedbacks</h2>
-             </div>
+        <div id="feedback-list-container" class="main-container feedback-panel"> 
+            <div class="overall-summary">
+                <div class="label">Overall Rating</div>
+                <div class="avg-rating" id="overall-avg-rating">N/A</div>
+                <div class="avg-stars" id="overall-avg-stars">
+                    </div>
+                <div class="total-count" id="overall-total-count">0 Reviews</div>
+            </div>
+
+            <div class="recent-feedback">
+                <h3>Recent Feedback</h3>
+                <div id="feedback-items-container">
+                    </div>
+            </div>
+        </div>
     </div> 
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
