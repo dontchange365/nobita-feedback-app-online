@@ -1,4 +1,4 @@
-// === START: JavaScript Code ===
+³3// === START: JavaScript Code ===
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM Fully Loaded and Parsed");
 
