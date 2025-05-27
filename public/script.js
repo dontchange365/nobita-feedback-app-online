@@ -5,6 +5,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Assuming GOOGLE_CLIENT_ID is hardcoded here or loaded from a meta tag
     const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
     
+    // Cloudinary Configuration (Yeh values server-side honi chahiye, client-side exposed nahi)
+    // Client-side upload ke liye yeh keys aapko server se deni hongi ya unsafe way mein directly yahan rakhni hongi.
+    // Recommended: Server se signed upload URL ya credentials fetch karein.
+    // For this exercise, we will assume dummy placeholders, you must replace them with actual values
+    // if using client-side direct upload without server-side signature.
+    // IMPORTANT: NEVER EXPOSE CLOUDINARY API SECRET IN CLIENT-SIDE CODE IN PRODUCTION!
+    const CLOUDINARY_CLOUD_NAME = 'dlt1n3mrf'; // Replace with your Cloudinary Cloud Name
+    const CLOUDINARY_UPLOAD_PRESET = 'feedback_app_preset'; // Replace with your Cloudinary Upload Preset (unsigned)
+    const CLOUDINARY_API_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+
     // Corner Triggers
     const loginIconTrigger = document.getElementById('login-icon-trigger');
     const userAvatarTrigger = document.getElementById('user-avatar-trigger');
@@ -47,11 +58,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stylishPopupMessage = document.getElementById('stylishPopupMessage');
     const stylishPopupFormArea = document.getElementById('stylishPopupFormArea');
     const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
+
+    // User Profile Modal Elements (New)
+    const userProfileModal = document.getElementById('userProfileModal');
+    const profileModalTitle = document.getElementById('profile-modal-title');
+    const profileDisplayArea = document.getElementById('profile-display-area');
+    const profileEditArea = document.getElementById('profile-edit-area');
+    const profileAvatarDisplay = document.getElementById('profile-avatar-display');
+    const profileNameDisplay = document.getElementById('profile-name-display');
+    const profileEmailDisplay = document.getElementById('profile-email-display');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const closeProfileViewBtn = document.getElementById('close-profile-view-btn');
+
+    // Profile Edit Elements
+    const currentEditAvatarPreview = document.getElementById('current-edit-avatar-preview');
+    const editAvatarUpload = document.getElementById('edit-avatar-upload');
+    const editProfileName = document.getElementById('edit-profile-name');
+    const editProfileEmail = document.getElementById('edit-profile-email');
+    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
+    const cancelProfileEditBtn = document.getElementById('cancel-profile-edit-btn');
+    const profileLoadingSpinner = document.getElementById('profile-loading-spinner');
     
     // Page Content Elements
     const ownerInfoEl = document.querySelector('.owner-info');
     const feedbackFormContainer = document.getElementById('feedback-form-container');
-    const feedbackListContainer = document.getElementById('feedback-list-container'); // This is the overall panel
+    const feedbackListContainer = document.getElementById('feedback-list-container');
+    const averageRatingDisplayEl = document.getElementById('average-rating-display');
     const nameInputInFeedbackForm = document.getElementById('name'); // The name input in the main feedback form
     const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
     const feedbackTextarea = document.getElementById('feedback');
@@ -60,16 +92,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const starsElements = document.querySelectorAll('.star');
     const mainTitle = document.getElementById('main-title'); // For Typed.js
     
-    // New Feedback Panel Elements
-    const overallAvgRatingEl = document.getElementById('overall-avg-rating');
-    const overallAvgStarsEl = document.getElementById('overall-avg-stars');
-    const overallTotalCountEl = document.getElementById('overall-total-count');
-    const feedbackItemsContainer = document.getElementById('feedback-items-container');
-
     let currentUser = null; // Stores current logged-in user data
     let currentSelectedRating = 0;
     let isEditing = false;
     let currentEditFeedbackId = null;
+    let selectedFile = null; // For avatar upload
 
     // API Endpoints
     const BASE_API_URL = window.location.origin;
@@ -80,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
     const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`; // For POST feedback
     const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`; // For GET all feedbacks
+    const API_UPDATE_USER_PROFILE_URL = `${BASE_API_URL}/api/user/profile`; // New endpoint for user profile update
 
     // --- Stylish Popup Functionality ---
     // Generic function to show a styled popup for various messages (success, error, info, confirm, etc.)
@@ -132,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             stylishPopupButtonContainer.appendChild(cancelBtn);
 
             const confirmBtn = document.createElement('button');
-            confirmBtn.textContent = options.confirmText || 'OK'; // Changed to OK for consistency
+            confirmBtn.textContent = options.confirmText || 'OK'; // Changed default to OK
             confirmBtn.className = 'popup-button primary';
             confirmBtn.id = 'stylishPopupPrimaryActionBtn'; // Add an ID for easy access if needed
             confirmBtn.onclick = () => {
@@ -181,6 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.stopPropagation(); // Prevent document click from immediately closing it
             if (loginModal) { loginModal.classList.add('active'); console.log("Login modal activated"); }
             if (userMenu) userMenu.classList.remove('active'); // Close user menu if open
+            if (userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal if open
         });
     }
     // Show/hide user menu when user avatar is clicked
@@ -189,6 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.stopPropagation(); // Prevent document click from immediately closing it
             if (userMenu) { userMenu.classList.toggle('active'); console.log("User menu toggled"); }
             if (loginModal) loginModal.classList.remove('active'); // Close login modal if open
+            if (userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal if open
         });
     }
     // Close user menu when clicking anywhere else on the document
@@ -197,8 +227,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             userMenu.classList.remove('active');
         }
     });
-    // Close auth modals when clicking outside or on close button
-    [loginModal, signupModal].forEach(modal => {
+    // Close auth modals & profile modal when clicking outside or on close button
+    [loginModal, signupModal, userProfileModal].forEach(modal => {
         if (modal) {
             modal.addEventListener('click', e => {
                 if (e.target === modal) modal.classList.remove('active');
@@ -209,18 +239,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     
     // Helper for API requests
-    async function apiRequest(url, method, body = null) {
-        const headers = { 'Content-Type': 'application/json' };
+    async function apiRequest(url, method, body = null, isFormData = false) {
+        const headers = {};
         const token = localStorage.getItem('authToken');
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
+        let requestBody = body;
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+            requestBody = body ? JSON.stringify(body) : null;
+        }
+
         // Select the correct submit button to disable/enable
         let submitBtn; 
-        if(body && (url.includes('/api/auth/login'))) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-        if(body && (url.includes('/api/auth/signup'))) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-        
+        if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
+        else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
+        else if(url.includes('/api/auth/request-password-reset')) submitBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
+        else if(url.includes('/api/feedback')) submitBtn = submitButton; // Main feedback form
+        else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
+
+
         try {
-            const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
+            if(submitBtn) { // Show spinner for relevant actions
+                if(submitBtn === saveProfileChangesBtn || submitBtn === submitButton) profileLoadingSpinner.style.display = 'block';
+                submitBtn.disabled = true; 
+                submitBtn.textContent = "Processing...";
+            }
+
+            const response = await fetch(url, { method, headers, body: requestBody });
             const data = await response.json(); 
             if (!response.ok) throw new Error(data.message || `Server error (${response.status})`);
             return data;
@@ -230,12 +276,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                 showStylishPopup('error', 'Error', error.message || 'Server communication error.');
             }
-            if(submitBtn) { // Re-enable button on error
+        } finally {
+            if(submitBtn) { // Re-enable button on error/completion
+                if(submitBtn === saveProfileChangesBtn || submitBtn === submitButton) profileLoadingSpinner.style.display = 'none';
                 submitBtn.disabled = false; 
                 if(url.includes('login')) submitBtn.textContent = "Login";
                 else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
+                else if(url.includes('request-password-reset')) submitBtn.textContent = "Send Reset Link";
+                else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
             }
-            throw error; // Re-throw to be caught by specific handlers if needed
         }
     }
     
@@ -259,11 +309,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!email || !password) {
                 return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.');
             }
-            const submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-            if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Logging in...";}
             try {
                 const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
-                handleAuthResponse(data);
+                if(data) handleAuthResponse(data);
             } catch (error) { 
                 // Error handled by apiRequest function already, so nothing explicit here
             }
@@ -287,11 +335,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (password.length < 6) {
                 return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters.');
             }
-            const submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-            if(submitBtn) {submitBtn.disabled = true; submitBtn.textContent="Signing up...";}
             try {
                 const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
-                handleAuthResponse(data);
+                if(data) handleAuthResponse(data);
             } catch (error) { 
                 // Error handled
             }
@@ -335,19 +381,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             document.getElementById('popup-forgot-email').focus();
                             return; // Keep popup open
                         }
-                        // Disable button and show loading state
-                        const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                        if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Sending...";}
                         try {
                             const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
-                            stylishPopupOverlay.classList.remove('active'); // Close this popup
-                            showStylishPopup('success', 'Link Sent!', data.message);
+                            if(data) {
+                                stylishPopupOverlay.classList.remove('active'); // Close this popup
+                                showStylishPopup('success', 'Link Sent!', data.message);
+                            }
                         } catch (error) {
-                            // Error already shown by apiRequest, just re-enable button if it exists
-                            if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
-                            // Optionally, to keep the forgot password dialog open on API error:
-                            // Do not call stylishPopupOverlay.classList.remove('active');
-                            // showStylishPopup was already called by apiRequest for the error.
+                            // Error already shown by apiRequest. Keep dialog open.
                         }
                     }
                 }
@@ -355,12 +396,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-
     // Google Sign-In Initialization and Callback
     const triggerGoogleSignIn = () => {
         // Hide existing modals before showing Google prompt
         if (loginModal) loginModal.classList.remove('active');
         if (signupModal) signupModal.classList.remove('active');
+        if (userProfileModal) userProfileModal.classList.remove('active');
         google.accounts.id.prompt((notification) => {
             // Optional: Handle notification for UX, e.g., if prompt is not displayed
             if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
@@ -391,7 +432,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleGoogleCredentialResponse(response) {
         try {
             const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
-            handleAuthResponse(data);
+            if(data) handleAuthResponse(data);
         } catch (error) { 
             // Error handled by apiRequest
         }
@@ -403,8 +444,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (token) {
             try {
                 const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
-                currentUser = userData;
-                updateUIAfterLogin();
+                if(userData) {
+                    currentUser = userData;
+                    updateUIAfterLogin();
+                }
             } catch (error) {
                 // Token invalid or expired, clear and update UI
                 localStorage.removeItem('authToken');
@@ -422,9 +465,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (currentUser) {
             if(loginIconTrigger) loginIconTrigger.style.display = 'none';
             if(userAvatarTrigger) userAvatarTrigger.style.display = 'flex';
-            if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
-            
-            if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/60/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+            if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+            userAvatarTrigger.classList.add('avatar-mode'); // Add avatar specific styling
+
+            if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
             if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
             
             if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name; 
@@ -439,6 +483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
         if(userAvatarTrigger) userAvatarTrigger.style.display = 'none';
         if(userMenu) userMenu.classList.remove('active'); // Close menu on logout
+        if(userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal on logout
 
         if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Form always visible
         if(nameInputInFeedbackForm) {
@@ -447,6 +492,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             nameInputInFeedbackForm.disabled = false; // Enable name input for guests
         }
         if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest'; 
+        // Reset name in feedback form
+        resetFeedbackForm();
     }
 
     // Logout functionality
@@ -472,33 +519,227 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
-    // View Profile (placeholder for future feature)
+
+    // View Profile functionality (New)
     if(menuViewProfileLink) {
         menuViewProfileLink.addEventListener('click', (e) => {
             e.preventDefault();
-            if(userMenu) userMenu.classList.remove('active');
-            showStylishPopup('info', 'Profile Feature', 'Your profile editing section will be available here soon!');
+            if(userMenu) userMenu.classList.remove('active'); // Close user menu
+            if (!currentUser) {
+                showStylishPopup('error', 'Login Required', 'Please login to view your profile.');
+                return;
+            }
+            
+            // Populate profile display area
+            profileAvatarDisplay.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+            profileNameDisplay.textContent = currentUser.name;
+            profileEmailDisplay.textContent = currentUser.email;
+
+            profileDisplayArea.style.display = 'block';
+            profileEditArea.style.display = 'none';
+            profileModalTitle.textContent = 'Your Profile';
+            userProfileModal.classList.add('active');
         });
     }
-    
-    // Typed.js for main title and subtitle
-    if (mainTitle) {
-         new Typed('#main-title', {
-            strings: ["✨ NOBITA's Feedback Portal ✨", "🚀 Share Your Valuable Thoughts 🚀", "💡 Help Us Improve! 💡"],
-            typeSpeed: 50,
-            backSpeed: 25,
-            loop: true,
-            startDelay: 500,
-            smartBackspace: true // Only backspace what Typed.js typed
-         });
-         new Typed('#typed-output', {
-            strings: ["Your feedback is precious to us!", "With your opinion, we will improve.", "Every star is important to us!"],
-            typeSpeed: 45,
-            backSpeed: 20,
-            loop: true,
-            startDelay: 1500, // Start a bit after the main title
-            showCursor: false // Hide the cursor for this one
-         });
+
+    // Close Profile View Button
+    if(closeProfileViewBtn) {
+        closeProfileViewBtn.addEventListener('click', () => {
+            userProfileModal.classList.remove('active');
+        });
+    }
+
+    // Edit Profile Button (from view profile)
+    if(editProfileBtn) {
+        editProfileBtn.addEventListener('click', () => {
+            if (!currentUser) return; // Should not happen if button is shown correctly
+
+            // Populate edit profile form
+            currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+            editProfileName.value = currentUser.name;
+            editProfileEmail.value = currentUser.email; // Email is disabled, just for display
+
+            // For file input, clear previous selection
+            editAvatarUpload.value = '';
+            selectedFile = null;
+
+            profileDisplayArea.style.display = 'none';
+            profileEditArea.style.display = 'block';
+            profileModalTitle.textContent = 'Edit Profile';
+
+            // Disable avatar upload if login method is Google
+            if (currentUser.loginMethod === 'google') {
+                editAvatarUpload.disabled = true;
+                editAvatarUpload.parentElement.classList.add('disabled-upload'); // Add class for styling
+                editAvatarUpload.nextElementSibling.textContent = 'Google users cannot change avatar here.';
+                currentEditAvatarPreview.style.border = '4px solid gray'; // Indicate it's not editable
+            } else {
+                editAvatarUpload.disabled = false;
+                editAvatarUpload.parentElement.classList.remove('disabled-upload');
+                editAvatarUpload.nextElementSibling.textContent = 'Click to choose image or drag & drop';
+                currentEditAvatarPreview.style.border = '4px solid var(--secondary-color)';
+            }
+        });
+    }
+
+    // Cancel Profile Edit Button
+    if(cancelProfileEditBtn) {
+        cancelProfileEditBtn.addEventListener('click', () => {
+            // Revert to view profile state
+            profileDisplayArea.style.display = 'block';
+            profileEditArea.style.display = 'none';
+            profileModalTitle.textContent = 'Your Profile';
+        });
+    }
+
+    // Handle file selection for avatar upload
+    if (editAvatarUpload) {
+        editAvatarUpload.addEventListener('change', (event) => {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentEditAvatarPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(selectedFile);
+            }
+        });
+
+        // Drag and drop functionality
+        const avatarUploadSection = editAvatarUpload.parentElement;
+        if (avatarUploadSection) {
+            avatarUploadSection.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                avatarUploadSection.style.borderColor = 'var(--accent-color)';
+            });
+            avatarUploadSection.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                avatarUploadSection.style.borderColor = 'var(--card-border)';
+            });
+            avatarUploadSection.addEventListener('drop', (e) => {
+                e.preventDefault();
+                avatarUploadSection.style.borderColor = 'var(--card-border)';
+                if (currentUser.loginMethod === 'google') {
+                    showStylishPopup('warning', 'Cannot Change Avatar', 'Google users cannot change avatar here.');
+                    return;
+                }
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    selectedFile = files[0];
+                    if (selectedFile.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            currentEditAvatarPreview.src = e.target.result;
+                        };
+                        reader.readAsDataURL(selectedFile);
+                    } else {
+                        showStylishPopup('error', 'Invalid File Type', 'Please drop an image file.');
+                        selectedFile = null;
+                    }
+                }
+            });
+            // Click to trigger file input
+            avatarUploadSection.addEventListener('click', () => {
+                if (currentUser.loginMethod !== 'google') {
+                    editAvatarUpload.click();
+                } else {
+                    showStylishPopup('warning', 'Cannot Change Avatar', 'Google users cannot change avatar here.');
+                }
+            });
+        }
+    }
+
+
+    // Save Profile Changes Button
+    if(saveProfileChangesBtn) {
+        saveProfileChangesBtn.addEventListener('click', async () => {
+            if (!currentUser) return;
+
+            const newName = editProfileName.value.trim();
+            const originalName = currentUser.name;
+            const originalAvatarUrl = currentUser.avatarUrl;
+            let newAvatarUrl = originalAvatarUrl;
+
+            let nameChanged = newName !== originalName;
+            let avatarChanged = selectedFile !== null;
+
+            if (!nameChanged && !avatarChanged) {
+                userProfileModal.classList.remove('active');
+                return showStylishPopup('info', 'No Changes', 'No changes detected.');
+            }
+
+            if (newName === '') {
+                return showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
+            }
+
+            profileLoadingSpinner.style.display = 'block';
+            saveProfileChangesBtn.disabled = true;
+            saveProfileChangesBtn.textContent = 'Saving...';
+
+            try {
+                // 1. Upload new avatar if selected and not a Google user
+                if (avatarChanged && currentUser.loginMethod !== 'google') {
+                    const formData = new FormData();
+                    formData.append('file', selectedFile);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    
+                    // Show message during upload
+                    showStylishPopup('info', 'Uploading Avatar', 'Please wait while your avatar is being uploaded...', { confirmText: 'OK', isConfirm: false });
+
+                    const uploadResponse = await fetch(CLOUDINARY_API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const uploadData = await uploadResponse.json();
+
+                    if (!uploadResponse.ok) {
+                        throw new Error(uploadData.error?.message || 'Avatar upload failed.');
+                    }
+                    newAvatarUrl = uploadData.secure_url;
+                } else if (avatarChanged && currentUser.loginMethod === 'google') {
+                    // This case should be prevented by UI, but as a fallback
+                    showStylishPopup('warning', 'Cannot Change Avatar', 'Google users cannot change avatar via this option.');
+                    selectedFile = null; // Clear selected file as it won't be used
+                }
+
+
+                // 2. Update user profile on your backend
+                const updatePayload = {
+                    name: newName,
+                    avatarUrl: newAvatarUrl // Will be original if no new avatar or Google user
+                };
+
+                const updateData = await apiRequest(API_UPDATE_USER_PROFILE_URL, 'PUT', updatePayload);
+                
+                if(updateData) {
+                    // Update local currentUser and UI
+                    currentUser.name = updateData.user.name;
+                    currentUser.avatarUrl = updateData.user.avatarUrl;
+                    localStorage.setItem('authToken', updateData.token); // Update token if it changed
+
+                    updateUIAfterLogin(); // Refresh all UI elements that display user info
+                    
+                    // Close profile modal and show success
+                    userProfileModal.classList.remove('active');
+                    showStylishPopup('success', 'Profile Updated!', 'Your profile has been updated successfully!');
+                    await fetchFeedbacks(); // Re-fetch feedbacks to update avatar/name in list
+                }
+
+            } catch (error) {
+                console.error('Profile update error:', error);
+                // Error message already shown by apiRequest or custom upload error
+                // If the error was from avatar upload, reset preview/selection
+                if (error.message.includes('Avatar upload failed')) {
+                    currentEditAvatarPreview.src = currentUser.avatarUrl || getDiceBearAvatarUrl(currentUser.name);
+                    selectedFile = null;
+                }
+            } finally {
+                profileLoadingSpinner.style.display = 'none';
+                saveProfileChangesBtn.disabled = false;
+                saveProfileChangesBtn.textContent = 'Save Changes';
+                selectedFile = null; // Clear selected file after attempt
+            }
+        });
     }
 
     // Star Rating Logic
@@ -530,63 +771,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchFeedbacks() {
          try {
             const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, true); // No body needed for GET
-            
-            feedbackItemsContainer.innerHTML = ''; // Clear previous feedbacks
+            // Clear previous feedbacks before adding new ones
+            const h2Title = feedbackListContainer.querySelector('h2'); // Keep the H2 title
+            feedbackListContainer.innerHTML = ''; // Clear all content
+            feedbackListContainer.appendChild(averageRatingDisplayEl); // Add average rating div back
+            if(h2Title) feedbackListContainer.appendChild(h2Title); // Add H2 title back
 
             if (data.length === 0) {
                 const msgP = document.createElement('p');
                 msgP.textContent = 'No feedback yet. Be the first one!';
                 msgP.style.textAlign='center';
                 msgP.style.padding='20px';
-                feedbackItemsContainer.appendChild(msgP);
-                updateOverallRating(0, 0); // Display 0 average if no feedbacks
+                feedbackListContainer.appendChild(msgP);
+                updateAverageRating(0, 0); // Display 0 average if no feedbacks
             } else {
                 const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
                 const average = totalRatings / data.length;
-                updateOverallRating(average, data.length);
+                updateAverageRating(average, data.length);
                 data.forEach((fb, index) => addFeedbackToDOM(fb, index));
             }
         } catch (err) {
             // Error handled by apiRequest function
-            updateOverallRating(0, 0); // Reset overall rating on error
-            feedbackItemsContainer.innerHTML = '<p style="text-align:center; padding:20px; color:var(--error-color);">Failed to load feedbacks. Please try again later.</p>';
         }
     }
 
-    // Update Overall Rating Display
-    function updateOverallRating(avg, count) {
+    // Update Average Rating Display
+    function updateAverageRating(avg, count) {
         const avgNum = parseFloat(avg);
-        overallAvgRatingEl.textContent = `${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)} / 5`;
-        overallTotalCountEl.textContent = `${count} Reviews`;
-
-        overallAvgStarsEl.innerHTML = ''; // Clear previous stars
+        let starsHtml = '☆☆☆☆☆'; // Default to empty stars
         if (!isNaN(avgNum) && avgNum > 0) {
             const fullStars = Math.floor(avgNum);
-            const halfStar = avgNum - fullStars >= 0.5;
-            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-
-            for (let i = 0; i < fullStars; i++) {
-                const star = document.createElement('i');
-                star.className = 'fas fa-star';
-                overallAvgStarsEl.appendChild(star);
-            }
-            if (halfStar) {
-                const star = document.createElement('i');
-                star.className = 'fas fa-star-half-alt';
-                overallAvgStarsEl.appendChild(star);
-            }
-            for (let i = 0; i < emptyStars; i++) {
-                const star = document.createElement('i');
-                star.className = 'far fa-star'; // Use far for outline star
-                overallAvgStarsEl.appendChild(star);
-            }
-        } else {
-             for (let i = 0; i < 5; i++) {
-                const star = document.createElement('i');
-                star.className = 'far fa-star';
-                overallAvgStarsEl.appendChild(star);
-            }
+            starsHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
         }
+        averageRatingDisplayEl.innerHTML = `
+            <div class="average-rating-container">
+                <h3>Overall Average Rating</h3>
+                <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
+                <div class="average-stars">${starsHtml}</div>
+                <div class="total-feedbacks-count">(${count} feedbacks)</div>
+            </div>
+        `;
+        // Animate the average rating container in if it's new/hidden
+        setTimeout(() => {
+            const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
+            if (avgContainer && !avgContainer.classList.contains('animate-in')) {
+                avgContainer.classList.add('animate-in');
+            }
+        }, 50);
     }
     
     // Submit/Edit Feedback
@@ -617,9 +848,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try { 
             const data = await apiRequest(url, method, feedbackPayload); 
-            showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message); 
-            resetFeedbackForm(); // Clear form after submission/edit
-            await fetchFeedbacks(); // Refresh feedbacks to show new/updated one
+            if(data) {
+                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message); 
+                resetFeedbackForm(); // Clear form after submission/edit
+                await fetchFeedbacks(); // Refresh feedbacks to show new/updated one
+            }
         } 
         catch (error) { 
             // Error handled by apiRequest function
@@ -651,107 +884,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentEditFeedbackId = null; // Clear edit ID
     }
 
+    // Function to generate DiceBear avatar URL (client-side for placeholders)
+    function getDiceBearAvatarUrl(name, randomSeed = '') {
+        const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
+        const seed = encodeURIComponent(seedName + randomSeed);
+        return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
+    }
+
     // Add Feedback to DOM
     function addFeedbackToDOM(fbData, index) {
         const item = document.createElement('div');
         item.className = 'feedback-item';
         item.dataset.feedbackId = fbData._id; // Store ID for potential updates/deletions
 
-        const avatarImgContainer = document.createElement('div');
-        avatarImgContainer.className = 'user-avatar';
         const avatarImg = document.createElement('img');
-        avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/55/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
+        avatarImg.className = 'avatar-img';
+        avatarImg.src = fbData.avatarUrl || getDiceBearAvatarUrl(fbData.name);
         avatarImg.alt = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
         // Fallback for broken image links
         avatarImg.onerror = function() {
-            this.src = `https://via.placeholder.com/55/6a0dad/FFFFFF?text=${encodeURIComponent(fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X')}`;
+            this.src = getDiceBearAvatarUrl(fbData.name); // Fallback to DiceBear
         };
-        avatarImgContainer.appendChild(avatarImg);
 
         const detailsDiv = document.createElement('div');
-        detailsDiv.className = 'feedback-content';
+        detailsDiv.className = 'feedback-details';
 
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'feedback-header';
-        const userNameSpan = document.createElement('span');
-        userNameSpan.className = 'user-name';
-        userNameSpan.textContent = fbData.name;
-        headerDiv.appendChild(userNameSpan);
+        const strongName = document.createElement('strong'); 
+        let nameContent = fbData.name;
+        let userTypeTag = '';
+        // If googleIdSubmitter is present, it's a Google user. Otherwise, it's email/password or guest.
+        // For guest, googleIdSubmitter won't be set and userId might be absent or not populate.
+        // Simplified check based on existing data in feedback object.
+        if (fbData.googleIdSubmitter) {
+            userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+        } else if (fbData.userId) { // If userId exists and no googleId, assume email user
+            userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
+        } else { // Fallback for old/guest feedbacks without userId/googleIdSubmitter
+            userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Guest/Unknown User">U</span>`;
+        }
+        strongName.innerHTML = `${nameContent} ${userTypeTag}`;
 
-        // Add verified tick only for logged-in users who submitted it
-        // The server response includes userId and loginMethod, so we can check if it was a registered user
-        // Note: The server.js code now saves loginMethod to feedback, so fbData.loginMethod will be available.
-        if (fbData.loginMethod && fbData.loginMethod !== 'guest') {
-            const verifiedIcon = document.createElement('i');
-            verifiedIcon.className = 'fas fa-check-circle verified';
-            verifiedIcon.title = `Verified ${fbData.loginMethod === 'google' ? 'Google' : 'Email'} User`;
-            headerDiv.appendChild(verifiedIcon);
-        }
-        
-        const userStarsDiv = document.createElement('div');
-        userStarsDiv.className = 'user-stars';
-        for(let i=0; i<5; i++) {
-            const star = document.createElement('i');
-            star.className = i < fbData.rating ? 'fas fa-star' : 'far fa-star';
-            userStarsDiv.appendChild(star);
-        }
-        headerDiv.appendChild(userStarsDiv);
-        detailsDiv.appendChild(headerDiv);
 
         if (fbData.isEdited) {
-            const editedNote = document.createElement('div');
-            editedNote.className = 'edited-note';
-            // Kolkata time zone for edited note
-            editedNote.innerHTML = `✎ Edited on ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })}`;
-            detailsDiv.appendChild(editedNote);
+            const editedTag = document.createElement('span');
+            editedTag.className = 'edited-tag';
+            editedTag.textContent = 'Edited';
+            strongName.appendChild(editedTag);
         }
 
-        const feedbackTextDiv = document.createElement('div');
-        feedbackTextDiv.className = 'feedback-text';
-        feedbackTextDiv.textContent = fbData.feedback;
-        detailsDiv.appendChild(feedbackTextDiv);
+        const starsDiv = document.createElement('div');
+        starsDiv.className = 'feedback-stars';
+        starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
 
-        // Admin Reply (if exists)
-        if (fbData.replies && fbData.replies.length > 0) { 
-            const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
-            if (latestReply && latestReply.text) {
-                const adminReplyDiv = document.createElement('div');
-                adminReplyDiv.className = 'admin-reply';
+        const pFeedback = document.createElement('p');
+        pFeedback.textContent = fbData.feedback;
 
-                const adminMetaDiv = document.createElement('div');
-                adminMetaDiv.className = 'admin-meta';
-
-                const adminAvatarContainer = document.createElement('div');
-                adminAvatarContainer.className = 'admin-avatar';
-                const adminAvatarImg = document.createElement('img');
-                adminAvatarImg.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
-                adminAvatarImg.alt = 'Nobita';
-                adminAvatarContainer.appendChild(adminAvatarImg);
-                adminMetaDiv.appendChild(adminAvatarContainer);
-
-                const adminNameSpan = document.createElement('span');
-                adminNameSpan.className = 'admin-name';
-                adminNameSpan.textContent = latestReply.adminName || 'Admin';
-                adminMetaDiv.appendChild(adminNameSpan);
-
-                const timestampSpan = document.createElement('span');
-                timestampSpan.className = 'timestamp';
-                try {
-                    timestampSpan.textContent = new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-                } catch(e) {
-                    timestampSpan.textContent = new Date(latestReply.timestamp).toLocaleString('en-US'); // Fallback
-                }
-                adminMetaDiv.appendChild(timestampSpan);
-                adminReplyDiv.appendChild(adminMetaDiv);
-
-                const replyTextDiv = document.createElement('div');
-                replyTextDiv.className = 'reply-text';
-                replyTextDiv.textContent = latestReply.text;
-                adminReplyDiv.appendChild(replyTextDiv);
-                
-                detailsDiv.appendChild(adminReplyDiv);
-            }
+        const timestampDiv = document.createElement('div');
+        timestampDiv.className = 'feedback-timestamp';
+        try {
+            // Indian Time Zone for timestamp
+            timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+        } catch(e) { 
+            timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
         }
+
+        detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
         // Edit Button
         const editButton = document.createElement('button');
@@ -788,8 +985,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         item.appendChild(editButton);
 
-        item.append(avatarImgContainer, detailsDiv); 
-        feedbackItemsContainer.appendChild(item);
+
+        // Admin Reply (if exists)
+        if (fbData.replies && fbData.replies.length > 0) { 
+            const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
+            if (latestReply && latestReply.text) {
+                const adminReplyDiv = document.createElement('div');
+                adminReplyDiv.className = 'admin-reply';
+
+                const adminAvatar = document.createElement('img');
+                adminAvatar.className = 'admin-reply-avatar';
+                adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar
+                adminAvatar.alt = 'Nobita';
+
+                const adminReplyContent = document.createElement('div');
+                adminReplyContent.className = 'admin-reply-content';
+                let replyTimestampText = '';
+                try {
+                    replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
+                } catch(e) {
+                    replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`;
+                }
+                adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
+                
+                adminReplyDiv.append(adminAvatar, adminReplyContent);
+                detailsDiv.appendChild(adminReplyDiv);
+            }
+        }
+
+        item.append(avatarImg, detailsDiv); 
+        // Check if the item already exists to prevent duplicates on re-fetch
+        if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
+            // If it exists, you might want to update it instead of re-adding, or do nothing
+            // For now, if it exists, we assume it's already rendered correctly, or a full refresh is desired
+        } else {
+            feedbackListContainer.appendChild(item);
+        }
     }
     
     // Initial calls on load
