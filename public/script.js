@@ -1,3 +1,4 @@
+// script.js
 // === START: JavaScript Code ===
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM Fully Loaded and Parsed");
@@ -29,192 +30,251 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalSignupUsernameInput = document.getElementById('modal-signup-username');
     const modalSignupEmailInput = document.getElementById('modal-signup-email');
     const modalSignupPasswordInput = document.getElementById('modal-signup-password');
-    const modalLoginFromSignupLink = document.getElementById('modal-login-from-signup-link');
+    const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password');
+    const modalLoginLink = document.getElementById('modal-login-link');
 
-    // User Profile Modal Elements
-    const avatarInput = document.getElementById('avatar-input');
-    const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
-    const avatarUploadProgress = document.getElementById('avatar-upload-progress');
-    const editProfileUsernameInput = document.getElementById('edit-profile-username');
-    const currentPasswordInput = document.getElementById('current-password');
-    const newPasswordInput = document.getElementById('new-password');
-    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
-    const profileSpinner = document.getElementById('profile-spinner');
-
-    // Spinners
-    const loginSpinner = document.getElementById('login-spinner');
-    const signupSpinner = document.getElementById('signup-spinner');
-
-    // Close buttons for modals
-    document.querySelectorAll('.close-button').forEach(button => {
-        button.addEventListener('click', () => {
-            loginModal.classList.remove('active');
-            signupModal.classList.remove('active');
-            userProfileModal.classList.remove('active');
-        });
-    });
-
-    // Toast Notification Function
-    function showToast(message, type = 'info') {
-        const toastContainer = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.classList.add('toast', type);
-
-        let iconClass = '';
-        if (type === 'success') {
-            iconClass = 'fas fa-check-circle';
-        } else if (type === 'error') {
-            iconClass = 'fas fa-times-circle';
-        } else if (type === 'info') {
-            iconClass = 'fas fa-info-circle';
-        } else if (type === 'confirm') {
-            iconClass = 'fas fa-exclamation-triangle';
-        }
-
-        toast.innerHTML = `<i class="icon ${iconClass}"></i><span>${message}</span>`;
-        toastContainer.appendChild(toast);
-
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 10); // Small delay to trigger CSS transition
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            toast.addEventListener('transitionend', () => toast.remove());
-        }, 4000);
-    }
-
-    // Typed.js for hero section
-    new Typed('.typed-text', {
-        strings: ["NOBITA's Feedback Portal", "Your Valuable Feedback", "Help Us Improve"],
-        typeSpeed: 70,
-        backSpeed: 40,
-        loop: true,
-        showCursor: true,
-        cursorChar: '|',
-    });
-
-    // Star Rating Logic
+    // Feedback Form Elements
+    const feedbackForm = document.getElementById('feedback-form');
+    const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
+    const feedbackFormNameInput = document.getElementById('name');
+    const feedbackFormTextInput = document.getElementById('feedback');
     const starRatingContainer = document.getElementById('star-rating');
     const ratingInput = document.getElementById('rating');
-    const stars = starRatingContainer.querySelectorAll('.star');
+    const submitFeedbackButton = document.getElementById('submit-feedback');
 
-    stars.forEach(star => {
-        star.addEventListener('mouseover', () => {
-            const value = parseInt(star.dataset.value);
-            stars.forEach(s => {
-                s.classList.toggle('hovered', parseInt(s.dataset.value) <= value);
-            });
-        });
+    // Feedback List Container
+    const feedbackListContainer = document.getElementById('feedback-list-container');
+    const averageRatingDisplay = document.getElementById('average-rating-display');
 
-        star.addEventListener('mouseout', () => {
-            stars.forEach(s => s.classList.remove('hovered'));
-        });
+    // Profile Modal Elements
+    const profileAvatarDisplay = document.getElementById('profile-avatar-display');
+    const profileUsernameSpan = document.getElementById('profile-username');
+    const profileEmailSpan = document.getElementById('profile-email');
+    const editProfileButton = document.getElementById('edit-profile-btn');
+    const changePasswordButton = document.getElementById('change-password-btn');
+    const deleteAccountButton = document.getElementById('delete-account-btn');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const editUsernameInput = document.getElementById('edit-username');
+    const editEmailInput = document.getElementById('edit-email');
+    const saveChangesButton = editProfileForm.querySelector('button[type="submit"]');
+    const cancelEditButton = document.getElementById('cancel-edit-btn');
+    const editProfileMessage = document.getElementById('edit-profile-message');
+    const changePasswordForm = document.getElementById('change-password-form');
+    const currentPasswordInput = document.getElementById('current-password');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmNewPasswordInput = document.getElementById('confirm-new-password');
+    const updatePasswordButton = changePasswordForm.querySelector('button[type="submit"]');
+    const cancelPasswordChangeButton = document.getElementById('cancel-password-change-btn');
+    const changePasswordMessage = document.getElementById('change-password-message');
+    const avatarUploadInput = document.getElementById('avatar-upload');
+    const uploadAvatarButton = document.getElementById('upload-avatar-btn');
+    const avatarUploadProgressBar = document.getElementById('avatar-upload-progress');
+    const avatarUploadProgressFill = avatarUploadProgressBar.querySelector('.progress-fill');
+    const avatarUploadProgressText = avatarUploadProgressBar.querySelector('.progress-text');
 
-        star.addEventListener('click', () => {
-            const value = parseInt(star.dataset.value);
-            ratingInput.value = value;
-            stars.forEach(s => {
-                s.classList.toggle('selected', parseInt(s.dataset.value) <= value);
-            });
-        });
-    });
 
-    // --- Authentication Flow ---
+    // Modals and Menus State
+    let currentOpenModal = null;
+    let userMenuOpen = false;
 
-    // Show Login Modal
-    loginIconTrigger.addEventListener('click', () => {
-        if (!localStorage.getItem('token')) {
-            loginModal.classList.add('active');
+    // Helper Functions
+    const showModal = (modal) => {
+        if (currentOpenModal) {
+            currentOpenModal.classList.remove('active');
+        }
+        modal.classList.add('active');
+        currentOpenModal = modal;
+    };
+
+    const hideModal = (modal) => {
+        modal.classList.remove('active');
+        currentOpenModal = null;
+    };
+
+    const toggleUserMenu = (show) => {
+        if (show) {
+            userMenu.classList.add('active');
+            userMenuOpen = true;
         } else {
-            // If logged in, show user menu
-            userMenu.classList.toggle('active');
-        }
-    });
-
-    // Show User Menu / Profile
-    userAvatarTrigger.addEventListener('click', () => {
-        userMenu.classList.toggle('active');
-    });
-
-    // Hide user menu when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!userMenu.contains(event.target) && !userAvatarTrigger.contains(event.target) && !loginIconTrigger.contains(event.target) && !loginModal.contains(event.target) && !signupModal.contains(event.target) && !userProfileModal.contains(event.target)) {
             userMenu.classList.remove('active');
-            // loginModal.classList.remove('active'); // Keep modals open if active
-            // signupModal.classList.remove('active');
-            // userProfileModal.classList.remove('active');
+            userMenuOpen = false;
+        }
+    };
+
+    const displayMessage = (element, message, type) => {
+        element.textContent = message;
+        element.className = 'message-area ' + type;
+        element.style.display = 'block';
+    };
+
+    const clearMessages = () => {
+        document.querySelectorAll('.message-area').forEach(msg => {
+            msg.textContent = '';
+            msg.className = 'message-area';
+            msg.style.display = 'none';
+        });
+    };
+
+    const getToken = () => localStorage.getItem('token');
+    const setToken = (token) => localStorage.setItem('token', token);
+    const removeToken = () => localStorage.removeItem('token');
+
+    // Avatar generation logic (DiceBear)
+    const getDiceBearAvatarUrl = (seed) => {
+        const cleanedSeed = encodeURIComponent(seed.trim().toLowerCase());
+        return `https://api.dicebear.com/8.x/initials/svg?seed=${cleanedSeed}&radius=50&backgroundColor=6a0dad,FFD700,3B82F6,28a745,dc3545,fd7e14&backgroundType=gradientLinear&fontFamily=Poppins`;
+    };
+
+    const generateAndSetUserAvatar = (username) => {
+        if (username) {
+            const avatarUrl = getDiceBearAvatarUrl(username);
+            userAvatarTriggerImg.src = avatarUrl;
+            profileAvatarDisplay.src = avatarUrl;
+        } else {
+            // Default avatar if no username
+            userAvatarTriggerImg.src = getDiceBearAvatarUrl('Guest');
+            profileAvatarDisplay.src = getDiceBearAvatarUrl('Guest');
+        }
+    };
+
+    // UI Updates based on login status
+    const updateUIAfterLogin = (username, avatarUrl) => {
+        loginIconTrigger.style.display = 'none';
+        userAvatarTrigger.style.display = 'flex';
+        feedbackFormUsernameSpan.textContent = username;
+        feedbackFormNameInput.disabled = true;
+        feedbackFormNameInput.value = username; // Set input value to username
+        if (avatarUrl) {
+            userAvatarTriggerImg.src = avatarUrl;
+            profileAvatarDisplay.src = avatarUrl;
+        } else {
+            generateAndSetUserAvatar(username);
+        }
+        clearMessages();
+        hideModal(loginModal);
+        hideModal(signupModal);
+    };
+
+    const updateUIAfterLogout = () => {
+        loginIconTrigger.style.display = 'flex';
+        userAvatarTrigger.style.display = 'none';
+        feedbackFormUsernameSpan.textContent = 'User';
+        feedbackFormNameInput.disabled = false;
+        feedbackFormNameInput.value = ''; // Clear input value
+        // Also clear any profile specific data
+        profileUsernameSpan.textContent = '';
+        profileEmailSpan.textContent = '';
+        profileAvatarDisplay.src = '';
+        // Hide profile related forms
+        editProfileForm.classList.add('hidden');
+        changePasswordForm.classList.add('hidden');
+        hideModal(userProfileModal); // Hide profile modal on logout
+        toggleUserMenu(false); // Hide user menu on logout
+        clearMessages();
+    };
+
+    // Event Listeners for Modals and Menu
+    loginIconTrigger.addEventListener('click', () => showModal(loginModal));
+    userAvatarTrigger.addEventListener('click', () => toggleUserMenu(!userMenuOpen));
+
+    userMenu.addEventListener('click', (e) => {
+        if (e.target.id === 'menu-profile') {
+            toggleUserMenu(false);
+            fetchUserProfile(); // Fetch user data before showing profile modal
+        } else if (e.target.id === 'menu-logout') {
+            handleLogout();
+            toggleUserMenu(false);
         }
     });
 
-    // Switch to Signup
+    document.querySelectorAll('.close-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            hideModal(e.target.closest('.auth-modal-overlay'));
+            clearMessages();
+            // Reset forms if they were open inside the profile modal
+            editProfileForm.classList.add('hidden');
+            changePasswordForm.classList.add('hidden');
+        });
+    });
+
+    // Close modals/menu if clicked outside
+    window.addEventListener('click', (e) => {
+        if (currentOpenModal && !currentOpenModal.contains(e.target) && e.target !== loginIconTrigger) {
+            hideModal(currentOpenModal);
+            clearMessages();
+            editProfileForm.classList.add('hidden');
+            changePasswordForm.classList.add('hidden');
+        }
+        if (userMenuOpen && !userMenu.contains(e.target) && e.target !== userAvatarTrigger && !userAvatarTrigger.contains(e.target)) {
+            toggleUserMenu(false);
+        }
+    });
+
+    // Switch between login and signup modals
     modalCreateAccountLink.addEventListener('click', (e) => {
         e.preventDefault();
-        loginModal.classList.remove('active');
-        signupModal.classList.add('active');
+        hideModal(loginModal);
+        showModal(signupModal);
+        clearMessages();
     });
 
-    // Switch back to Login
-    modalLoginFromSignupLink.addEventListener('click', (e) => {
+    modalLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
-        signupModal.classList.remove('active');
-        loginModal.classList.add('active');
+        hideModal(signupModal);
+        showModal(loginModal);
+        clearMessages();
     });
 
-    // Google Login Handler
-    const client = new google.accounts.oauth2.Overly({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (response) => {
-            console.log("Google ID token:", response.credential);
+    // --- Authentication Logic ---
+
+    // Google Login
+    const setupGoogleLogin = () => {
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                modalGoogleLoginBtn,
+                { type: "standard", theme: "filled_blue", size: "large", text: "signin_with", shape: "rectangular", width: "250" }
+            );
+            // google.accounts.id.prompt(); // You can enable auto-prompt if desired
+        } else {
+            console.warn("Google Sign-in script not loaded or initialized.");
+        }
+    };
+
+    async function handleGoogleCredentialResponse(response) {
+        if (response.credential) {
             try {
-                loginSpinner.classList.add('active');
-                const res = await fetch('/api/auth/google-login', {
+                const res = await fetch('/api/auth/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: response.credential })
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    localStorage.setItem('token', data.token);
-                    showToast('Google Login Successful!', 'success');
-                    loginModal.classList.remove('active');
-                    checkLoginStatus(); // Update UI
+                    setToken(data.token);
+                    updateUIAfterLogin(data.username, data.avatarUrl);
+                    fetchFeedbacks(); // Refresh feedbacks after login
                 } else {
-                    showToast(data.message || 'Google login failed!', 'error');
+                    displayMessage(document.getElementById('login-message'), data.message || 'Google login failed.', 'error');
                 }
             } catch (error) {
-                console.error('Error during Google login:', error);
-                showToast('Google login mein kuch dikkat aayi.', 'error');
-            } finally {
-                loginSpinner.classList.remove('active');
+                console.error('Google login error:', error);
+                displayMessage(document.getElementById('login-message'), 'Server error during Google login.', 'error');
             }
-        },
-        auto_select: true
-    });
-    // This is the correct way to trigger Google One Tap/Popup
-    // You should use google.accounts.id.renderButton or google.accounts.id.prompt
-    // For direct button click, we will use a hidden div that Google renders.
-    // Make sure your HTML has: <div id="g_id_onload" data-client_id="YOUR_CLIENT_ID" data-callback="handleCredentialResponse" data-auto_select="true"></div>
-    // and a button: <div class="g_id_signin" data-type="standard"></div>
-
-    // If you want to use the modalGoogleLoginBtn for a popup, you'd configure the client.
-    // For simplicity with Overly (which implies a popup/redirect flow), this might be simplified.
-    // Let's assume for now, it's tied to an implicit flow or that the GSI script handles the button click.
-    // If you need a custom button to trigger a popup, you'd use google.accounts.id.prompt();
-    modalGoogleLoginBtn.addEventListener('click', () => {
-        // This will trigger the Google One Tap or popup if configured
-        client.prompt(); 
-    });
-
+        }
+    }
 
     // Email Login
     emailLoginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearMessages();
         const email = modalLoginEmailInput.value;
         const password = modalLoginPasswordInput.value;
 
         try {
-            loginSpinner.classList.add('active');
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -222,420 +282,392 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await res.json();
             if (res.ok) {
-                localStorage.setItem('token', data.token);
-                showToast('Login Successful!', 'success');
-                loginModal.classList.remove('active');
-                checkLoginStatus(); // Update UI
+                setToken(data.token);
+                updateUIAfterLogin(data.username, data.avatarUrl);
+                fetchFeedbacks();
             } else {
-                showToast(data.message || 'Login failed!', 'error');
+                displayMessage(document.getElementById('login-message'), data.message || 'Login failed.', 'error');
             }
         } catch (error) {
-            console.error('Error during email login:', error);
-            showToast('Login mein kuch dikkat aayi.', 'error');
-        } finally {
-            loginSpinner.classList.remove('active');
+            console.error('Login error:', error);
+            displayMessage(document.getElementById('login-message'), 'Server error during login.', 'error');
         }
     });
 
     // Email Signup
     emailSignupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearMessages();
         const username = modalSignupUsernameInput.value;
         const email = modalSignupEmailInput.value;
         const password = modalSignupPasswordInput.value;
+        const confirmPassword = modalSignupConfirmPasswordInput.value;
 
-        try {
-            signupSpinner.classList.add('active');
-            const res = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: username, email, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast('Signup Successful! Ab login karein.', 'success');
-                signupModal.classList.remove('active');
-                loginModal.classList.add('active'); // Show login modal after signup
-            } else {
-                showToast(data.message || 'Signup failed!', 'error');
-            }
-        } catch (error) {
-            console.error('Error during email signup:', error);
-            showToast('Signup mein kuch dikkat aayi.', 'error');
-        } finally {
-            signupSpinner.classList.remove('active');
-        }
-    });
-
-    // Forgot Password Link
-    modalForgotPasswordLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const email = modalLoginEmailInput.value; // Pre-fill with entered email
-
-        if (!email) {
-            showToast('Please enter your email in the login field first.', 'info');
+        if (password !== confirmPassword) {
+            displayMessage(document.getElementById('signup-message'), 'Passwords do not match.', 'error');
             return;
         }
 
-        const confirmReset = confirm(`Kya aap ${email} ke liye password reset karna chahte hain?`);
-        if (!confirmReset) return;
-
         try {
-            loginSpinner.classList.add('active'); // Use login spinner for this action
-            const res = await fetch('/api/auth/forgot-password', {
+            const res = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ username, email, password })
             });
             const data = await res.json();
             if (res.ok) {
-                showToast(data.message || 'Password reset link sent to your email!', 'success');
+                displayMessage(document.getElementById('signup-message'), data.message || 'Account created successfully! Please log in.', 'success');
+                // Optionally auto-login or switch to login modal
+                setTimeout(() => {
+                    hideModal(signupModal);
+                    showModal(loginModal);
+                    clearMessages();
+                }, 1500);
             } else {
-                showToast(data.message || 'Failed to send password reset link.', 'error');
+                displayMessage(document.getElementById('signup-message'), data.message || 'Signup failed.', 'error');
             }
         } catch (error) {
-            console.error('Error during forgot password:', error);
-            showToast('Password reset mein kuch dikkat aayi.', 'error');
-        } finally {
-            loginSpinner.classList.remove('active');
+            console.error('Signup error:', error);
+            displayMessage(document.getElementById('signup-message'), 'Server error during signup.', 'error');
         }
     });
 
-    // Logout Function
-    document.getElementById('logout-menu-item').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        showToast('Successfully logged out!', 'info');
+    // Logout
+    const handleLogout = () => {
+        removeToken();
         updateUIAfterLogout();
-        userMenu.classList.remove('active'); // Hide menu after logout
-        fetchFeedbacks(); // Refresh feedbacks to reflect guest mode
-    });
+        fetchFeedbacks(); // Fetch feedbacks to show public view
+        console.log('Logged out');
+    };
 
-    // View Profile
-    document.getElementById('view-profile-menu-item').addEventListener('click', async () => {
-        userMenu.classList.remove('active');
-        userProfileModal.classList.add('active');
-        profileSpinner.classList.add('active');
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Aap logged in nahi hain.', 'error');
-                return;
+    // Check login status on page load
+    const checkLoginStatus = async () => {
+        const token = getToken();
+        if (token) {
+            try {
+                const res = await fetch('/api/auth/status', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok && data.loggedIn) {
+                    updateUIAfterLogin(data.username, data.avatarUrl);
+                } else {
+                    removeToken();
+                    updateUIAfterLogout();
+                }
+            } catch (error) {
+                console.error('Login status check failed:', error);
+                removeToken();
+                updateUIAfterLogout();
             }
+        } else {
+            updateUIAfterLogout();
+        }
+        fetchFeedbacks(); // Always fetch feedbacks, logged in or not
+    };
+
+    // --- Profile Management ---
+
+    const fetchUserProfile = async () => {
+        const token = getToken();
+        if (!token) {
+            displayMessage(editProfileMessage, 'Aapko login karna hoga profile dekhne ke liye.', 'error');
+            return;
+        }
+        try {
             const res = await fetch('/api/user/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             if (res.ok) {
-                populateUserProfileModal(data.user);
+                profileUsernameSpan.textContent = data.username;
+                profileEmailSpan.textContent = data.email;
+                if (data.avatarUrl) {
+                    profileAvatarDisplay.src = data.avatarUrl;
+                    userAvatarTriggerImg.src = data.avatarUrl; // Update main avatar
+                } else {
+                    generateAndSetUserAvatar(data.username);
+                }
+                showModal(userProfileModal);
+                // Hide forms initially
+                editProfileForm.classList.add('hidden');
+                changePasswordForm.classList.add('hidden');
+                editProfileMessage.style.display = 'none'; // Clear messages on open
+                changePasswordMessage.style.display = 'none'; // Clear messages on open
             } else {
-                showToast(data.message || 'Profile fetch failed!', 'error');
+                displayMessage(editProfileMessage, data.message || 'Profile fetch failed.', 'error');
+                hideModal(userProfileModal);
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
-            showToast('Profile fetch mein kuch dikkat aayi.', 'error');
-        } finally {
-            profileSpinner.classList.remove('active');
+            displayMessage(editProfileMessage, 'Server error while fetching profile.', 'error');
+            hideModal(userProfileModal);
         }
+    };
+
+    editProfileButton.addEventListener('click', () => {
+        editUsernameInput.value = profileUsernameSpan.textContent;
+        editEmailInput.value = profileEmailSpan.textContent;
+        editProfileForm.classList.remove('hidden');
+        changePasswordForm.classList.add('hidden'); // Hide password form if open
+        editProfileMessage.style.display = 'none'; // Clear message
     });
 
-    // Populate User Profile Modal
-    async function populateUserProfileModal(user) {
-        if (user) {
-            document.getElementById('profile-username').textContent = user.name || 'N/A';
-            document.getElementById('profile-email').textContent = user.email || 'N/A';
-            document.getElementById('profile-account-type').textContent = user.googleId ? 'Google Account' : 'Email/Password';
-            
-            const googleIdGroup = document.querySelector('.google-id-group');
-            if (user.googleId) {
-                googleIdGroup.style.display = 'flex';
-                document.getElementById('profile-google-id').textContent = user.googleId;
+    cancelEditButton.addEventListener('click', () => {
+        editProfileForm.classList.add('hidden');
+        editProfileMessage.style.display = 'none'; // Clear message
+    });
+
+    changePasswordButton.addEventListener('click', () => {
+        changePasswordForm.classList.remove('hidden');
+        editProfileForm.classList.add('hidden'); // Hide edit profile form if open
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
+        confirmNewPasswordInput.value = '';
+        changePasswordMessage.style.display = 'none'; // Clear message
+    });
+
+    cancelPasswordChangeButton.addEventListener('click', () => {
+        changePasswordForm.classList.add('hidden');
+        changePasswordMessage.style.display = 'none'; // Clear message
+    });
+
+    editProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMessages();
+        const token = getToken();
+        if (!token) {
+            displayMessage(editProfileMessage, 'Aapko login karna hoga profile update karne ke liye.', 'error');
+            return;
+        }
+
+        const username = editUsernameInput.value;
+        const email = editEmailInput.value;
+
+        try {
+            const res = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ username, email })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                displayMessage(editProfileMessage, data.message || 'Profile updated successfully!', 'success');
+                profileUsernameSpan.textContent = username;
+                profileEmailSpan.textContent = email;
+                feedbackFormUsernameSpan.textContent = username; // Update main form username
+                // If username changed, update avatar as well (if using DiceBear)
+                if (!profileAvatarDisplay.src.startsWith('https://res.cloudinary.com/')) { // Only update if not a cloudinary URL
+                    generateAndSetUserAvatar(username);
+                }
+                setTimeout(() => editProfileForm.classList.add('hidden'), 1500); // Hide form after a delay
             } else {
-                googleIdGroup.style.display = 'none';
+                displayMessage(editProfileMessage, data.message || 'Profile update failed.', 'error');
             }
-
-            // Set values for edit form
-            editProfileUsernameInput.value = user.name || '';
-            currentPasswordInput.value = '';
-            newPasswordInput.value = '';
-
-            // Avatar setup
-            const currentAvatarUrl = user.avatarUrl || 'https://api.dicebear.com/8.x/initials/svg?seed=Nobita&backgroundType=gradientLinear';
-            document.getElementById('profile-avatar-preview').src = currentAvatarUrl;
-            document.getElementById('profile-avatar-preview').style.display = 'block';
-
-            // Hide upload button and progress initially
-            uploadAvatarBtn.style.display = 'none';
-            avatarUploadProgress.style.display = 'none';
-            avatarUploadProgress.textContent = 'Uploading: 0%';
-
-        }
-    }
-
-    // Avatar input change listener
-    avatarInput.addEventListener('change', (event) => {
-        if (event.target.files.length > 0) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('profile-avatar-preview').src = e.target.result;
-                uploadAvatarBtn.style.display = 'block'; // Show upload button when a file is chosen
-            };
-            reader.readAsDataURL(file);
-        } else {
-            // No file selected, hide upload button
-            uploadAvatarBtn.style.display = 'none';
-            avatarUploadProgress.style.display = 'none';
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            displayMessage(editProfileMessage, 'Server error while updating profile.', 'error');
         }
     });
 
-    // Upload Avatar button click handler
-    uploadAvatarBtn.addEventListener('click', async () => {
-        const file = avatarInput.files[0];
+    changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMessages();
+        const token = getToken();
+        if (!token) {
+            displayMessage(changePasswordMessage, 'Aapko login karna hoga password change karne ke liye.', 'error');
+            return;
+        }
+
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmNewPassword = confirmNewPasswordInput.value;
+
+        if (newPassword !== confirmNewPassword) {
+            displayMessage(changePasswordMessage, 'Naya password match nahi kar raha hai.', 'error');
+            return;
+        }
+        if (newPassword.length < 6) {
+            displayMessage(changePasswordMessage, 'Naya password kam se kam 6 akshar ka hona chahiye.', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                displayMessage(changePasswordMessage, data.message || 'Password successfully updated!', 'success');
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
+                confirmNewPasswordInput.value = '';
+                setTimeout(() => changePasswordForm.classList.add('hidden'), 1500); // Hide form after a delay
+            } else {
+                displayMessage(changePasswordMessage, data.message || 'Password update failed.', 'error');
+            }
+        } catch (error) {
+            console.error('Error changing password:', error);
+            displayMessage(changePasswordMessage, 'Server error while changing password.', 'error');
+        }
+    });
+
+    deleteAccountButton.addEventListener('click', async () => {
+        if (!confirm('Kya aap sach mein apna account delete karna chahte hain? Yeh action revert nahi kiya ja sakta hai.')) {
+            return;
+        }
+
+        const token = getToken();
+        if (!token) {
+            displayMessage(editProfileMessage, 'Aapko login karna hoga account delete karne ke liye.', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user/delete-account', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message || 'Account successfully deleted!');
+                handleLogout(); // Log out after deletion
+                fetchFeedbacks(); // Refresh feedbacks
+            } else {
+                displayMessage(editProfileMessage, data.message || 'Account deletion failed.', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            displayMessage(editProfileMessage, 'Server error while deleting account.', 'error');
+        }
+    });
+
+    // Avatar Upload Logic
+    avatarUploadInput.addEventListener('change', (event) => {
+        if (event.target.files.length > 0) {
+            uploadAvatarButton.style.display = 'block';
+            avatarUploadProgressBar.style.display = 'none'; // Hide progress bar until upload starts
+            avatarUploadProgressFill.style.width = '0%';
+            avatarUploadProgressText.textContent = '0%';
+        } else {
+            uploadAvatarButton.style.display = 'none';
+        }
+    });
+
+    uploadAvatarButton.addEventListener('click', async () => {
+        const file = avatarUploadInput.files[0];
         if (!file) {
-            showToast('Please select an avatar file first!', 'error');
+            displayMessage(editProfileMessage, 'Kripya ek avatar file chunein.', 'error');
+            return;
+        }
+
+        const token = getToken();
+        if (!token) {
+            displayMessage(editProfileMessage, 'Aapko login karna hoga avatar upload karne ke liye.', 'error');
             return;
         }
 
         const formData = new FormData();
         formData.append('avatar', file);
 
-        uploadAvatarBtn.disabled = true; // Disable button during upload
-        avatarUploadProgress.style.display = 'block';
-        avatarUploadProgress.textContent = 'Uploading: 0%';
+        uploadAvatarButton.style.display = 'none';
+        avatarUploadProgressBar.style.display = 'flex';
+        displayMessage(editProfileMessage, 'Uploading avatar...', 'info');
 
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Aap logged in nahi hain.', 'error');
-                uploadAvatarBtn.disabled = false;
-                avatarUploadProgress.style.display = 'none';
-                return;
-            }
-
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/upload-avatar', true);
+            xhr.open('POST', '/api/user/upload-avatar', true);
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-            xhr.upload.onprogress = (event) => {
+            xhr.upload.addEventListener('progress', (event) => {
                 if (event.lengthComputable) {
                     const percent = Math.round((event.loaded / event.total) * 100);
-                    avatarUploadProgress.textContent = `Uploading: ${percent}%`;
+                    avatarUploadProgressFill.style.width = `${percent}%`;
+                    avatarUploadProgressText.textContent = `${percent}%`;
                 }
-            };
+            });
 
-            xhr.onload = async () => {
-                uploadAvatarBtn.disabled = false;
-                avatarUploadProgress.style.display = 'none';
-                if (xhr.status >= 200 && xhr.status < 300) {
+            xhr.onload = () => {
+                if (xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
-                    showToast(data.message || 'Avatar successfully uploaded!', 'success');
-                    // Update avatar on UI after successful upload
-                    const newAvatarUrl = data.newAvatarUrl;
-                    userAvatarTriggerImg.src = newAvatarUrl;
-                    document.getElementById('profile-avatar-preview').src = newAvatarUrl;
-                    // Optionally, clear the input field after successful upload
-                    avatarInput.value = '';
-                    uploadAvatarBtn.style.display = 'none'; // Hide upload button after successful upload
-                    checkLoginStatus(); // Re-fetch user data to ensure UI is updated
+                    displayMessage(editProfileMessage, data.message || 'Avatar successfully uploaded!', 'success');
+                    profileAvatarDisplay.src = data.newAvatarUrl;
+                    userAvatarTriggerImg.src = data.newAvatarUrl;
+                    avatarUploadInput.value = ''; // Clear file input
+                    setTimeout(() => {
+                        avatarUploadProgressBar.style.display = 'none';
+                        editProfileMessage.style.display = 'none';
+                    }, 1500);
                 } else {
                     const errorData = JSON.parse(xhr.responseText);
-                    showToast(errorData.message || 'Avatar upload failed!', 'error');
+                    displayMessage(editProfileMessage, errorData.message || 'Avatar upload failed.', 'error');
+                    avatarUploadProgressBar.style.display = 'none';
+                    uploadAvatarButton.style.display = 'block'; // Show upload button again on failure
                 }
             };
 
             xhr.onerror = () => {
-                uploadAvatarBtn.disabled = false;
-                avatarUploadProgress.style.display = 'none';
-                showToast('Network error during avatar upload!', 'error');
+                console.error('Network error during avatar upload.');
+                displayMessage(editProfileMessage, 'Network error during avatar upload.', 'error');
+                avatarUploadProgressBar.style.display = 'none';
+                uploadAvatarButton.style.display = 'block';
             };
 
             xhr.send(formData);
 
         } catch (error) {
-            console.error('Error uploading avatar:', error);
-            showToast('Avatar upload mein kuch dikkat aayi.', 'error');
-            uploadAvatarBtn.disabled = false;
-            avatarUploadProgress.style.display = 'none';
+            console.error('Error initiating avatar upload:', error);
+            displayMessage(editProfileMessage, 'Error initiating avatar upload.', 'error');
+            avatarUploadProgressBar.style.display = 'none';
+            uploadAvatarButton.style.display = 'block';
         }
     });
 
 
-    // Save Profile Changes
-    saveProfileChangesBtn.addEventListener('click', async () => {
-        const newName = editProfileUsernameInput.value;
-        const oldPassword = currentPasswordInput.value;
-        const newPassword = newPasswordInput.value;
+    // --- Feedback Logic ---
 
-        if (!newName.trim()) {
-            showToast('Username khali nahi ho sakta.', 'error');
-            return;
-        }
-
-        if (newPassword && newPassword.length < 6) {
-            showToast('Naya password kam se kam 6 characters ka hona chahiye.', 'error');
-            return;
-        }
-
-        // If new password is provided, old password must also be provided
-        if (newPassword && !oldPassword) {
-            showToast('Naya password set karne ke liye, current password daalein.', 'error');
-            return;
-        }
-        
-        // If old password is provided, but no new password, it's an error
-        if (oldPassword && !newPassword) {
-            showToast('Current password diya hai, lekin naya password nahi. Agar password change karna hai, toh naya password bhi daalein.', 'error');
-            return;
-        }
-
-
-        profileSpinner.classList.add('active');
-        saveProfileChangesBtn.disabled = true;
-
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                showToast('Aap logged in nahi hain.', 'error');
-                return;
-            }
-
-            const updateData = {
-                name: newName,
-                oldPassword: oldPassword,
-                newPassword: newPassword,
-            };
-
-            const res = await fetch('/api/user/profile', {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify(updateData)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(data.message || 'Profile successfully updated!', 'success');
-                userProfileModal.classList.remove('active');
-                checkLoginStatus(); // Re-fetch user data to ensure UI is updated
-                fetchFeedbacks(); // Refresh feedbacks to update names
-            } else {
-                showToast(data.message || 'Profile update failed!', 'error');
-            }
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            showToast('Profile update mein kuch dikkat aayi.', 'error');
-        } finally {
-            profileSpinner.classList.remove('active');
-            saveProfileChangesBtn.disabled = false;
-        }
-    });
-
-    // Update UI based on login status
-    async function checkLoginStatus() {
-        const token = localStorage.getItem('token');
-        const loginIcon = loginIconTrigger.querySelector('i');
-
-        if (token) {
-            loginIcon.classList.remove('fa-lock');
-            loginIcon.classList.add('fa-user');
-            loginIconTrigger.title = 'Logged In';
-            userAvatarTrigger.style.display = 'flex'; // Show avatar trigger
-            loginIconTrigger.style.display = 'none'; // Hide login button
-
-            try {
-                const res = await fetch('/api/user/current', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    document.getElementById('feedback-form-username').textContent = data.user.name;
-                    document.getElementById('name').value = data.user.name;
-                    document.getElementById('name').disabled = true; // Disable name input if logged in
-                    userAvatarTriggerImg.src = data.user.avatarUrl || 'https://api.dicebear.com/8.x/initials/svg?seed=Nobita&backgroundType=gradientLinear';
-                    // Update userMenu list based on admin status
-                    updateUserMenu(data.user.role);
-                } else {
-                    console.error('Failed to fetch user data:', data.message);
-                    updateUIAfterLogout(); // Fallback to logout state
+    // Star Rating
+    starRatingContainer.addEventListener('click', (e) => {
+        const star = e.target.closest('.star');
+        if (star) {
+            const value = parseInt(star.dataset.value);
+            ratingInput.value = value;
+            document.querySelectorAll('.star').forEach(s => {
+                s.classList.remove('selected');
+                if (parseInt(s.dataset.value) <= value) {
+                    s.classList.add('selected');
                 }
-            } catch (error) {
-                console.error('Error checking login status:', error);
-                updateUIAfterLogout(); // Fallback to logout state
-            }
-        } else {
-            updateUIAfterLogout();
-        }
-        fetchFeedbacks(); // Always fetch feedbacks to load current state
-    }
-
-    function updateUIAfterLogout() {
-        const loginIcon = loginIconTrigger.querySelector('i');
-        loginIcon.classList.remove('fa-user');
-        loginIcon.classList.add('fa-lock');
-        loginIconTrigger.title = 'Login / Sign Up';
-        userAvatarTrigger.style.display = 'none'; // Hide avatar trigger
-        loginIconTrigger.style.display = 'flex'; // Show login button
-
-        document.getElementById('feedback-form-username').textContent = 'Guest';
-        document.getElementById('name').value = ''; // Clear guest name
-        document.getElementById('name').disabled = false; // Enable name input for guest
-        
-        // Hide admin-specific menu items
-        const adminMenuItem = document.getElementById('admin-dashboard-menu-item'); // Assuming you might have one
-        if (adminMenuItem) adminMenuItem.remove();
-        
-        userAvatarTriggerImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // Placeholder for guest
-    }
-
-    function updateUserMenu(userRole) {
-        // Clear existing admin menu items to prevent duplicates
-        const existingAdminMenuItem = document.getElementById('admin-dashboard-menu-item');
-        if (existingAdminMenuItem) existingAdminMenuItem.remove();
-
-        if (userRole === 'admin') {
-            const userMenuList = document.getElementById('user-menu-list');
-            const adminDashboardItem = document.createElement('li');
-            adminDashboardItem.id = 'admin-dashboard-menu-item';
-            adminDashboardItem.textContent = 'Admin Dashboard';
-            // Insert before logout item or at the end
-            const logoutItem = document.getElementById('logout-menu-item');
-            userMenuList.insertBefore(adminDashboardItem, logoutItem);
-
-            adminDashboardItem.addEventListener('click', () => {
-                showToast('Admin Dashboard functionality here (e.g., redirect to /admin)', 'info');
-                userMenu.classList.remove('active');
-                // window.location.href = '/admin'; // Example redirect
             });
         }
-    }
+    });
 
+    // Submit Feedback
+    submitFeedbackButton.addEventListener('click', async () => {
+        clearMessages();
+        const feedbackText = feedbackFormTextInput.value;
+        const rating = ratingInput.value;
+        const token = getToken();
+        const name = feedbackFormNameInput.value;
 
-    // --- Feedback Submission ---
-    const feedbackForm = document.getElementById('feedback-form');
-    const submitFeedbackBtn = document.getElementById('submit-feedback');
-
-    submitFeedbackBtn.addEventListener('click', async () => {
-        const name = document.getElementById('name').value.trim();
-        const feedbackText = document.getElementById('feedback').value.trim();
-        const rating = parseInt(ratingInput.value);
-        const token = localStorage.getItem('token');
-
-        if (!name && !token) { // If not logged in, name is required
-            showToast('Please enter your name.', 'error');
-            return;
-        }
-        if (!feedbackText) {
-            showToast('Please enter your feedback.', 'error');
-            return;
-        }
-        if (rating === 0) {
-            showToast('Please select a star rating.', 'error');
+        if (!feedbackText.trim() || rating === '0') {
+            alert('Kripya apna feedback aur rating dein!');
             return;
         }
 
-        submitFeedbackBtn.disabled = true; // Disable button during submission
-        showToast('Submitting feedback...', 'info');
+        const feedbackData = {
+            feedbackText,
+            rating: parseInt(rating),
+            // Only send name if not logged in (disabled input)
+            ...(token ? {} : { name: name || 'Anonymous' })
+        };
 
         try {
             const headers = { 'Content-Type': 'application/json' };
@@ -646,191 +678,116 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch('/api/feedbacks', {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({ name, feedback: feedbackText, rating })
+                body: JSON.stringify(feedbackData)
             });
 
             const data = await res.json();
             if (res.ok) {
-                showToast(data.message || 'Feedback submitted successfully!', 'success');
-                feedbackForm.reset(); // Clear form
-                ratingInput.value = '0'; // Reset hidden rating
-                stars.forEach(s => s.classList.remove('selected', 'hovered')); // Clear stars
-                createConfetti(); // Yay!
-                fetchFeedbacks(); // Refresh list to show new feedback
+                alert(data.message || 'Feedback submitted successfully!');
+                feedbackFormTextInput.value = '';
+                ratingInput.value = '0';
+                document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+                fetchFeedbacks(); // Refresh feedbacks after submission
             } else {
-                showToast(data.message || 'Failed to submit feedback.', 'error');
+                alert(data.message || 'Feedback submission failed.');
             }
         } catch (error) {
-            console.error('Error submitting feedback:', error);
-            showToast('Feedback submit karne mein kuch dikkat aayi.', 'error');
-        } finally {
-            submitFeedbackBtn.disabled = false; // Re-enable button
+            console.error('Feedback submission error:', error);
+            alert('Server error while submitting feedback.');
         }
     });
 
-    // --- Fetch and Display Feedbacks ---
-    const feedbackListContainer = document.getElementById('feedback-list-container');
-
-    async function fetchFeedbacks() {
+    // Fetch and Display Feedbacks
+    const fetchFeedbacks = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const headers = {};
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            const res = await fetch('/api/feedbacks', { headers });
+            const res = await fetch('/api/feedbacks');
             const data = await res.json();
 
             if (res.ok) {
-                displayFeedbacks(data.feedbacks, data.userRole);
-                displayAverageRating(data.averageRating);
+                feedbackListContainer.innerHTML = '<div id="average-rating-display"></div><h2>Recent Feedbacks</h2>'; // Clear existing
+                const averageRatingDiv = document.getElementById('average-rating-display');
+
+                if (data.feedbacks.length > 0) {
+                    let totalRating = 0;
+                    data.feedbacks.forEach(fb => totalRating += fb.rating);
+                    const avg = (totalRating / data.feedbacks.length).toFixed(1);
+                    averageRatingDiv.innerHTML = `Overall Average Rating: <strong>${avg} / 5</strong>`;
+                } else {
+                    averageRatingDiv.innerHTML = 'Koi feedback nahi mila abhi tak.';
+                }
+
+                data.feedbacks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by newest
+                data.feedbacks.forEach(addFeedbackToDOM);
             } else {
-                showToast(data.message || 'Failed to fetch feedbacks.', 'error');
+                console.error('Failed to fetch feedbacks:', data.message);
+                feedbackListContainer.innerHTML = `<p style="color: var(--error-color);">Feedbacks load nahi ho paaye: ${data.message}</p>`;
             }
         } catch (error) {
             console.error('Error fetching feedbacks:', error);
-            showToast('Feedbacks fetch karne mein kuch dikkat aayi.', 'error');
+            feedbackListContainer.innerHTML = '<p style="color: var(--error-color);">Server error while fetching feedbacks.</p>';
         }
-    }
+    };
 
-    function displayAverageRating(averageRating) {
-        const averageRatingDisplay = document.getElementById('average-rating-display');
-        if (averageRating !== null && averageRating !== undefined) {
-            const roundedRating = averageRating.toFixed(1);
-            let starsHtml = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.round(averageRating)) {
-                    starsHtml += '<span class="star selected">★</span>';
-                } else {
-                    starsHtml += '<span class="star">★</span>';
-                }
-            }
-            averageRatingDisplay.innerHTML = `Overall Rating: ${roundedRating} ${starsHtml}`;
-        } else {
-            averageRatingDisplay.innerHTML = 'No ratings yet.';
-        }
-    }
-
-
-    function displayFeedbacks(feedbacks, userRole) {
-        // Clear existing feedbacks except for the heading and average rating
-        const existingFeedbackItems = feedbackListContainer.querySelectorAll('.feedback-item');
-        existingFeedbackItems.forEach(item => item.remove());
-
-        if (feedbacks.length === 0) {
-            feedbackListContainer.innerHTML += '<p style="text-align: center; color: var(--text-color-light); opacity: 0.8;">Koi feedback nahi hai abhi tak. Pehle feedback submit karein!</p>';
-            return;
-        }
-
-        feedbacks.forEach(fbData => {
-            createFeedbackItem(fbData, userRole);
-        });
-    }
-
-    function createFeedbackItem(fbData, userRole) {
+    const addFeedbackToDOM = (fbData) => {
         const item = document.createElement('div');
-        item.classList.add('feedback-item');
-        item.setAttribute('data-feedback-id', fbData._id); // Add data-id for easy access
+        item.className = 'feedback-item';
+        item.dataset.feedbackId = fbData._id; // Store ID for potential updates
 
         const avatarImg = document.createElement('img');
-        avatarImg.classList.add('feedback-avatar');
-        avatarImg.src = fbData.avatarUrl || 'https://api.dicebear.com/8.x/initials/svg?seed=Nobita&backgroundType=gradientLinear';
-        avatarImg.alt = 'User Avatar';
+        avatarImg.className = 'feedback-avatar';
+        avatarImg.src = fbData.avatarUrl || getDiceBearAvatarUrl(fbData.username || 'Anonymous');
+        avatarImg.alt = `${fbData.username || 'Anonymous'}'s avatar`;
 
         const detailsDiv = document.createElement('div');
-        detailsDiv.classList.add('feedback-content');
+        detailsDiv.className = 'feedback-details';
 
         const headerDiv = document.createElement('div');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.marginBottom = '5px';
+        headerDiv.className = 'feedback-header';
 
-        const nameHeading = document.createElement('h3');
-        nameHeading.textContent = fbData.name;
-        headerDiv.appendChild(nameHeading);
-
-        if (fbData.isOwner) {
-            const ownerBadge = document.createElement('span');
-            ownerBadge.classList.add('owner-badge');
-            ownerBadge.textContent = 'You';
-            headerDiv.appendChild(ownerBadge);
-        }
-        
-        // Add timestamp
-        const timestampSpan = document.createElement('span');
-        let timestampText = '';
-        try {
-            timestampText = `(${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
-        } catch(e) {
-            timestampText = `(${new Date(fbData.timestamp).toLocaleString('en-US')})`;
-        }
-        timestampSpan.classList.add('timestamp');
-        timestampSpan.textContent = timestampText;
-        headerDiv.appendChild(timestampSpan);
-
-
-        detailsDiv.appendChild(headerDiv);
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'feedback-username';
+        nameSpan.textContent = fbData.username || 'Anonymous';
 
         const ratingDiv = document.createElement('div');
-        ratingDiv.classList.add('feedback-rating');
-        for (let i = 1; i <= 5; i++) {
+        ratingDiv.className = 'feedback-rating';
+        for (let i = 0; i < 5; i++) {
             const star = document.createElement('span');
-            star.classList.add('star');
-            star.textContent = '★';
-            if (i <= fbData.rating) {
-                star.classList.add('selected');
-            }
+            star.className = 'star-display ' + (i < fbData.rating ? 'selected' : '');
+            star.innerHTML = '&#9733;'; // Unicode star
             ratingDiv.appendChild(star);
         }
-        detailsDiv.appendChild(ratingDiv);
 
-        const feedbackText = document.createElement('p');
-        feedbackText.classList.add('feedback-text');
-        feedbackText.textContent = fbData.feedback;
-        detailsDiv.appendChild(feedbackText);
-
-        // Admin Actions (Edit/Delete)
-        if (userRole === 'admin') {
-            const adminActionsDiv = document.createElement('div');
-            adminActionsDiv.classList.add('admin-actions');
-
-            const editButton = document.createElement('button');
-            editButton.classList.add('edit-btn');
-            editButton.innerHTML = '<i class="fas fa-edit"></i>';
-            editButton.title = 'Edit Feedback';
-            editButton.addEventListener('click', () => openEditFeedbackModal(fbData));
-            adminActionsDiv.appendChild(editButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('delete-btn');
-            deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            deleteButton.title = 'Delete Feedback';
-            deleteButton.addEventListener('click', () => deleteFeedback(fbData._id));
-            adminActionsDiv.appendChild(deleteButton);
-
-            item.appendChild(adminActionsDiv);
+        const timestampSpan = document.createElement('span');
+        timestampSpan.className = 'feedback-timestamp';
+        let timestampText = '';
+        try {
+            timestampText = new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' });
+        } catch(e) {
+            timestampText = new Date(fbData.timestamp).toLocaleString('en-US');
         }
+        timestampSpan.textContent = timestampText;
+
+        headerDiv.append(nameSpan, ratingDiv, timestampSpan);
+
+        const contentP = document.createElement('p');
+        contentP.className = 'feedback-content';
+        contentP.textContent = fbData.feedbackText;
+
+        detailsDiv.append(headerDiv, contentP);
 
         // Admin Reply Section
-        const adminReplySection = document.createElement('div');
-        adminReplySection.classList.add('admin-reply-section');
-        detailsDiv.appendChild(adminReplySection);
-
-        // Display existing admin replies
-        if (fbData.adminReplies && fbData.adminReplies.length > 0) {
-            const latestReply = fbData.adminReplies[fbData.adminReplies.length - 1]; // Display only the latest reply
+        if (fbData.adminReply) {
+            const latestReply = fbData.adminReply; // Assuming adminReply is the latest reply or a single reply object
             const adminReplyDiv = document.createElement('div');
-            adminReplyDiv.classList.add('existing-admin-reply');
+            adminReplyDiv.className = 'admin-reply';
 
             const adminAvatar = document.createElement('img');
-            adminAvatar.classList.add('admin-reply-avatar');
-            adminAvatar.src = latestReply.adminAvatarUrl || 'https://api.dicebear.com/8.x/initials/svg?seed=Admin&backgroundType=gradientLinear'; // Default for admin
+            adminAvatar.className = 'admin-avatar';
+            adminAvatar.src = latestReply.adminAvatarUrl || getDiceBearAvatarUrl('Admin');
             adminAvatar.alt = 'Admin Avatar';
 
             const adminReplyContent = document.createElement('div');
-            adminReplyContent.classList.add('admin-reply-content');
-
+            adminReplyContent.className = 'admin-reply-content';
             let replyTimestampText = '';
             try {
                 replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
@@ -840,66 +797,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
             
             adminReplyDiv.append(adminAvatar, adminReplyContent);
-            adminReplySection.appendChild(adminReplyDiv);
-        }
-
-
-        // Admin Reply Form (only for admins)
-        if (userRole === 'admin') {
-            const replyForm = document.createElement('div');
-            replyForm.classList.add('admin-reply-form');
-
-            const replyTextarea = document.createElement('textarea');
-            replyTextarea.placeholder = 'Admin reply...';
-            replyTextarea.value = fbData.adminReplies && fbData.adminReplies.length > 0 ? fbData.adminReplies[fbData.adminReplies.length - 1].text : ''; // Pre-fill with last reply
-            
-            const replyButton = document.createElement('button');
-            replyButton.textContent = fbData.adminReplies && fbData.adminReplies.length > 0 ? 'Update Reply' : 'Reply';
-            replyButton.disabled = false; // Enable by default
-
-            replyButton.addEventListener('click', async () => {
-                const replyContent = replyTextarea.value.trim();
-                if (!replyContent) {
-                    showToast('Admin reply khali nahi ho sakta.', 'error');
-                    return;
-                }
-                replyButton.disabled = true;
-                showToast('Replying...', 'info');
-
-                try {
-                    const token = localStorage.getItem('token');
-                    const res = await fetch(`/api/feedbacks/${fbData._id}/reply`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` 
-                        },
-                        body: JSON.stringify({ reply: replyContent })
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                        showToast(data.message || 'Reply added!', 'success');
-                        fetchFeedbacks(); // Refresh to show new reply
-                    } else {
-                        showToast(data.message || 'Reply failed!', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error sending reply:', error);
-                    showToast('Reply bhejte waqt kuch dikkat aayi.', 'error');
-                } finally {
-                    replyButton.disabled = false;
-                }
-            });
-
-            replyForm.append(replyTextarea, replyButton);
-            adminReplySection.appendChild(replyForm);
+            detailsDiv.appendChild(adminReplyDiv);
         }
 
         item.append(avatarImg, detailsDiv); 
         // Check if the item already exists to prevent duplicates on re-fetch
-        if(feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`)) {
+        if(feedbackListContainer.querySelector(`[data-feedback-id=\"${fbData._id}\"]`)) {
             // If it exists, remove the old one and re-add the updated one
-            const oldItem = feedbackListContainer.querySelector(`[data-feedback-id="${fbData._id}"]`);
+            const oldItem = feedbackListContainer.querySelector(`[data-feedback-id=\"${fbData._id}\"]`);
             if (oldItem) oldItem.remove();
             feedbackListContainer.appendChild(item);
         } else {
@@ -907,93 +812,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Function to handle deleting a feedback
-    async function deleteFeedback(feedbackId) {
-        const confirmDelete = confirm('Kya aap is feedback ko delete karna chahte hain?');
-        if (!confirmDelete) return;
-
-        showToast('Deleting feedback...', 'info');
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`/api/feedbacks/${feedbackId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(data.message || 'Feedback deleted successfully!', 'success');
-                fetchFeedbacks(); // Refresh the list
-            } else {
-                showToast(data.message || 'Failed to delete feedback.', 'error');
-            }
-        } catch (error) {
-            console.error('Error deleting feedback:', error);
-            showToast('Feedback delete karne mein kuch dikkat aayi.', 'error');
-        }
-    }
-
-    // Function to open edit feedback modal (You'd need a separate modal for this)
-    // For now, let's just log and show a toast
-    async function openEditFeedbackModal(feedbackData) {
-        const newFeedbackText = prompt('Naya feedback daalein:', feedbackData.feedback);
-        if (newFeedbackText === null || newFeedbackText.trim() === '') {
-            showToast('Feedback khali nahi ho sakta ya cancel kiya gaya.', 'info');
-            return;
-        }
-
-        const newRating = prompt(`Nayi rating daalein (1-5): (Current: ${feedbackData.rating})`);
-        const parsedRating = parseInt(newRating);
-
-        if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
-            showToast('Invalid rating. Please enter a number between 1 and 5.', 'error');
-            return;
-        }
-
-        showToast('Updating feedback...', 'info');
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`/api/feedbacks/${feedbackData._id}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ feedback: newFeedbackText, rating: parsedRating })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(data.message || 'Feedback updated successfully!', 'success');
-                fetchFeedbacks(); // Refresh the list
-            } else {
-                showToast(data.message || 'Failed to update feedback.', 'error');
-            }
-        } catch (error) {
-            console.error('Error updating feedback:', error);
-            showToast('Feedback update karne mein kuch dikkat aayi.', 'error');
-        }
-    }
-
-
-    // Confetti Effect
-    function createConfetti() {
-        const colors = ['var(--secondary-color)', 'var(--primary-color)', 'var(--accent-color)'];
-        for (let i = 0; i < 50; i++) {
-            const confetti = document.createElement('div');
-            confetti.classList.add('confetti');
-            confetti.style.left = `${Math.random() * 100}vw`;
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDelay = `${Math.random() * 0.5}s`;
-            document.body.appendChild(confetti);
-
-            confetti.addEventListener('animationend', () => {
-                confetti.remove();
-            });
-        }
-    }
-
-
     // Initial calls on load
     updateUIAfterLogout(); // Set initial UI state (guest mode)
     checkLoginStatus(); // Check if user is already logged in via token
+    setupGoogleLogin(); // Initialize Google Login
 });
 // === END: JavaScript Code ===
