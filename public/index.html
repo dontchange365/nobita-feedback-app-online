@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
+ <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,12 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="style.css"> </head>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
         <i class="fas fa-lock"></i>
     </div>
-    <div id="user-avatar-trigger" class="corner-trigger" title="Profile Menu">
+    <div id="user-avatar-trigger" class="corner-trigger avatar-mode" title="Profile Menu">
         <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
     </div>
 
@@ -86,6 +86,42 @@
         </div>
     </div>
 
+    <div id="userProfileModal" class="auth-modal-overlay">
+        <div class="auth-modal-content profile-modal-content">
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2 id="profile-modal-title">Your Profile</h2>
+            <div id="profile-display-area" class="profile-display-area">
+                <img id="profile-avatar-display" class="profile-avatar-large" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
+                <p><strong>Name:</strong> <span id="profile-name-display"></span></p>
+                <p><strong>Email:</strong> <span id="profile-email-display"></span></p>
+                <button type="button" id="edit-profile-btn" class="action-button">Edit Profile</button>
+                <button type="button" id="close-profile-view-btn" class="action-button secondary-action-button">Close</button>
+            </div>
+            
+            <div id="profile-edit-area" class="profile-edit-area" style="display:none;">
+                <div class="input-group">
+                    <label for="edit-avatar-upload">Edit Avatar:</label>
+                    <div class="avatar-upload-section">
+                        <img id="current-edit-avatar-preview" class="profile-avatar-large" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Current Avatar">
+                        <input type="file" id="edit-avatar-upload" accept="image/*">
+                        <p class="upload-tip">Click to choose image or drag & drop</p>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="edit-profile-name">Edit Name:</label>
+                    <input type="text" id="edit-profile-name" placeholder="Your Name">
+                </div>
+                <div class="input-group">
+                    <label for="edit-profile-email">Email (Cannot be changed):</label>
+                    <input type="email" id="edit-profile-email" disabled>
+                </div>
+                <button type="button" id="save-profile-changes-btn" class="action-button">Save Changes</button>
+                <button type="button" id="cancel-profile-edit-btn" class="action-button secondary-action-button">Cancel</button>
+            </div>
+            <div class="loading-spinner" id="profile-loading-spinner" style="display:none;"></div>
+        </div>
+    </div>
+
     <div class="page-content-wrapper">
         <div class="owner-info"> 
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
@@ -119,23 +155,13 @@
             </form>
         </div>
 
-        <div id="feedback-list-container" class="main-container feedback-panel"> 
-            <div class="overall-summary">
-                <div class="label">Overall Rating</div>
-                <div class="avg-rating" id="overall-avg-rating">N/A</div>
-                <div class="avg-stars" id="overall-avg-stars">
-                    </div>
-                <div class="total-count" id="overall-total-count">0 Reviews</div>
-            </div>
-
-            <div class="recent-feedback">
-                <h3>Recent Feedback</h3>
-                <div id="feedback-items-container">
-                    </div>
-            </div>
-        </div>
+        <div id="feedback-list-container" class="main-container"> 
+             <div id="average-rating-display"></div>
+             <h2>Recent Feedbacks</h2>
+             </div>
     </div> 
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    <script src="script.js"></script> </body>
+    <script src="script.js"></script>
+</body>
 </html>
