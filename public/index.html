@@ -2428,17 +2428,14 @@
         }
 
         // Send data to backend (replace with your actual API endpoint)
-       fetch('/api/user/change-password', {
+     fetch('/api/user/change-password', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + localStorage.getItem('token')
   },
-  body: JSON.stringify({
-    currentPassword: currentPassword,
-    newPassword: newPassword
-  })
-})
+  
+
 .then(response => response.json().then(data => ({
   status: response.status,
   body: data
@@ -2456,7 +2453,7 @@
 })
 .catch(error => {
   alert('Password change failed: ' + error.message);
-})
+});
         // === END: JavaScript Code ===
     </script>
 </body>
