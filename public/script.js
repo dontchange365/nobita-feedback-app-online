@@ -657,4 +657,4 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Display selected image immediately
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    profileDisplayAvatar.s
+                    profileDisplayAvatar.src = e
