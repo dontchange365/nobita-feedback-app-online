@@ -1,7 +1,6 @@
-// script.js (COMPLETE, FIXED, WORKING)
-// IMPORTANT: Apna backend Render URL neeche API_BASE mein daalein!
-// Example: const API_BASE = "https://nobita-feedback-backend.onrender.com";
-const API_BASE = "https://nobita-feedback-backend.onrender.com"; // <-- CHANGE THIS!
+// script.js (COMPLETE, FIXED, WORKING FOR YOUR BACKEND)
+// IMPORTANT: API_BASE set to your backend Render URL below!
+const API_BASE = "https://nobita-feedback-app-online.onrender.com";
 
 document.addEventListener('DOMContentLoaded', async () => {
     // DOM elements
