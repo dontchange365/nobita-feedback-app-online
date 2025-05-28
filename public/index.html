@@ -1363,7 +1363,12 @@
     <script>
         // === START: JavaScript Code ===
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log("DOM Fully Loaded and Parsed");
+  console.log("DOM Fully Loaded and Parsed");
+
+  let currentUser = {};         // ✅ Fresh start
+  checkLoginStatus();           // ✅ Live from server
+
+  // baki tera existing code jaise hi rehne de
 
             // Assuming GOOGLE_CLIENT_ID is hardcoded here or loaded from a meta tag
             const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
