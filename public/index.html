@@ -1,1198 +1,1090 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔥 NOBI FEEDBACK APP 🔥</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap"
-    rel="stylesheet"
-  />
-  <style>
-    /* RESET */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #121212;
-      color: #eee;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nobita Feedback App</title>
+<style>
+  /* Reset & basics */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f3f6f9;
+    color: #222;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  a {
+    color: #2d89ff; text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Header */
+  header {
+    width: 100%; max-width: 900px;
+    padding: 10px 20px;
+    background: #1f2937;
+    color: white;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  header img.logo {
+    height: 40px;
+    cursor: pointer;
+  }
+
+  /* Profile dropdown */
+  .profile {
+    position: relative;
+    cursor: pointer;
+  }
+  .profile img {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .dropdown {
+    position: absolute;
+    top: 50px; right: 0;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    width: 180px;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .dropdown.active {
+    display: flex;
+  }
+  .dropdown button, .dropdown a {
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    color: #222;
+    cursor: pointer;
+    width: 100%;
+  }
+  .dropdown button:hover, .dropdown a:hover {
+    background: #e2e8f0;
+  }
+
+  /* Main container */
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+  }
+
+  /* Feedback form */
+  form#feedback-form {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  form#feedback-form h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .form-row {
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    transition: border-color 0.3s;
+    resize: vertical;
+    min-height: 80px;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: #2563eb;
+    outline: none;
+  }
+
+  /* Stars */
+  .stars {
+    display: flex;
+    gap: 6px;
+  }
+  .stars button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 26px;
+    color: #d1d5db;
+    transition: color 0.3s;
+  }
+  .stars button.selected,
+  .stars button:hover,
+  .stars button:hover ~ button {
+    color: #fbbf24;
+  }
+  .stars button.selected ~ button {
+    color: #d1d5db;
+  }
+
+  /* Submit btn */
+  button#submit-feedback {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 700;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button#submit-feedback:hover:not(:disabled) {
+    background-color: #1e40af;
+  }
+  button#submit-feedback:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Feedback list */
+  section#feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .feedback-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    padding: 16px;
+  }
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .feedback-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .feedback-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #111827;
+  }
+  .feedback-date {
+    margin-left: auto;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .feedback-rating {
+    color: #fbbf24;
+    font-size: 18px;
+  }
+  .feedback-text {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #374151;
+  }
+  .admin-reply {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #2563eb;
+    font-style: italic;
+    padding-left: 56px;
+    border-left: 3px solid #2563eb;
+  }
+
+  /* Login/signup popup modal */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.48);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-bg.active {
+    display: flex;
+  }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 24px 32px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .modal h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .modal form > * {
+    margin-bottom: 16px;
+  }
+  .modal label {
+    font-weight: 600;
+  }
+  .modal input[type="email"], .modal input[type="password"], .modal input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+  }
+  .modal button {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    font-weight: 700;
+    padding: 12px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .modal button:hover {
+    background-color: #1e40af;
+  }
+  .modal .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .modal .close-btn:hover {
+    color: #111827;
+  }
+  .modal .switch-auth {
+    font-size: 14px;
+    text-align: center;
+    color: #2563eb;
+    cursor: pointer;
+  }
+  .modal .switch-auth:hover {
+    text-decoration: underline;
+  }
+  .modal .google-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background: #4285F4;
+    color: white;
+    padding: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    border: none;
+  }
+  .modal .google-btn:hover {
+    background: #3367d6;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    z-index: 2000;
+  }
+  #toast.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Edit Profile Modal */
+  #edit-profile-modal label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  #edit-profile-modal input[type="file"] {
+    width: 100%;
+  }
+  #edit-profile-modal button.save {
+    margin-top: 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
     header {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
+      padding: 10px 14px;
     }
-    header img.logo {
-      height: 60px;
-      cursor: pointer;
-    }
-    header .profile-btn {
-      position: relative;
-      cursor: pointer;
-    }
-    header .profile-btn img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 2px solid #f0f0f0;
-      object-fit: cover;
-    }
-    header .profile-menu {
-      position: absolute;
-      top: 60px;
-      right: 0;
-      background: #222;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #000;
-      display: none;
-      flex-direction: column;
-      min-width: 180px;
-      z-index: 1000;
-    }
-    header .profile-menu.active {
-      display: flex;
-    }
-    header .profile-menu button {
-      background: none;
-      border: none;
-      color: #eee;
-      padding: 12px 20px;
-      text-align: left;
-      font-size: 14px;
-      cursor: pointer;
-      border-bottom: 1px solid #333;
-      transition: background 0.3s;
-    }
-    header .profile-menu button:last-child {
-      border-bottom: none;
-    }
-    header .profile-menu button:hover {
-      background: #444;
-    }
-
-    /* MAIN CONTAINER */
     main {
-      width: 100%;
-      max-width: 900px;
-      background: #222;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #000;
-    }
-
-    /* LOGIN / REGISTER FORMS */
-    form {
-      max-width: 400px;
-      margin: 0 auto 20px;
-      background: #111;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #000;
-    }
-    form h2 {
-      margin-bottom: 15px;
-      text-align: center;
-      font-weight: 700;
-      letter-spacing: 1.2px;
-      color: #ff3f3f;
-    }
-    form label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: #bbb;
-    }
-    form input[type='text'],
-    form input[type='email'],
-    form input[type='password'] {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      background: #333;
-      color: #eee;
-      font-size: 15px;
-    }
-    form button {
-      width: 100%;
       padding: 12px;
-      background: #ff3f3f;
-      border: none;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 16px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
     }
-    form button:hover {
-      background: #e03838;
+    form#feedback-form {
+      padding: 16px;
     }
-    .toggle-link {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
-      cursor: pointer;
-      color: #aaa;
-      user-select: none;
+    .modal {
+      width: 90vw;
+      padding: 20px 24px;
     }
-    .toggle-link:hover {
-      color: #fff;
-    }
-    .google-btn {
-      background: #4285f4;
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-weight: 700;
-    }
-    .google-btn:hover {
-      background: #3a78d8;
-    }
-
-    /* FEEDBACK SECTION */
-    #feedback-section {
-      margin-top: 30px;
-    }
-    #feedback-section h3 {
-      color: #ff3f3f;
-      margin-bottom: 15px;
-      text-align: center;
-      letter-spacing: 1.5px;
-    }
-    #feedback-form textarea {
-      width: 100%;
-      min-height: 80px;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #333;
-      color: #eee;
-      font-size: 14px;
-      resize: vertical;
-      margin-bottom: 12px;
-    }
-    #feedback-form button {
-      padding: 10px 20px;
-      background: #ff3f3f;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #feedback-form button:hover {
-      background: #e03838;
-    }
-
-    /* Feedback list */
-    #feedback-list {
-      margin-top: 25px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .feedback-card {
-      background: #111;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #000;
-      display: flex;
-      gap: 15px;
-      align-items: flex-start;
-    }
-    .feedback-avatar {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ff3f3f;
-    }
-    .feedback-content {
-      flex: 1;
-    }
-    .feedback-user {
-      font-weight: 700;
-      color: #ff3f3f;
-      margin-bottom: 6px;
-    }
-    .feedback-text {
-      font-size: 14px;
-      color: #ddd;
-      margin-bottom: 8px;
-      white-space: pre-wrap;
-    }
-    .feedback-edited {
-      font-size: 12px;
-      color: #999;
-      font-style: italic;
-      margin-bottom: 8px;
-    }
-    .feedback-replies {
-      margin-top: 8px;
-      background: #222;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: #ccc;
-    }
-    .feedback-reply {
-      margin-bottom: 6px;
-    }
-
-    /* Buttons */
-    .btn-small {
-      padding: 5px 10px;
-      font-size: 13px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      font-weight: 700;
-      color: white;
-      background: #ff3f3f;
-      transition: background 0.3s;
-      margin-right: 8px;
-    }
-    .btn-small:hover {
-      background: #e03838;
-    }
-
-    /* Profile Page */
-    #profile-page {
-      max-width: 500px;
-      margin: 0 auto;
-      background: #111;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #000;
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-    }
-    #profile-page h3 {
-      color: #ff3f3f;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    #profile-avatar-preview {
-      display: block;
-      margin: 0 auto 12px;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #ff3f3f;
-      cursor: pointer;
-    }
-    #avatar-upload-input {
-      display: none;
-    }
-    #profile-page label {
-      cursor: pointer;
-      display: block;
-      text-align: center;
-      color: #aaa;
-      font-size: 14px;
-      margin-bottom: 8px;
-      user-select: none;
-    }
-    #profile-page button {
-      background: #ff3f3f;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      width: 100%;
-    }
-    #profile-page button:hover {
-      background: #e03838;
-    }
-
-    /* Admin Panel */
-    #admin-panel {
-      display: none;
-      max-width: 900px;
-      background: #111;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 25px #000;
-      margin-top: 30px;
-      color: #eee;
-    }
-    #admin-panel h3 {
-      color: #ff3f3f;
-      margin-bottom: 15px;
-      text-align: center;
-      letter-spacing: 1.2px;
-    }
-    #admin-login-form {
-      max-width: 350px;
-      margin: 0 auto 30px;
-    }
-    #admin-login-form input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 12px;
-      background: #333;
-      color: #eee;
-      font-size: 15px;
-    }
-    #admin-login-form button {
-      width: 100%;
-      padding: 12px;
-      background: #ff3f3f;
-      border: none;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-      color: white;
-      transition: background 0.3s;
-    }
-    #admin-login-form button:hover {
-      background: #e03838;
-    }
-    #admin-users-list,
-    #admin-feedbacks-list {
-      margin-top: 20px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .admin-user,
-    .admin-feedback {
-      background: #222;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-    }
-    .admin-user-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .admin-user-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 2px solid #ff3f3f;
-      object-fit: cover;
-    }
-    .admin-user-info {
-      flex: 1;
-      color: #eee;
-    }
-    .admin-feedback-user {
-      font-weight: 700;
-      color: #ff3f3f;
-      margin-bottom: 6px;
-    }
-    .admin-feedback-text {
-      font-size: 14px;
-      margin-bottom: 8px;
-      white-space: pre-wrap;
-    }
-    .admin-reply-input {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      background: #333;
-      color: #eee;
-      font-size: 14px;
-      margin-top: 8px;
-    }
-    .admin-btn-reply {
-      margin-top: 6px;
-      padding: 6px 14px;
-      background: #ff3f3f;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: background 0.3s;
-    }
-    .admin-btn-reply:hover {
-      background: #e03838;
-    }
-
-    /* Popup Alert */
-    #popup-alert {
-      position: fixed;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ff3f3f;
-      color: white;
-      padding: 14px 25px;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 14px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s;
-      z-index: 9999;
-      box-shadow: 0 0 10px #ff3f3faa;
-    }
-    #popup-alert.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
-  <header>
-    <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Logo" class="logo" />
-    <div class="profile-btn" id="profile-btn" title="Profile Menu" tabindex="0">
-      <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Profile" id="profile-avatar" />
-      <div class="profile-menu" id="profile-menu">
-        <button id="view-profile-btn">View Profile</button>
-        <button id="logout-btn">Logout</button>
+
+<header>
+  <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Logo" class="logo" title="Nobita Feedback" />
+  <div id="auth-section">
+    <!-- If logged out, show Login button -->
+    <button id="login-btn" style="background:#2563eb;color:white;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;">Login</button>
+  </div>
+</header>
+
+<main>
+  <!-- Feedback form -->
+  <form id="feedback-form" autocomplete="off">
+    <h2>Give Your Feedback</h2>
+
+    <div class="form-row">
+      <label for="name-input">Name</label>
+      <input type="text" id="name-input" name="name" placeholder="Your name" required />
+    </div>
+
+    <div class="form-row">
+      <label>Rating</label>
+      <div class="stars" id="star-rating">
+        <button type="button" data-value="1" aria-label="1 star">&#9733;</button>
+        <button type="button" data-value="2" aria-label="2 stars">&#9733;</button>
+        <button type="button" data-value="3" aria-label="3 stars">&#9733;</button>
+        <button type="button" data-value="4" aria-label="4 stars">&#9733;</button>
+        <button type="button" data-value="5" aria-label="5 stars">&#9733;</button>
       </div>
     </div>
-  </header>
 
-  <main>
-    <!-- AUTH FORMS -->
-    <section id="auth-section">
-      <form id="login-form">
-        <h2>Login</h2>
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" required />
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" required />
-        <button type="submit">Login</button>
-        <button type="button" class="google-btn" id="google-login-btn">
-          <img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="Google" /> Login with Google
-        </button>
-        <div class="toggle-link" id="show-register">Don't have an account? Register</div>
-        <div class="toggle-link" id="show-forgot-password">Forgot password?</div>
-      </form>
+    <div class="form-row">
+      <label for="feedback-text">Feedback (max 500 chars)</label>
+      <textarea id="feedback-text" name="feedback" maxlength="500" placeholder="Write your feedback here..." required></textarea>
+      <small id="char-count" style="float:right;color:#6b7280;font-size:12px;">0 / 500</small>
+    </div>
 
-      <form id="register-form" style="display:none;">
-        <h2>Register</h2>
-        <label for="register-name">Name</label>
-        <input type="text" id="register-name" required />
-        <label for="register-email">Email</label>
-        <input type="email" id="register-email" required />
-        <label for="register-password">Password</label>
-        <input type="password" id="register-password" required />
-        <button type="submit">Register</button>
-        <div class="toggle-link" id="show-login">Already have account? Login</div>
-      </form>
+    <button id="submit-feedback" type="submit" disabled>Submit Feedback</button>
+    <span id="form-loading" style="display:none;" class="spinner"></span>
+  </form>
 
-      <form id="forgot-password-form" style="display:none;">
-        <h2>Reset Password</h2>
-        <label for="forgot-email">Enter your registered Email</label>
-        <input type="email" id="forgot-email" required />
-        <button type="submit">Send Reset Link</button>
-        <div class="toggle-link" id="show-login-from-forgot">Back to Login</div>
-      </form>
-    </section>
+  <!-- Feedback list -->
+  <section id="feedback-list">
+    <h2>Recent Feedback</h2>
+    <div id="feedback-cards-container"></div>
+  </section>
+</main>
 
-    <!-- PROFILE PAGE -->
-    <section id="profile-page" tabindex="0">
-      <h3>Your Profile</h3>
-      <img
-        src="https://i.ibb.co/FsSs4SG/creator-avatar.png"
-        alt="Your Avatar"
-        id="profile-avatar-preview"
-        title="Click to change avatar"
-        tabindex="0"
-      />
-      <input type="file" id="avatar-upload-input" accept="image/*" hidden />
-      <label for="avatar-upload-input">Click avatar to upload new one</label>
-      <button id="profile-back-btn">Back to Feedback</button>
-    </section>
+<!-- Profile dropdown -->
+<div class="profile" id="profile-section" style="display:none;">
+  <img src="" alt="User avatar" id="profile-avatar" />
+  <div class="dropdown" id="profile-dropdown">
+    <a href="#" id="view-profile-btn">View Profile</a>
+    <button id="logout-btn">Logout</button>
+  </div>
+</div>
 
-    <!-- FEEDBACK SECTION -->
-    <section id="feedback-section" style="display:none;">
-      <h3>Give your Feedback</h3>
-      <form id="feedback-form">
-        <textarea id="feedback-text" placeholder="Type your feedback here..." required></textarea>
-        <button type="submit">Submit Feedback</button>
-      </form>
-      <div id="feedback-list"></div>
-    </section>
+<!-- Login/signup modal -->
+<div class="modal-bg" id="login-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+    <button class="close-btn" aria-label="Close login modal" id="login-modal-close">&times;</button>
+    <h3 id="login-modal-title">Login to Nobita Feedback</h3>
 
-    <!-- ADMIN PANEL -->
-    <section id="admin-panel">
-      <h3>Admin Panel</h3>
-      <form id="admin-login-form">
-        <input type="text" id="admin-username" placeholder="Admin Username" required />
-        <input type="password" id="admin-password" placeholder="Admin Password" required />
-        <button type="submit">Login as Admin</button>
-      </form>
-      <div id="admin-content" style="display:none;">
-        <h4>Users</h4>
-        <div id="admin-users-list"></div>
-        <h4>Feedbacks</h4>
-        <div id="admin-feedbacks-list"></div>
-      </div>
-    </section>
-  </main>
+    <form id="login-form" autocomplete="off" style="display:block;">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required autocomplete="email" />
 
-  <div id="popup-alert"></div>
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" required autocomplete="current-password" />
 
-  <script>
-    const API_BASE = 'https://nobita-feedback-app-online.onrender.com/api';
+      <button type="submit" id="login-submit-btn">Login</button>
+      <p style="text-align:center; margin:8px 0 0 0;">
+        Don't have an account? <span id="switch-to-signup" class="switch-auth">Sign up</span>
+      </p>
+      <p style="text-align:center; margin:4px 0 0 0;">
+        <button type="button" id="forgot-password-btn" style="background:none;border:none;color:#2563eb;cursor:pointer;font-size:14px;">Forgot Password?</button>
+      </p>
+    </form>
 
-    // DOM elements
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const forgotForm = document.getElementById('forgot-password-form');
-    const showRegisterLink = document.getElementById('show-register');
-    const showLoginLink = document.getElementById('show-login');
-    const showForgotPasswordLink = document.getElementById('show-forgot-password');
-    const showLoginFromForgot = document.getElementById('show-login-from-forgot');
+    <form id="signup-form" autocomplete="off" style="display:none;">
+      <label for="signup-name">Name</label>
+      <input type="text" id="signup-name" required autocomplete="name" />
 
-    const authSection = document.getElementById('auth-section');
-    const feedbackSection = document.getElementById('feedback-section');
-    const profilePage = document.getElementById('profile-page');
-    const profileBackBtn = document.getElementById('profile-back-btn');
+      <label for="signup-email">Email</label>
+      <input type="email" id="signup-email" required autocomplete="email" />
 
-    const profileBtn = document.getElementById('profile-btn');
-    const profileMenu = document.getElementById('profile-menu');
-    const profileAvatar = document.getElementById('profile-avatar');
+      <label for="signup-password">Password</label>
+      <input type="password" id="signup-password" required autocomplete="new-password" />
 
-    const viewProfileBtn = document.getElementById('view-profile-btn');
-    const logoutBtn = document.getElementById('logout-btn');
+      <button type="submit" id="signup-submit-btn">Sign Up</button>
+      <p style="text-align:center; margin:8px 0 0 0;">
+        Already have an account? <span id="switch-to-login" class="switch-auth">Login</span>
+      </p>
+    </form>
 
-    const feedbackForm = document.getElementById('feedback-form');
-    const feedbackText = document.getElementById('feedback-text');
-    const feedbackList = document.getElementById('feedback-list');
+    <div style="margin-top: 12px;">
+      <button class="google-btn" id="google-login-btn">
+        <svg style="height:18px; width:18px;vertical-align:middle;" viewBox="0 0 533.5 544.3" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#4285F4" d="M533.5 278.4c0-17.7-1.6-34.6-4.6-50.9H272.1v96.5h146.6c-6.3 34.1-25.6 62.9-54.7 82.3v68h88.5c51.9-47.9 81.1-118.3 81.1-195.9z"/>
+          <path fill="#34A853" d="M272.1 544.3c73.4 0 135-24.3 180-65.9l-88.5-68c-24.7 16.5-56.3 26.3-91.5 26.3-70 0-129.3-47.3-150.6-110.9H31v69.9c45.4 89.1 139.1 148.6 241.1 148.6z"/>
+          <path fill="#FBBC04" d="M121.5 324.8c-10.2-30.9-10.2-64.3 0-95.2V159.7H31c-44.3 86.2-44.3 189.6 0 275.8l90.5-69.9z"/>
+          <path fill="#EA4335" d="M272.1 107.7c38.4 0 73.2 13.2 100.6 39.1l75.4-75.4C398.9 24.3 337.3 0 272.1 0 170.1 0 76.4 59.5 31 148.6l90.5 69.9c21.3-63.6 80.6-110.8 150.6-110.8z"/>
+        </svg>
+        &nbsp; Login with Google
+      </button>
+    </div>
+  </div>
+</div>
 
-    const avatarUploadInput = document.getElementById('avatar-upload-input');
-    const profileAvatarPreview = document.getElementById('profile-avatar-preview');
+<!-- View Profile Modal -->
+<div class="modal-bg" id="profile-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+    <button class="close-btn" id="profile-modal-close">&times;</button>
+    <h3 id="profile-modal-title">Your Profile</h3>
 
-    const adminPanel = document.getElementById('admin-panel');
-    const adminLoginForm = document.getElementById('admin-login-form');
-    const adminContent = document.getElementById('admin-content');
-    const adminUsersList = document.getElementById('admin-users-list');
-    const adminFeedbacksList = document.getElementById('admin-feedbacks-list');
+    <div style="text-align:center; margin-bottom:16px;">
+      <img id="profile-modal-avatar" src="" alt="User Avatar" style="width:100px; height:100px; border-radius:50%; object-fit:cover;"/>
+      <h4 id="profile-modal-name" style="margin-top:12px; margin-bottom:0;"></h4>
+      <p id="profile-modal-email" style="color:#6b7280; margin-top:4px; margin-bottom:12px;"></p>
+    </div>
 
-    const popupAlert = document.getElementById('popup-alert');
+    <button id="edit-profile-btn" style="width:100%; padding:12px 0; background:#2563eb; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer;">Edit Profile</button>
+  </div>
+</div>
 
-    let authToken = null;
-    let currentUser = null;
-    let isAdminLoggedIn = false;
-    let adminAuthHeader = null;
+<!-- Edit Profile Modal -->
+<div class="modal-bg" id="edit-profile-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-profile-modal-title">
+    <button class="close-btn" id="edit-profile-modal-close">&times;</button>
+    <h3 id="edit-profile-modal-title">Edit Profile</h3>
 
-    // Utility: Show popup alert
-    function showPopup(msg) {
-      popupAlert.textContent = msg;
-      popupAlert.classList.add('show');
-      setTimeout(() => popupAlert.classList.remove('show'), 3500);
-    }
+    <form id="edit-profile-form" enctype="multipart/form-data">
+      <label for="avatar-upload">Upload Avatar</label>
+      <input type="file" id="avatar-upload" accept="image/*" />
+      <small style="color:#6b7280;">Max file size 2MB</small>
 
-    // Save auth token and user info
-    function saveAuthData(token, user) {
-      authToken = token;
-      currentUser = user;
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      updateUIAfterLogin();
-    }
+      <button type="submit" class="save" disabled>Save</button>
+      <span id="edit-avatar-loading" style="display:none;" class="spinner"></span>
+    </form>
+  </div>
+</div>
 
-    // Clear auth data
-    function clearAuthData() {
-      authToken = null;
-      currentUser = null;
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('currentUser');
-      updateUIAfterLogout();
-    }
+<!-- Toast message -->
+<div id="toast"></div>
 
-    // Update UI after login
-    function updateUIAfterLogin() {
-      authSection.style.display = 'none';
-      feedbackSection.style.display = 'block';
-      profilePage.style.display = 'none';
-      adminPanel.style.display = 'none';
+<script>
+  "use strict";
 
-      profileAvatar.src = currentUser.avatarUrl || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+  const API_BASE_URL = 'https://nobita-feedback-app-online.onrender.com';
 
-      profileBtn.style.display = 'block';
-      fetchFeedbacks();
-    }
+  // DOM refs
+  const loginBtn = document.getElementById('login-btn');
+  const authSection = document.getElementById('auth-section');
+  const profileSection = document.getElementById('profile-section');
+  const profileAvatar = document.getElementById('profile-avatar');
+  const profileDropdown = document.getElementById('profile-dropdown');
+  const viewProfileBtn = document.getElementById('view-profile-btn');
+  const logoutBtn = document.getElementById('logout-btn');
 
-    // Update UI after logout
-    function updateUIAfterLogout() {
-      authSection.style.display = 'block';
-      feedbackSection.style.display = 'none';
-      profilePage.style.display = 'none';
-      profileBtn.style.display = 'none';
-      adminPanel.style.display = 'none';
+  const loginModal = document.getElementById('login-modal');
+  const loginModalClose = document.getElementById('login-modal-close');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const switchToSignup = document.getElementById('switch-to-signup');
+  const switchToLogin = document.getElementById('switch-to-login');
+  const googleLoginBtn = document.getElementById('google-login-btn');
+  const forgotPasswordBtn = document.getElementById('forgot-password-btn');
 
-      isAdminLoggedIn = false;
-      adminAuthHeader = null;
-      adminContent.style.display = 'none';
-      adminLoginForm.style.display = 'block';
+  const feedbackForm = document.getElementById('feedback-form');
+  const nameInput = document.getElementById('name-input');
+  const feedbackText = document.getElementById('feedback-text');
+  const charCount = document.getElementById('char-count');
+  const starRating = document.getElementById('star-rating');
+  const submitFeedbackBtn = document.getElementById('submit-feedback');
+  const formLoading = document.getElementById('form-loading');
 
-      profileAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
-    }
+  const feedbackCardsContainer = document.getElementById('feedback-cards-container');
 
-    // Load from localStorage on page load
-    function loadAuthFromStorage() {
-      const token = localStorage.getItem('authToken');
-      const user = JSON.parse(localStorage.getItem('currentUser'));
-      if(token && user) {
-        authToken = token;
-        currentUser = user;
-        updateUIAfterLogin();
-      } else {
-        updateUIAfterLogout();
+  const profileModal = document.getElementById('profile-modal');
+  const profileModalClose = document.getElementById('profile-modal-close');
+  const profileModalAvatar = document.getElementById('profile-modal-avatar');
+  const profileModalName = document.getElementById('profile-modal-name');
+  const profileModalEmail = document.getElementById('profile-modal-email');
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+
+  const editProfileModal = document.getElementById('edit-profile-modal');
+  const editProfileModalClose = document.getElementById('edit-profile-modal-close');
+  const editProfileForm = document.getElementById('edit-profile-form');
+  const avatarUploadInput = document.getElementById('avatar-upload');
+  const editAvatarLoading = document.getElementById('edit-avatar-loading');
+  const editProfileSaveBtn = editProfileForm.querySelector('button.save');
+
+  const toast = document.getElementById('toast');
+
+  // State
+  let currentUser = null;
+  let currentToken = null;
+  let currentRating = 0;
+
+  // Utils
+  function showToast(message, duration = 3500) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+  }
+
+  function setLoading(button, loading) {
+    if (loading) {
+      button.disabled = true;
+      if (!button.querySelector('.spinner')) {
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner';
+        button.appendChild(spinner);
       }
+    } else {
+      button.disabled = false;
+      const spinner = button.querySelector('.spinner');
+      if (spinner) spinner.remove();
     }
+  }
 
-    // Toggle profile menu
-    profileBtn.addEventListener('click', () => {
-      profileMenu.classList.toggle('active');
+  function formatDate(dateString) {
+    const d = new Date(dateString);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Authentication
+
+  function saveUser(user, token) {
+    currentUser = user;
+    currentToken = token;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    updateUIOnLogin();
+  }
+
+  function logoutUser() {
+    currentUser = null;
+    currentToken = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    updateUIOnLogout();
+  }
+
+  function updateUIOnLogin() {
+    authSection.style.display = 'none';
+    profileSection.style.display = 'flex';
+    profileAvatar.src = currentUser.avatar || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+  }
+
+  function updateUIOnLogout() {
+    authSection.style.display = 'block';
+    profileSection.style.display = 'none';
+    profileDropdown.classList.remove('active');
+    nameInput.value = '';
+    nameInput.disabled = false;
+  }
+
+  async function fetchCurrentUser() {
+    try {
+      if (!currentToken) return logoutUser();
+
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        headers: { Authorization: 'Bearer ' + currentToken }
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      const user = await res.json();
+      saveUser(user, currentToken);
+    } catch {
+      logoutUser();
+    }
+  }
+
+  // Login modal controls
+
+  function openLoginModal() {
+    loginModal.classList.add('active');
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  }
+  function closeLoginModal() {
+    loginModal.classList.remove('active');
+    loginForm.reset();
+    signupForm.reset();
+  }
+
+  // Profile dropdown toggle
+
+  profileAvatar?.addEventListener('click', e => {
+    e.stopPropagation();
+    profileDropdown.classList.toggle('active');
+  });
+
+  document.addEventListener('click', () => {
+    profileDropdown.classList.remove('active');
+  });
+
+  // Star rating handlers
+
+  function updateStarSelection(rating) {
+    currentRating = rating;
+    Array.from(starRating.children).forEach(button => {
+      const val = Number(button.dataset.value);
+      if (val <= rating) button.classList.add('selected');
+      else button.classList.remove('selected');
     });
-    document.addEventListener('click', (e) => {
-      if (!profileBtn.contains(e.target)) {
-        profileMenu.classList.remove('active');
-      }
-    });
+    validateFeedbackForm();
+  }
 
-    // Show register form
-    showRegisterLink.addEventListener('click', () => {
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'block';
-      forgotForm.style.display = 'none';
-    });
+  starRating.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON') {
+      const val = Number(e.target.dataset.value);
+      updateStarSelection(val);
+    }
+  });
 
-    // Show login form from register
-    showLoginLink.addEventListener('click', () => {
-      loginForm.style.display = 'block';
-      registerForm.style.display = 'none';
-      forgotForm.style.display = 'none';
-    });
+  // Feedback textarea char count & validation
 
-    // Show forgot password form
-    showForgotPasswordLink.addEventListener('click', () => {
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'none';
-      forgotForm.style.display = 'block';
-    });
+  feedbackText.addEventListener('input', () => {
+    const length = feedbackText.value.length;
+    charCount.textContent = `${length} / 500`;
+    validateFeedbackForm();
+  });
 
-    // Show login from forgot
-    showLoginFromForgot.addEventListener('click', () => {
-      loginForm.style.display = 'block';
-      registerForm.style.display = 'none';
-      forgotForm.style.display = 'none';
-    });
+  // Validate feedback form: rating > 0, feedback text not empty, name not empty
 
-    // Register user
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('register-name').value.trim();
-      const email = document.getElementById('register-email').value.trim();
-      const password = document.getElementById('register-password').value;
+  function validateFeedbackForm() {
+    const isValid = currentRating > 0 && feedbackText.value.trim().length > 0 && nameInput.value.trim().length > 0;
+    submitFeedbackBtn.disabled = !isValid;
+  }
 
-      try {
-        const res = await fetch(`${API_BASE}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
-        });
-        const data = await res.json();
-        if(res.ok) {
-          showPopup('Registration successful! Login now.');
-          showLoginLink.click();
-        } else {
-          showPopup(data.message || 'Registration failed');
-        }
-      } catch (err) {
-        showPopup('Server error during registration');
-      }
-    });
+  // Fill name input if logged in
 
-    // Login user
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
+  function fillNameInput() {
+    if (currentUser) {
+      nameInput.value = currentUser.name || '';
+      nameInput.disabled = true;
+    } else {
+      nameInput.value = '';
+      nameInput.disabled = false;
+    }
+    validateFeedbackForm();
+  }
 
-      try {
-        const res = await fetch(`${API_BASE}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if(res.ok) {
-          saveAuthData(data.token, data.user);
-          showPopup(`Welcome back, ${data.user.name}!`);
-          loginForm.reset();
-        } else {
-          showPopup(data.message || 'Login failed');
-        }
-      } catch (err) {
-        showPopup('Server error during login');
-      }
-    });
+  // Fetch and display feedback list
 
-    // Google login button
-    const googleLoginBtn = document.getElementById('google-login-btn');
-    googleLoginBtn.addEventListener('click', () => {
-      // Google One Tap or popup integration can be added here
-      // For simplicity, alert user to implement later
-      alert('Google login integration kaam me nahi dala, backend ready hai, frontend integration baad me karna');
-    });
+  async function loadFeedbacks() {
+    feedbackCardsContainer.innerHTML = '<p>Loading feedback...</p>';
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback`);
+      if (!res.ok) throw new Error('Failed to load feedback');
+      const data = await res.json();
+      const feedbacks = data.feedbacks || [];
 
-    // Forgot password form submit
-    forgotForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('forgot-email').value.trim();
-
-      try {
-        const res = await fetch(`${API_BASE}/forgot-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        const data = await res.json();
-        if(res.ok) {
-          showPopup('Password reset link sent to your email!');
-          forgotForm.reset();
-          showLoginFromForgot.click();
-        } else {
-          showPopup(data.message || 'Error sending reset link');
-        }
-      } catch (err) {
-        showPopup('Server error during password reset');
-      }
-    });
-
-    // Logout
-    logoutBtn.addEventListener('click', () => {
-      clearAuthData();
-      showPopup('Logged out successfully');
-    });
-
-    // View profile button
-    viewProfileBtn.addEventListener('click', () => {
-      authSection.style.display = 'none';
-      feedbackSection.style.display = 'none';
-      profilePage.style.display = 'flex';
-      profileMenu.classList.remove('active');
-
-      profileAvatarPreview.src = currentUser.avatarUrl || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
-    });
-
-    // Back to feedback from profile
-    profileBackBtn.addEventListener('click', () => {
-      profilePage.style.display = 'none';
-      feedbackSection.style.display = 'block';
-    });
-
-    // Avatar upload input change
-    avatarUploadInput.addEventListener('change', async () => {
-      const file = avatarUploadInput.files[0];
-      if(!file) return;
-
-      const formData = new FormData();
-      formData.append('avatar', file);
-
-      try {
-        const res = await fetch(`${API_BASE}/profile/avatar`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${authToken}` },
-          body: formData,
-        });
-        const data = await res.json();
-        if(res.ok) {
-          profileAvatarPreview.src = data.avatarUrl;
-          profileAvatar.src = data.avatarUrl;
-          currentUser.avatarUrl = data.avatarUrl;
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          showPopup('Avatar updated successfully!');
-        } else {
-          showPopup(data.message || 'Avatar upload failed');
-        }
-      } catch(err) {
-        showPopup('Server error uploading avatar');
-      }
-    });
-
-    // Click avatar preview to open file selector
-    profileAvatarPreview.addEventListener('click', () => {
-      avatarUploadInput.click();
-    });
-
-    // Submit feedback
-    feedbackForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = feedbackText.value.trim();
-      if(!text) {
-        showPopup('Feedback likh bhenchod!');
+      if (!feedbacks.length) {
+        feedbackCardsContainer.innerHTML = '<p>No feedback yet. Be the first!</p>';
         return;
       }
-      try {
-        const res = await fetch(`${API_BASE}/feedback`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ text }),
-        });
-        const data = await res.json();
-        if(res.ok) {
-          showPopup('Feedback submit ho gaya!');
-          feedbackText.value = '';
-          fetchFeedbacks();
-        } else {
-          showPopup(data.message || 'Feedback submit failed');
-        }
-      } catch(err) {
-        showPopup('Server error submitting feedback');
-      }
-    });
 
-    // Fetch feedbacks and render
-    async function fetchFeedbacks() {
-      try {
-        const res = await fetch(`${API_BASE}/feedback`, {
-          headers: { Authorization: `Bearer ${authToken}` }
-        });
-        const data = await res.json();
-        if(res.ok) {
-          renderFeedbacks(data);
-        } else {
-          showPopup('Failed to load feedbacks');
-        }
-      } catch(err) {
-        showPopup('Server error loading feedbacks');
-      }
-    }
-
-    // Render feedbacks list
-    function renderFeedbacks(feedbacks) {
-      feedbackList.innerHTML = '';
-      if(feedbacks.length === 0) {
-        feedbackList.innerHTML = '<p>No feedback yet. Be first!</p>';
-        return;
-      }
+      feedbackCardsContainer.innerHTML = '';
       feedbacks.forEach(fb => {
-        const card = document.createElement('div');
+        const card = document.createElement('article');
         card.className = 'feedback-card';
 
-        const avatar = document.createElement('img');
-        avatar.src = currentUser.avatarUrl || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
-        avatar.className = 'feedback-avatar';
-
-        const content = document.createElement('div');
-        content.className = 'feedback-content';
-
-        const userName = document.createElement('div');
-        userName.className = 'feedback-user';
-        userName.textContent = currentUser.name;
-
-        const originalText = document.createElement('div');
-        originalText.className = 'feedback-text';
-        originalText.textContent = `Original: ${fb.originalText}`;
-
-        const editedText = document.createElement('div');
-        editedText.className = 'feedback-edited';
-        editedText.textContent = fb.editedText !== fb.originalText ? `Edited: ${fb.editedText}` : '';
-
-        // Edit & Delete buttons
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn-small';
-        editBtn.textContent = 'Edit';
-        editBtn.onclick = () => editFeedback(fb);
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn-small';
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteFeedback(fb._id);
-
-        content.appendChild(userName);
-        content.appendChild(originalText);
-        if(editedText.textContent) content.appendChild(editedText);
-        content.appendChild(editBtn);
-        content.appendChild(deleteBtn);
-
-        card.appendChild(avatar);
-        card.appendChild(content);
-
-        feedbackList.appendChild(card);
-      });
-    }
-
-    // Edit feedback popup prompt
-    async function editFeedback(feedback) {
-      const newText = prompt('Naya feedback likh:', feedback.editedText);
-      if(newText && newText.trim() && newText.trim() !== feedback.editedText) {
-        try {
-          const res = await fetch(`${API_BASE}/feedback/${feedback._id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ editedText: newText.trim() }),
-          });
-          if(res.ok) {
-            showPopup('Feedback update ho gaya!');
-            fetchFeedbacks();
-          } else {
-            showPopup('Update failed');
-          }
-        } catch(err) {
-          showPopup('Server error updating feedback');
-        }
-      }
-    }
-
-    // Delete feedback confirmation
-    async function deleteFeedback(id) {
-      if(confirm('Delete karna hai feedback? Soch le, baad me nahi milega!')) {
-        try {
-          const res = await fetch(`${API_BASE}/feedback/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${authToken}` }
-          });
-          if(res.ok) {
-            showPopup('Feedback delete ho gaya!');
-            fetchFeedbacks();
-          } else {
-            showPopup('Delete failed');
-          }
-        } catch(err) {
-          showPopup('Server error deleting feedback');
-        }
-      }
-    }
-
-    // Admin login
-    adminLoginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('admin-username').value.trim();
-      const password = document.getElementById('admin-password').value.trim();
-
-      if(!username || !password) {
-        showPopup('Admin username/password de bhai!');
-        return;
-      }
-      // Prepare Basic Auth header
-      adminAuthHeader = 'Basic ' + btoa(username + ':' + password);
-
-      // Try fetching users to test auth
-      try {
-        const res = await fetch(`${API_BASE}/admin/users`, {
-          headers: { Authorization: adminAuthHeader }
-        });
-        if(res.ok) {
-          isAdminLoggedIn = true;
-          adminLoginForm.style.display = 'none';
-          adminContent.style.display = 'block';
-          fetchAdminUsers();
-          fetchAdminFeedbacks();
-          showPopup('Admin login successful!');
-        } else {
-          showPopup('Admin login failed');
-        }
-      } catch(err) {
-        showPopup('Server error during admin login');
-      }
-    });
-
-    // Fetch admin users
-    async function fetchAdminUsers() {
-      try {
-        const res = await fetch(`${API_BASE}/admin/users`, {
-          headers: { Authorization: adminAuthHeader }
-        });
-        const data = await res.json();
-        if(res.ok) {
-          renderAdminUsers(data);
-        }
-      } catch(err) {
-        showPopup('Failed to load admin users');
-      }
-    }
-
-    // Render admin users
-    function renderAdminUsers(users) {
-      adminUsersList.innerHTML = '';
-      users.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'admin-user';
-
         const header = document.createElement('div');
-        header.className = 'admin-user-header';
+        header.className = 'feedback-header';
 
         const avatar = document.createElement('img');
-        avatar.className = 'admin-user-avatar';
-        avatar.src = user.avatarUrl || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+        avatar.className = 'feedback-avatar';
+        avatar.src = fb.avatar || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+        avatar.alt = `${fb.username} avatar`;
 
-        const info = document.createElement('div');
-        info.className = 'admin-user-info';
-        info.innerHTML = `<b>${user.name}</b><br/><small>${user.email}</small>`;
+        const name = document.createElement('div');
+        name.className = 'feedback-name';
+        name.textContent = fb.username || 'Guest';
+
+        const date = document.createElement('time');
+        date.className = 'feedback-date';
+        date.dateTime = fb.date;
+        date.textContent = formatDate(fb.date);
 
         header.appendChild(avatar);
-        header.appendChild(info);
+        header.appendChild(name);
+        header.appendChild(date);
 
-        // Avatar URL input + button to update avatar
-        const avatarInput = document.createElement('input');
-        avatarInput.type = 'text';
-        avatarInput.placeholder = 'New Avatar URL';
-        avatarInput.style.width = 'calc(100% - 110px)';
-        avatarInput.style.marginTop = '8px';
-        avatarInput.value = user.avatarUrl || '';
+        const rating = document.createElement('div');
+        rating.className = 'feedback-rating';
+        rating.innerHTML = '&#9733;'.repeat(fb.rating) + '&#9734;'.repeat(5 - fb.rating);
 
-        const updateBtn = document.createElement('button');
-        updateBtn.textContent = 'Update Avatar';
-        updateBtn.className = 'admin-btn-reply';
-        updateBtn.style.width = '100px';
-        updateBtn.onclick = async () => {
-          if (!avatarInput.value.trim()) {
-            showPopup('Avatar URL daal bhai!');
-            return;
-          }
-          try {
-            const res = await fetch(`${API_BASE}/admin/users/${user._id}/avatar`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: adminAuthHeader
-              },
-              body: JSON.stringify({ avatarUrl: avatarInput.value.trim() })
-            });
-            if(res.ok) {
-              showPopup('Avatar update ho gaya user ka!');
-              fetchAdminUsers();
-            } else {
-              showPopup('Avatar update failed');
-            }
-          } catch(err) {
-            showPopup('Server error avatar update');
-          }
-        };
+        const text = document.createElement('p');
+        text.className = 'feedback-text';
+        text.textContent = fb.text;
 
-        div.appendChild(header);
-        div.appendChild(avatarInput);
-        div.appendChild(updateBtn);
+        card.appendChild(header);
+        card.appendChild(rating);
+        card.appendChild(text);
 
-        adminUsersList.appendChild(div);
-      });
-    }
-
-    // Fetch admin feedbacks
-    async function fetchAdminFeedbacks() {
-      try {
-        const res = await fetch(`${API_BASE}/admin/feedbacks`, {
-          headers: { Authorization: adminAuthHeader }
-        });
-        const data = await res.json();
-        if(res.ok) {
-          renderAdminFeedbacks(data);
-        }
-      } catch(err) {
-        showPopup('Failed to load admin feedbacks');
-      }
-    }
-
-    // Render admin feedbacks
-    function renderAdminFeedbacks(feedbacks) {
-      adminFeedbacksList.innerHTML = '';
-      feedbacks.forEach(fb => {
-        const div = document.createElement('div');
-        div.className = 'admin-feedback';
-
-        const userName = document.createElement('div');
-        userName.className = 'admin-feedback-user';
-        userName.textContent = fb.user?.name || 'Unknown';
-
-        const fbText = document.createElement('div');
-        fbText.className = 'admin-feedback-text';
-        fbText.textContent = `Original: ${fb.originalText}\nEdited: ${fb.editedText || fb.originalText}`;
-
-        div.appendChild(userName);
-        div.appendChild(fbText);
-
-        // Replies list
-        if(fb.replies?.length > 0) {
-          const repliesDiv = document.createElement('div');
-          repliesDiv.className = 'feedback-replies';
-          fb.replies.forEach(r => {
-            const rDiv = document.createElement('div');
-            rDiv.className = 'feedback-reply';
-            rDiv.textContent = r.text;
-            repliesDiv.appendChild(rDiv);
-          });
-          div.appendChild(repliesDiv);
+        if (fb.adminReply && fb.adminReply.trim().length > 0) {
+          const reply = document.createElement('p');
+          reply.className = 'admin-reply';
+          reply.textContent = 'Admin reply: ' + fb.adminReply;
+          card.appendChild(reply);
         }
 
-        // Reply input & button
-        const replyInput = document.createElement('textarea');
-        replyInput.className = 'admin-reply-input';
-        replyInput.rows = 2;
-        replyInput.placeholder = 'Type reply here...';
-
-        const replyBtn = document.createElement('button');
-        replyBtn.className = 'admin-btn-reply';
-        replyBtn.textContent = 'Reply';
-        replyBtn.onclick = async () => {
-          const replyText = replyInput.value.trim();
-          if(!replyText) {
-            showPopup('Reply likh bhenchod!');
-            return;
-          }
-          try {
-            const res = await fetch(`${API_BASE}/admin/feedbacks/${fb._id}/reply`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: adminAuthHeader
-              },
-              body: JSON.stringify({ text: replyText })
-            });
-            if(res.ok) {
-              showPopup('Reply add ho gaya!');
-              replyInput.value = '';
-              fetchAdminFeedbacks();
-            } else {
-              showPopup('Reply failed');
-            }
-          } catch(err) {
-            showPopup('Server error sending reply');
-          }
-        };
-
-        div.appendChild(replyInput);
-        div.appendChild(replyBtn);
-
-        adminFeedbacksList.appendChild(div);
+        feedbackCardsContainer.appendChild(card);
       });
+
+    } catch (err) {
+      feedbackCardsContainer.innerHTML = '<p>Error loading feedback.</p>';
+    }
+  }
+
+  // Submit feedback handler
+
+  feedbackForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    submitFeedbackBtn.disabled = true;
+    formLoading.style.display = 'inline-block';
+
+    const payload = {
+      rating: currentRating,
+      text: feedbackText.value.trim(),
+    };
+
+    if (currentUser) {
+      // Send userId and name automatically from backend, no need to send here
+      // But backend expects username and avatar, so send name and avatar for guest fallback
+      payload.name = currentUser.name;
+    } else {
+      // Guest user - send name input value
+      payload.name = nameInput.value.trim();
     }
 
-    // INITIAL LOAD
-    loadAuthFromStorage();
-  </script>
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(currentToken ? { 'Authorization': 'Bearer ' + currentToken } : {}),
+        },
+        body: JSON.stringify({ rating: currentRating, text: payload.text }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to submit feedback');
+
+      showToast('Feedback submitted successfully! 🎉');
+      feedbackForm.reset();
+      updateStarSelection(0);
+      fillNameInput();
+      loadFeedbacks();
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      submitFeedbackBtn.disabled = false;
+      formLoading.style.display = 'none';
+    }
+  });
+
+  // Login form submit
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+      showToast('Fill email and password');
+      return;
+    }
+
+    const btn = document.getElementById('login-submit-btn');
+    setLoading(btn, true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
+
+      saveUser(data.user, data.token);
+      closeLoginModal();
+      fillNameInput();
+      showToast('Logged in successfully');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      setLoading(btn, false);
+    }
+  });
+
+  // Signup form submit
+  signupForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+
+    if (!name || !email || !password) {
+      showToast('Fill all fields');
+      return;
+    }
+
+    const btn = document.getElementById('signup-submit-btn');
+    setLoading(btn, true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
+
+      saveUser(data.user, data.token);
+      closeLoginModal();
+      fillNameInput();
+      showToast('Account created and logged in!');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      setLoading(btn, false);
+    }
+  });
+
+  // Switch forms links
+  switchToSignup.addEventListener('click', () => {
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  });
+  switchToLogin.addEventListener('click', () => {
+    signupForm.style.display = 'none';
+    loginForm.style.display = 'block';
+  });
+
+  // Login modal open/close
+  loginBtn.addEventListener('click', openLoginModal);
+  loginModalClose.addEventListener('click', closeLoginModal);
+  loginModal.addEventListener('click', e => {
+    if (e.target === loginModal) closeLoginModal();
+  });
+
+  // Logout button
+  logoutBtn.addEventListener('click', () => {
+    logoutUser();
+    showToast('Logged out');
+  });
+
+  // View profile
+  viewProfileBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    profileModalAvatar.src = currentUser.avatar || 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+    profileModalName.textContent = currentUser.name;
+    profileModalEmail.textContent = currentUser.email || '';
+    profileModal.classList.add('active');
+  });
+
+  profileModalClose.addEventListener('click', () => {
+    profileModal.classList.remove('active');
+  });
+
+  profileModal.addEventListener('click', e => {
+    if (e.target === profileModal) profileModal.classList.remove('active');
+  });
+
+  // Edit profile modal
+  editProfileBtn.addEventListener('click', () => {
+    profileModal.classList.remove('active');
+    editProfileModal.classList.add('active');
+    editProfileSaveBtn.disabled = true;
+    avatarUploadInput.value = '';
+  });
+
+  editProfileModalClose.addEventListener('click', () => {
+    editProfileModal.classList.remove('active');
+  });
+
+  editProfileModal.addEventListener('click', e => {
+    if (e.target === editProfileModal) editProfileModal.classList.remove('active');
+  });
+
+  // Enable save button if file selected
+  avatarUploadInput.addEventListener('change', () => {
+    editProfileSaveBtn.disabled = !avatarUploadInput.files.length;
+  });
+
+  // Submit new avatar upload
+  editProfileForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!avatarUploadInput.files.length) {
+      showToast('Select a file first');
+      return;
+    }
+    editProfileSaveBtn.disabled = true;
+    editAvatarLoading.style.display = 'inline-block';
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatarUploadInput.files[0]);
+
+      const res = await fetch(`${API_BASE_URL}/api/user/avatar`, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + currentToken,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+
+      currentUser.avatar = data.avatarUrl;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      profileAvatar.src = currentUser.avatar;
+      profileModalAvatar.src = currentUser.avatar;
+
+      showToast('Avatar updated!');
+      editProfileModal.classList.remove('active');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    } finally {
+      editProfileSaveBtn.disabled = false;
+      editAvatarLoading.style.display = 'none';
+    }
+  });
+
+  // Google login integration
+  function loadGoogleSDK() {
+    return new Promise(resolve => {
+      if (window.google) resolve();
+      const script = document.createElement('script');
+      script.src = "https://accounts.google.com/gsi/client";
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
+  async function initGoogleLogin() {
+    await loadGoogleSDK();
+    google.accounts.id.initialize({
+      client_id: '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com',
+      callback: handleGoogleCredentialResponse,
+    });
+  }
+
+  async function handleGoogleCredentialResponse(response) {
+    const tokenId = response.credential;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokenId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Google login failed');
+
+      saveUser(data.user, data.token);
+      closeLoginModal();
+      fillNameInput();
+      showToast('Logged in with Google!');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
+  }
+
+  googleLoginBtn.addEventListener('click', () => {
+    google.accounts.id.prompt(); // Show popup
+  });
+
+  // Forgot password
+  forgotPasswordBtn.addEventListener('click', async () => {
+    const email = prompt('Enter your email for password reset:');
+    if (!email) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed');
+      showToast('If email exists, reset link sent.');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
+  });
+
+  // Initial page setup
+  function init() {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (storedToken && storedUser) {
+      currentToken = storedToken;
+      currentUser = JSON.parse(storedUser);
+      updateUIOnLogin();
+      fillNameInput();
+    } else {
+      updateUIOnLogout();
+    }
+    loadFeedbacks();
+    updateStarSelection(0);
+  }
+
+  init();
+  initGoogleLogin();
+
+</script>
 </body>
 </html>
