@@ -2018,10 +2018,18 @@
                             avatarUrl: currentUser.avatarUrl // Ensure latest avatar URL is sent
                         });
                         
-                        currentUser.name = data.user.name; // Update current user name
-                        currentUser.avatarUrl = data.user.avatarUrl; // Update current user avatar URL
-                        updateUIAfterLogin(); // Refresh main UI elements and profile modal
-                        showStylishPopup('success', 'Profile Updated!', data.message);
+                         currentUser.name = data.user.name; 
+ currentUser.avatarUrl = data.user.avatarUrl; 
+-updateUIAfterLogin(); 
+-showStylishPopup('success', 'Profile Updated!', data.message);
++// 1) Refresh main UI (avatar, menu, form name) 
++updateUIAfterLogin(); 
++// 2) Re-fetch all feedbacks so list shows updated names
++await fetchFeedbacks(); 
++// 3) Reset feedback form values (updates “Your Name” span & input)
++resetFeedbackForm(); 
++// 4) Finally, show success message
++showStylishPopup('success', 'Profile Updated!', data.message);
 
                     } catch (error) {
                         // Error handled by apiRequest already
