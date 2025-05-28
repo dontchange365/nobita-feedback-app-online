@@ -292,24 +292,24 @@
             margin-bottom: 15px;
         }
 
-        .upload-avatar-btn {
-            background-color: var(--primary-color);
-            color: var(--secondary-color);
-            padding: 8px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: background-color 0.2s, transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--secondary-color);
+       .upload-avatar-btn {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 8px 15px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  border: 1px solid var(--secondary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s, transform 0.1s;
         }
 
         .upload-avatar-btn:hover {
-            background-color: #550a8a; /* Darker primary on hover */
-            transform: translateY(-2px);
+  background-color: #550a8a;
+  transform: translateY(-2px);
         }
 
         .upload-avatar-btn i {
@@ -1280,7 +1280,13 @@
                 <img id="profile-display-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
                 <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
                 <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
-
+<div class="profile-avatar-section">
+  <img id="profile-display-avatar" src="default-avatar-url.jpg" alt="User Avatar" />
+  <input type="file" id="avatar-upload-input" accept="image/*" style="display:none" />
+  <button id="upload-avatar-btn" class="upload-avatar-btn">
+    <i class="fas fa-upload"></i> Avatar Upload Karein
+  </button>
+</div>
                 <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
                     <div class="progress-fill" id="progress-fill"></div>
                     <span class="progress-text" id="progress-text">0%</span>
@@ -2464,7 +2470,43 @@ document.getElementById('change-password-profile-btn').addEventListener('click',
         alert('Password change failed: ' + error.message);
     });
 });
+<!-- Tere HTML body ke end mein, closing </body> se pehle -->
 
+document.addEventListener('DOMContentLoaded', () => {
+  const avatarInput = document.getElementById('avatar-upload-input');
+  const uploadBtn = document.getElementById('upload-avatar-btn');
+  const avatarImg = document.getElementById('profile-display-avatar');
+
+  uploadBtn.addEventListener('click', () => {
+    avatarInput.click();
+  });
+
+  avatarInput.addEventListener('change', async () => {
+    const file = avatarInput.files[0];
+    if (!file) return alert('Koi file select kar, bhenchod!');
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const token = localStorage.getItem('token'); // Tera JWT token
+      const res = await fetch('/api/user/upload-avatar', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        avatarImg.src = data.avatarUrl; // Update avatar on frontend
+        alert('Avatar upload ho gaya!');
+      } else {
+        alert('Upload fail hua: ' + data.message);
+      }
+    } catch (err) {
+      alert('Upload error: ' + err.message);
+    }
+  });
+});
                // === END: JavaScript Code ===
     </script>
 </body>
