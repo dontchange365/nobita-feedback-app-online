@@ -1363,6 +1363,9 @@
     <script>
         // === START: JavaScript Code ===
 // ========== PROFILE EDIT FORM SUBMIT ==========
+
+        document.addEventListener('DOMContentLoaded', async () => {
+  console.log("DOM Fully Loaded and Parsed");
 profileEditForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -1375,9 +1378,6 @@ profileEditForm.addEventListener('submit', async (e) => {
         // Error handled elsewhere
     }
 });
-        document.addEventListener('DOMContentLoaded', async () => {
-  console.log("DOM Fully Loaded and Parsed");
-
       // ✅ Live from server
 function updateUIAfterLogin() {
     const storedUser = JSON.parse(localStorage.getItem('currentUser'));
