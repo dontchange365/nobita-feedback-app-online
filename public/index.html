@@ -3,550 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🚀 Nobita Feedback System - Pro UI</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+  <title>⭐ Nobita Feedback Portal (Pro)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-
-  <!-- Google Sign-In -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-
   <style>
-    :root {
-      --primary: #111827;
-      --secondary: #2563eb;
-      --accent: #facc15;
-      --bg-dark: #0f172a;
-      --bg-card: #1e293b;
-      --text-light: #e2e8f0;
-      --text-dark: #0f172a;
-      --success: #10b981;
-      --error: #ef4444;
-      --blur-bg: rgba(15, 23, 42, 0.9);
-    }
-
-    * {
+    body {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
       font-family: 'Outfit', sans-serif;
-      background: linear-gradient(135deg, var(--primary), var(--bg-dark));
-      color: var(--text-light);
-      min-height: 100vh;
-      overflow-x: hidden;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
     }
-
-    h1, h2, h3 {
-      font-family: 'Orbitron', sans-serif;
-    }
-
     .corner-btn {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: var(--accent);
-      color: var(--primary);
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 0.95em;
+      background: #facc15;
+      color: #0f172a;
       border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: 0.2s ease;
       z-index: 1000;
     }
-
-    .corner-btn:hover {
-      background: var(--secondary);
-      color: white;
-    }
-
     #user-avatar-btn {
       border-radius: 50%;
       width: 48px;
       height: 48px;
       padding: 0;
       overflow: hidden;
+      display: none;
     }
-
     #user-avatar-btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
     }
-
-    .modal-overlay {
+    .container {
+      max-width: 800px;
+      margin: 100px auto 40px;
+      padding: 20px;
+    }
+    textarea, input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: none;
+      font-size: 1em;
+    }
+    button {
+      padding: 10px 20px;
+      background: #2563eb;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .feedback {
+      background: #1e293b;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+    .feedback .name { font-weight: bold; color: #facc15; }
+    .feedback .stars { color: gold; }
+    .modal {
+      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(5px);
-      display: none;
+      background: rgba(0,0,0,0.6);
       align-items: center;
       justify-content: center;
-      z-index: 1001;
     }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .auth-modal {
-      background: var(--bg-card);
+    .modal.active { display: flex; }
+    .modal .box {
+      background: #1e293b;
       padding: 30px;
       border-radius: 10px;
       width: 90%;
-      max-width: 420px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      position: relative;
+      max-width: 400px;
     }
-
-    .auth-modal h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 1.8em;
-      color: var(--accent);
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 1.5em;
-      color: #aaa;
-      cursor: pointer;
-    }
-
-    .auth-form input {
-      width: 100%;
-      padding: 12px 15px;
-      margin-bottom: 15px;
-      background: #0f172a;
-      color: #fff;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      font-size: 1em;
-    }
-
-    .auth-form button {
-      width: 100%;
-      padding: 12px;
-      background: var(--secondary);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .auth-form button:hover {
-      background: #1d4ed8;
-    }
-
-    .auth-form .google-btn {
-      background: white;
-      color: #555;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-weight: 500;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-    }
-
-    .auth-form .google-btn img {
-      width: 20px;
+    .modal .box h2 {
+      margin-top: 0;
+      color: #facc15;
     }
   </style>
 </head>
 <body>
+  <button id="login-btn" class="corner-btn">Login / Signup</button>
+  <button id="user-avatar-btn" class="corner-btn">
+    <img src="" alt="User Avatar" />
+  </button>
 
-<!-- Top Buttons -->
-<button id="login-btn" class="corner-btn">Login / Signup</button>
-<button id="user-avatar-btn" class="corner-btn" style="display:none">
-  <img src="https://via.placeholder.com/48" alt="User Avatar" />
-</button>
-
-<!-- Auth Modal -->
-<div id="loginModal" class="modal-overlay">
-  <div class="auth-modal">
-    <span class="close-btn" onclick="document.getElementById('loginModal').classList.remove('active')">&times;</span>
-    <h2>Welcome Back</h2>
-    <form class="auth-form" id="login-form">
-      <input type="email" placeholder="Email" required />
-      <input type="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-      <div class="google-btn">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" />
-        Continue with Google
-      </div>
-    </form>
-  </div>
-</div>
-<!-- Profile Modal -->
-<div id="profileModal" class="modal-overlay">
-  <div class="auth-modal">
-    <span class="close-btn" onclick="document.getElementById('profileModal').classList.remove('active')">&times;</span>
-    <h2>👤 Your Profile</h2>
-    <form id="profile-form" class="auth-form">
-      <input type="text" id="profile-name" placeholder="Your Name" required />
-      <input type="email" id="profile-email" disabled />
-      <input type="file" id="avatar-upload" accept="image/*" />
-      <button type="submit">Save Changes</button>
-    </form>
-  </div>
-</div>
-
-<!-- Change Password Modal -->
-<div id="passwordModal" class="modal-overlay">
-  <div class="auth-modal">
-    <span class="close-btn" onclick="document.getElementById('passwordModal').classList.remove('active')">&times;</span>
-    <h2>🔒 Change Password</h2>
-    <form id="password-form" class="auth-form">
-      <input type="password" placeholder="Current Password" required />
-      <input type="password" placeholder="New Password" required />
-      <input type="password" placeholder="Confirm Password" required />
-      <button type="submit">Update Password</button>
-    </form>
-  </div>
-</div>
-
-<!-- Feedback Section -->
-<main style="margin-top: 100px; padding: 30px; max-width: 800px; margin-inline: auto;">
-  <h1 style="text-align: center; font-size: 2.4em; color: var(--accent); margin-bottom: 20px;">🌟 Leave Your Feedback</h1>
-  <form id="feedback-form" class="auth-form">
-    <input type="text" id="name" placeholder="Your Name" required />
-    <textarea id="feedback" rows="4" placeholder="Write your feedback..." required style="resize: vertical; font-family: 'Outfit'; padding: 12px 15px;"></textarea>
-    <div style="text-align: center; margin: 20px 0;">
-      <label style="display: block; margin-bottom: 8px;">Your Rating</label>
-      <div id="stars-container" style="display: flex; justify-content: center; gap: 10px;">
+  <div class="container">
+    <h1>🌟 Give Your Feedback</h1>
+    <form id="feedback-form">
+      <input type="text" id="name" placeholder="Your Name" required />
+      <textarea id="feedback" placeholder="Your Feedback..." required></textarea>
+      <div>
+        <label>Select Rating:</label><br/>
         <span class="star" data-value="1">⭐</span>
         <span class="star" data-value="2">⭐</span>
         <span class="star" data-value="3">⭐</span>
         <span class="star" data-value="4">⭐</span>
         <span class="star" data-value="5">⭐</span>
       </div>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="feedback-list"></div>
+  </div>
+
+  <div id="loginModal" class="modal">
+    <div class="box">
+      <h2>Login</h2>
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
     </div>
-    <button type="submit" id="submit-feedback">Submit Feedback</button>
-  </form>
-</main>
+  </div>
 
-<!-- Feedback List Section -->
-<section id="feedbacks" style="padding: 20px 30px; max-width: 900px; margin: auto;">
-  <h2 style="font-size: 2em; color: var(--accent); margin-bottom: 20px;">📝 All Feedback</h2>
-  <div id="feedback-list" style="display: flex; flex-direction: column; gap: 15px;"></div>
-</section>
+  <script>
+    const API = 'https://nobita-feedback-app-online.onrender.com';
+    let token = localStorage.getItem('token');
+    let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    let currentRating = 0;
 
-<script>
-  document.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', function() {
-      const value = +this.dataset.value;
-      document.querySelectorAll('.star').forEach(s => {
-        s.style.color = s.dataset.value <= value ? '#facc15' : '#555';
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        currentRating = parseInt(star.dataset.value);
+        stars.forEach(s => {
+          s.style.color = s.dataset.value <= currentRating ? 'gold' : '#999';
+        });
       });
-      window.currentRating = value;
-    });
-  });
-
-  document.getElementById('login-btn').addEventListener('click', () => {
-    document.getElementById('loginModal').classList.add('active');
-  });
-
-  // TODO: Add fetch, login, save, etc.
-<!-- Feedback Card Template (rendered dynamically) -->
-<template id="feedback-card-template">
-  <div class="card" style="background: var(--bg-card); border-radius: 10px; padding: 20px; display: flex; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
-    <img class="avatar" src="" alt="avatar" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);"/>
-    <div class="details" style="flex: 1;">
-      <strong class="name" style="color: var(--accent); font-size: 1.1em;"></strong>
-      <div class="stars" style="font-size: 1.4em; margin: 4px 0;"></div>
-      <p class="feedback-text" style="margin-top: 5px;"></p>
-      <div class="footer" style="margin-top: 10px; font-size: 0.85em; color: #aaa; display: flex; justify-content: space-between;">
-        <span class="timestamp"></span>
-        <button class="edit-btn" style="background:none;border:none;color:#38bdf8;cursor:pointer;">✏️ Edit</button>
-      </div>
-      <div class="admin-reply" style="margin-top:10px; display:none;">
-        <strong>Admin:</strong> <span class="reply-text"></span>
-      </div>
-    </div>
-  </div>
-</template>
-
-<!-- CONFETTI SUCCESS POPUP -->
-<div id="popup" class="modal-overlay">
-  <div class="auth-modal">
-    <h2 id="popup-title">✅ Submitted!</h2>
-    <p id="popup-msg">Thanks for the feedback!</p>
-  </div>
-</div>
-
-<!-- SCRIPT START -->
-<script>
-  const API_BASE = 'https://nobita-feedback-app-online.onrender.com';
-  let currentUser = null;
-  let token = null;
-  let currentEditId = null;
-  let currentSelectedRating = 0;
-
-  // Check Local Storage
-  function initUserFromStorage() {
-    const stored = localStorage.getItem('currentUser');
-    const savedToken = localStorage.getItem('token');
-    if (stored && savedToken) {
-      currentUser = JSON.parse(stored);
-      token = savedToken;
-      updateUIAfterLogin();
-    }
-  }
-
-  function updateUIAfterLogin() {
-    if (!currentUser) return;
-    document.getElementById('login-btn').style.display = 'none';
-    const avatarBtn = document.getElementById('user-avatar-btn');
-    avatarBtn.style.display = 'inline-block';
-    avatarBtn.querySelector('img').src = currentUser.avatarUrl;
-  }
-
-  function showPopup(title, msg) {
-    document.getElementById('popup-title').innerText = title;
-    document.getElementById('popup-msg').innerText = msg;
-    const popup = document.getElementById('popup');
-    popup.classList.add('active');
-    setTimeout(() => popup.classList.remove('active'), 2000);
-  }
-
-  // Google Sign-in Init
-  window.onload = () => {
-    google.accounts.id.initialize({
-      client_id: '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com',
-      callback: handleGoogleResponse,
-    });
-    google.accounts.id.renderButton(document.querySelector('.google-btn'), {
-      theme: 'outline',
-      size: 'large',
     });
 
-    initUserFromStorage();
-    fetchFeedbacks();
-  };
+    const updateUI = () => {
+      if (currentUser) {
+        document.getElementById('login-btn').style.display = 'none';
+        const avatarBtn = document.getElementById('user-avatar-btn');
+        avatarBtn.style.display = 'inline-block';
+        avatarBtn.querySelector('img').src = currentUser.avatarUrl;
+        document.getElementById('name').value = currentUser.name;
+      }
+    };
 
-  async function handleGoogleResponse(response) {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/google-signin`, {
+    const fetchFeedbacks = async () => {
+      const res = await fetch(API + '/api/feedback');
+      const list = await res.json();
+      const container = document.getElementById('feedback-list');
+      container.innerHTML = '';
+      list.forEach(f => {
+        container.innerHTML += `
+          <div class="feedback">
+            <div class="name">${f.name}</div>
+            <div class="stars">${'⭐'.repeat(f.rating)}</div>
+            <div>${f.feedback}</div>
+          </div>`;
+      });
+    };
+
+    document.getElementById('feedback-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const feedback = document.getElementById('feedback').value.trim();
+      if (!currentRating || !token) return alert("Login & rating required");
+      const res = await fetch(API + '/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ name, feedback, rating: currentRating })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Feedback submitted");
+        e.target.reset();
+        fetchFeedbacks();
+      } else {
+        alert(data.message || "Error");
+      }
+    });
+
+    document.getElementById('login-btn').onclick = () => {
+      document.getElementById('loginModal').classList.add('active');
+    };
+
+    document.getElementById('login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch(API + '/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: response.credential }),
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
       if (res.ok) {
-        currentUser = data.user;
         token = data.token;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        currentUser = data.user;
         localStorage.setItem('token', token);
-        updateUIAfterLogin();
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
         document.getElementById('loginModal').classList.remove('active');
+        updateUI();
         fetchFeedbacks();
       } else {
-        alert(data.message || 'Google login failed');
+        alert(data.message || "Login failed");
       }
-    } catch (err) {
-      console.error('Google login error:', err);
-      alert('Google sign-in error');
-    }
-  }
-   // Fetch Feedbacks from server
-  async function fetchFeedbacks() {
-    try {
-      const res = await fetch(`${API_BASE}/api/feedback`);
-      const feedbacks = await res.json();
-      renderFeedbacks(feedbacks);
-    } catch (err) {
-      console.error('Fetch error:', err);
-    }
-  }
-
-  function renderFeedbacks(list) {
-    const container = document.getElementById('feedback-list');
-    container.innerHTML = '';
-    const template = document.getElementById('feedback-card-template');
-
-    list.forEach(item => {
-      const card = template.content.cloneNode(true);
-      card.querySelector('.avatar').src = item.avatarUrl || '';
-      card.querySelector('.name').textContent = item.name;
-      card.querySelector('.feedback-text').textContent = item.feedback;
-      card.querySelector('.timestamp').textContent = new Date(item.timestamp).toLocaleString();
-      card.querySelector('.stars').textContent = '⭐'.repeat(item.rating);
-
-      const editBtn = card.querySelector('.edit-btn');
-      if (!currentUser || item.userId !== currentUser.userId) {
-        editBtn.style.display = 'none';
-      } else {
-        editBtn.onclick = () => {
-          document.getElementById('name').value = item.name;
-          document.getElementById('feedback').value = item.feedback;
-          currentSelectedRating = item.rating;
-          document.querySelectorAll('.star').forEach(s => {
-            s.style.color = s.dataset.value <= currentSelectedRating ? '#facc15' : '#555';
-          });
-          currentEditId = item._id;
-        };
-      }
-
-      if (item.replies && item.replies.length > 0) {
-        const reply = item.replies[0];
-        const replyBox = card.querySelector('.admin-reply');
-        replyBox.style.display = 'block';
-        replyBox.querySelector('.reply-text').textContent = reply.text;
-      }
-
-      container.appendChild(card);
     });
-  }
 
-  // Submit Feedback
-  document.getElementById('feedback-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('name').value.trim();
-    const feedback = document.getElementById('feedback').value.trim();
-    if (!currentSelectedRating || !name || !feedback) return alert("Fill all fields + select rating");
-
-    const payload = { name, feedback, rating: currentSelectedRating };
-    const method = currentEditId ? 'PUT' : 'POST';
-    const endpoint = currentEditId ? `/api/feedback/${currentEditId}` : '/api/feedback';
-
-    try {
-      const res = await fetch(API_BASE + endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        showPopup('✅ Success', currentEditId ? 'Feedback Updated' : 'Feedback Submitted');
-        currentEditId = null;
-        currentSelectedRating = 0;
-        e.target.reset();
-        fetchFeedbacks();
-      } else {
-        alert(data.message || 'Submit failed');
-      }
-    } catch (err) {
-      console.error('Submit error:', err);
-    }
-  });
-
-  // Upload Avatar
-  document.getElementById('avatar-upload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/user/upload-avatar`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok) {
-        currentUser.avatarUrl = data.user.avatarUrl;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        updateUIAfterLogin();
-        showPopup('🎉 Avatar Updated', '');
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.error('Avatar error:', err);
-    }
-  });
-
-  // Profile Update
-  document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('profile-name').value.trim();
-    try {
-      const res = await fetch(`${API_BASE}/api/user/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        currentUser = data.user;
-        token = data.token;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        localStorage.setItem('token', token);
-        updateUIAfterLogin();
-        showPopup('✅ Profile Updated', '');
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.error('Profile update error:', err);
-    }
-  });
-
-  // Change Password
-  document.getElementById('password-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const inputs = e.target.querySelectorAll('input');
-    const current = inputs[0].value.trim();
-    const newPass = inputs[1].value.trim();
-    const confirm = inputs[2].value.trim();
-
-    if (newPass !== confirm) return alert("Passwords don't match");
-
-    try {
-      const res = await fetch(`${API_BASE}/api/user/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ currentPassword: current, newPassword: newPass })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showPopup('🔒 Password Changed', '');
-        e.target.reset();
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.error('Password change error:', err);
-    }
-  });
-
-  // Logout
-  document.getElementById('user-avatar-btn').addEventListener('click', () => {
-    if (confirm("Logout?")) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentUser');
-      location.reload();
-    }
-  });
- 
-</script>
+    window.onload = () => {
+      updateUI();
+      fetchFeedbacks();
+    };
+  </script>
 </body>
 </html>
