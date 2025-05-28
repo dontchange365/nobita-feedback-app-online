@@ -280,3 +280,733 @@
       setTimeout(() => { if (div.parentNode) toastRoot.removeChild(div); }, ms);
     }
   </script>
+  <script>
+const API_BASE = "https://nobita-feedback-app-online.onrender.com";
+const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
+const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/dyv7xav3e/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = ""; // Not needed, as you use signed upload with JWT, but kept for fallback
+let jwtToken = localStorage.getItem('token') || "";
+let currentUser = null;
+let feedbacks = [];
+let overallRating = 0;
+let feedbackCount = 0;
+let isProfileDropdownOpen = false;
+let isEditingFeedbackId = null;
+
+// ---------- Helper Functions ----------
+function $(id) { return document.getElementById(id); }
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.innerText = text;
+  return div.innerHTML;
+}
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+  document.body.style.overflow = '';
+}
+function openModal(innerHtml) {
+  closeAllModals();
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay active";
+  overlay.innerHTML = `<div class="modal-card fade-in">${innerHtml}</div>`;
+  overlay.onclick = (e) => { if (e.target === overlay) closeAllModals(); }
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+}
+function modalCloseBtnHtml() {
+  return `<button class="modal-close-btn" onclick="closeAllModals()">&times;</button>`;
+}
+function formatDate(d) {
+  if (!d) return "";
+  const dt = new Date(d);
+  return dt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+function maskEmail(email) {
+  if (!email) return "";
+  const [a, b] = email.split("@");
+  return a[0] + "***" + a.slice(-1) + "@" + b;
+}
+function userAvatarUrl(u) { return u?.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(u?.name||'User')}&radius=50&scale=90`; }
+function randomCloudIcon() { // Lucide cloud upload
+  return `<svg width="36" height="36" stroke="#4f46e5" fill="none" stroke-width="2.1" viewBox="0 0 24 24"><path d="M16 16v-4a4 4 0 10-8 0v4"/><path d="M12 12v9m0 0l-3.5-3.5m3.5 3.5l3.5-3.5"/><path d="M5.5 19.5A5.5 5.5 0 0112 5a5.5 5.5 0 016.5 6.5"/></svg>`;
+}
+
+// ---------- AUTH UI ----------
+function renderNavBar() {
+  const root = $("nav-action-root");
+  root.innerHTML = '';
+  if (!currentUser) {
+    const btn = document.createElement("div");
+    btn.className = "nav-loginicon";
+    btn.innerHTML = `<svg width="25" height="25" fill="none" stroke="#4f46e5" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M4 19.5a8 8 0 0116 0"/></svg>`;
+    btn.onclick = openLoginModal;
+    root.appendChild(btn);
+  } else {
+    // Avatar dropdown
+    const wrap = document.createElement("div");
+    wrap.style.position = "relative";
+    const avatarDiv = document.createElement("div");
+    avatarDiv.className = "nav-avatar";
+    avatarDiv.innerHTML = `<img src="${userAvatarUrl(currentUser)}" alt="Avatar"/>`;
+    avatarDiv.onclick = (e) => {
+      e.stopPropagation();
+      toggleProfileDropdown();
+    };
+    wrap.appendChild(avatarDiv);
+
+    // Dropdown
+    let dd = document.createElement("div");
+    dd.className = "user-dropdown";
+    dd.id = "user-dropdown-menu";
+    dd.innerHTML = `
+      <button class="user-dropdown-btn" onclick="openProfileModal();closeAllModals()"> 
+        <svg width="22" height="22"><use href="#user" /></svg>View Profile
+      </button>
+      <button class="user-dropdown-btn" onclick="openEditProfileModal();closeAllModals()">
+        <svg width="22" height="22"><use href="#edit-3" /></svg>Edit Profile
+      </button>
+      <button class="user-dropdown-btn" onclick="logoutUser()">
+        <svg width="22" height="22"><use href="#log-out" /></svg>Logout
+      </button>
+    `;
+    wrap.appendChild(dd);
+    root.appendChild(wrap);
+    // Global click to close dropdown
+    document.onclick = () => { if (isProfileDropdownOpen) {dd.classList.remove("active"); isProfileDropdownOpen=false;} };
+  }
+  // Icons sprite
+  loadSvgSprite();
+}
+function toggleProfileDropdown() {
+  const dd = $("user-dropdown-menu");
+  if (!dd) return;
+  isProfileDropdownOpen = !isProfileDropdownOpen;
+  dd.classList.toggle("active", isProfileDropdownOpen);
+}
+function openLoginModal() {
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <h2 style="text-align:center;font-family:Lexend;font-size:1.28em;color:var(--primary);margin-bottom:18px;">Sign in to Feedback Pro</h2>
+    <form id="login-form">
+      <div class="flabel-group">
+        <input id="login-email" name="email" type="email" autocomplete="username" required />
+        <label for="login-email">Email Address</label>
+      </div>
+      <div class="flabel-group" style="margin-top:13px;">
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required />
+        <label for="login-password">Password</label>
+        <span id="login-pwd-toggle" class="pwd-toggle">👁️</span>
+      </div>
+      <div style="text-align:right;">
+        <a href="#" style="color:var(--primary);font-size:0.99em;" onclick="event.preventDefault();openResetPwdModal()">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn" style="width:100%;margin-top:14px;">Login</button>
+    </form>
+    <div style="text-align:center;font-size:.99em;color:#555;margin:20px 0 6px 0;position:relative;">
+      <span style="background:#fff;padding:0 7px;">or</span>
+      <div style="height:1.5px;background:#eee;position:absolute;left:0;right:0;top:12px;z-index:-1;"></div>
+    </div>
+    <button class="btn-google" style="width:100%;" onclick="startGoogleSignin()">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="width:23px;height:23px;"> Sign in with Google
+    </button>
+    <div style="margin-top:19px;text-align:center;">
+      <span>Don’t have an account?</span>
+      <a href="#" onclick="event.preventDefault();openSignupModal()" style="color:var(--primary);font-weight:600;">Sign Up</a>
+    </div>
+    <style>
+      .flabel-group { position:relative;margin-bottom:9px;}
+      .flabel-group input {
+        width:100%;font-size:1.08em;padding:13px 12px 11px 10px;border:1.3px solid var(--border);border-radius:8px;
+        background:#fafaff;transition:border .17s,box-shadow .14s;outline:none;
+      }
+      .flabel-group input:focus { border:1.5px solid var(--primary);}
+      .flabel-group label {
+        position:absolute;top:13px;left:12px;font-size:1em;color:#8782ae;pointer-events:none;
+        background:#fff;transition:all .17s;font-family:'Inter';
+      }
+      .flabel-group input:focus + label,
+      .flabel-group input:not(:placeholder-shown) + label {
+        top:-9px;left:9px;font-size:.89em;color:var(--primary);background:#fff;padding:0 3px;
+      }
+      .pwd-toggle {
+        position:absolute;right:12px;top:14px;cursor:pointer;user-select:none;color:#686de0;font-size:1.14em;
+      }
+    </style>
+  `);
+  $("login-pwd-toggle").onclick = function(){
+    let pwd = $("login-password");
+    pwd.type = pwd.type === "password" ? "text" : "password";
+    this.textContent = pwd.type === "password" ? "👁️" : "🙈";
+  }
+  $("login-form").onsubmit = async function(e){
+    e.preventDefault();
+    let email = $("login-email").value.trim();
+    let password = $("login-password").value;
+    if (!email || !password) return showToast("Please fill all fields.", "warn");
+    try {
+      let res = await fetch(API_BASE+"/api/auth/login", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ email, password })
+      });
+      let data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        jwtToken = data.token; currentUser = data.user;
+        closeAllModals(); showToast("Logged in successfully!","success");
+        await fetchCurrentUser();
+        renderAll();
+      } else showToast(data.message || "Login failed","error");
+    } catch(e){ showToast("Network error! "+e,"error"); }
+  }
+}
+function openSignupModal() {
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <h2 style="text-align:center;font-family:Lexend;font-size:1.25em;color:var(--primary);margin-bottom:18px;">Create your Account</h2>
+    <form id="signup-form">
+      <div class="flabel-group">
+        <input id="signup-name" name="name" type="text" maxlength="30" required />
+        <label for="signup-name">Full Name</label>
+      </div>
+      <div class="flabel-group">
+        <input id="signup-email" name="email" type="email" required />
+        <label for="signup-email">Email Address</label>
+      </div>
+      <div class="flabel-group" style="margin-top:13px;">
+        <input id="signup-password" name="password" type="password" required />
+        <label for="signup-password">Password</label>
+        <span id="signup-pwd-toggle" class="pwd-toggle">👁️</span>
+      </div>
+      <button type="submit" class="btn" style="width:100%;margin-top:14px;">Sign Up</button>
+    </form>
+    <div style="margin-top:19px;text-align:center;">
+      <span>Already have an account?</span>
+      <a href="#" onclick="event.preventDefault();openLoginModal()" style="color:var(--primary);font-weight:600;">Login</a>
+    </div>
+  `);
+  $("signup-pwd-toggle").onclick = function(){
+    let pwd = $("signup-password");
+    pwd.type = pwd.type === "password" ? "text" : "password";
+    this.textContent = pwd.type === "password" ? "👁️" : "🙈";
+  }
+  $("signup-form").onsubmit = async function(e){
+    e.preventDefault();
+    let name = $("signup-name").value.trim();
+    let email = $("signup-email").value.trim();
+    let password = $("signup-password").value;
+    if (!name || !email || !password) return showToast("All fields required.","warn");
+    if (password.length < 6) return showToast("Password should be 6+ chars","warn");
+    try {
+      let res = await fetch(API_BASE+"/api/auth/signup", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ name, email, password })
+      });
+      let data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        jwtToken = data.token; currentUser = data.user;
+        closeAllModals(); showToast("Signup successful!","success");
+        await fetchCurrentUser();
+        renderAll();
+      } else showToast(data.message || "Signup failed","error");
+    } catch(e){ showToast("Network error! "+e,"error"); }
+  }
+}
+function openResetPwdModal() {
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <h2 style="text-align:center;font-family:Lexend;color:var(--primary);margin-bottom:15px;">Reset your Password</h2>
+    <form id="reset-form">
+      <div class="flabel-group">
+        <input id="reset-email" name="email" type="email" required />
+        <label for="reset-email">Enter your Email Address</label>
+      </div>
+      <button type="submit" class="btn" style="width:100%;margin-top:13px;">Send Reset Link</button>
+    </form>
+    <div style="margin-top:19px;text-align:center;">
+      <a href="#" onclick="event.preventDefault();openLoginModal()" style="color:var(--primary);font-weight:600;">Back to Login</a>
+    </div>
+  `);
+  $("reset-form").onsubmit = async function(e){
+    e.preventDefault();
+    let email = $("reset-email").value.trim();
+    if (!email) return showToast("Enter your email.","warn");
+    try {
+      let res = await fetch(API_BASE+"/api/auth/request-password-reset", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ email })
+      });
+      let data = await res.json();
+      if (res.ok) {
+        showToast(data.message || "Reset link sent!","success");
+        setTimeout(openLoginModal, 900);
+      } else showToast(data.message || "Request failed","error");
+    } catch(e){ showToast("Network error! "+e,"error"); }
+  }
+}
+
+// --- GOOGLE OAUTH2 ---
+function startGoogleSignin() {
+  closeAllModals();
+  let w = 480, h = 600;
+  let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+  let dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+  let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth;
+  let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
+  let left = ((width / 2) - (w / 2)) + dualScreenLeft;
+  let top = ((height / 2) - (h / 2)) + dualScreenTop;
+  // Google identity services
+  if (!window.google || !window.google.accounts) {
+    showToast("Google API failed to load! Try again.", "error"); return;
+  }
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: async (response) => {
+      if (!response.credential) return showToast("Google login failed!", "error");
+      try {
+        let res = await fetch(API_BASE+"/api/auth/google-signin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: response.credential })
+        });
+        let data = await res.json();
+        if (res.ok) {
+          localStorage.setItem("token", data.token);
+          jwtToken = data.token; currentUser = data.user;
+          showToast("Google login successful!", "success");
+          await fetchCurrentUser();
+          renderAll();
+        } else showToast(data.message || "Google login error", "error");
+      } catch(e){ showToast("Google login error: "+e, "error"); }
+    }
+  });
+  window.google.accounts.id.prompt();
+}
+// Google One Tap and button loader
+(function(){
+  let s = document.createElement("script");
+  s.src = "https://accounts.google.com/gsi/client";
+  s.async = true;
+  document.body.appendChild(s);
+})();
+
+// --- LOGOUT
+function logoutUser() {
+  localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
+  showToast("Logged out!", "success");
+  renderAll();
+}
+
+// --- FETCH CURRENT USER
+async function fetchCurrentUser() {
+  if (!jwtToken) return null;
+  try {
+    let res = await fetch(API_BASE+"/api/auth/me", {
+      headers: { Authorization: "Bearer "+jwtToken }
+    });
+    if (res.ok) {
+      let data = await res.json();
+      currentUser = data;
+      return data;
+    } else {
+      localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
+      showToast("Session expired. Please log in again.","error");
+      renderAll();
+      return null;
+    }
+  } catch(e){
+    localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
+    showToast("Session error. Please log in again.","error");
+    renderAll();
+    return null;
+  }
+}
+
+// ---------- PROFILE UI ----------
+function openProfileModal() {
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div style="width:84px;height:84px;border-radius:50%;overflow:hidden;margin-bottom:16px;box-shadow:0 4px 19px #ede9fe;">
+        <img src="${userAvatarUrl(currentUser)}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div style="font-family:'Lexend';font-size:1.2em;font-weight:700;color:var(--primary);">${escapeHtml(currentUser.name)}</div>
+      <div style="margin:8px 0 2px 0;font-size:1em;color:#555;">${maskEmail(currentUser.email)}</div>
+      <div style="font-size:.98em;color:#999;margin-bottom:12px;">Joined: ${formatDate(currentUser.createdAt)}</div>
+      <button class="btn" style="margin-top:8px;" onclick="openEditProfileModal()">Edit Profile</button>
+    </div>
+  `);
+}
+function openEditProfileModal() {
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <form id="edit-profile-form" style="width:100%;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div id="profile-avatar-dropzone" style="width:92px;height:92px;border:2.1px dashed var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;background:#fafaff;margin-bottom:12px;position:relative;">
+            <img id="edit-avatar-preview" src="${userAvatarUrl(currentUser)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <div id="avatar-drop-hint" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--primary);background:rgba(252,252,255,0.86);font-size:.98em;opacity:0;transition:opacity .19s;">${randomCloudIcon()}<span style="margin-left:6px;">Drop Image</span></div>
+          </div>
+          <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+          <div style="width:100%;">
+            <div class="flabel-group">
+              <input id="edit-name" name="name" type="text" maxlength="30" required value="${escapeHtml(currentUser.name)}" />
+              <label for="edit-name">Name</label>
+            </div>
+          </div>
+          <button type="submit" class="btn" style="width:100%;margin-top:12px;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      // Drag and drop avatar
+      let dropZone = document.getElementById('profile-avatar-dropzone');
+      let preview = document.getElementById('edit-avatar-preview');
+      let fileInput = document.getElementById('avatar-file-input');
+      let hint = document.getElementById('avatar-drop-hint');
+      dropZone.onclick = () => fileInput.click();
+      dropZone.ondragover = e => { e.preventDefault(); hint.style.opacity = 1; }
+      dropZone.ondragleave = e => { e.preventDefault(); hint.style.opacity = 0; }
+      dropZone.ondrop = e => {
+        e.preventDefault(); hint.style.opacity = 0;
+        let file = e.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return showToast("Only image allowed","warn");
+        fileInput.files = e.dataTransfer.files;
+        let reader = new FileReader();
+        reader.onload = ev => preview.src = ev.target.result;
+        reader.readAsDataURL(file);
+      };
+      fileInput.onchange = () => {
+        let file = fileInput.files[0];
+        if (!file || !file.type.startsWith('image/')) return showToast("Only image allowed","warn");
+        let reader = new FileReader();
+        reader.onload = ev => preview.src = ev.target.result;
+        reader.readAsDataURL(file);
+      }
+      document.getElementById('edit-profile-form').onsubmit = async function(e){
+        e.preventDefault();
+        let name = document.getElementById('edit-name').value.trim();
+        let avatarFile = fileInput.files[0];
+        let avatarUrl = null;
+        if (avatarFile) {
+          let formData = new FormData();
+          formData.append("avatar", avatarFile);
+          let res = await fetch(API_BASE+"/api/user/upload-avatar", {
+            method: "POST",
+            headers: { Authorization: "Bearer "+jwtToken },
+            body: formData
+          });
+          let data = await res.json();
+          if (res.ok) {
+            avatarUrl = data.avatarUrl;
+            showToast("Avatar Updated!","success");
+          } else {
+            showToast(data.message || "Avatar upload failed","error");
+            return;
+          }
+        }
+        // Save name/avatar
+        let res2 = await fetch(API_BASE+"/api/user/profile", {
+          method: "PUT",
+          headers: { "Content-Type":"application/json", Authorization: "Bearer "+jwtToken },
+          body: JSON.stringify({ name, avatarUrl })
+        });
+        let data2 = await res2.json();
+        if (res2.ok) {
+          localStorage.setItem("token", data2.token);
+          jwtToken = data2.token; currentUser = data2.user;
+          showToast("Profile updated!","success");
+          closeAllModals();
+          await fetchCurrentUser();
+          renderAll();
+        } else showToast(data2.message || "Update failed","error");
+      };
+    </script>
+  `);
+}
+
+// ICONS SPRITE
+function loadSvgSprite() {
+  if ($("svg-icon-sprite")) return;
+  $("svg-icon-loader").innerHTML = `
+  <svg id="svg-icon-sprite" style="display:none">
+    <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M4 19.5a8 8 0 0116 0"/></symbol>
+    <symbol id="edit-3" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></symbol>
+    <symbol id="log-out" viewBox="0 0 24 24"><path d="M9 16l-4-4m0 0l4-4m-4 4h14"/><path d="M17 12H9"/><path d="M15 6V4a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+    <symbol id="star-off" viewBox="0 0 24 24"><polygon points="12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21 12 17.27" fill="#e5e7eb"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke-width="2.4" fill="none"/></symbol>
+    <symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></symbol>
+    <symbol id="trash-2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+  </svg>
+  `;
+}
+
+</script>
+<script>
+// -------- FEEDBACK SYSTEM --------
+async function fetchFeedbacks() {
+  $("root-main").innerHTML = `<div class="main-loader"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="22" stroke="#4f46e5" stroke-width="5" fill="none"/><path d="M25 5a20 20 0 1 1-16 32" stroke="#10b981" stroke-width="4" fill="none"/></svg></div>`;
+  try {
+    let res = await fetch(API_BASE + "/api/feedbacks");
+    let data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to fetch feedbacks");
+    feedbacks = data;
+    renderAll();
+  } catch (e) {
+    $("root-main").innerHTML = `<div style="color:var(--error);text-align:center;padding:44px 0 60px 0;"><b>Error loading feedbacks:</b> ${e.message || e}</div>`;
+  }
+}
+
+function renderAll() {
+  renderNavBar();
+  // Welcome Hero
+  let heroName = currentUser ? `Welcome, <span style="color:#10b981;">${escapeHtml(currentUser.name)}</span>!` : `Share Your Feedback!`;
+  // Feedback Form
+  let canSubmit = !!currentUser;
+  let formHtml = `
+    <div class="feedback-form-card" style="background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow);padding:24px 19px 19px 19px;margin-bottom:12px;">
+      <div class="hero-welcome">${heroName}</div>
+      ${canSubmit ? `
+      <form id="feedback-form" autocomplete="off">
+        <div style="margin-bottom:14px;">
+          <span style="font-size:1.04em;font-weight:600;">Your Rating:</span>
+          <span id="star-rating-block" style="margin-left:8px;"></span>
+        </div>
+        <div style="margin-bottom:13px;">
+          <textarea id="feedback-text" rows="2" required style="width:100%;resize:vertical;border-radius:10px;padding:12px 10px;font-size:1.12em;border:1.2px solid var(--border);background:#fafaff;min-height:56px;"></textarea>
+        </div>
+        <button type="submit" class="btn" style="width:100%;margin-top:4px;">${isEditingFeedbackId ? "Update Feedback" : "Submit Feedback"}</button>
+        ${isEditingFeedbackId ? `<button type="button" onclick="cancelEditFeedback()" class="btn" style="margin-left:9px;margin-top:8px;background:#e0e7ff;color:#4f46e5;">Cancel Edit</button>` : ""}
+      </form>` : `
+      <div style="text-align:center;color:#888;font-size:1.13em;margin:14px 0 4px 0;">
+        <span style="color:var(--primary);font-weight:700;">Sign in</span> to submit your feedback!
+      </div>
+      `}
+    </div>
+  `;
+  // Overall Rating
+  let avg = 0, cnt = feedbacks.length;
+  if (cnt) avg = feedbacks.reduce((sum, f) => sum + (f.rating||0), 0)/cnt;
+  overallRating = avg; feedbackCount = cnt;
+  let avgBlock = `
+    <div class="overall-summary" style="margin-bottom:30px;background:linear-gradient(90deg,#e0e7ff 10%,#f9fafb 100%);border-radius:17px;box-shadow:0 2px 16px #f4f3fd;display:flex;align-items:center;gap:23px;padding:24px 26px 18px 18px;max-width:450px;">
+      <span style="font-size:2.9em;display:flex;align-items:center;gap:8px;">${avg?avg.toFixed(1):"--"}
+        <svg width="34" height="34" style="margin-left:5px;"><use href="#star" /></svg>
+      </span>
+      <span style="font-size:1.14em;color:#4f46e5;flex:1;">Overall Rating<br>
+        <span style="color:#9f7aea;font-size:.92em;">Based on ${cnt} feedback${cnt==1?'':'s'}</span>
+      </span>
+    </div>
+  `;
+  // Feedback List
+  let listHtml = `
+    <div class="feedback-list-card" style="background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow);padding:24px 10px 9px 10px;">
+      ${avgBlock}
+      <div id="feedback-list-root" style="display:flex;flex-direction:column;gap:20px;"></div>
+    </div>
+  `;
+  $("root-main").innerHTML = `<div class="feedback-main">${formHtml}${listHtml}</div>`;
+  // Render rating
+  if (canSubmit) renderStarRating(currentUser, isEditingFeedbackId);
+  // Feedbacks
+  renderFeedbackList();
+}
+
+function renderStarRating(user, editingId) {
+  let el = $("star-rating-block");
+  if (!el) return;
+  let val = editingId
+    ? (feedbacks.find(f=>f._id===editingId)?.rating || 0)
+    : (user?.lastRating || 0);
+  el.innerHTML = "";
+  for (let i=1;i<=5;i++) {
+    let svg = document.createElement("svg");
+    svg.setAttribute("width", "32"); svg.setAttribute("height","32");
+    svg.setAttribute("data-rate",i);
+    svg.innerHTML = `<use href="${i<=val?'#star':'#star-off'}"></use>`;
+    svg.style.cursor="pointer";
+    svg.style.transition="transform .13s";
+    svg.onmouseover = ()=>{ highlightStars(i); };
+    svg.onmouseleave = ()=>{ highlightStars(val); };
+    svg.onclick = ()=>{ setRating(i); };
+    el.appendChild(svg);
+  }
+  highlightStars(val);
+
+  function highlightStars(n){
+    let svgs = el.querySelectorAll("svg");
+    svgs.forEach((svg,j)=>{
+      svg.innerHTML = `<use href="${j<n?'#star':'#star-off'}"></use>`;
+      svg.style.transform = j<n ? "scale(1.13)" : "scale(1.00)";
+      svg.style.filter = j<n ? "drop-shadow(0 3px 7px #fde68a90)" : "";
+    });
+  }
+  function setRating(n){
+    user.lastRating = n;
+    highlightStars(n);
+  }
+}
+
+function getSelectedRating() {
+  return currentUser?.lastRating || 0;
+}
+
+// Feedback List
+function renderFeedbackList() {
+  let root = $("feedback-list-root");
+  if (!root) return;
+  if (!feedbacks.length) {
+    root.innerHTML = `<div style="text-align:center;font-size:1.13em;color:#888;padding:38px 0;">No feedback yet. Be the first!</div>`;
+    return;
+  }
+  root.innerHTML = "";
+  feedbacks.forEach(fb=>{
+    let isOwn = (currentUser && fb.userId && fb.userId===currentUser.userId);
+    let isEditing = (isEditingFeedbackId===fb._id);
+    let card = document.createElement("div");
+    card.className = "feedback-card";
+    card.style=`display:flex;align-items:flex-start;gap:15px;background:${isOwn?'#f3f0ff':'#fff'};border-radius:17px;box-shadow:0 3px 21px #c7d2fe26;margin-bottom:2px;padding:18px 18px 14px 14px;transition:.15s;position:relative;${isOwn?'border-left:7px solid var(--primary)':''}`;
+    card.innerHTML = `
+      <div style="flex-shrink:0;width:55px;height:55px;border-radius:50%;overflow:hidden;border:3px solid #ede9fe;background:#fafaff;box-shadow:0 1.5px 8px #ede9fe;">
+        <img src="${userAvatarUrl(fb)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:1.08em;font-family:'Lexend';font-weight:700;color:#262a56;">
+          ${escapeHtml(fb.name||"User")}
+          <span style="font-size:.91em;font-weight:400;color:#aaa;margin-left:6px;">${formatDate(fb.timestamp)}</span>
+          ${fb.isEdited?`<span style="margin-left:8px;color:#7c3aed;font-size:.83em;font-weight:600;background:#ede9fe;padding:2px 7px;border-radius:7px;">edited</span>`:""}
+        </div>
+        <div style="margin-top:5px;display:flex;align-items:center;gap:2.5px;">${renderMiniStars(fb.rating)}</div>
+        <div style="margin:7px 0 11px 0;font-size:1.11em;color:#464775;">${escapeHtml(fb.feedback)}</div>
+        ${fb.replies && fb.replies.length ? fb.replies.map(rep=>
+          `<div style="margin-top:7px;padding:10px 12px 10px 10px;background:#f1f5f9;border-left:4px solid #4f46e5;border-radius:7px 11px 12px 7px;display:flex;align-items:center;gap:10px;">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Admin" style="width:32px;height:32px;border-radius:50%;border:2px solid #8b5cf6;">
+            <div>
+              <div style="font-size:.98em;font-weight:700;color:#4f46e5;">Admin Response</div>
+              <div style="font-size:.97em;color:#454;height:100%;">${escapeHtml(rep.text)}</div>
+              <div style="font-size:.86em;color:#888;">${formatDate(rep.timestamp)}</div>
+            </div>
+          </div>`
+        ).join("") : ""}
+      </div>
+      ${isOwn ? `
+        <div style="display:flex;flex-direction:column;gap:7px;align-items:center;justify-content:center;margin-left:6px;">
+          <button onclick="editFeedback('${fb._id}')" title="Edit" style="background:none;border:none;cursor:pointer;"><svg width="23" height="23"><use href="#edit" /></svg></button>
+          <button onclick="deleteFeedback('${fb._id}')" title="Delete" style="background:none;border:none;cursor:pointer;"><svg width="23" height="23"><use href="#trash-2" /></svg></button>
+        </div>
+      ` : ""}
+    `;
+    root.appendChild(card);
+    // Fade in
+    card.style.opacity=0; setTimeout(()=>{card.style.opacity=1;},120);
+  });
+}
+function renderMiniStars(rating) {
+  let s = "";
+  for(let i=1;i<=5;i++)
+    s += `<svg width="19" height="19" style="vertical-align:-4px;"><use href="${i<=rating?'#star':'#star-off'}"/></svg>`;
+  return s;
+}
+
+// -------- FEEDBACK FORM SUBMIT --------
+document.addEventListener("submit", async function(e){
+  let form = e.target;
+  if (form && form.id==="feedback-form") {
+    e.preventDefault();
+    let rating = getSelectedRating();
+    let text = $("feedback-text").value.trim();
+    if (!rating) return showToast("Please select rating!","warn");
+    if (!text) return showToast("Write some feedback!","warn");
+    let btn = form.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = isEditingFeedbackId?"Updating...":"Submitting...";
+    try {
+      let url, method, body;
+      if (isEditingFeedbackId) {
+        url = API_BASE+"/api/feedback/"+isEditingFeedbackId; method="PUT";
+        body = JSON.stringify({ feedback: text, rating });
+      } else {
+        url = API_BASE+"/api/feedback"; method="POST";
+        body = JSON.stringify({ feedback: text, rating });
+      }
+      let res = await fetch(url, {
+        method, headers: {
+          "Content-Type":"application/json",
+          Authorization: "Bearer "+jwtToken
+        }, body
+      });
+      let data = await res.json();
+      if (res.ok) {
+        showToast(isEditingFeedbackId?"Feedback updated!":"Feedback submitted!","success");
+        isEditingFeedbackId = null;
+        currentUser.lastRating = 0;
+        await fetchFeedbacks();
+      } else if (res.status===401 || res.status===403) {
+        showToast("Session expired. Please login again.","error");
+        logoutUser();
+      } else showToast(data.message || "Error!","error");
+    } catch(e){ showToast("Network error! "+e,"error"); }
+    btn.disabled = false; btn.textContent = isEditingFeedbackId?"Update Feedback":"Submit Feedback";
+    $("feedback-text").value="";
+  }
+});
+
+function editFeedback(id) {
+  isEditingFeedbackId = id;
+  let fb = feedbacks.find(f=>f._id===id);
+  if (!fb) return;
+  currentUser.lastRating = fb.rating;
+  setTimeout(()=>{
+    $("feedback-text").value = fb.feedback;
+    renderAll();
+  },80);
+}
+function cancelEditFeedback() {
+  isEditingFeedbackId = null;
+  currentUser.lastRating = 0;
+  $("feedback-text").value = "";
+  renderAll();
+}
+function deleteFeedback(id) {
+  // Confirm modal
+  openModal(`
+    ${modalCloseBtnHtml()}
+    <div style="text-align:center;padding:18px 0 6px 0;">
+      <svg width="54" height="54"><use href="#trash-2" /></svg>
+      <div style="margin:17px 0;font-size:1.1em;color:#333;">Are you sure you want to <b>delete</b> this feedback? <br>This action cannot be undone.</div>
+      <button class="btn" onclick="doDeleteFeedback('${id}')" style="background:var(--error);margin-top:12px;">Yes, Delete</button>
+      <button class="btn" onclick="closeAllModals()" style="background:#f3f0ff;color:#4f46e5;margin-left:10px;">Cancel</button>
+    </div>
+  `);
+}
+async function doDeleteFeedback(id) {
+  closeAllModals();
+  try {
+    let res = await fetch(API_BASE+"/api/feedback/"+id, {
+      method: "DELETE",
+      headers: { Authorization: "Bearer "+jwtToken }
+    });
+    let data = await res.json();
+    if (res.ok) {
+      showToast("Feedback deleted!","success");
+      await fetchFeedbacks();
+    } else if (res.status===401 || res.status===403) {
+      showToast("Session expired. Please login again.","error");
+      logoutUser();
+    } else showToast(data.message || "Delete failed!","error");
+  } catch(e){ showToast("Network error! "+e,"error"); }
+}
+
+// -------- ONLOAD: AUTO LOGIN, RENDER, FETCH --------
+(async function() {
+  loadSvgSprite();
+  await fetchCurrentUser();
+  await fetchFeedbacks();
+})();
+
+</script>
+</body>
+</html>
