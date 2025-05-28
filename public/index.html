@@ -2020,7 +2020,7 @@
                         currentUser.name = data.user.name; // Update current user name
                         currentUser.avatarUrl = data.user.avatarUrl; // Update current user avatar URL
                         updateUIAfterLogin(); // Refresh main UI elements and profile modal
-                        showStylishPopup('success', 'Profile Updated!', data.message);
+                        showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated successfully!');
 
                     } catch (error) {
                         // Error handled by apiRequest already
