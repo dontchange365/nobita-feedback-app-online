@@ -2026,6 +2026,7 @@ updateUIAfterLogin();
                         currentUser.avatarUrl = data.user.avatarUrl; // Update current user avatar URL
                         updateUIAfterLogin(); // Refresh main UI elements and profile modal
                         showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated successfully!');
+                        latestUserDataFetchKaro();
                         setTimeout(() => location.reload(), 1500); // Optional refresh after 1.5s
                     } catch (error) {
                         // Error handled by apiRequest already
@@ -2464,7 +2465,25 @@ document.getElementById('change-password-profile-btn').addEventListener('click',
         alert('Password change failed: ' + error.message);
     });
 });
-
+async function latestUserDataFetchKaro() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const response = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const latestUser = await response.json();
+                localStorage.setItem('currentUser', JSON.stringify(latestUser));
+                updateUIAfterLogin();  // UI refresh hoga idhar
+            } else {
+                console.error('Server bola chal nikal:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Data fetch karne me teri website ki maa chudi:', error);
+        }
+    }
+}
                // === END: JavaScript Code ===
     </script>
 </body>
