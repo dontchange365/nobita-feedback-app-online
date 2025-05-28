@@ -1,39 +1,77 @@
+// server.js - Full backend with auth, feedback, admin, cloudinary upload
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const multer = require('multer');
 const nodemailer = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
-const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// CORS to allow frontend url
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+}));
 
-// MongoDB connection (fix: removed deprecated useUnifiedTopology)
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Nodemailer setup
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => console.log('MongoDB connected'))
+  .catch(e => { console.error('MongoDB error:', e); process.exit(1); });
+
+// Schemas & Models
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true, required: true },
+  passwordHash: String,
+  avatar: { type: String, default: 'https://i.ibb.co/FsSs4SG/creator-avatar.png' },
+  googleId: String,
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  resetToken: String,
+  resetTokenExpire: Date,
+});
+
+const User = mongoose.model('User', userSchema);
+
+const feedbackSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  username: { type: String, required: true },
+  avatar: { type: String, required: true },
+  rating: { type: Number, min: 1, max: 5, required: true },
+  text: { type: String, maxlength: 500, required: true },
+  date: { type: Date, default: Date.now },
+  adminReply: { type: String, default: '' },
+});
+
+const Feedback = mongoose.model('Feedback', feedbackSchema);
+
+// Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
+  port: Number(process.env.EMAIL_PORT),
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
@@ -41,336 +79,338 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Google OAuth Client
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// Models
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  passwordHash: { type: String },
-  avatarUrl: { type: String, default: 'https://i.ibb.co/FsSs4SG/creator-avatar.png' },
-  googleId: { type: String },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date,
-  isAdmin: { type: Boolean, default: false }
-}, { timestamps: true });
-
-const FeedbackSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  originalText: { type: String, required: true },
-  editedText: { type: String },
-  replies: [{
-    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    text: String,
-    createdAt: { type: Date, default: Date.now }
-  }],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date }
-});
-
-const User = mongoose.model('User', UserSchema);
-const Feedback = mongoose.model('Feedback', FeedbackSchema);
-
-// Middleware
-
-const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Unauthorized: Token missing' });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Forbidden: Token invalid' });
-    req.user = user;
+// Middleware: JWT verify
+function authMiddleware(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Unauthorized: No token' });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload;
     next();
-  });
-};
-
-const adminAuthenticate = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ message: 'Unauthorized' });
-
-  const basicAuth = authHeader.split(' ')[1];
-  if (!basicAuth) return res.status(401).json({ message: 'Unauthorized' });
-
-  const [username, password] = Buffer.from(basicAuth, 'base64').toString().split(':');
-  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-    next();
-  } else {
-    res.status(403).json({ message: 'Forbidden: Admin creds wrong' });
+  } catch (err) {
+    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
-};
-
-// Utils
-
-async function sendResetEmail(email, token) {
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}`;
-  await transporter.sendMail({
-    from: `"Nobi Bot" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Password Reset Request",
-    html: `<p>Tere account ke liye password reset karne ke liye, niche link pe click kar:</p><a href="${resetLink}">${resetLink}</a><p>Yeh link 1 ghante ke liye valid hai.</p>`
-  });
 }
 
-// Routes
+// Middleware: Admin basic auth for admin panel API
+function adminAuth(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Basic ')) return res.status(401).json({ message: 'Unauthorized' });
+  const base64 = auth.split(' ')[1];
+  const [user, pass] = Buffer.from(base64, 'base64').toString().split(':');
+  if (user === process.env.ADMIN_USERNAME && pass === process.env.ADMIN_PASSWORD) {
+    next();
+  } else {
+    return res.status(401).json({ message: 'Unauthorized: Invalid admin credentials' });
+  }
+}
 
-// Register User
-app.post('/api/register', async (req, res) => {
+// Multer for avatar upload
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// ==== Routes ====
+
+// 1. Signup Email/Password
+app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if(!name || !email || !password) return res.status(400).json({ message: 'Saare fields bhar, bhenchod!' });
+    if (!name || !email || !password) return res.status(400).json({ message: 'All fields required' });
 
-    const existing = await User.findOne({ email });
-    if(existing) return res.status(400).json({ message: 'Email pehle se register hai!' });
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ message: 'Email already registered' });
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const hash = await bcrypt.hash(password, 12);
+    const user = await User.create({ name, email, passwordHash: hash });
 
-    const user = new User({ name, email, passwordHash });
-    await user.save();
-
-    res.status(201).json({ message: 'Register ho gaya, ab login kar!' });
-  } catch(err) {
+    const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
+  } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Login User
-app.post('/api/login', async (req, res) => {
+// 2. Login Email/Password
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if(!email || !password) return res.status(400).json({ message: 'Email aur password do!' });
+    if (!email || !password) return res.status(400).json({ message: 'All fields required' });
 
     const user = await User.findOne({ email });
-    if(!user) return res.status(400).json({ message: 'Email ya password galat hai!' });
-    if(!user.passwordHash) return res.status(400).json({ message: 'Google login se banaya gaya account hai, password nahi hai!' });
+    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
 
-    const validPass = await bcrypt.compare(password, user.passwordHash);
-    if(!validPass) return res.status(400).json({ message: 'Email ya password galat hai!' });
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) return res.status(400).json({ message: 'Invalid email or password' });
 
-    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl } });
-  } catch(err) {
+    const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
+  } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Google Login
-app.post('/api/google-login', async (req, res) => {
+// 3. Google login
+app.post('/api/auth/google', async (req, res) => {
   try {
     const { tokenId } = req.body;
-    const ticket = await googleClient.verifyIdToken({ idToken: tokenId, audience: process.env.GOOGLE_CLIENT_ID });
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokenId,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
     const payload = ticket.getPayload();
+    if (!payload.email_verified) return res.status(400).json({ message: 'Google email not verified' });
 
     let user = await User.findOne({ email: payload.email });
-    if(!user) {
-      user = new User({
+    if (!user) {
+      user = await User.create({
         name: payload.name,
         email: payload.email,
+        avatar: payload.picture || 'https://i.ibb.co/FsSs4SG/creator-avatar.png',
         googleId: payload.sub,
-        avatarUrl: payload.picture,
       });
-      await user.save();
     }
 
-    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl } });
-  } catch(err) {
+    const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
+  } catch (err) {
     res.status(500).json({ message: 'Google login failed' });
   }
 });
 
-// Forgot password - generate token and send mail
-app.post('/api/forgot-password', async (req, res) => {
+// 4. Password reset request - send email with token
+app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
-    if(!email) return res.status(400).json({ message: 'Email de!' });
+    if (!email) return res.status(400).json({ message: 'Email required' });
 
     const user = await User.findOne({ email });
-    if(!user) return res.status(400).json({ message: 'Email registered nahi hai' });
+    if (!user) return res.status(200).json({ message: 'If email exists, reset link sent' }); // Don't reveal user presence
 
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetToken = resetToken;
+    user.resetTokenExpire = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    await sendResetEmail(email, resetToken);
-    res.json({ message: 'Password reset link mail kar diya' });
-  } catch(err) {
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: `"Nobi Bot Feedback" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: 'Password Reset Link',
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Link valid for 1 hour.</p>`,
+    });
+
+    res.json({ message: 'If email exists, reset link sent' });
+  } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Reset password
-app.post('/api/reset-password', async (req, res) => {
+// 5. Reset password - with token
+app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
-    if(!token || !newPassword) return res.status(400).json({ message: 'Token aur naya password de!' });
+    if (!token || !newPassword) return res.status(400).json({ message: 'Token and new password required' });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findOne({
       _id: decoded.id,
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
+      resetToken: token,
+      resetTokenExpire: { $gt: Date.now() },
     });
-    if(!user) return res.status(400).json({ message: 'Invalid ya expired token' });
+    if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
 
-    const salt = await bcrypt.genSalt(10);
-    user.passwordHash = await bcrypt.hash(newPassword, salt);
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.resetToken = undefined;
+    user.resetTokenExpire = undefined;
     await user.save();
 
-    res.json({ message: 'Password reset ho gaya, ab login kar!' });
-  } catch(err) {
+    res.json({ message: 'Password reset successful' });
+  } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get user profile
-app.get('/api/profile', authenticateToken, async (req, res) => {
-  const user = await User.findById(req.user.id).select('-passwordHash -resetPasswordToken -resetPasswordExpires');
-  if(!user) return res.status(404).json({ message: 'User nahi mila' });
-  res.json(user);
-});
-
-// Update profile avatar
-const upload = multer();
-app.post('/api/profile/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
-  if(!req.file) return res.status(400).json({ message: 'Avatar file bhej!' });
-
-  // Upload to cloudinary stream
-  let streamUpload = (req) => {
-    return new Promise((resolve, reject) => {
-      let stream = cloudinary.uploader.upload_stream(
-        { folder: 'avatars' },
-        (error, result) => {
-          if(result) resolve(result);
-          else reject(error);
-        }
-      );
-      streamifier.createReadStream(req.file.buffer).pipe(stream);
-    });
-  };
-
+// 6. Get current user info (auth required)
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
-    const result = await streamUpload(req);
     const user = await User.findById(req.user.id);
-    user.avatarUrl = result.secure_url;
-    await user.save();
-    res.json({ avatarUrl: result.secure_url });
-  } catch(e) {
-    res.status(500).json({ message: 'Cloudinary upload failed' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ id: user._id, name: user.name, email: user.email, avatar: user.avatar, role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Feedback CRUD
+// 7. Upload avatar (auth required)
+app.post('/api/user/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-// Create feedback
-app.post('/api/feedback', authenticateToken, async (req, res) => {
-  const { text } = req.body;
-  if(!text) return res.status(400).json({ message: 'Feedback text de!' });
+    const uploadResult = await cloudinary.uploader.upload_stream(
+      { folder: 'avatars', resource_type: 'image' },
+      async (error, result) => {
+        if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
+        // Update user avatar url
+        await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url });
+        res.json({ avatarUrl: result.secure_url });
+      }
+    );
 
-  const feedback = new Feedback({
-    user: req.user.id,
-    originalText: text,
-    editedText: text,
-  });
-  await feedback.save();
-  res.status(201).json(feedback);
+    // Pipe file buffer to uploader
+    const stream = uploadResult;
+    stream.end(req.file.buffer);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Get all feedbacks for logged in user
-app.get('/api/feedback', authenticateToken, async (req, res) => {
-  const feedbacks = await Feedback.find({ user: req.user.id }).sort({ createdAt: -1 });
-  res.json(feedbacks);
+// 8. Feedback CRUD
+
+// Create feedback (auth optional)
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    let user = null;
+    if (token) {
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        user = await User.findById(payload.id);
+      } catch {}
+    }
+
+    const { rating, text } = req.body;
+    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and feedback text required' });
+    if (text.length > 500) return res.status(400).json({ message: 'Feedback max 500 chars' });
+
+    const feedback = await Feedback.create({
+      userId: user ? user._id : null,
+      username: user ? user.name : 'Guest',
+      avatar: user ? user.avatar : 'https://i.ibb.co/FsSs4SG/creator-avatar.png',
+      rating,
+      text,
+    });
+    res.json({ feedback });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Update feedback (only own)
-app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { editedText } = req.body;
-
-  const feedback = await Feedback.findById(id);
-  if(!feedback) return res.status(404).json({ message: 'Feedback nahi mila' });
-  if(feedback.user.toString() !== req.user.id) return res.status(403).json({ message: 'Tu apna feedback hi edit kar sakta hai!' });
-
-  feedback.editedText = editedText;
-  feedback.updatedAt = new Date();
-  await feedback.save();
-
-  res.json(feedback);
+// Get all feedback (paginated optional, else all)
+app.get('/api/feedback', async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find()
+      .sort({ date: -1 })
+      .limit(100) // limit max 100 for performance
+      .lean();
+    res.json({ feedbacks });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Delete feedback (only own)
-app.delete('/api/feedback/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
+// Update feedback (only owner user)
+app.put('/api/feedback/:id', authMiddleware, async (req, res) => {
+  try {
+    const fb = await Feedback.findById(req.params.id);
+    if (!fb) return res.status(404).json({ message: 'Feedback not found' });
+    if (!fb.userId || fb.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
 
-  const feedback = await Feedback.findById(id);
-  if(!feedback) return res.status(404).json({ message: 'Feedback nahi mila' });
-  if(feedback.user.toString() !== req.user.id) return res.status(403).json({ message: 'Tu apna feedback hi delete kar sakta hai!' });
+    const { rating, text } = req.body;
+    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and feedback text required' });
+    if (text.length > 500) return res.status(400).json({ message: 'Feedback max 500 chars' });
 
-  await Feedback.deleteOne({ _id: id });
-  res.json({ message: 'Feedback delete ho gaya' });
+    fb.rating = rating;
+    fb.text = text;
+    await fb.save();
+    res.json({ feedback: fb });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Admin routes
+// Delete feedback (owner or admin)
+app.delete('/api/feedback/:id', authMiddleware, async (req, res) => {
+  try {
+    const fb = await Feedback.findById(req.params.id);
+    if (!fb) return res.status(404).json({ message: 'Feedback not found' });
 
-// Admin login - basic auth middleware only
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
-// Get all users (admin)
-app.get('/api/admin/users', adminAuthenticate, async (req, res) => {
-  const users = await User.find({}, 'name email avatarUrl isAdmin createdAt');
-  res.json(users);
+    if (fb.userId && fb.userId.toString() === req.user.id) {
+      // Owner delete allowed
+      await fb.remove();
+      return res.json({ message: 'Feedback deleted' });
+    }
+    if (user.role === 'admin') {
+      // Admin delete allowed
+      await fb.remove();
+      return res.json({ message: 'Feedback deleted by admin' });
+    }
+
+    res.status(403).json({ message: 'Forbidden' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Update user avatar (admin)
-app.put('/api/admin/users/:id/avatar', adminAuthenticate, async (req, res) => {
-  const { id } = req.params;
-  const { avatarUrl } = req.body;
-  if(!avatarUrl) return res.status(400).json({ message: 'Naya avatar url de!' });
+// Admin reply to feedback (admin auth required)
+app.post('/api/admin/feedback/:id/reply', adminAuth, async (req, res) => {
+  try {
+    const { replyText } = req.body;
+    if (!replyText || replyText.trim().length === 0) return res.status(400).json({ message: 'Reply text required' });
 
-  const user = await User.findById(id);
-  if(!user) return res.status(404).json({ message: 'User nahi mila' });
+    const fb = await Feedback.findById(req.params.id);
+    if (!fb) return res.status(404).json({ message: 'Feedback not found' });
 
-  user.avatarUrl = avatarUrl;
-  await user.save();
-  res.json({ message: 'User avatar update ho gaya' });
+    fb.adminReply = replyText;
+    await fb.save();
+    res.json({ message: 'Reply saved', feedback: fb });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Get all feedbacks (admin)
-app.get('/api/admin/feedbacks', adminAuthenticate, async (req, res) => {
-  const feedbacks = await Feedback.find()
-    .populate('user', 'name email avatarUrl')
-    .populate('replies.adminId', 'name email')
-    .sort({ createdAt: -1 });
-  res.json(feedbacks);
+// Admin get all users (admin auth)
+app.get('/api/admin/users', adminAuth, async (req, res) => {
+  try {
+    const users = await User.find().select('-passwordHash -resetToken -resetTokenExpire').lean();
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Admin reply on feedback
-app.post('/api/admin/feedbacks/:id/reply', adminAuthenticate, async (req, res) => {
-  const { id } = req.params;
-  const { text } = req.body;
-  if(!text) return res.status(400).json({ message: 'Reply text de!' });
+// Admin update user avatar (admin auth)
+app.post('/api/admin/user/:id/avatar', adminAuth, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-  const feedback = await Feedback.findById(id);
-  if(!feedback) return res.status(404).json({ message: 'Feedback nahi mila' });
+    const uploadResult = await cloudinary.uploader.upload_stream(
+      { folder: 'avatars', resource_type: 'image' },
+      async (error, result) => {
+        if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
 
-  feedback.replies.push({ adminId: null, text, createdAt: new Date() });
-  await feedback.save();
-  res.json({ message: 'Reply add ho gaya' });
+        await User.findByIdAndUpdate(req.params.id, { avatar: result.secure_url });
+        res.json({ avatarUrl: result.secure_url });
+      }
+    );
+    const stream = uploadResult;
+    stream.end(req.file.buffer);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-// Serve frontend static files
-app.use(express.static('public'));
+// Serve static frontend files (optional)
+// app.use(express.static(path.join(__dirname, 'public')));
 
-// SPA fallback to serve index.html on unknown routes
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
-});
+// Catch all for frontend (optional)
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`Server chal raha hai port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
