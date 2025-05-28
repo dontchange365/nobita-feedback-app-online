@@ -1,5 +1,4 @@
-// server.js - Full backend with auth, feedback, admin, cloudinary upload
-
+// server.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -15,7 +14,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS to allow frontend url
+// CORS setup
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
@@ -23,6 +22,15 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve frontend static files from 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// SPA fallback
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).json({ message: 'API route not found' });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Cloudinary config
 cloudinary.config({
@@ -36,10 +44,12 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('MongoDB connected'))
-  .catch(e => { console.error('MongoDB error:', e); process.exit(1); });
+  .catch(e => {
+    console.error('MongoDB connection error:', e);
+    process.exit(1);
+  });
 
 // Schemas & Models
-
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true, required: true },
@@ -50,7 +60,6 @@ const userSchema = new mongoose.Schema({
   resetToken: String,
   resetTokenExpire: Date,
 });
-
 const User = mongoose.model('User', userSchema);
 
 const feedbackSchema = new mongoose.Schema({
@@ -62,7 +71,6 @@ const feedbackSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   adminReply: { type: String, default: '' },
 });
-
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 // Google OAuth client
@@ -87,244 +95,193 @@ function authMiddleware(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = payload;
     next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+  } catch {
+    res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
 }
 
-// Middleware: Admin basic auth for admin panel API
+// Middleware: Admin basic auth
 function adminAuth(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Basic ')) return res.status(401).json({ message: 'Unauthorized' });
   const base64 = auth.split(' ')[1];
   const [user, pass] = Buffer.from(base64, 'base64').toString().split(':');
-  if (user === process.env.ADMIN_USERNAME && pass === process.env.ADMIN_PASSWORD) {
-    next();
-  } else {
-    return res.status(401).json({ message: 'Unauthorized: Invalid admin credentials' });
-  }
+  if (user === process.env.ADMIN_USERNAME && pass === process.env.ADMIN_PASSWORD) next();
+  else res.status(401).json({ message: 'Unauthorized: Invalid admin credentials' });
 }
 
-// Multer for avatar upload
+// Multer for avatar uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// ==== Routes ====
+// Routes
 
-// 1. Signup Email/Password
+// Signup email/password
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: 'All fields required' });
-
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'Email already registered' });
-
-    const hash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash: hash });
-
+    if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already registered' });
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({ name, email, passwordHash });
     const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 2. Login Email/Password
+// Login email/password
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'All fields required' });
-
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid email or password' });
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) return res.status(400).json({ message: 'Invalid email or password' });
-
+    if (!(await bcrypt.compare(password, user.passwordHash))) return res.status(400).json({ message: 'Invalid email or password' });
     const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 3. Google login
+// Google login
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { tokenId } = req.body;
-    const ticket = await googleClient.verifyIdToken({
-      idToken: tokenId,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const ticket = await googleClient.verifyIdToken({ idToken: tokenId, audience: process.env.GOOGLE_CLIENT_ID });
     const payload = ticket.getPayload();
     if (!payload.email_verified) return res.status(400).json({ message: 'Google email not verified' });
-
     let user = await User.findOne({ email: payload.email });
-    if (!user) {
-      user = await User.create({
-        name: payload.name,
-        email: payload.email,
-        avatar: payload.picture || 'https://i.ibb.co/FsSs4SG/creator-avatar.png',
-        googleId: payload.sub,
-      });
-    }
-
+    if (!user) user = await User.create({ name: payload.name, email: payload.email, avatar: payload.picture || 'https://i.ibb.co/FsSs4SG/creator-avatar.png', googleId: payload.sub });
     const token = jwt.sign({ id: user._id, role: user.role, name: user.name, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, avatar: user.avatar } });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Google login failed' });
   }
 });
 
-// 4. Password reset request - send email with token
+// Forgot password - send email
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email required' });
-
     const user = await User.findOne({ email });
-    if (!user) return res.status(200).json({ message: 'If email exists, reset link sent' }); // Don't reveal user presence
-
+    if (!user) return res.json({ message: 'If email exists, reset link sent' });
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     user.resetToken = resetToken;
-    user.resetTokenExpire = Date.now() + 3600000; // 1 hour
+    user.resetTokenExpire = Date.now() + 3600000;
     await user.save();
-
     const resetLink = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
-
     await transporter.sendMail({
       from: `"Nobi Bot Feedback" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: 'Password Reset Link',
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Link valid for 1 hour.</p>`,
+      html: `<p>Reset password <a href="${resetLink}">here</a>. Link valid for 1 hour.</p>`,
     });
-
     res.json({ message: 'If email exists, reset link sent' });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 5. Reset password - with token
+// Reset password
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ message: 'Token and new password required' });
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({
-      _id: decoded.id,
-      resetToken: token,
-      resetTokenExpire: { $gt: Date.now() },
-    });
+    const user = await User.findOne({ _id: decoded.id, resetToken: token, resetTokenExpire: { $gt: Date.now() } });
     if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
-
     user.passwordHash = await bcrypt.hash(newPassword, 12);
     user.resetToken = undefined;
     user.resetTokenExpire = undefined;
     await user.save();
-
     res.json({ message: 'Password reset successful' });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 6. Get current user info (auth required)
+// Get current user info
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ id: user._id, name: user.name, email: user.email, avatar: user.avatar, role: user.role });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 7. Upload avatar (auth required)
+// Upload avatar
 app.post('/api/user/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-
-    const uploadResult = await cloudinary.uploader.upload_stream(
-      { folder: 'avatars', resource_type: 'image' },
-      async (error, result) => {
-        if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
-        // Update user avatar url
-        await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url });
-        res.json({ avatarUrl: result.secure_url });
-      }
-    );
-
-    // Pipe file buffer to uploader
-    const stream = uploadResult;
+    const result = await cloudinary.uploader.upload_stream({ folder: 'avatars' }, async (error, result) => {
+      if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
+      await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url });
+      res.json({ avatarUrl: result.secure_url });
+    });
+    const stream = result;
     stream.end(req.file.buffer);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-// 8. Feedback CRUD
 
 // Create feedback (auth optional)
 app.post('/api/feedback', async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
     let user = null;
+    const token = req.headers.authorization?.split(' ')[1];
     if (token) {
       try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         user = await User.findById(payload.id);
       } catch {}
     }
-
     const { rating, text } = req.body;
-    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and feedback text required' });
-    if (text.length > 500) return res.status(400).json({ message: 'Feedback max 500 chars' });
-
+    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and text required' });
+    if (text.length > 500) return res.status(400).json({ message: 'Text max 500 chars' });
     const feedback = await Feedback.create({
-      userId: user ? user._id : null,
-      username: user ? user.name : 'Guest',
-      avatar: user ? user.avatar : 'https://i.ibb.co/FsSs4SG/creator-avatar.png',
+      userId: user?._id || null,
+      username: user?.name || 'Guest',
+      avatar: user?.avatar || 'https://i.ibb.co/FsSs4SG/creator-avatar.png',
       rating,
       text,
     });
     res.json({ feedback });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get all feedback (paginated optional, else all)
+// Get all feedback
 app.get('/api/feedback', async (req, res) => {
   try {
-    const feedbacks = await Feedback.find()
-      .sort({ date: -1 })
-      .limit(100) // limit max 100 for performance
-      .lean();
+    const feedbacks = await Feedback.find().sort({ date: -1 }).limit(100).lean();
     res.json({ feedbacks });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Update feedback (only owner user)
+// Update feedback (owner only)
 app.put('/api/feedback/:id', authMiddleware, async (req, res) => {
   try {
     const fb = await Feedback.findById(req.params.id);
     if (!fb) return res.status(404).json({ message: 'Feedback not found' });
     if (!fb.userId || fb.userId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
-
     const { rating, text } = req.body;
-    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and feedback text required' });
-    if (text.length > 500) return res.status(400).json({ message: 'Feedback max 500 chars' });
-
+    if (!rating || !text || text.trim().length === 0) return res.status(400).json({ message: 'Rating and text required' });
+    if (text.length > 500) return res.status(400).json({ message: 'Text max 500 chars' });
     fb.rating = rating;
     fb.text = text;
     await fb.save();
     res.json({ feedback: fb });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -334,83 +291,62 @@ app.delete('/api/feedback/:id', authMiddleware, async (req, res) => {
   try {
     const fb = await Feedback.findById(req.params.id);
     if (!fb) return res.status(404).json({ message: 'Feedback not found' });
-
     const user = await User.findById(req.user.id);
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
-
     if (fb.userId && fb.userId.toString() === req.user.id) {
-      // Owner delete allowed
       await fb.remove();
       return res.json({ message: 'Feedback deleted' });
     }
     if (user.role === 'admin') {
-      // Admin delete allowed
       await fb.remove();
       return res.json({ message: 'Feedback deleted by admin' });
     }
-
     res.status(403).json({ message: 'Forbidden' });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Admin reply to feedback (admin auth required)
+// Admin reply to feedback
 app.post('/api/admin/feedback/:id/reply', adminAuth, async (req, res) => {
   try {
     const { replyText } = req.body;
     if (!replyText || replyText.trim().length === 0) return res.status(400).json({ message: 'Reply text required' });
-
     const fb = await Feedback.findById(req.params.id);
     if (!fb) return res.status(404).json({ message: 'Feedback not found' });
-
     fb.adminReply = replyText;
     await fb.save();
     res.json({ message: 'Reply saved', feedback: fb });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Admin get all users (admin auth)
+// Admin get users
 app.get('/api/admin/users', adminAuth, async (req, res) => {
   try {
     const users = await User.find().select('-passwordHash -resetToken -resetTokenExpire').lean();
     res.json({ users });
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Admin update user avatar (admin auth)
+// Admin update user avatar
 app.post('/api/admin/user/:id/avatar', adminAuth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-
-    const uploadResult = await cloudinary.uploader.upload_stream(
-      { folder: 'avatars', resource_type: 'image' },
-      async (error, result) => {
-        if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
-
-        await User.findByIdAndUpdate(req.params.id, { avatar: result.secure_url });
-        res.json({ avatarUrl: result.secure_url });
-      }
-    );
-    const stream = uploadResult;
+    const result = await cloudinary.uploader.upload_stream({ folder: 'avatars' }, async (error, result) => {
+      if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
+      await User.findByIdAndUpdate(req.params.id, { avatar: result.secure_url });
+      res.json({ avatarUrl: result.secure_url });
+    });
+    const stream = result;
     stream.end(req.file.buffer);
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Serve static frontend files (optional)
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// Catch all for frontend (optional)
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-// });
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server
+app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
