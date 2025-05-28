@@ -1362,11 +1362,43 @@
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script>
         // === START: JavaScript Code ===
+// ========== PROFILE EDIT FORM SUBMIT ==========
+profileEditForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: profileNameInput.value });
+        localStorage.setItem('currentUser', JSON.stringify(data.user)); // Yeh line zaruri hai!
+        currentUser = data.user;
+        updateUIAfterLogin();
+        showStylishPopup('success', 'Updated!', 'Your name has been updated.');
+    } catch (err) {
+        // Error handled elsewhere
+    }
+});
         document.addEventListener('DOMContentLoaded', async () => {
   console.log("DOM Fully Loaded and Parsed");
 
       // ✅ Live from server
-
+function updateUIAfterLogin() {
+    const storedUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (storedUser) {
+        userAvatarTrigger.style.display = 'flex';
+        loginIconTrigger.style.display = 'none';
+        menuUsernameSpan.textContent = storedUser.name;
+        menuAvatarImg.src = storedUser.avatar || '/default.png';
+        userAvatarTriggerImg.src = storedUser.avatar || '/default.png';
+        nameInputInFeedbackForm.value = storedUser.name;
+        feedbackFormUsernameSpan.textContent = storedUser.name;
+    } else {
+        userAvatarTrigger.style.display = 'none';
+        loginIconTrigger.style.display = 'flex';
+        menuUsernameSpan.textContent = 'User Name';
+        menuAvatarImg.src = '/default.png';
+        userAvatarTriggerImg.src = '/default.png';
+        nameInputInFeedbackForm.value = '';
+        feedbackFormUsernameSpan.textContent = 'User';
+    }
+}
   // baki tera existing code jaise hi rehne de
 
             // Assuming GOOGLE_CLIENT_ID is hardcoded here or loaded from a meta tag
@@ -1968,7 +2000,17 @@ updateUIAfterLogin();
                 });
 
                 profileEditForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
+    e.preventDefault();
+    try {
+        const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: profileNameInput.value });
+        localStorage.setItem('currentUser', JSON.stringify(data.user)); // Yeh line lagani hi hai!
+        currentUser = data.user;
+        updateUIAfterLogin();
+        showStylishPopup('success', 'Updated!', 'Your name has been updated.');
+    } catch (err) {
+        // Error already handled
+    }
+});
                     if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to update your profile.');
                     
                     const newName = profileNameInput.value.trim();
