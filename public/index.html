@@ -1607,8 +1607,9 @@
                     modal.addEventListener('click', e => {
                         if (e.target === modal) modal.classList.remove('active');
                     });
-                    const closeBtn = modal.querySelector('.close-modal-btn');
-                    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+                    modal
+  .querySelectorAll('[data-modal-close]')
+  .forEach(btn => btn.addEventListener('click', () => modal.classList.remove('active')));
                 }
             });
             
