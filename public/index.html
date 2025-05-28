@@ -1442,10 +1442,7 @@
             const mainTitle = document.getElementById('main-title'); // For Typed.js
             
              let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
-+// immediately refresh top-bar & menu with stored user data
-+updateUIAfterLogin();
- fetchFeedbacks();
- resetFeedbackForm();
++// 
             let currentSelectedRating = 0;
             let isEditing = false;
             let currentEditFeedbackId = null;
