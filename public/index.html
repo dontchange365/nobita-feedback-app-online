@@ -2017,15 +2017,25 @@
   avatarUrl: currentUser.avatarUrl
 });
 
-// 🆕 Save new token if available
+// 🔐 Save the new token
 if (data.token) {
   localStorage.setItem('authToken', data.token);
 }
 
+// 🆕 Update UI
 currentUser.name = data.user.name;
 currentUser.avatarUrl = data.user.avatarUrl;
 updateUIAfterLogin();
-showStylishPopup('success', 'Profile Updated!', data.message);
+
+// ✅ Show popup and reload on OK
+Swal.fire({
+  icon: 'success',
+  title: 'Profile Updated!',
+  text: data.message,
+  confirmButtonText: 'OK'
+}).then(() => {
+  location.reload();  // 🔁 Reload when user clicks OK
+});
 
                     } catch (error) {
                         // Error handled by apiRequest already
