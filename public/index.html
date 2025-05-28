@@ -279,8 +279,8 @@
       setTimeout(() => { div.style.opacity='0.2'; div.style.transform='translateY(-36px)'; }, ms-500);
       setTimeout(() => { if (div.parentNode) toastRoot.removeChild(div); }, ms);
     }
-  </script>
-  <script>
+  
+  
 const API_BASE = "https://nobita-feedback-app-online.onrender.com";
 const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/dyv7xav3e/image/upload";
@@ -661,7 +661,7 @@ function openEditProfileModal() {
         </div>
       </form>
     </div>
-    <script>
+    
       // Drag and drop avatar
       let dropZone = document.getElementById('profile-avatar-dropzone');
       let preview = document.getElementById('edit-avatar-preview');
@@ -724,7 +724,7 @@ function openEditProfileModal() {
           renderAll();
         } else showToast(data2.message || "Update failed","error");
       };
-    </script>
+    
   `);
 }
 
@@ -744,9 +744,6 @@ function loadSvgSprite() {
   </svg>
   `;
 }
-
-</script>
-<script>
 // -------- FEEDBACK SYSTEM --------
 async function fetchFeedbacks() {
   $("root-main").innerHTML = `<div class="main-loader"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="22" stroke="#4f46e5" stroke-width="5" fill="none"/><path d="M25 5a20 20 0 1 1-16 32" stroke="#10b981" stroke-width="4" fill="none"/></svg></div>`;
