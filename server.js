@@ -14,21 +14,19 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS setup
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend static files from 'public' folder
+// Serve frontend static files (put your frontend files in /public)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// SPA fallback
+// Fallback route for SPA frontend
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api')) return res.status(404).json({ message: 'API route not found' });
+  if (req.path.startsWith('/api')) return res.status(404).json({ message: 'API not found' });
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -43,13 +41,12 @@ cloudinary.config({
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch(e => {
-    console.error('MongoDB connection error:', e);
-    process.exit(1);
-  });
+}).then(() => console.log('MongoDB connected')).catch(err => {
+  console.error('MongoDB error:', err);
+  process.exit(1);
+});
 
-// Schemas & Models
+// Models
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true, required: true },
@@ -73,10 +70,8 @@ const feedbackSchema = new mongoose.Schema({
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-// Google OAuth client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
@@ -87,7 +82,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Middleware: JWT verify
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Unauthorized: No token' });
@@ -100,7 +94,6 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Middleware: Admin basic auth
 function adminAuth(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Basic ')) return res.status(401).json({ message: 'Unauthorized' });
@@ -110,13 +103,10 @@ function adminAuth(req, res, next) {
   else res.status(401).json({ message: 'Unauthorized: Invalid admin credentials' });
 }
 
-// Multer for avatar uploads
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Routes
+// --- Routes ---
 
-// Signup email/password
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -131,7 +121,6 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
-// Login email/password
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -146,7 +135,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Google login
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { tokenId } = req.body;
@@ -162,7 +150,6 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-// Forgot password - send email
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -186,7 +173,6 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
-// Reset password
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -204,7 +190,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// Get current user info
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -215,23 +200,23 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   }
 });
 
-// Upload avatar
 app.post('/api/user/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    const result = await cloudinary.uploader.upload_stream({ folder: 'avatars' }, async (error, result) => {
-      if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
-      await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url });
-      res.json({ avatarUrl: result.secure_url });
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream({ folder: 'avatars' }, (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      });
+      stream.end(req.file.buffer);
     });
-    const stream = result;
-    stream.end(req.file.buffer);
+    await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url });
+    res.json({ avatarUrl: result.secure_url });
   } catch {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Upload failed' });
   }
 });
 
-// Create feedback (auth optional)
 app.post('/api/feedback', async (req, res) => {
   try {
     let user = null;
@@ -258,7 +243,6 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-// Get all feedback
 app.get('/api/feedback', async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ date: -1 }).limit(100).lean();
@@ -268,7 +252,6 @@ app.get('/api/feedback', async (req, res) => {
   }
 });
 
-// Update feedback (owner only)
 app.put('/api/feedback/:id', authMiddleware, async (req, res) => {
   try {
     const fb = await Feedback.findById(req.params.id);
@@ -286,7 +269,6 @@ app.put('/api/feedback/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Delete feedback (owner or admin)
 app.delete('/api/feedback/:id', authMiddleware, async (req, res) => {
   try {
     const fb = await Feedback.findById(req.params.id);
@@ -307,7 +289,6 @@ app.delete('/api/feedback/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// Admin reply to feedback
 app.post('/api/admin/feedback/:id/reply', adminAuth, async (req, res) => {
   try {
     const { replyText } = req.body;
@@ -322,7 +303,6 @@ app.post('/api/admin/feedback/:id/reply', adminAuth, async (req, res) => {
   }
 });
 
-// Admin get users
 app.get('/api/admin/users', adminAuth, async (req, res) => {
   try {
     const users = await User.find().select('-passwordHash -resetToken -resetTokenExpire').lean();
@@ -332,21 +312,21 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
   }
 });
 
-// Admin update user avatar
 app.post('/api/admin/user/:id/avatar', adminAuth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    const result = await cloudinary.uploader.upload_stream({ folder: 'avatars' }, async (error, result) => {
-      if (error) return res.status(500).json({ message: 'Cloudinary upload failed' });
-      await User.findByIdAndUpdate(req.params.id, { avatar: result.secure_url });
-      res.json({ avatarUrl: result.secure_url });
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream({ folder: 'avatars' }, (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      });
+      stream.end(req.file.buffer);
     });
-    const stream = result;
-    stream.end(req.file.buffer);
+    await User.findByIdAndUpdate(req.params.id, { avatar: result.secure_url });
+    res.json({ avatarUrl: result.secure_url });
   } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
