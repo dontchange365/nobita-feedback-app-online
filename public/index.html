@@ -1362,6 +1362,7 @@
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
    <script>
 // === START: JavaScript Code ===
+// === START: JavaScript Code ===
 document.addEventListener('DOMContentLoaded', async () => {
     // LOGO
     console.log("DOM Fully Loaded and Parsed");
@@ -1538,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(stylishPopupOverlay) stylishPopupOverlay.addEventListener('click', e => { if (e.target === stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); });
 
     // ---- PART 1/5 ENDS HERE ----
-    // === LOGIN & SIGNUP MODALS ===
+         // === LOGIN & SIGNUP MODALS ===
     if (loginIconTrigger) {
         loginIconTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1795,7 +1796,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // === PART 2/5 ENDS HERE ===
-// === PROFILE EDIT FORM – SAVE CHANGES & AVATAR UPLOAD ===
+     // === PROFILE EDIT FORM – SAVE CHANGES & AVATAR UPLOAD ===
 if (profileEditForm) {
     profileEditForm.addEventListener('input', () => {
         // Only enable save if name changed or avatar selected (for email users only)
@@ -1942,7 +1943,7 @@ if (changePasswordForm) {
         }
     });
 }
-// === STAR RATING LOGIC ===
+ // === STAR RATING LOGIC ===
 starsElements.forEach(star => {
     star.addEventListener('click', () => {
         const value = parseInt(star.dataset.value);
@@ -2092,7 +2093,7 @@ function updateAverageRating(avg, count) {
         }
     }, 50);
 }
-// === ADD FEEDBACK TO DOM ===
+ // === ADD FEEDBACK TO DOM ===
 function addFeedbackToDOM(fbData, index) {
     const item = document.createElement('div');
     item.className = 'feedback-item';
@@ -2227,7 +2228,7 @@ function addFeedbackToDOM(fbData, index) {
 // --- FINAL INIT CALLS ---
 updateUIAfterLogout();
 checkLoginStatus();
-
-</script>
+    
+    <\script>
 </body>
 </html>
