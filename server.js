@@ -9,6 +9,7 @@ const { OAuth2Client } = require('google-auth-library');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,20 +17,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- MongoDB Connection ---
+// MongoDB connection (fix: removed deprecated useUnifiedTopology)
 mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected')).catch(err => console.error(err));
+  useNewUrlParser: true
+}).then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// --- Cloudinary config ---
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// --- Nodemailer setup ---
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT),
@@ -40,11 +41,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// --- Google OAuth Client ---
+// Google OAuth Client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// --- Models ---
-
+// Models
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -59,7 +59,7 @@ const UserSchema = new mongoose.Schema({
 const FeedbackSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   originalText: { type: String, required: true },
-  editedText: { type: String }, // User can edit feedback later
+  editedText: { type: String },
   replies: [{
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     text: String,
@@ -72,7 +72,7 @@ const FeedbackSchema = new mongoose.Schema({
 const User = mongoose.model('User', UserSchema);
 const Feedback = mongoose.model('Feedback', FeedbackSchema);
 
-// --- Middleware ---
+// Middleware
 
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
@@ -100,7 +100,7 @@ const adminAuthenticate = (req, res, next) => {
   }
 };
 
-// --- Utils ---
+// Utils
 
 async function sendResetEmail(email, token) {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password.html?token=${token}`;
@@ -112,7 +112,7 @@ async function sendResetEmail(email, token) {
   });
 }
 
-// --- Routes ---
+// Routes
 
 // Register User
 app.post('/api/register', async (req, res) => {
@@ -265,7 +265,7 @@ app.post('/api/profile/avatar', authenticateToken, upload.single('avatar'), asyn
   }
 });
 
-// --- Feedback CRUD ---
+// Feedback CRUD
 
 // Create feedback
 app.post('/api/feedback', authenticateToken, async (req, res) => {
@@ -281,7 +281,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
   res.status(201).json(feedback);
 });
 
-// Get all feedbacks (for user - own only)
+// Get all feedbacks for logged in user
 app.get('/api/feedback', authenticateToken, async (req, res) => {
   const feedbacks = await Feedback.find({ user: req.user.id }).sort({ createdAt: -1 });
   res.json(feedbacks);
@@ -315,11 +315,11 @@ app.delete('/api/feedback/:id', authenticateToken, async (req, res) => {
   res.json({ message: 'Feedback delete ho gaya' });
 });
 
-// --- Admin routes ---
+// Admin routes
 
-// Admin login not needed, use basic auth middleware
+// Admin login - basic auth middleware only
 
-// Get all users with avatars (admin)
+// Get all users (admin)
 app.get('/api/admin/users', adminAuthenticate, async (req, res) => {
   const users = await User.find({}, 'name email avatarUrl isAdmin createdAt');
   res.json(users);
@@ -339,7 +339,7 @@ app.put('/api/admin/users/:id/avatar', adminAuthenticate, async (req, res) => {
   res.json({ message: 'User avatar update ho gaya' });
 });
 
-// Get all feedbacks with user info (admin)
+// Get all feedbacks (admin)
 app.get('/api/admin/feedbacks', adminAuthenticate, async (req, res) => {
   const feedbacks = await Feedback.find()
     .populate('user', 'name email avatarUrl')
@@ -357,12 +357,20 @@ app.post('/api/admin/feedbacks/:id/reply', adminAuthenticate, async (req, res) =
   const feedback = await Feedback.findById(id);
   if(!feedback) return res.status(404).json({ message: 'Feedback nahi mila' });
 
-  feedback.replies.push({ adminId: null, text, createdAt: new Date() }); // adminId null for now
+  feedback.replies.push({ adminId: null, text, createdAt: new Date() });
   await feedback.save();
   res.json({ message: 'Reply add ho gaya' });
 });
 
-// --- Start server ---
+// Serve frontend static files
+app.use(express.static('public'));
+
+// SPA fallback to serve index.html on unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
+});
+
+// Start server
 app.listen(PORT, () => {
   console.log(`Server chal raha hai port ${PORT}`);
 });
