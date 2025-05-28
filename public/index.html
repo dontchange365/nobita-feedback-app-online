@@ -1825,9 +1825,9 @@
                 const token = localStorage.getItem('authToken');
                 if (token) {
                     try {
-                        const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
+            const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
 currentUser = userData;
-localStorage.setItem('currentUser', JSON.stringify(currentUser)); // ✅ store latest server user
+localStorage.setItem('currentUser', JSON.stringify(userData)); // ✅ server se update
 updateUIAfterLogin();
                     } catch (error) {
                         // Token invalid or expired, clear and update UI
