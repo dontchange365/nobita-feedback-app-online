@@ -1445,7 +1445,25 @@
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title'); // For Typed.js
             
-            let currentUser = null; // Stores current logged-in user data
+            let currentUser = null; // pehle empty rehne de
+
+async function getAndShowUser() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                currentUser = await res.json(); // Ab isme server ka fresh data aa gaya
+                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Safe bhi ho gaya
+                updateUIAfterLogin();
+            }
+        } catch(e) {
+            currentUser = null; // Agar kuch galat, toh null
+        }
+    }
+}
             let currentSelectedRating = 0;
             let isEditing = false;
             let currentEditFeedbackId = null;
