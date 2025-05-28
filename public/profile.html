@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Navbar (simplified for profile page) -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="App Logo" class="logo" />
+      <span class="brand-name">Feedback App</span>
+    </div>
+    <div class="navbar-user">
+      <img id="profileNavAvatar" src="" alt="Avatar" class="avatar-sm" />
+      <span id="profileNavName"></span>
+      <a href="#" id="logoutLinkProfile" class="btn">Logout</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="profile-section">
+      <h2>Your Profile</h2>
+      <div class="profile-details">
+        <img id="profileAvatar" src="" alt="Avatar" class="avatar-lg" />
+        <div class="profile-info">
+          <p><strong>Name:</strong> <span id="profileName"></span></p>
+          <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <h3>Update Profile</h3>
+        <form id="avatarForm" onsubmit="return false;">
+          <label for="avatarInput">Change Avatar:</label>
+          <input type="file" id="avatarInput" accept="image/*" />
+          <button type="button" id="uploadAvatarBtn" class="btn primary">Upload</button>
+          <span id="avatarUploadSpinner" class="spinner" style="display: none;"></span>
+        </form>
+        <!-- Additional profile update features could be added here -->
+        <!-- e.g., Change Name or Change Password forms -->
+      </div>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>
