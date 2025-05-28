@@ -1,163 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOBITA Feedback System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-icons@latest/font/lucide.css">
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Nobita Feedback Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Favicon -->
+  <link rel="icon" href="https://api.dicebear.com/8.x/adventurer/svg?seed=nobita&radius=50" />
+  <!-- Fonts: Inter, Lexend, Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Lucide (Feather) Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --success: #10b981;
+      --error: #ef4444;
+      --warn: #f59e42;
+      --bg-main: #f9fafb;
+      --bg-card: #fff;
+      --border: #e5e7eb;
+      --indigo-gradient: linear-gradient(120deg, #4f46e5 10%, #8b5cf6 90%);
+      --pink-gradient: linear-gradient(120deg, #f9fafb 0%, #f472b6 100%);
+      --shadow: 0 6px 32px 0 rgba(80,70,229,0.07), 0 1.5px 3.5px 0 rgba(0,0,0,0.05);
+      --font-main: 'Inter', 'Lexend', 'Roboto', Arial, sans-serif;
+    }
+    html, body {
+      background: var(--bg-main);
+      color: #1e293b;
+      font-family: var(--font-main);
+      margin: 0; padding: 0;
+      min-height: 100vh;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    /* NavBar */
+    .nav-main {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background: var(--bg-card);
+      z-index: 80;
+      border-bottom: 1.5px solid var(--border);
+      box-shadow: 0 2px 18px rgba(79,70,229,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2vw;
+      min-height: 62px;
+    }
+    .nav-logo {
+      font-family: 'Lexend', 'Inter', Arial, sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      text-shadow: 0 2px 18px rgba(79,70,229,0.05);
+      user-select: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .nav-actions {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .nav-avatar, .nav-loginicon {
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; background: #ede9fe; box-shadow: 0 0 0 2.5px var(--primary-light);
+      cursor: pointer; transition: box-shadow 0.15s;
+      overflow: hidden;
+    }
+    .nav-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+      display: block;
+    }
+    .nav-loginicon svg { width: 24px; height: 24px; color: var(--primary);}
+    .nav-avatar:hover, .nav-loginicon:hover { box-shadow: 0 0 0 4px var(--primary);}
+    /* Dropdown */
+    .user-dropdown {
+      display: none; position: absolute; right: 2vw; top: 58px;
+      min-width: 190px; background: var(--bg-card);
+      box-shadow: var(--shadow); border-radius: 16px;
+      border: 1px solid var(--border); z-index: 99;
+      padding: 8px 0;
+      animation: dropdownIn .26s cubic-bezier(.56,.02,.34,1.5);
+    }
+    @keyframes dropdownIn { 0%{ opacity:0; transform: translateY(-10px) scale(.98);}
+      100%{ opacity:1; transform: translateY(0) scale(1);}
+    }
+    .user-dropdown.active { display: block; }
+    .user-dropdown-btn {
+      background: none; border: none; color: #23283c; width: 100%; padding: 13px 22px;
+      text-align: left; font: 500 1.03em var(--font-main); cursor: pointer; display: flex; align-items: center; gap: 13px;
+      transition: background .15s;
+    }
+    .user-dropdown-btn:hover { background: #f4f4fd; }
+    /* Toast system */
+    .toast-root {
+      position: fixed; top: 25px; right: 24px; z-index: 4000; display: flex; flex-direction: column; gap: 15px; pointer-events: none;
+    }
+    .toast {
+      min-width: 260px; max-width: 360px;
+      border-radius: 12px; box-shadow: var(--shadow);
+      font-size: 1.06em; padding: 14px 18px 14px 16px;
+      background: #fff; border: 1.5px solid var(--border);
+      display: flex; align-items: center; gap: 15px;
+      opacity: 0.96; animation: toastIn .31s cubic-bezier(.43,0,.58,1.24);
+      pointer-events: auto;
+    }
+    .toast-success { border-left: 4.5px solid var(--success); }
+    .toast-error { border-left: 4.5px solid var(--error); }
+    .toast-warn { border-left: 4.5px solid var(--warn); }
+    .toast-icon { width: 22px; height: 22px; }
+    @keyframes toastIn { from { transform: translateY(-32px) scale(.98); opacity: 0.2; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    /* Blurred modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1200;
+      background: rgba(25,21,72, 0.26);
+      backdrop-filter: blur(2.2px) brightness(.97);
+      -webkit-backdrop-filter: blur(2.2px) brightness(.97);
+      display: none; align-items: center; justify-content: center;
+      transition: background .25s;
+    }
+    .modal-overlay.active { display: flex; }
+    /* Modals */
+    .modal-card {
+      background: var(--bg-card);
+      border-radius: 22px;
+      box-shadow: 0 7px 42px rgba(79,70,229,0.10), 0 1.5px 3.5px 0 rgba(0,0,0,0.07);
+      border: 1.5px solid var(--border);
+      min-width: 325px; max-width: 98vw;
+      animation: modalScaleIn .29s cubic-bezier(.45,0,.32,1.24);
+      position: relative;
+      padding: 40px 30px 34px 30px;
+    }
+    @media (max-width: 600px) {
+      .modal-card { min-width: unset; width: 98vw; padding: 26px 8vw 22px 8vw;}
+      .nav-main { min-height: 50px; font-size: 1.1em;}
+      .nav-logo { font-size: 1.16rem;}
+    }
+    @keyframes modalScaleIn { 0%{ opacity:0; transform: scale(.90) translateY(44px);}
+      100%{ opacity:1; transform: scale(1) translateY(0);}
+    }
+    .modal-close-btn {
+      position: absolute; top: 12px; right: 14px; background: none; border: none;
+      font-size: 1.5em; color: #686de0; cursor: pointer; padding: 3px; border-radius: 7px; transition: background .1s;
+      z-index: 5;
+    }
+    .modal-close-btn:hover { background: #f1f2fd;}
+    /* Responsive tweaks */
+    @media (max-width: 800px) {
+      .feedback-main { padding: 0 2vw;}
+      .feedback-form-card, .feedback-list-card { margin: 0 auto;}
+    }
+    @media (max-width: 540px) {
+      .feedback-main { padding: 0 2px;}
+      .modal-card { padding: 13vw 3vw 9vw 3vw;}
+    }
+    /* Utility Classes */
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn .29s cubic-bezier(.6,0,.2,1); }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    /* Button styles */
+    .btn {
+      background: var(--primary); color: #fff; border: none;
+      border-radius: 10px; padding: 12px 22px; font-size: 1.1em; font-weight: 700;
+      cursor: pointer; transition: box-shadow .13s, background .17s;
+      box-shadow: 0 2px 9px rgba(80,70,229,0.06);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .btn:hover, .btn:focus { background: var(--primary-light); }
+    .btn-google {
+      background: #fff;
+      color: #222; font-weight: 600;
+      border: 1.4px solid #cfcfff;
+      box-shadow: 0 2px 9px rgba(80,70,229,0.08);
+      border-radius: 10px;
+      padding: 11px 16px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: border .17s, box-shadow .13s;
+    }
+    .btn-google:hover, .btn-google:focus {
+      border: 1.5px solid var(--primary-light);
+      box-shadow: 0 4px 16px rgba(79,70,229,0.13);
+    }
+    /* --- Main content layout --- */
+    .feedback-main {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto;
+      margin-top: 44px;
+      margin-bottom: 40px;
+      padding: 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+    /* HERO Header */
+    .hero-welcome {
+      margin-bottom: 18px;
+      margin-top: 12px;
+      font-size: 1.52em;
+      font-family: 'Lexend', 'Inter', Arial, sans-serif;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 0 6px 36px rgba(80,70,229,0.13);
+      animation: fadeLeftIn .52s cubic-bezier(.58,.03,.29,1.28);
+      opacity: 0.95;
+      letter-spacing: 0.01em;
+    }
+    @keyframes fadeLeftIn {
+      from { opacity:0; transform: translateX(-44px);}
+      to { opacity:1; transform: translateX(0);}
+    }
+    /* Footer */
+    .footer-main {
+      margin-top: auto; width: 100%; background: var(--bg-card);
+      padding: 26px 0 15px 0; text-align: center; border-top: 1.5px solid var(--border);
+      font-size: 1.04em; color: #666; font-family: 'Inter', Arial, sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .footer-badge {
+      font-family: 'Lexend', 'Inter', Arial, sans-serif; font-size: 1.07em; color: var(--primary);
+      font-weight: 700; margin-left: 5px; letter-spacing: 0.06em;
+    }
+    /* Loader */
+    .main-loader { display: flex; align-items: center; justify-content: center; width: 100%; padding: 60px 0;}
+    .main-loader svg { color: var(--primary); width: 42px; height: 42px; animation: spinLoader 1.2s linear infinite;}
+    @keyframes spinLoader { 100% { transform: rotate(360deg);}}
+  </style>
 </head>
-<body class="bg-gray-50 font-inter antialiased">
-
-    <header class="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
-        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-lexend font-bold text-indigo-600">NOBITA Feedback</h1>
-            <div id="auth-controls" class="relative">
-                <button id="login-icon" class="text-gray-600 hover:text-indigo-600 transition-colors duration-300">
-                    <i data-lucide="user" class="w-6 h-6"></i>
-                </button>
-
-                <div id="user-avatar-container" class="hidden relative">
-                    <img id="user-avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent hover:border-indigo-500 transition-all duration-300" src="/images/default-avatar.png" alt="User Avatar">
-                    <div id="user-dropdown" class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg py-2 opacity-0 scale-95 transform transition-all duration-200 ease-out z-50 origin-top-right">
-                        <a href="#" id="view-profile-btn" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center"><i data-lucide="user" class="w-4 h-4 mr-2"></i> View Profile</a>
-                        <a href="#" id="edit-profile-btn" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center"><i data-lucide="edit-3" class="w-4 h-4 mr-2"></i> Edit Profile</a>
-                        <a href="#" id="logout-btn" class="block px-4 py-2 text-gray-700 hover:bg-red-500 hover:text-white rounded-b-xl transition-colors duration-200 flex items-center"><i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Logout</a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <main class="container mx-auto px-4 pt-20 pb-8">
-        <h2 id="welcome-message" class="text-xl md:text-2xl font-lexend font-bold text-gray-800 mb-6 hidden animate-fade-in-left"></h2>
-
-        <section class="bg-gradient-to-r from-indigo-50 to-pink-50 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center justify-between">
-            <div class="text-center md:text-left mb-4 md:mb-0">
-                <div class="flex items-center justify-center md:justify-start space-x-1 mb-2" id="overall-stars">
-                    </div>
-                <p class="text-5xl font-bold text-indigo-600" id="overall-score">0.0</p>
-                <p class="text-gray-600 text-sm mt-1" id="overall-feedback-count">Based on 0 feedbacks.</p>
-            </div>
-            <div>
-                <i data-lucide="star" class="w-24 h-24 text-yellow-400 opacity-75"></i>
-            </div>
-        </section>
-
-        <section id="feedback-section" class="bg-white rounded-xl shadow-lg p-6 mb-8 hidden">
-            <h3 class="text-2xl font-lexend font-semibold text-gray-800 mb-6 text-center">Give Your Feedback</h3>
-            <form id="feedback-form" class="space-y-6">
-                <div class="flex justify-center mb-4">
-                    <div id="star-rating-container" class="flex space-x-1">
-                        </div>
-                </div>
-                <textarea id="feedback-comment" class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 resize-y min-h-[100px]" placeholder="Share your thoughts..."></textarea>
-                <div class="text-center">
-                    <button type="submit" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Submit Feedback</button>
-                </div>
-            </form>
-        </section>
-
-        <section>
-            <h3 class="text-2xl font-lexend font-semibold text-gray-800 mb-6 text-center">Recent Feedbacks</h3>
-            <div id="feedbacks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                </div>
-        </section>
-    </main>
-
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content scale-0 opacity-0 transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-xl p-8 w-11/12 max-w-md relative">
-            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-700">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-            <h3 class="text-2xl font-lexend font-semibold text-gray-800 mb-6 text-center">Login / Sign Up</h3>
-            <form id="login-form" class="space-y-6">
-                <div class="relative">
-                    <input type="email" id="login-email" class="w-full py-3 px-4 border-b-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors duration-200 peer bg-transparent" required>
-                    <label for="login-email" class="floating-label absolute left-4 top-3 text-gray-500 pointer-events-none transition-all duration-200 transform peer-focus:-translate-y-6 peer-focus:text-sm peer-focus:text-indigo-600 peer-valid:-translate-y-6 peer-valid:text-sm peer-valid:text-indigo-600">Email</label>
-                </div>
-                <div class="relative">
-                    <input type="password" id="login-password" class="w-full py-3 px-4 border-b-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors duration-200 peer bg-transparent" required>
-                    <label for="login-password" class="floating-label absolute left-4 top-3 text-gray-500 pointer-events-none transition-all duration-200 transform peer-focus:-translate-y-6 peer-focus:text-sm peer-focus:text-indigo-600 peer-valid:-translate-y-6 peer-valid:text-sm peer-valid:text-indigo-600">Password</label>
-                    <button type="button" id="toggle-password" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
-                        <i data-lucide="eye" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Login</button>
-            </form>
-            <div class="text-center my-6">
-                <p class="text-gray-500">OR</p>
-            </div>
-            <button id="google-login-btn" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 py-3 rounded-full shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                <img src="/images/google-logo.svg" alt="Google Logo" class="w-5 h-5 mr-3">
-                Sign in with Google
-            </button>
-        </div>
+<body>
+  <nav class="nav-main">
+    <div class="nav-logo" onclick="window.location.reload()">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#f9fafb"/><circle cx="12" cy="12" r="8.5" stroke="#4f46e5" stroke-width="2"/><path d="M15.5 15.5L12 12M12 12L8.5 8.5M12 12L15.5 8.5M12 12L8.5 15.5" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round"/></svg>
+      NOBITA
     </div>
-
-    <div id="profile-view-modal" class="modal-overlay hidden">
-        <div class="modal-content scale-0 opacity-0 transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-xl p-8 w-11/12 max-w-md relative">
-            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-700">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-            <h3 class="text-2xl font-lexend font-semibold text-gray-800 mb-6 text-center">Your Profile</h3>
-            <div class="text-center mb-6">
-                <img id="profile-avatar-display" class="w-24 h-24 rounded-full mx-auto border-2 border-indigo-500 mb-4" src="/images/default-avatar.png" alt="Profile Avatar">
-                <p class="text-2xl font-semibold text-gray-800" id="profile-name-display">User Name</p>
-                <p class="text-gray-600 text-sm" id="profile-email-display">user@example.com</p>
-                <p class="text-gray-500 text-xs mt-2">Joined on: <span id="profile-joined-on"></span></p>
-            </div>
-            <button id="open-edit-profile-modal-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Edit Profile</button>
-        </div>
+    <div class="nav-actions">
+      <!-- Avatar or Login icon will be rendered here -->
+      <div id="nav-action-root"></div>
     </div>
-
-    <div id="edit-profile-modal" class="modal-overlay hidden">
-        <div class="modal-content scale-0 opacity-0 transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-xl p-8 w-11/12 max-w-md relative">
-            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-700">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-            <h3 class="text-2xl font-lexend font-semibold text-gray-800 mb-6 text-center">Edit Your Profile</h3>
-            <form id="edit-profile-form" class="space-y-6">
-                <div class="relative">
-                    <input type="text" id="edit-profile-name" class="w-full py-3 px-4 border-b-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors duration-200 peer bg-transparent" required>
-                    <label for="edit-profile-name" class="floating-label absolute left-4 top-3 text-gray-500 pointer-events-none transition-all duration-200 transform peer-focus:-translate-y-6 peer-focus:text-sm peer-focus:text-indigo-600 peer-valid:-translate-y-6 peer-valid:text-sm peer-valid:text-indigo-600">Name</label>
-                </div>
-
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 transition-colors duration-200" id="avatar-upload-zone">
-                    <input type="file" id="avatar-upload-input" accept="image/*" class="hidden">
-                    <i data-lucide="cloud-upload" class="w-16 h-16 text-gray-400 mx-auto mb-3"></i>
-                    <p class="text-gray-600 text-sm">Drag & drop your avatar here, or <span class="text-indigo-600 font-semibold">click to upload</span></p>
-                    <img id="avatar-preview" class="w-24 h-24 rounded-full mx-auto mt-4 hidden object-cover" src="" alt="Avatar Preview">
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-full hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save Changes</button>
-            </form>
-        </div>
-    </div>
-
-
-    <div id="confirmation-modal" class="modal-overlay hidden">
-        <div class="modal-content scale-0 opacity-0 transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-xl p-8 w-11/12 max-w-sm relative text-center">
-            <h3 class="text-xl font-lexend font-semibold text-gray-800 mb-6" id="confirmation-message">Are you sure you want to proceed?</h3>
-            <div class="flex justify-center space-x-4">
-                <button id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-400 transition-all duration-300">Cancel</button>
-                <button id="confirm-proceed-btn" class="bg-red-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-red-700 transition-all duration-300">Proceed</button>
-            </div>
-        </div>
-    </div>
-
-
-    <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-4">
-        </div>
-
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons(); // Initialize Lucide icons
-    </script>
-    <script src="/js/main.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/feedback.js"></script>
-    <script src="/js/admin.js"></script>
-</body>
-</html>
+  </nav>
+  <div id="root-main">
+    <!-- Main content, forms, feedback, to be rendered by JS -->
+  </div>
+  <div class="footer-main">
+    Made by <span class="footer-badge">Nobita</span> • Feedback Pro System &copy; <span id="yearFooter"></span>
+  </div>
+  <!-- Toast root -->
+  <div class="toast-root" id="toast-root"></div>
+  <!-- Modals root -->
+  <div id="modal-overlay-root"></div>
+  <!-- SVG Icons Loader for dynamic Lucide -->
+  <div id="svg-icon-loader" style="display:none;"></div>
+  <script>
+    // Set year
+    document.getElementById('yearFooter').textContent = (new Date()).getFullYear();
+    // Load Lucide/Feather icons dynamically (for JS usage)
+    window.lucide = window.lucide || {};
+    // Toast system helper
+    function showToast(msg, type='success', ms=3400) {
+      const toastRoot = document.getElementById('toast-root');
+      const icons = {
+        success: `<svg class="toast-icon" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="2"/><path d="M9 12l2 2l4-4" stroke="#10b981" stroke-width="2.3" stroke-linecap="round"/></svg>`,
+        error: `<svg class="toast-icon" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ef4444" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+        warn: `<svg class="toast-icon" fill="none" stroke="#f59e42" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f59e42" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="#f59e42" stroke-width="2.3" stroke-linecap="round"/></svg>`,
+      };
+      const div = document.createElement('div');
+      div.className = `toast toast-${type}`;
+      div.innerHTML = `${icons[type] || ''}<div style="flex:1">${msg}</div>`;
+      toastRoot.appendChild(div);
+      setTimeout(() => { div.style.opacity='0.2'; div.style.transform='translateY(-36px)'; }, ms-500);
+      setTimeout(() => { if (div.parentNode) toastRoot.removeChild(div); }, ms);
+    }
+  </script>
