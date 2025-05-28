@@ -1441,7 +1441,7 @@
             const starsElements = document.querySelectorAll('.star');
             const mainTitle = document.getElementById('main-title'); // For Typed.js
             
-            let currentUser = null; // Stores current logged-in user data
+            let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             let currentSelectedRating = 0;
             let isEditing = false;
             let currentEditFeedbackId = null;
@@ -2018,18 +2018,14 @@
                             avatarUrl: currentUser.avatarUrl // Ensure latest avatar URL is sent
                         });
                         
-                         currentUser.name = data.user.name; 
- currentUser.avatarUrl = data.user.avatarUrl; 
--updateUIAfterLogin(); 
--showStylishPopup('success', 'Profile Updated!', data.message);
-+// 1) Refresh main UI (avatar, menu, form name) 
-+updateUIAfterLogin(); 
-+// 2) Re-fetch all feedbacks so list shows updated names
-+await fetchFeedbacks(); 
-+// 3) Reset feedback form values (updates “Your Name” span & input)
-+resetFeedbackForm(); 
-+// 4) Finally, show success message
-+showStylishPopup('success', 'Profile Updated!', data.message);
+                          currentUser.name = data.user.name;
+ currentUser.avatarUrl = data.user.avatarUrl;
++// persist the updated name so page reload sees it immediately
++localStorage.setItem('currentUser', JSON.stringify(currentUser));
+ updateUIAfterLogin();
+ await fetchFeedbacks();
+ resetFeedbackForm();
+ showStylishPopup('success', 'Profile Updated!', data.message);
 
                     } catch (error) {
                         // Error handled by apiRequest already
@@ -2196,25 +2192,36 @@
             });
 
             // Reset Feedback Form
-            function resetFeedbackForm() { 
-                if (currentUser) {
-                    nameInputInFeedbackForm.value = currentUser.name;
-                    feedbackFormUsernameSpan.textContent = currentUser.name;
-                    nameInputInFeedbackForm.disabled = true; // Keep disabled if logged in
-                } else {
-                    nameInputInFeedbackForm.value = '';
-                    feedbackFormUsernameSpan.textContent = 'Guest';
-                    nameInputInFeedbackForm.disabled = false;
-                    nameInputInFeedbackForm.placeholder = 'Your name here...';
-                }
-                feedbackTextarea.value = '';
-                ratingInput.value = '0';
-                currentSelectedRating = 0;
-                updateStarVisuals(0); // Reset stars
-                submitButton.textContent = 'SUBMIT FEEDBACK'; // Reset button text
-                isEditing = false; // Reset editing state
-                currentEditFeedbackId = null; // Clear edit ID
-            }
+            function resetFeedbackForm() {
+  // Fetch the form elements fresh every time
+  const nameInputInFeedbackForm = document.getElementById('feedback-name-input');
+  const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
+  const feedbackTextarea = document.getElementById('feedback-textarea');
+  const ratingInput = document.getElementById('feedback-rating-input');
+  const submitButton = document.getElementById('submit-feedback-btn');
+
+  if (currentUser && currentUser.name) {
+    // Update both the span and the input
+    nameInputInFeedbackForm.value = currentUser.name;
+    feedbackFormUsernameSpan.textContent = currentUser.name;
+    nameInputInFeedbackForm.disabled = true;
+  } else {
+    nameInputInFeedbackForm.value = '';
+    feedbackFormUsernameSpan.textContent = 'Guest';
+    nameInputInFeedbackForm.disabled = false;
+    nameInputInFeedbackForm.placeholder = 'Your name here...';
+  }
+
+  // Clear out the rest of the form
+  feedbackTextarea.value = '';
+  ratingInput.value = '0';
+  currentSelectedRating = 0;
+  updateStarVisuals(0);
+  submitButton.textContent = isEditing ? 'UPDATE FEEDBACK' : 'SUBMIT FEEDBACK';
+
+  isEditing = false;
+  currentEditFeedbackId = null;
+}
 
             // Fetch and Display Feedbacks
             async function fetchFeedbacks() {
