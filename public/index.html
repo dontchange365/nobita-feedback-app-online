@@ -2012,15 +2012,20 @@
                         }
                         
                         // Now send profile data (name and possibly new avatarUrl)
-                        const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { 
-                            name: newName, 
-                            avatarUrl: currentUser.avatarUrl // Ensure latest avatar URL is sent
-                        });
-                        
-                        currentUser.name = data.user.name; // Update current user name
-                        currentUser.avatarUrl = data.user.avatarUrl; // Update current user avatar URL
-                        updateUIAfterLogin(); // Refresh main UI elements and profile modal
-                        showStylishPopup('success', 'Profile Updated!', data.message);
+                        const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', {
+  name: newName,
+  avatarUrl: currentUser.avatarUrl
+});
+
+// 🆕 Save new token if available
+if (data.token) {
+  localStorage.setItem('authToken', data.token);
+}
+
+currentUser.name = data.user.name;
+currentUser.avatarUrl = data.user.avatarUrl;
+updateUIAfterLogin();
+showStylishPopup('success', 'Profile Updated!', data.message);
 
                     } catch (error) {
                         // Error handled by apiRequest already
