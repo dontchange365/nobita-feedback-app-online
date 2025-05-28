@@ -1,0 +1,125 @@
+@import url('https://rsms.me/inter/inter.css');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Fonts */
+.font-inter {
+    font-family: 'Inter', sans-serif;
+}
+.font-lexend {
+    font-family: 'Lexend', sans-serif;
+}
+.font-roboto {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100] transition-opacity duration-300 ease-in-out;
+}
+
+/* Modal Content */
+.modal-content {
+    @apply relative;
+}
+
+/* Modal Animations */
+.modal-overlay.show {
+    @apply opacity-100;
+}
+.modal-content.show {
+    @apply scale-100 opacity-100;
+}
+
+/* Floating Labels for Forms */
+.floating-label {
+    transform-origin: left top;
+}
+input:focus ~ .floating-label,
+input:valid ~ .floating-label,
+textarea:focus ~ .floating-label,
+textarea:valid ~ .floating-label {
+    transform: translateY(-1.5rem) scale(0.85);
+    @apply text-indigo-600 text-sm;
+}
+
+/* Star Rating */
+.star-icon {
+    @apply cursor-pointer transition-transform duration-150 ease-in-out;
+}
+.star-icon:hover {
+    transform: scale(1.1);
+}
+.star-icon.active {
+    @apply fill-current text-yellow-400;
+}
+
+/* Toast Notifications */
+.toast {
+    @apply p-4 rounded-xl shadow-lg flex items-center space-x-3 transition-all duration-300 ease-out transform translate-x-full opacity-0;
+}
+.toast.show {
+    @apply translate-x-0 opacity-100;
+}
+.toast.success {
+    @apply bg-green-500 text-white;
+}
+.toast.error {
+    @apply bg-red-500 text-white;
+}
+.toast.warning {
+    @apply bg-yellow-500 text-white;
+}
+
+/* Animations */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.animate-fade-in-left {
+    animation: fadeInLeft 0.5s ease-out forwards;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.animate-fade-in-scale {
+    animation: fadeInScale 0.3s ease-out forwards;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-slide-in-up {
+    animation: slideInUp 0.4s ease-out forwards;
+}
+
+/* Feedback Card Hover Effect */
+.feedback-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+}
