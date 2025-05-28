@@ -1313,7 +1313,7 @@
         <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
     </div>
     <div class="profile-password-btns-row">
-        <button type="submit" class="popup-button primary" id="change-password-btn">Change Password</button>
+        <button type="submit" class="popup-button primary" id="change-password-profile-btn">Change Password</button>
         <button type="button" class="popup-button secondary" data-modal-close="userProfileModal">Close</button>
     </div>
 </form>
@@ -1426,7 +1426,7 @@
             const currentPasswordInput = document.getElementById('current-password');
             const newPasswordProfileInput = document.getElementById('new-password-profile');
             const confirmNewPasswordProfileInput = document.getElementById('confirm-new-password-profile');
-            const changePasswordBtn = document.getElementById('change-password-btn');
+            const changePasswordBtn = document.getElementById('change-password-profile-btn');
             
             // Page Content Elements
             const ownerInfoEl = document.querySelector('.owner-info');
@@ -2025,8 +2025,8 @@
                         
                           currentUser.name = data.user.name;
  currentUser.avatarUrl = data.user.avatarUrl;
-+// persist the updated name so page reload sees it immediately
-+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+// persist the updated name so page reload sees it immediately
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
  updateUIAfterLogin();
  await fetchFeedbacks();
  resetFeedbackForm();
