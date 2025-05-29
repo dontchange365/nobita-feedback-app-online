@@ -2621,7 +2621,9 @@
             
             // Disable (hide) edit button if not the current user's feedback
             // This is crucial for showing/hiding the button
-            editButton.disabled = !(currentUser && currentUser.userId === fbData.userId.toString()); // <-- Yahan .toString() lagaya hai
+            // Check karein ki currentUser hai, fbData.userId populated object hai, usmein _id hai,
+            // aur phir currentUser ka userId fbData.userId._id ke string se match karta hai.
+            editButton.disabled = !(currentUser && fbData.userId && fbData.userId._id && currentUser.userId === fbData.userId._id.toString());
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
