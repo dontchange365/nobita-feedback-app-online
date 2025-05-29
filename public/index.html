@@ -2382,12 +2382,10 @@
         </div>
     `;
             // Animate the average rating container in if it's new/hidden
-            setTimeout(() => {
-                const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
-                if (avgContainer && !avgContainer.classList.contains('animate-in')) {
-                    avgContainer.classList.add('animate-in');
-                }
-            }, 50);
+            const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
+            if (avgContainer && !avgContainer.classList.contains('animate-in')) {
+                avgContainer.classList.add('animate-in');
+            }
         }
 
         // Add Feedback to DOM
