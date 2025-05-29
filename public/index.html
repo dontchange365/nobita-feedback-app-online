@@ -10,49 +10,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root {
-            --primary-color: #6a0dad; /* Dark Purple */
-            --secondary-color: #FFD700; /* Gold */
-            --accent-color: #3B82F6; /* Bright Blue */
-            --text-color-light: #f4f4f9; /* Off-white */
-            --text-color-dark: #2c3e50; /* Dark Slate Blue */
-            --bg-gradient-start: #1a1a2e; /* Darker Purple Blue */
-            --bg-gradient-end: #16213e; /* Even Darker Purple Blue */
-            --card-bg-popup: #272c3a; /* Darker grey for popup */
-            --card-bg: rgba(44, 62, 80, 0.85); /* Darker blue, semi-transparent */
-            --card-border: rgba(255, 255, 255, 0.15);
-            --input-bg: rgba(255, 255, 255, 0.08);
-            --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --success-color: #28a745; /* Green */
-            --error-color: #dc3545; /* Red */
-            --info-color: var(--accent-color); /* Blue */
-            --confirm-color: #fd7e14; /* Orange */
+    :root {
+        --primary-color: #6a0dad; /* Dark Purple */
+        --secondary-color: #FFD700; /* Gold */
+        --accent-color: #3B82F6; /* Bright Blue */
+        --text-color-light: #f4f4f9; /* Off-white */
+        --text-color-dark: #2c3e50; /* Dark Slate Blue */
+        --bg-gradient-start: #1a1a2e; /* Darker Purple Blue */
+        --bg-gradient-end: #16213e; /* Even Darker Purple Blue */
+        --card-bg-popup: #272c3a; /* Darker grey for popup */
+        --card-bg: rgba(44, 62, 80, 0.85); /* Darker blue, semi-transparent */
+        --card-border: rgba(255, 255, 255, 0.15);
+        --input-bg: rgba(255, 255, 255, 0.08);
+        --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
+        --success-color: #28a745; /* Green */
+        --error-color: #dc3545; /* Red */
+        --info-color: var(--accent-color); /* Blue */
+        --confirm-color: #fd7e14; /* Orange */
 
-            --google-blue: #4285F4;
-            --progress-bg: #4a4a60;
-            --progress-fill-color: #27ae60;
-        }
+        --google-blue: #4285F4;
+        --progress-bg: #4a4a60;
+        --progress-fill-color: #27ae60;
+    }
 
-        html {
-            scroll-behavior: smooth;
-        }
+    html {
+        scroll-behavior: smooth;
+    }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            color: var(--text-color-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* Align content to top */
-            min-height: 100vh;
-            margin: 0;
-            padding: 0 15px 25px 15px; /* Add bottom padding */
-            box-sizing: border-box;
-            overflow-x: hidden; /* Prevent horizontal scroll */
-        }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+        color: var(--text-color-light);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Align content to top */
+        min-height: 100vh;
+        margin: 0;
+        padding: 0 15px 25px 15px; /* Add bottom padding */
+        box-sizing: border-box;
+        overflow-x: hidden; /* Prevent horizontal scroll */
+    }
 
-     .profile-password-btns-row .popup-button.primary {
+ .profile-password-btns-row .popup-button.primary {
     background: linear-gradient(45deg, var(--accent-color), #2563EB);
     color: #fff;
     padding: 12px;
@@ -331,7 +331,7 @@
             height: 100%;
             width: 0%;
             background-color: var(--progress-fill-color);
-            border-radius: 8px;
+            border-radius: 8-px;
             transition: width 0.3s ease-out;
         }
 
@@ -904,26 +904,27 @@
             text-shadow: 0 0 9px rgba(255,215,0,0.25);
         }
 
-        /* Average Rating Display */
+        /* Average Rating Display - Refined Professional Style */
         .average-rating-container {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.08)); /* Subtle gold gradient */
-            border: 2px solid var(--secondary-color); /* Thicker border */
-            border-radius: 18px; /* More rounded */
-            padding: 20px 25px; /* Increased padding */
-            margin-bottom: 28px; /* More space below */
+            background: rgba(255, 255, 255, 0.08); /* Lighter, more subtle background */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Softer border */
+            border-radius: 12px; /* Slightly less rounded for a professional edge */
+            padding: 25px 30px; /* Generous padding for space */
+            margin-bottom: 30px; /* Good spacing below */
             text-align: center;
-            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.25); /* Deeper gold shadow */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper, softer shadow */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px; /* Increased gap */
+            gap: 8px; /* Balanced spacing between elements */
             color: var(--text-color-light);
-            opacity: 0; /* Start hidden for animation */
-            transform: translateY(30px); /* Start slightly further below for animation */
-            transition: opacity 0.7s ease-out, transform 0.7s ease-out; /* Slower, more pronounced animation */
-            position: relative; /* For z-index if needed */
-            z-index: 2; /* Ensure it's above basic background elements */
+            opacity: 0; /* Animation start */
+            transform: translateY(20px); /* Subtle animation start */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out; /* Smooth animation */
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(8px); /* Clearer glass effect */
         }
 
         .average-rating-container.animate-in {
@@ -932,36 +933,41 @@
         }
 
         .average-rating-container h3 {
-            color: var(--secondary-color);
-            font-size: 1.6em; /* Slightly larger */
+            color: var(--secondary-color); /* Gold color for heading */
+            font-size: 1.4em; /* Clear, professional heading size */
             margin: 0;
-            margin-bottom: 10px; /* More space below heading */
-            font-weight: 700; /* Bolder heading */
-            letter-spacing: 0.5px;
+            margin-bottom: 12px; /* Space below heading */
+            font-weight: 600; /* Good weight for readability */
+            letter-spacing: 0.8px; /* Slightly more space for clarity */
+            text-transform: uppercase; /* Professional touch */
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3); /* Subtle gold line below heading */
+            padding-bottom: 8px;
         }
 
         .average-number {
-            font-family: 'Luckiest Guy', cursive; /* Funky font */
-            font-size: 4.5em; /* Much larger */
-            font-weight: 700; /* Bolder */
-            color: var(--secondary-color);
-            text-shadow: 0 0 25px var(--secondary-color), 0 0 40px rgba(255,215,0,0.8); /* Stronger glow */
-            line-height: 1;
+            font-family: 'Poppins', sans-serif; /* Back to Poppins for professionalism */
+            font-size: 4em; /* Large but balanced for clarity */
+            font-weight: 700; /* Bold and impactful */
+            color: var(--secondary-color); /* Bright gold */
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5); /* Clearer, focused glow */
+            line-height: 1; /* Tight line height */
             margin-bottom: 10px;
         }
 
         .average-stars {
-            font-size: 2.8em; /* Larger stars */
-            color: var(--secondary-color);
-            letter-spacing: 6px; /* More space out stars */
-            text-shadow: 0 0 18px rgba(255,215,0,0.8); /* Stronger glow */
+            font-size: 2.5em; /* Prominent stars */
+            color: var(--secondary-color); /* Gold stars */
+            letter-spacing: 4px; /* Clear spacing between stars */
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); /* Clearer glow */
         }
 
         .total-feedbacks-count {
-            font-size: 1.05em; /* Slightly larger */
-            color: rgba(255, 255, 255, 0.85); /* Slightly brighter */
-            font-weight: 400; /* Less bold */
-            margin-top: 10px; /* More space above */
+            font-size: 0.9em; /* Readable count */
+            color: rgba(255, 255, 255, 0.7); /* Slightly muted for hierarchy */
+            font-weight: 400;
+            margin-top: 15px; /* More space above the count */
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle line above count */
         }
 
         /* Individual Feedback Item */
@@ -1223,7 +1229,7 @@
                 padding: 7px 12px;
             }
         }
-    </style>
+</style>
 </head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger" title="Login / Sign Up">
