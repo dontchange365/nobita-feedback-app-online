@@ -133,21 +133,21 @@
         }
 
         .auth-modal-content {
-    background: var(--bg-gradient-end);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 25px;
-    width: 90%;
-    max-width: 400px;
-    position: relative;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-    color: var(--text-color-light);\
-    transform: scale(0.95);
-    opacity:0;
-    transition: transform 0.25s ease-out, opacity 0.2s ease-out;
-    overflow-y: auto; /* Add vertical scroll */
-    max-height: 80vh; /* Limit modal height */
-     }
+            background: var(--bg-gradient-end);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            color: var(--text-color-light);
+            transform: scale(0.95);
+            opacity:0;
+            transition: transform 0.25s ease-out, opacity 0.2s ease-out;
+            overflow-y: auto; /* Add vertical scroll */
+            max-height: 80vh; /* Limit modal height */
+        }
         .auth-modal-overlay.active .auth-modal-content {
             transform: scale(1); /* Scale up to normal size */
             opacity: 1; /* Fade in */
@@ -272,6 +272,10 @@
         .profile-modal-content {
             max-width: 500px; /* Slightly wider for profile */
             padding: 35px;
+            /* FIX: Added flex properties to ensure vertical stacking of sections */
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between major sections like avatar, edit form, password form */
         }
 
         .profile-avatar-section {
@@ -515,7 +519,7 @@
             align-items: center;
             justify-content: center;
             opacity: 0; /* Start invisible for animation */
-            pointer-events: none; /* Don't block interaction when invisible */
+            pointer-events: none; /* Don't block interaction when hidden */
             transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
             z-index: 1005; /* Ensures it's on top of everything */
         }
@@ -1641,14 +1645,10 @@
                 modal.addEventListener('click', e => {
                     if (e.target === modal) modal.classList.remove('active');
                 });
-                // This targets the specific close button within each modal
                 const closeBtn = modal.querySelector('.close-modal-btn');
-                if (closeBtn) closeBtn.addEventListener('click', () => {
-                    modal.classList.remove('active');
-                });
+                if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
             }
         });
-
 
         // Helper for API requests
         async function apiRequest(url, method, body = null, isFormData = false) {
