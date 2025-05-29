@@ -175,6 +175,7 @@
             transition: all 0.3s ease-in-out;
         }
 
+        /* Gradient border for user-profile-avatar */
         #user-profile-avatar::before {
             content: '';
             position: absolute;
@@ -188,6 +189,7 @@
             mask-composite: exclude;
             padding: 2px;
         }
+
 
         #user-profile-name {
             font-size: clamp(12px, 2.5vw, 15px); /* Responsive font size */
@@ -267,7 +269,7 @@
         }
         .auth-modal-overlay.active .auth-modal-content {
             transform: scale(1); /* Scale up to normal size */
-            opacity: 1; /* Fade in */
+            opacity: 1;
         }
 
         .auth-modal-content h2 {
@@ -437,7 +439,7 @@
             width: 80%;
             height: 15px;
             background-color: var(--progress-bg);
-            border-radius: 8鸣;
+            border-radius: 8px;
             margin-top: 15px;
             overflow: hidden;
             position: relative;
@@ -696,12 +698,6 @@
         .stylish-popup-card .popup-form-input-group {
             margin-bottom: 20px;
             text-align:left;
-        }
-
-        .stylish-popup-card .popup-form-input-group label {
-            display:block;
-            margin-bottom:5px;
-            font-size:0.9em;
         }
 
         .stylish-popup-card .popup-form-input-group input {
