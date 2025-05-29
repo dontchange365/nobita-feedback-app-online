@@ -73,8 +73,8 @@
             top: 15px;
             right: 20px;
             cursor: pointer;
-            width: auto; /* Width auto for text */
-            height: 48px; /* Fixed height */
+            width: 48px; /* Fixed width for circular shape */
+            height: 48px; /* Fixed height for circular shape */
             background-color: var(--secondary-color);
             color: var(--primary-color);
             border: 2px solid var(--primary-color);
@@ -83,18 +83,16 @@
             justify-content: center;
             box-shadow: 0 3px 10px rgba(0,0,0,0.25);
             transition: all 0.2s ease-out;
-            overflow: hidden; /* For rounded avatar */
+            overflow: hidden; /* Ensures circular shape for content */
             font-weight: 600;
-            padding: 0 15px; /* Padding for text */
-            border-radius: 8px; /* Slightly rounded corners */
+            padding: 0; /* Remove padding for proper circular fit */
+            border-radius: 50%; /* Make it perfectly circular */
             z-index: 1000; /* Ensure it's above other content but below modals */
         }
 
-        .corner-trigger.avatar-mode { /* Only when avatar is shown */
-             border-radius: 50%;
-             padding: 0;
-             width: 48px;
-        }
+        /* REMOVED: .corner-trigger.avatar-mode as the base .corner-trigger is now circular */
+        /* If you still want distinct sizing/styling for avatar-mode, re-add specific overrides here.
+           For now, both will have the same circular 48px look. */
 
         .corner-trigger:hover {
             transform: scale(1.08);
@@ -102,9 +100,9 @@
         }
 
         #login-icon-trigger .fas {
-            font-size: 1.3em;
-            margin-right: 5px;
-        } /* For icon before Login text */
+            font-size: 1.8em; /* Adjusted icon size to better fill the circle */
+            /* margin-right: 5px; REMOVED as icon is now centered */
+        }
 
         #user-avatar-trigger img {
             width: 100%;
@@ -118,6 +116,7 @@
             position: fixed;
             inset: 0; /* top, right, bottom, left */
             background: rgba(0,0,0,0.75); /* Semi-transparent dark overlay */
+            backdrop-filter: blur(5px); /* Blurry background effect */
             align-items: center;
             justify-content: center;
             z-index: 1002; /* Higher than page content */
@@ -133,21 +132,21 @@
         }
 
         .auth-modal-content {
-    background: var(--bg-gradient-end);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 25px;
-    width: 90%;
-    max-width: 400px;
-    position: relative;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-    color: var(--text-color-light);\
-    transform: scale(0.95);
-    opacity:0;
-    transition: transform 0.25s ease-out, opacity 0.2s ease-out;
-    overflow-y: auto; /* Add vertical scroll */
-    max-height: 80vh; /* Limit modal height */
-     }
+            background: var(--bg-gradient-end);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            color: var(--text-color-light);\
+            transform: scale(0.95);
+            opacity:0;
+            transition: transform 0.25s ease-out, opacity 0.2s ease-out;
+            overflow-y: auto; /* Add vertical scroll */
+            max-height: 80vh; /* Limit modal height */
+        }
         .auth-modal-overlay.active .auth-modal-content {
             transform: scale(1); /* Scale up to normal size */
             opacity: 1; /* Fade in */
@@ -331,7 +330,7 @@
             height: 100%;
             width: 0%;
             background-color: var(--progress-fill-color);
-            border-radius: 8-px;
+            border-radius: 8px;
             transition: width 0.3s ease-out;
         }
 
@@ -1172,13 +1171,13 @@
                 font-size: 2.8em;
             }
 
+            /* Responsive adjustments for corner triggers */
             .corner-trigger{
+                width:45px; /* Slightly smaller for mobile */
                 height:45px;
-                padding:0 8px;
             }
-            .corner-trigger#user-avatar-trigger{
-                width:45px;
-                padding:0;
+            #login-icon-trigger .fas {
+                font-size: 1.7em; /* Adjust icon size for smaller trigger */
             }
 
             .auth-modal-content{
