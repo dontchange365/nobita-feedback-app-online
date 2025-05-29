@@ -2623,7 +2623,15 @@
             // This is crucial for showing/hiding the button
             // Check karein ki currentUser hai, fbData.userId populated object hai, usmein _id hai,
             // aur phir currentUser ka userId fbData.userId._id ke string se match karta hai.
-            editButton.disabled = !(currentUser && fbData.userId && fbData.userId._id && currentUser.userId === fbData.userId._id.toString());
+            // Safely get the feedback user ID string. Agar fbData.userId ya _id nahi hai, toh null set karega.
+const feedbackUserIdString = fbData.userId && fbData.userId._id ? fbData.userId._id.toString() : null;
+
+// Determine if the edit button should be disabled (hidden)
+// Yeh disable hoga agar:
+// 1. Koi user logged in nahi hai (currentUser null hai)
+// 2. Feedback ke paas user ID data nahi hai (feedbackUserIdString null hai)
+// 3. Logged-in user ki ID feedback ki user ID se match nahi karti.
+editButton.disabled = !(currentUser && feedbackUserIdString && currentUser.userId === feedbackUserIdString);
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
