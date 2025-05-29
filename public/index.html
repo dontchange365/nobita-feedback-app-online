@@ -1906,6 +1906,7 @@
                     // Set profile modal fields
                     if (profileNameInput) profileNameInput.value = currentUser.name;
                     if (profileEmailInput) profileEmailInput.value = currentUser.email;
+                    // This line ensures the profile modal avatar is always updated with the current user's avatarUrl
                     if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     // Disable profile edit for Google users' name and password as they log in via Google
@@ -2105,7 +2106,10 @@
                                         // Update currentUser and UI with new avatar URL
                                         currentUser.avatarUrl = backendUpdateResponse.user.avatarUrl;
                                         // Explicitly update the profile modal avatar display
-                                        if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; 
+                                        // This line is added to ensure the profile image updates immediately.
+                                        if (profileDisplayAvatar) {
+                                            profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                                        }
 
                                         updateUIAfterLogin(); // Re-call this to update the corner trigger and menu avatar
                                         await fetchFeedbacks(); // Re-fetch feedbacks to update all avatars in the list
