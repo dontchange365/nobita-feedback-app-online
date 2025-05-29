@@ -1418,7 +1418,7 @@
             const modalSignupNameInput = document.getElementById('modal-signup-name');
             const modalSignupEmailInput = document.getElementById('modal-signup-email');
             const modalSignupPasswordInput = document.getElementById('modal-signup-password');
-            const modalSignupConfirmPasswordInput = document = document.getElementById('modal-signup-confirm-password');
+            const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password'); // Corrected typo here
             const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
             const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
 
@@ -1885,7 +1885,14 @@
                 await fetchFeedbacks(); // Always fetch feedbacks regardless of login status
             }
 
-            // Function to update UI based on logged in user (now handles profile avatar & name consistently)
+            // Function to get avatar URL and default character for consistent fallback
+            const getAvatarSrc = (userObj, size) => {
+                const userName = userObj && userObj.name ? userObj.name : 'User'; // Default to 'User' if name is missing
+                const defaultChar = userName.charAt(0).toUpperCase();
+                return userObj && userObj.avatarUrl ? userObj.avatarUrl : `https://via.placeholder.com/${size}/FFFFFF/6a0dad?text=${encodeURIComponent(defaultChar)}`;
+            };
+
+            // Update UI based on logged in user (now handles profile avatar & name consistently)
             function updateUIAfterLogin() {
                 if (currentUser) {
                     // Top-right corner login/avatar trigger
@@ -1894,12 +1901,6 @@
                         userAvatarTrigger.style.display = 'flex';
                         userAvatarTrigger.classList.add('avatar-mode'); // Apply round styling
                     }
-                    // Use a function to get avatar URL and default character for consistent fallback
-                    const getAvatarSrc = (user, size) => {
-                        const defaultChar = (user.name && user.name.length > 0 ? user.name.charAt(0).toUpperCase() : 'U');
-                        return user.avatarUrl || `https://via.placeholder.com/${size}/FFFFFF/6a0dad?text=${encodeURIComponent(defaultChar)}`;
-                    };
-
                     // Update top-right avatar trigger
                     if(userAvatarTriggerImg) userAvatarTriggerImg.src = getAvatarSrc(currentUser, 48);
 
@@ -2391,16 +2392,15 @@
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
-                // Using the consistent function to get avatar URL and default character
-                const getAvatarSrcForFeedback = (user, size) => {
-                    const defaultChar = (user.name && user.name.length > 0 ? user.name.charAt(0).toUpperCase() : 'U');
-                    return user.avatarUrl || `https://via.placeholder.com/${size}/6a0dad/FFFFFF?text=${encodeURIComponent(defaultChar)}`;
-                };
-                avatarImg.src = getAvatarSrcForFeedback(fbData.userId || {name: fbData.name, avatarUrl: fbData.avatarUrl}, 50); // Pass user object or fallback
+                // Pass the user object (if available from userId) or construct a temporary object
+                // The `userId` property from the `fbData` typically contains the user object with `name` and `avatarUrl`.
+                const feedbackUser = fbData.userId || { name: fbData.name, avatarUrl: fbData.avatarUrl };
+                avatarImg.src = getAvatarSrc(feedbackUser, 50); // Use the unified getAvatarSrc function
                 avatarImg.alt = fbData.name || 'User Avatar';
-                // Fallback for broken image links
+                // Fallback for broken image links - this should now be handled by getAvatarSrc, but keeping this as a final safeguard
                 avatarImg.onerror = function() {
-                    this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent((fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'U'))}`;
+                    const defaultChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'U');
+                    this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultChar)}`;
                 };
 
                 const detailsDiv = document.createElement('div');
@@ -2485,38 +2485,37 @@
                 if (fbData.replies && fbData.replies.length > 0) {
                     const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
                     if (latestReply && latestReply.text) {
-                const adminReplyContent = document.createElement('div');
-adminReplyContent.className = 'admin-reply-content';
+                        const adminReplyDiv = document.createElement('div');
+                        adminReplyDiv.className = 'admin-reply';
 
-let replyTimestampText = ''; // 🟢 space added after let
+                        const adminAvatar = document.createElement('img');
+                        adminAvatar.className = 'admin-reply-avatar';
+                        adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar (or specific admin avatar from backend)
+                        adminAvatar.alt = 'Admin';
 
-try {
-  // 🕐 Format timestamp in Indian time
-  replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    dateStyle: 'short',
-    timeStyle: 'short'
-  })})`;
-} catch (e) {
-  // 🔁 Fallback format
-  replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`; // ✅ "new Date", not "newDate"
-}
+                        const adminReplyContent = document.createElement('div');
+                        adminReplyContent.className = 'admin-reply-content';
+                        let replyTimestampText = '';
+                        try {
+                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
+                        } catch(e) {
+                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`;
+                        }
+                        adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
 
-adminReplyContent.innerHTML = `
-  <strong>(${latestReply.adminName || 'Admin'}):</strong> 
-  ${latestReply.text} 
-  <span class="reply-timestamp">${replyTimestampText}</span>
-`;
+                        adminReplyDiv.append(adminAvatar, adminReplyContent);
+                        detailsDiv.appendChild(adminReplyDiv);
+                    }
+                }
 
-adminReplyDiv.append(adminAvatar, adminReplyContent);
-detailsDiv.appendChild(adminReplyDiv);
+                item.append(avatarImg, detailsDiv);
+                feedbackListContainer.appendChild(item); // Add the feedback item to the list
+            }
 
-item.append(avatarImg, detailsDiv);
-feedbackListContainer.appendChild(item);
-
-// UI init
-updateUIAfterLogout(); // Guest mode
-checkLoginStatus();    // Check user login status
+            // Initial calls on load
+            updateUIAfterLogout(); // Set initial UI state (guest mode)
+            checkLoginStatus(); // Check if user is already logged in via token
+        });
     </script>
 </body>
 </html>
