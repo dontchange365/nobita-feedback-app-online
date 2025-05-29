@@ -138,7 +138,7 @@
 
         /* Mobile Version – Avatar + Name (After Login) */
         #user-profile-trigger {
-            display: none; /* Hidden by default, shown by JS */
+            /* REMOVED: display: none; */ /* Ab, iski initial hidden state sirf 'hidden' class se manage hogi */
             flex-direction: row; /* Default horizontal layout */
             align-items: center;
             gap: 8px; /* Spacing between avatar and name */
@@ -2045,10 +2045,11 @@
         // Update UI based on logged in user
         function updateUIAfterLogin() {
             if (currentUser) {
-                if(loginIconTrigger) loginIconTrigger.style.display = 'none';
-                // Use userProfileTrigger for the new profile badge
+                if(loginIconTrigger) loginIconTrigger.style.display = 'none'; // Login icon hide karega
+
                 if(userProfileTrigger) {
-                    userProfileTrigger.classList.remove('hidden'); // Show the profile badge
+                    userProfileTrigger.style.display = 'flex'; // **Explicitly set to flex to ensure it displays**
+                    userProfileTrigger.classList.remove('hidden'); // hidden class ko remove karega
                     // Set avatar and name in the profile badge
                     if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/40/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
