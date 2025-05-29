@@ -2093,6 +2093,9 @@
             // Use userProfileTrigger for the new profile badge
             if(userProfileTrigger) {
                 userProfileTrigger.classList.add('hidden'); // Hide the profile badge
+                // **SOLUTION:** Clear the avatar image source when logging out
+                // Using a transparent GIF placeholder as a fallback image source
+                if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
             }
             if(userMenu) userMenu.classList.remove('active'); // Close menu on logout
             if(userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal on logout
@@ -2166,7 +2169,6 @@
                 saveProfileChangesBtn.textContent = "Saving...";
 
                 try {
-                    // Now this form submission is only for name update
                     const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
 
                     // Update localStorage with the new token if it was part of the response
@@ -2675,5 +2677,6 @@
         checkLoginStatus(); // Check if user is already logged in via token
     });
 </script>
+
 </body>
 </html>
