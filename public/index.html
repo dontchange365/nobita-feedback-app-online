@@ -1418,7 +1418,7 @@
             const modalSignupNameInput = document.getElementById('modal-signup-name');
             const modalSignupEmailInput = document.getElementById('modal-signup-email');
             const modalSignupPasswordInput = document.getElementById('modal-signup-password');
-            const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password'); // Corrected typo here
+            const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password');
             const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
             const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
 
@@ -1885,43 +1885,28 @@
                 await fetchFeedbacks(); // Always fetch feedbacks regardless of login status
             }
 
-            // Function to get avatar URL and default character for consistent fallback
-            const getAvatarSrc = (userObj, size) => {
-                const userName = userObj && userObj.name ? userObj.name : 'User'; // Default to 'User' if name is missing
-                const defaultChar = userName.charAt(0).toUpperCase();
-                return userObj && userObj.avatarUrl ? userObj.avatarUrl : `https://via.placeholder.com/${size}/FFFFFF/6a0dad?text=${encodeURIComponent(defaultChar)}`;
-            };
-
-            // Update UI based on logged in user (now handles profile avatar & name consistently)
+            // Update UI based on logged in user
             function updateUIAfterLogin() {
                 if (currentUser) {
-                    // Top-right corner login/avatar trigger
                     if(loginIconTrigger) loginIconTrigger.style.display = 'none';
                     if(userAvatarTrigger) {
                         userAvatarTrigger.style.display = 'flex';
                         userAvatarTrigger.classList.add('avatar-mode'); // Apply round styling
                     }
-                    // Update top-right avatar trigger
-                    if(userAvatarTriggerImg) userAvatarTriggerImg.src = getAvatarSrc(currentUser, 48);
+                    if(userAvatarTriggerImg) userAvatarTriggerImg.src = currentUser.avatarUrl || `https://via.placeholder.com/48/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
-                    // Update User Menu avatar and username
-                    if(menuAvatarImg) menuAvatarImg.src = getAvatarSrc(currentUser, 70);
+                    if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/70/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
-                    // Update main feedback form name input and span
-                    if(nameInputInFeedbackForm) {
-                        nameInputInFeedbackForm.value = currentUser.name;
-                        nameInputInFeedbackForm.disabled = true; // Disable name input when logged in
-                    }
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                     if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
+                    if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true; // Disable name input when logged in
                     if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure form is visible
 
-                    // Update User Profile Modal fields (including avatar and name)
+                    // Set profile modal fields
                     if (profileNameInput) profileNameInput.value = currentUser.name;
                     if (profileEmailInput) profileEmailInput.value = currentUser.email;
-                    // This line ensures the profile modal avatar is always updated with the current user's avatarUrl
-                    if (profileDisplayAvatar) profileDisplayAvatar.src = getAvatarSrc(currentUser, 120);
-
+                    if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
                     // Disable profile edit for Google users' name and password as they log in via Google
                     if (currentUser.loginMethod === 'google') {
@@ -2062,8 +2047,7 @@
                         if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
                         // Revert to current user avatar if no file selected
                         if (currentUser) {
-                            // Using the new consistent function for default avatar
-                            profileDisplayAvatar.src = getAvatarSrc(currentUser, 120);
+                            profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                             // Re-evaluate if save button should be enabled based on name changes only
                             profileEditForm.dispatchEvent(new Event('input')); // Trigger input event to re-check name
                         }
@@ -2121,12 +2105,9 @@
                                         // Update currentUser and UI with new avatar URL
                                         currentUser.avatarUrl = backendUpdateResponse.user.avatarUrl;
                                         // Explicitly update the profile modal avatar display
-                                        // This line is added to ensure the profile image updates immediately using the consistent method.
-                                        if (profileDisplayAvatar) {
-                                            profileDisplayAvatar.src = getAvatarSrc(currentUser, 120);
-                                        }
+                                        if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; 
 
-                                        updateUIAfterLogin(); // Re-call this to update the corner trigger and menu avatar (which will also use getAvatarSrc)
+                                        updateUIAfterLogin(); // Re-call this to update the corner trigger and menu avatar
                                         await fetchFeedbacks(); // Re-fetch feedbacks to update all avatars in the list
                                         avatarUploadInput.value = ''; // Clear the file input after successful upload
                                         if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; // Hide UPLOAD button
@@ -2384,7 +2365,7 @@
                 }, 50);
             }
 
-            // Add Feedback to DOM (now uses the consistent avatar generation)
+            // Add Feedback to DOM
             function addFeedbackToDOM(fbData, index) {
                 const item = document.createElement('div');
                 item.className = 'feedback-item';
@@ -2392,15 +2373,12 @@
 
                 const avatarImg = document.createElement('img');
                 avatarImg.className = 'avatar-img';
-                // Pass the user object (if available from userId) or construct a temporary object
-                // The `userId` property from the `fbData` typically contains the user object with `name` and `avatarUrl`.
-                const feedbackUser = fbData.userId || { name: fbData.name, avatarUrl: fbData.avatarUrl };
-                avatarImg.src = getAvatarSrc(feedbackUser, 50); // Use the unified getAvatarSrc function
+                const defaultAvatarChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
+                avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
                 avatarImg.alt = fbData.name || 'User Avatar';
-                // Fallback for broken image links - this should now be handled by getAvatarSrc, but keeping this as a final safeguard
+                // Fallback for broken image links
                 avatarImg.onerror = function() {
-                    const defaultChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'U');
-                    this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultChar)}`;
+                    this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
                 };
 
                 const detailsDiv = document.createElement('div');
