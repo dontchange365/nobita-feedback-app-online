@@ -1200,13 +1200,14 @@
             margin-left: 7px;
         }
 
+        /* NEW: Edit Feedback Button Styling */
         .edit-feedback-btn {
             background: none;
             border: none;
             color: #5bc0de; /* Light blue */
             cursor: pointer;
             font-size: 1.25em;
-            position: absolute;
+            position: absolute; /* Position relative to .feedback-item */
             top: 10px;
             right: 10px;
             padding: 4px; /* Make click area larger */
@@ -2612,25 +2613,35 @@
 
             detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-            // Edit Button
+            // NEW: Edit Button creation and logic
             const editButton = document.createElement('button');
             editButton.className = 'edit-feedback-btn';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
-            // Disable edit button if not the current user's feedback
+            
+            // Disable (hide) edit button if not the current user's feedback
+            // This is crucial for showing/hiding the button
             editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
+                // Double-check permission on click as well for security
                 if (!currentUser || currentUser.userId !== fbData.userId) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
+                
                 // Populate the form for editing
-                nameInputInFeedbackForm.value = fbData.name;
-                feedbackFormUsernameSpan.textContent = fbData.name;
-                nameInputInFeedbackForm.disabled = true; // Keep disabled as user is logged in
-
+                // Make sure `nameInputInFeedbackForm` is the correct element in your HTML for the name input
+                // and `feedbackFormUsernameSpan` is the span for the displayed username in the form label.
+                if (nameInputInFeedbackForm) {
+                    nameInputInFeedbackForm.value = fbData.name;
+                    nameInputInFeedbackForm.disabled = true; // Keep disabled as user is logged in
+                }
+                if (feedbackFormUsernameSpan) {
+                     feedbackFormUsernameSpan.textContent = fbData.name;
+                }
+               
                 feedbackTextarea.value = fbData.feedback;
                 currentSelectedRating = fbData.rating;
                 ratingInput.value = fbData.rating;
@@ -2645,7 +2656,7 @@
                     feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
-            item.appendChild(editButton);
+            item.appendChild(editButton); // Add the edit button to the feedback item
 
 
             // Admin Reply (if exists)
