@@ -2048,8 +2048,12 @@
                 if(loginIconTrigger) loginIconTrigger.style.display = 'none'; // Login icon hide karega
 
                 if(userProfileTrigger) {
-                    userProfileTrigger.style.display = 'flex'; // **Explicitly set to flex to ensure it displays**
+                    userProfileTrigger.style.display = 'flex'; // Explicitly set to flex to ensure it displays
                     userProfileTrigger.classList.remove('hidden'); // hidden class ko remove karega
+                    // **FIX:** Login hone par opacity aur pointer-events ko reset karein
+                    userProfileTrigger.style.opacity = '1'; // Pura visible karega
+                    userProfileTrigger.style.pointerEvents = 'auto'; // Clickable banayega
+                    
                     // Set avatar and name in the profile badge
                     if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/40/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
@@ -2093,9 +2097,12 @@
             // Use userProfileTrigger for the new profile badge
             if(userProfileTrigger) {
                 userProfileTrigger.classList.add('hidden'); // Hide the profile badge
-                // **SOLUTION:** Clear the avatar image source when logging out
+                // **SOLUTION:** Logout hone par avatar image source clear karein aur opacity/pointer-events set karein
                 // Using a transparent GIF placeholder as a fallback image source
                 if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                // **ADD THESE TWO LINES FOR A MORE ROBUST HIDE:**
+                userProfileTrigger.style.opacity = '0'; // Pura transparent kar dega
+                userProfileTrigger.style.pointerEvents = 'none'; // Ispe click nahi hoga
             }
             if(userMenu) userMenu.classList.remove('active'); // Close menu on logout
             if(userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal on logout
