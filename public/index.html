@@ -4,20 +4,13 @@
   <meta charset="UTF-8" />
   <title>Nobita Feedback Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Favicon: Nobita Avatar via Dicebear -->
   <link rel="icon" href="https://api.dicebear.com/8.x/adventurer/svg?seed=nobita&radius=50" />
-  <!-- Google Fonts: Inter, Lexend, Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-  <!-- Lucide Icons (Feather-like SVG icons) -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <!-- Marked.js for markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Intro.js for onboarding tour -->
   <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
   <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
-  <!-- Socket.IO for real-time -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <!-- ONE STYLE TAG: ALL CSS -->
   <style>
     :root {
       --primary: #6366f1;
@@ -154,7 +147,6 @@
   </style>
 </head>
 <body>
-  <!-- Navbar -->
   <nav class="navbar" aria-label="Main">
     <div class="navbar-logo" id="nav-logo" tabindex="0" aria-label="Reload Home">
       <i data-lucide="zap"></i>
@@ -221,8 +213,7 @@
   <div id="load-more-sentinel" style="height:38px;display:flex;align-items:center;justify-content:center;">
     <div class="loader" id="load-more-spinner" style="display:none;"></div>
   </div>
-  <!-- ONE SCRIPT TAG: ALL JS -->
-  
+  <script>
 /* ==== CONSTANTS: API, Cloudinary, Google, etc. ==== */
 const API_BASE = "https://nobita-feedback-app-online.onrender.com";
 const CLOUDINARY_BASE = "https://res.cloudinary.com/dyv7xav3e/image/upload/";
