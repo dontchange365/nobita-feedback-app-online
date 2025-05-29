@@ -4,1006 +4,1634 @@
   <meta charset="UTF-8">
   <title>Nobita Feedback Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Favicon -->
+  <!-- Favicon: Nobita avatar -->
   <link rel="icon" href="https://api.dicebear.com/8.x/adventurer/svg?seed=nobita&radius=50" />
-  <!-- Fonts: Inter, Lexend, Roboto -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Lucide (Feather) Icons CDN -->
+
+  <!-- Google Fonts: Inter, Lexend, Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN (Feather icons) -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Animate.css for pop/smooth animation (for modals, toasts) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <!-- Main App Styles -->
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-light: #6366f1;
-      --success: #10b981;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --success: #22c55e;
       --error: #ef4444;
       --warn: #f59e42;
-      --bg-main: #f9fafb;
-      --bg-card: #fff;
-      --border: #e5e7eb;
-      --indigo-gradient: linear-gradient(120deg, #4f46e5 10%, #8b5cf6 90%);
-      --pink-gradient: linear-gradient(120deg, #f9fafb 0%, #f472b6 100%);
-      --shadow: 0 6px 32px 0 rgba(80,70,229,0.07), 0 1.5px 3.5px 0 rgba(0,0,0,0.05);
-      --font-main: 'Inter', 'Lexend', 'Roboto', Arial, sans-serif;
+      --glass: rgba(30,41,59,0.72);
+      --glass-modal: rgba(30,41,59,0.86);
+      --backdrop: rgba(30, 41, 59, 0.72);
+      --gradient-main: linear-gradient(90deg, #eef2ff 0%, #f5d0fe 100%);
+      --shadow-xl: 0 8px 32px 0 rgba(31,38,135,0.37);
+      --border-radius: 18px;
+      --border-radius-sm: 10px;
+      --nav-height: 72px;
+      --font-main: 'Inter', sans-serif;
+      --font-title: 'Lexend', sans-serif;
+      --font-code: 'Roboto Mono', monospace;
+      --avatar-size: 42px;
+      --z-nav: 20;
+      --z-modal: 999;
+      --z-toast: 2000;
+      --blur: blur(8px);
+      --blur-modal: blur(16px);
+      --modal-width: 420px;
+      --modal-padding: 36px;
     }
-    html, body {
-      background: var(--bg-main);
-      color: #1e293b;
-      font-family: var(--font-main);
-      margin: 0; padding: 0;
-      min-height: 100vh;
-    }
+
     body {
-      display: flex;
-      flex-direction: column;
+      font-family: var(--font-main);
+      margin: 0;
+      background: var(--gradient-main);
       min-height: 100vh;
+      color: #21213c;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    /* NavBar */
-    .nav-main {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      background: var(--bg-card);
-      z-index: 80;
-      border-bottom: 1.5px solid var(--border);
-      box-shadow: 0 2px 18px rgba(79,70,229,0.05);
+    /* Top NavBar */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      z-index: var(--z-nav);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 2vw;
-      min-height: 62px;
+      padding: 0 36px;
+      background: var(--glass);
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid #d9d4fa44;
+      transition: background 0.2s;
     }
-    .nav-logo {
-      font-family: 'Lexend', 'Inter', Arial, sans-serif;
-      font-weight: 800;
-      font-size: 1.5rem;
-      letter-spacing: 0.05em;
-      color: var(--primary);
-      text-shadow: 0 2px 18px rgba(79,70,229,0.05);
-      user-select: none;
-      cursor: pointer;
+    .navbar .nav-left, .navbar .nav-right {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 24px;
+      height: 100%;
     }
-    .nav-actions {
-      display: flex; align-items: center; gap: 20px;
-    }
-    .nav-avatar, .nav-loginicon {
-      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; background: #ede9fe; box-shadow: 0 0 0 2.5px var(--primary-light);
-      cursor: pointer; transition: box-shadow 0.15s;
-      overflow: hidden;
-    }
-    .nav-avatar img {
-      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
-      display: block;
-    }
-    .nav-loginicon svg { width: 24px; height: 24px; color: var(--primary);}
-    .nav-avatar:hover, .nav-loginicon:hover { box-shadow: 0 0 0 4px var(--primary);}
-    /* Dropdown */
-    .user-dropdown {
-      display: none; position: absolute; right: 2vw; top: 58px;
-      min-width: 190px; background: var(--bg-card);
-      box-shadow: var(--shadow); border-radius: 16px;
-      border: 1px solid var(--border); z-index: 99;
-      padding: 8px 0;
-      animation: dropdownIn .26s cubic-bezier(.56,.02,.34,1.5);
-    }
-    @keyframes dropdownIn { 0%{ opacity:0; transform: translateY(-10px) scale(.98);}
-      100%{ opacity:1; transform: translateY(0) scale(1);}
-    }
-    .user-dropdown.active { display: block; }
-    .user-dropdown-btn {
-      background: none; border: none; color: #23283c; width: 100%; padding: 13px 22px;
-      text-align: left; font: 500 1.03em var(--font-main); cursor: pointer; display: flex; align-items: center; gap: 13px;
-      transition: background .15s;
-    }
-    .user-dropdown-btn:hover { background: #f4f4fd; }
-    /* Toast system */
-    .toast-root {
-      position: fixed; top: 25px; right: 24px; z-index: 4000; display: flex; flex-direction: column; gap: 15px; pointer-events: none;
-    }
-    .toast {
-      min-width: 260px; max-width: 360px;
-      border-radius: 12px; box-shadow: var(--shadow);
-      font-size: 1.06em; padding: 14px 18px 14px 16px;
-      background: #fff; border: 1.5px solid var(--border);
-      display: flex; align-items: center; gap: 15px;
-      opacity: 0.96; animation: toastIn .31s cubic-bezier(.43,0,.58,1.24);
-      pointer-events: auto;
-    }
-    .toast-success { border-left: 4.5px solid var(--success); }
-    .toast-error { border-left: 4.5px solid var(--error); }
-    .toast-warn { border-left: 4.5px solid var(--warn); }
-    .toast-icon { width: 22px; height: 22px; }
-    @keyframes toastIn { from { transform: translateY(-32px) scale(.98); opacity: 0.2; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    /* Blurred modal overlay */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 1200;
-      background: rgba(25,21,72, 0.26);
-      backdrop-filter: blur(2.2px) brightness(.97);
-      -webkit-backdrop-filter: blur(2.2px) brightness(.97);
-      display: none; align-items: center; justify-content: center;
-      transition: background .25s;
-    }
-    .modal-overlay.active { display: flex; }
-    /* Modals */
-    .modal-card {
-      background: var(--bg-card);
-      border-radius: 22px;
-      box-shadow: 0 7px 42px rgba(79,70,229,0.10), 0 1.5px 3.5px 0 rgba(0,0,0,0.07);
-      border: 1.5px solid var(--border);
-      min-width: 325px; max-width: 98vw;
-      animation: modalScaleIn .29s cubic-bezier(.45,0,.32,1.24);
-      position: relative;
-      padding: 40px 30px 34px 30px;
-    }
-    @media (max-width: 600px) {
-      .modal-card { min-width: unset; width: 98vw; padding: 26px 8vw 22px 8vw;}
-      .nav-main { min-height: 50px; font-size: 1.1em;}
-      .nav-logo { font-size: 1.16rem;}
-    }
-    @keyframes modalScaleIn { 0%{ opacity:0; transform: scale(.90) translateY(44px);}
-      100%{ opacity:1; transform: scale(1) translateY(0);}
-    }
-    .modal-close-btn {
-      position: absolute; top: 12px; right: 14px; background: none; border: none;
-      font-size: 1.5em; color: #686de0; cursor: pointer; padding: 3px; border-radius: 7px; transition: background .1s;
-      z-index: 5;
-    }
-    .modal-close-btn:hover { background: #f1f2fd;}
-    /* Responsive tweaks */
-    @media (max-width: 800px) {
-      .feedback-main { padding: 0 2vw;}
-      .feedback-form-card, .feedback-list-card { margin: 0 auto;}
-    }
-    @media (max-width: 540px) {
-      .feedback-main { padding: 0 2px;}
-      .modal-card { padding: 13vw 3vw 9vw 3vw;}
-    }
-    /* Utility Classes */
-    .hidden { display: none !important; }
-    .fade-in { animation: fadeIn .29s cubic-bezier(.6,0,.2,1); }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    /* Button styles */
-    .btn {
-      background: var(--primary); color: #fff; border: none;
-      border-radius: 10px; padding: 12px 22px; font-size: 1.1em; font-weight: 700;
-      cursor: pointer; transition: box-shadow .13s, background .17s;
-      box-shadow: 0 2px 9px rgba(80,70,229,0.06);
-      display: flex; align-items: center; gap: 12px;
-    }
-    .btn:hover, .btn:focus { background: var(--primary-light); }
-    .btn-google {
-      background: #fff;
-      color: #222; font-weight: 600;
-      border: 1.4px solid #cfcfff;
-      box-shadow: 0 2px 9px rgba(80,70,229,0.08);
-      border-radius: 10px;
-      padding: 11px 16px;
-      display: flex; align-items: center; gap: 10px;
-      font-size: 1em;
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-title);
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      letter-spacing: 2px;
       cursor: pointer;
-      transition: border .17s, box-shadow .13s;
+      user-select: none;
+      text-shadow: 0 4px 24px #b5b8fc60;
     }
-    .btn-google:hover, .btn-google:focus {
-      border: 1.5px solid var(--primary-light);
-      box-shadow: 0 4px 16px rgba(79,70,229,0.13);
+    .navbar-logo svg {
+      width: 36px; height: 36px;
+      display: inline;
+      vertical-align: middle;
     }
-    /* --- Main content layout --- */
-    .feedback-main {
-      max-width: 780px;
-      width: 100%;
-      margin: 0 auto;
-      margin-top: 44px;
-      margin-bottom: 40px;
-      padding: 0 0;
+    .navbar .nav-right > .nav-btn {
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 0 8px;
+      position: relative;
+      transition: background 0.16s;
+      display: flex;
+      align-items: center;
+      height: 44px;
+      border-radius: 8px;
+    }
+    .navbar .nav-right > .nav-btn:active, .navbar .nav-right > .nav-btn:focus {
+      background: #e7e9fc33;
+    }
+    .navbar .nav-right > .nav-avatar-btn {
+      border-radius: 50%;
+      overflow: visible;
+      padding: 0;
+      width: var(--avatar-size);
+      height: var(--avatar-size);
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #bcb8fd80;
+      box-shadow: 0 2px 10px #c1bffd23;
+      transition: box-shadow 0.22s;
+      position: relative;
+    }
+    .nav-avatar-img {
+      width: var(--avatar-size);
+      height: var(--avatar-size);
+      border-radius: 50%;
+      object-fit: cover;
+      transition: box-shadow 0.18s, border 0.18s;
+      box-shadow: 0 4px 24px #d6d7f260;
+      border: 2.5px solid #f5f3ff;
+      background: #eceffe;
+    }
+    .avatar-badge {
+      position: absolute;
+      bottom: -2px; right: -2px;
+      background: #6366f1;
+      color: #fff;
+      border-radius: 7px;
+      padding: 2px 7px;
+      font-size: 0.72em;
+      font-weight: bold;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px #a0a4ff36;
+      z-index: 3;
+      display: flex; align-items: center; gap: 3px;
+      animation: badgeFadeIn 0.6s cubic-bezier(.62,.01,.22,1.03);
+    }
+    @keyframes badgeFadeIn {
+      0% { opacity: 0; transform: scale(0.6);}
+      80% { opacity: 1; transform: scale(1.1);}
+      100% { opacity: 1; transform: scale(1);}
+    }
+    /* Notification bell badge */
+    .bell-badge {
+      position: absolute;
+      top: 7px; right: 9px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 12px;
+      min-width: 18px;
+      min-height: 18px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      z-index: 2;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 8px #d73c3e33;
+      display: flex; align-items: center; justify-content: center;
+      animation: badgeFadeIn 0.5s;
+    }
+    /* Theme toggle sun/moon */
+    .theme-toggle-btn { font-size: 1.32rem; }
+
+    /* Responsive NavBar */
+    @media (max-width: 700px) {
+      .navbar { padding: 0 10px; }
+      .navbar-logo { font-size: 1.4rem; }
+      .navbar .nav-right { gap: 12px; }
+    }
+    @media (max-width: 490px) {
+      .navbar { height: 54px; min-height: 54px;}
+      .navbar-logo { font-size: 1.05rem; }
+      .nav-avatar-img { width: 34px; height: 34px;}
+    }
+    /* Main Content Padding */
+    .main-app-content { padding-top: var(--nav-height);}
+    @media (max-width: 700px) { .main-app-content { padding-top: 62px;} }
+    @media (max-width: 490px) { .main-app-content { padding-top: 50px;} }
+
+    /* === MODAL OVERLAY + Glassmorphic Login Modal === */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.62);
+      backdrop-filter: blur(8px);
+      z-index: var(--z-modal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.26s;
+      opacity: 1;
+    }
+    .modal-overlay.hide { opacity: 0; pointer-events: none;}
+    .glass-modal {
+      background: var(--glass-modal);
+      border-radius: var(--border-radius);
+      box-shadow: 0 6px 40px 0 rgba(71,35,196,0.17), 0 1.5px 12px 0 rgba(30,41,59,0.14);
+      padding: var(--modal-padding);
+      min-width: 90vw;
+      max-width: var(--modal-width);
+      min-height: 340px;
       display: flex;
       flex-direction: column;
-      gap: 26px;
+      align-items: stretch;
+      gap: 28px;
+      position: relative;
+      animation: scaleModalIn 0.36s cubic-bezier(.61,1.41,.52,.96);
+      border: 2px solid #6867dd45;
+      outline: none;
+      font-family: var(--font-main);
     }
-    /* HERO Header */
-    .hero-welcome {
-      margin-bottom: 18px;
-      margin-top: 12px;
-      font-size: 1.52em;
-      font-family: 'Lexend', 'Inter', Arial, sans-serif;
+    @keyframes scaleModalIn {
+      0% { opacity: 0; transform: scale(0.80);}
+      85% { opacity: 1; transform: scale(1.07);}
+      100% { opacity: 1; transform: scale(1);}
+    }
+    .glass-modal .modal-title {
+      font-family: var(--font-title);
+      font-size: 2.1rem;
       font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-top: 0;
+    }
+    /* Modal Close Button */
+    .modal-close-btn {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.6em;
+      color: #fff;
+      opacity: 0.72;
+      z-index: 6;
+      transition: color 0.12s;
+      padding: 4px;
+    }
+    .modal-close-btn:hover { color: var(--error); }
+    /* === Floating Label Input Styles === */
+    .floating-label-group {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .floating-label-group input {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid #dedafd;
+      outline: none;
+      font-size: 1.13rem;
+      background: transparent;
+      color: #f6f7fa;
+      padding: 14px 0 8px 0;
+      font-family: var(--font-main);
+      border-radius: 0;
+      transition: border-color 0.19s;
+    }
+    .floating-label-group input:focus {
+      border-bottom: 2.5px solid var(--primary);
+      background: none;
+    }
+    .floating-label-group label {
+      color: #d8d6ff;
+      position: absolute;
+      left: 0;
+      top: 15px;
+      pointer-events: none;
+      font-size: 1rem;
+      font-weight: 400;
+      transition: top 0.14s, font-size 0.14s, color 0.14s;
+      background: none;
+    }
+    .floating-label-group input:focus ~ label,
+    .floating-label-group input:not(:placeholder-shown) ~ label {
+      top: -11px;
+      font-size: 0.89rem;
       color: var(--primary);
-      text-shadow: 0 6px 36px rgba(80,70,229,0.13);
-      animation: fadeLeftIn .52s cubic-bezier(.58,.03,.29,1.28);
-      opacity: 0.95;
-      letter-spacing: 0.01em;
+      font-weight: 700;
+      background: none;
     }
-    @keyframes fadeLeftIn {
-      from { opacity:0; transform: translateX(-44px);}
-      to { opacity:1; transform: translateX(0);}
+    /* Password Show/Hide Button */
+    .input-password-toggle {
+      position: absolute;
+      right: 7px; top: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #a3a4bc;
+      font-size: 1.23em;
+      z-index: 4;
+      padding: 6px;
     }
-    /* Footer */
-    .footer-main {
-      margin-top: auto; width: 100%; background: var(--bg-card);
-      padding: 26px 0 15px 0; text-align: center; border-top: 1.5px solid var(--border);
-      font-size: 1.04em; color: #666; font-family: 'Inter', Arial, sans-serif;
-      letter-spacing: 0.01em;
+    .input-password-toggle:active { color: var(--primary); }
+    /* Google Sign-In Button */
+    .google-signin-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 25px;
+      border: 2px solid #4285F4;
+      background: #fff;
+      font-weight: bold;
+      color: #222;
+      font-size: 1.05em;
+      padding: 11px 32px 11px 19px;
+      box-shadow: 0 2px 10px #a9a6f235;
+      cursor: pointer;
+      transition: box-shadow 0.18s, background 0.18s, color 0.16s;
+      margin-top: 12px;
+      user-select: none;
     }
-    .footer-badge {
-      font-family: 'Lexend', 'Inter', Arial, sans-serif; font-size: 1.07em; color: var(--primary);
-      font-weight: 700; margin-left: 5px; letter-spacing: 0.06em;
+    .google-signin-btn:hover {
+      box-shadow: 0 6px 22px #849af435;
+      background: #f7faff;
+      color: #333;
     }
-    /* Loader */
-    .main-loader { display: flex; align-items: center; justify-content: center; width: 100%; padding: 60px 0;}
-    .main-loader svg { color: var(--primary); width: 42px; height: 42px; animation: spinLoader 1.2s linear infinite;}
-    @keyframes spinLoader { 100% { transform: rotate(360deg);}}
+    .google-logo-svg {
+      width: 23px; height: 23px; display: inline-block; vertical-align: middle;
+    }
+    /* Toast Notification */
+    .toast-stack {
+      position: fixed;
+      top: 24px; right: 20px;
+      z-index: var(--z-toast);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .toast-msg {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      border-radius: 10px;
+      font-size: 1.01em;
+      font-weight: 600;
+      padding: 13px 27px 13px 17px;
+      box-shadow: 0 3px 16px #b7b1ff27;
+      min-width: 260px;
+      max-width: 380px;
+      animation: fadeInRight 0.36s cubic-bezier(.71,.44,.26,1.12);
+      color: #fff;
+      border: 2px solid #fff2;
+    }
+    .toast-success { background: #23ca6b; }
+    .toast-error   { background: #e33a4e; }
+    .toast-warn    { background: #fbbf24; color: #2e2344; border: 2px solid #dfd5a7; }
+    .toast-info    { background: #6366f1; }
+    .toast-msg .lucide { font-size: 1.26em; }
+    @keyframes fadeInRight {
+      0% { opacity: 0; transform: translateX(35px) scale(0.95);}
+      78% { opacity: 1; transform: translateX(-7px) scale(1.02);}
+      100% { opacity: 1; transform: translateX(0) scale(1);}
+    }
+    /* More to be added in next parts... */
   </style>
 </head>
 <body>
-  <nav class="nav-main">
-    <div class="nav-logo" onclick="window.location.reload()">
-      <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#f9fafb"/><circle cx="12" cy="12" r="8.5" stroke="#4f46e5" stroke-width="2"/><path d="M15.5 15.5L12 12M12 12L8.5 8.5M12 12L15.5 8.5M12 12L8.5 15.5" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round"/></svg>
-      NOBITA
+  <!-- ======== NAVIGATION BAR ======== -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <div class="navbar-logo" id="navbar-logo" tabindex="0" aria-label="Reload homepage">
+        <i data-lucide="stars"></i>
+        NobitaFeedback
+      </div>
     </div>
-    <div class="nav-actions">
-      <!-- Avatar or Login icon will be rendered here -->
-      <div id="nav-action-root"></div>
+    <div class="nav-right">
+      <!-- Bell/Notifications -->
+      <button class="nav-btn" id="notifications-btn" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+        <span id="bell-badge" class="bell-badge" style="display:none;">0</span>
+      </button>
+      <!-- Theme toggle -->
+      <button class="nav-btn theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Theme">
+        <i data-lucide="moon"></i>
+      </button>
+      <!-- Language toggle -->
+      <button class="nav-btn" id="language-toggle-btn" aria-label="Switch Language">
+        <i data-lucide="globe"></i>
+      </button>
+      <!-- User icon or avatar (dynamic) -->
+      <button class="nav-btn" id="login-icon-trigger" aria-label="Login" style="display:flex;">
+        <i data-lucide="user"></i>
+      </button>
+      <button class="nav-avatar-btn" id="user-avatar-trigger" aria-label="Profile" style="display:none;">
+        <img src="" class="nav-avatar-img" id="nav-avatar-img" alt="User Avatar" />
+        <span class="avatar-badge" id="avatar-badge" style="display:none;"></span>
+      </button>
     </div>
   </nav>
-  <div id="root-main">
-    <!-- Main content, forms, feedback, to be rendered by JS -->
+
+  <!-- ======== MODALS ======== -->
+
+  <!-- ==== LOGIN/SIGNUP MODAL ==== -->
+  <div class="modal-overlay" id="auth-modal-overlay" style="display:none;">
+    <div class="glass-modal animate__animated" id="auth-modal" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="auth-modal-title">
+      <button class="modal-close-btn" id="auth-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <h2 class="modal-title" id="auth-modal-title">Sign in / Register</h2>
+      <!-- Tabs, form, Google btn will come in PART 2 -->
+    </div>
   </div>
-  <div class="footer-main">
-    Made by <span class="footer-badge">Nobita</span> • Feedback Pro System &copy; <span id="yearFooter"></span>
+        <!-- ==== LOGIN / SIGNUP TABS ==== -->
+      <div style="display:flex;justify-content:center;gap:18px;margin-bottom:10px;">
+        <button id="auth-tab-login" type="button" class="auth-tab-btn" aria-selected="true" style="background:none;border:none;color:#fff;font-weight:bold;font-size:1.16em;letter-spacing:1.2px;padding:7px 20px;border-bottom:3px solid #6366f1;outline:none;cursor:pointer;">Login</button>
+        <button id="auth-tab-signup" type="button" class="auth-tab-btn" aria-selected="false" style="background:none;border:none;color:#d8d8fc;font-weight:600;font-size:1.09em;letter-spacing:1px;padding:7px 20px;border-bottom:3px solid transparent;outline:none;cursor:pointer;">Signup</button>
+      </div>
+      <form id="auth-login-form" autocomplete="on">
+        <div class="floating-label-group">
+          <input type="email" id="login-email" name="email" required placeholder=" " autocomplete="username" spellcheck="false" />
+          <label for="login-email">Email</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="login-password" name="password" required placeholder=" " minlength="6" autocomplete="current-password" />
+          <label for="login-password">Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="login-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div style="text-align:right;margin-top:-12px;margin-bottom:12px;">
+          <a href="#" id="forgot-password-link" style="color:#9db6f9;font-size:0.96em;text-decoration:underline;cursor:pointer;">Forgot password?</a>
+        </div>
+        <button type="submit" style="width:100%;margin-top:6px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Log In <i data-lucide="log-in" style="vertical-align:middle;margin-left:7px;"></i></button>
+      </form>
+      <form id="auth-signup-form" autocomplete="on" style="display:none;">
+        <div class="floating-label-group">
+          <input type="text" id="signup-name" name="name" required placeholder=" " maxlength="32" autocomplete="name" />
+          <label for="signup-name">Name</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="email" id="signup-email" name="email" required placeholder=" " autocomplete="email" />
+          <label for="signup-email">Email</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="signup-password" name="password" required placeholder=" " minlength="6" autocomplete="new-password" />
+          <label for="signup-password">Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="signup-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <button type="submit" style="width:100%;margin-top:8px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Sign Up <i data-lucide="user-plus" style="vertical-align:middle;margin-left:7px;"></i></button>
+      </form>
+
+      <!-- ==== Google Sign-In Button ==== -->
+      <button class="google-signin-btn" id="google-signin-btn" type="button">
+        <svg class="google-logo-svg" viewBox="0 0 32 32"><g><path fill="#4285F4" d="M16.64 13.204v3.284h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-4.868 3.9-8.828 8.68-8.828 2.72 0 4.54 1.088 5.58 2.016l3.8-3.804C22.88 1.468 20.1 0 16.64 0c-8.04 0-14.58 6.552-14.58 14.628 0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28 0-.96-.108-1.7-.24-2.436H16.64z"/><path fill="#34A853" d="M3.44 8.868l3.24 2.38c.892-1.86 2.16-3.372 3.88-4.336L6.32 4.052A12.39 12.39 0 0 0 3.44 8.868z"/><path fill="#FBBC05" d="M16.64 4.8c2.1 0 3.684.72 4.544 1.376l3.408-3.404C22.88 1.468 20.1 0 16.64 0 11.252 0 6.436 2.904 3.44 8.868l3.24 2.38C8.6 7.852 12.04 4.8 16.64 4.8z"/><path fill="#EA4335" d="M29.44 14.388c0-.916-.08-1.632-.24-2.436H16.64v4.02h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-1.372.28-2.68.78-3.84l-3.24-2.38C2.1 9.72 1.4 12.084 1.4 14.628c0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28z"/></g></svg>
+        Sign in with Google
+      </button>
+    </div>
   </div>
-  <!-- Toast root -->
-  <div class="toast-root" id="toast-root"></div>
-  <!-- Modals root -->
-  <div id="modal-overlay-root"></div>
-  <!-- SVG Icons Loader for dynamic Lucide -->
-  <div id="svg-icon-loader" style="display:none;"></div>
+
+  <!-- ======= TOAST STACK ======= -->
+  <div class="toast-stack" id="toast-stack"></div>
+
+  <!-- ======= MAIN APP CONTENT (rest will come next) ======= -->
+  <div class="main-app-content" id="main-app-content">
+
+  <!-- ... PART 3 onwards ... -->
+
+  </div>
+  
+  <!-- ============ AUTH & UI SCRIPT PART 1 ============ -->
   <script>
-    // Set year
-    document.getElementById('yearFooter').textContent = (new Date()).getFullYear();
-    // Load Lucide/Feather icons dynamically (for JS usage)
-    window.lucide = window.lucide || {};
-    // Toast system helper
-    function showToast(msg, type='success', ms=3400) {
-      const toastRoot = document.getElementById('toast-root');
-      const icons = {
-        success: `<svg class="toast-icon" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="2"/><path d="M9 12l2 2l4-4" stroke="#10b981" stroke-width="2.3" stroke-linecap="round"/></svg>`,
-        error: `<svg class="toast-icon" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ef4444" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/></svg>`,
-        warn: `<svg class="toast-icon" fill="none" stroke="#f59e42" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f59e42" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="#f59e42" stroke-width="2.3" stroke-linecap="round"/></svg>`,
-      };
-      const div = document.createElement('div');
-      div.className = `toast toast-${type}`;
-      div.innerHTML = `${icons[type] || ''}<div style="flex:1">${msg}</div>`;
-      toastRoot.appendChild(div);
-      setTimeout(() => { div.style.opacity='0.2'; div.style.transform='translateY(-36px)'; }, ms-500);
-      setTimeout(() => { if (div.parentNode) toastRoot.removeChild(div); }, ms);
+    // Lucide icons init
+    window.lucide && window.lucide.createIcons();
+
+    // === Modal, Auth Tabs, Password Toggle, Toast ===
+    const loginIconTrigger = document.getElementById('login-icon-trigger');
+    const userAvatarTrigger = document.getElementById('user-avatar-trigger');
+    const navAvatarImg = document.getElementById('nav-avatar-img');
+    const avatarBadge = document.getElementById('avatar-badge');
+    const authModalOverlay = document.getElementById('auth-modal-overlay');
+    const authModal = document.getElementById('auth-modal');
+    const authModalCloseBtn = document.getElementById('auth-modal-close-btn');
+    const toastStack = document.getElementById('toast-stack');
+    const authTabLogin = document.getElementById('auth-tab-login');
+    const authTabSignup = document.getElementById('auth-tab-signup');
+    const loginForm = document.getElementById('auth-login-form');
+    const signupForm = document.getElementById('auth-signup-form');
+    const loginPassword = document.getElementById('login-password');
+    const loginPasswordToggle = document.getElementById('login-password-toggle');
+    const signupPassword = document.getElementById('signup-password');
+    const signupPasswordToggle = document.getElementById('signup-password-toggle');
+    const googleSigninBtn = document.getElementById('google-signin-btn');
+    const modalOverlay = document.getElementById('auth-modal-overlay');
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+
+    // --- Modal Open/Close Functions ---
+    function openAuthModal(tab = "login") {
+      authModalOverlay.style.display = 'flex';
+      setTimeout(() => authModalOverlay.classList.remove('hide'), 10);
+      if(tab === "login") {
+        switchAuthTab("login");
+      } else {
+        switchAuthTab("signup");
+      }
+      setTimeout(() => {
+        // Focus first input
+        const input = tab === "login" ? document.getElementById('login-email') : document.getElementById('signup-name');
+        if(input) input.focus();
+      }, 150);
     }
-  
-  
-const API_BASE = "https://nobita-feedback-app-online.onrender.com";
-const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
-const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/dyv7xav3e/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = ""; // Not needed, as you use signed upload with JWT, but kept for fallback
-let jwtToken = localStorage.getItem('token') || "";
-let currentUser = null;
-let feedbacks = [];
-let overallRating = 0;
-let feedbackCount = 0;
-let isProfileDropdownOpen = false;
-let isEditingFeedbackId = null;
+    function closeAuthModal() {
+      authModalOverlay.classList.add('hide');
+      setTimeout(() => { authModalOverlay.style.display = 'none'; }, 260);
+    }
+    // NavBar click triggers
+    loginIconTrigger.addEventListener('click', () => openAuthModal('login'));
+    authModalCloseBtn.addEventListener('click', closeAuthModal);
+    // ESC close
+    document.addEventListener('keydown', (e) => {
+      if(e.key === "Escape" && authModalOverlay.style.display === 'flex') closeAuthModal();
+    });
+    // Overlay click close
+    authModalOverlay.addEventListener('click', e => {
+      if(e.target === authModalOverlay) closeAuthModal();
+    });
 
-// ---------- Helper Functions ----------
-function $(id) { return document.getElementById(id); }
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.innerText = text;
-  return div.innerHTML;
-}
-function closeAllModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
-  document.body.style.overflow = '';
-}
-function openModal(innerHtml) {
-  closeAllModals();
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay active";
-  overlay.innerHTML = `<div class="modal-card fade-in">${innerHtml}</div>`;
-  overlay.onclick = (e) => { if (e.target === overlay) closeAllModals(); }
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-}
-function modalCloseBtnHtml() {
-  return `<button class="modal-close-btn" onclick="closeAllModals()">&times;</button>`;
-}
-function formatDate(d) {
-  if (!d) return "";
-  const dt = new Date(d);
-  return dt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-}
-function maskEmail(email) {
-  if (!email) return "";
-  const [a, b] = email.split("@");
-  return a[0] + "***" + a.slice(-1) + "@" + b;
-}
-function userAvatarUrl(u) { return u?.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(u?.name||'User')}&radius=50&scale=90`; }
-function randomCloudIcon() { // Lucide cloud upload
-  return `<svg width="36" height="36" stroke="#4f46e5" fill="none" stroke-width="2.1" viewBox="0 0 24 24"><path d="M16 16v-4a4 4 0 10-8 0v4"/><path d="M12 12v9m0 0l-3.5-3.5m3.5 3.5l3.5-3.5"/><path d="M5.5 19.5A5.5 5.5 0 0112 5a5.5 5.5 0 016.5 6.5"/></svg>`;
-}
+    // --- Auth Tab Switch Logic ---
+    function switchAuthTab(tab) {
+      if(tab === "login") {
+        authTabLogin.setAttribute('aria-selected', "true");
+        authTabLogin.style.color = "#fff";
+        authTabLogin.style.borderBottom = "3px solid #6366f1";
+        authTabSignup.setAttribute('aria-selected', "false");
+        authTabSignup.style.color = "#d8d8fc";
+        authTabSignup.style.borderBottom = "3px solid transparent";
+        loginForm.style.display = "";
+        signupForm.style.display = "none";
+      } else {
+        authTabLogin.setAttribute('aria-selected', "false");
+        authTabLogin.style.color = "#d8d8fc";
+        authTabLogin.style.borderBottom = "3px solid transparent";
+        authTabSignup.setAttribute('aria-selected', "true");
+        authTabSignup.style.color = "#fff";
+        authTabSignup.style.borderBottom = "3px solid #6366f1";
+        loginForm.style.display = "none";
+        signupForm.style.display = "";
+      }
+      window.lucide && window.lucide.createIcons();
+    }
+    authTabLogin.addEventListener('click', ()=>switchAuthTab('login'));
+    authTabSignup.addEventListener('click', ()=>switchAuthTab('signup'));
 
-// ---------- AUTH UI ----------
-function renderNavBar() {
-  const root = $("nav-action-root");
-  root.innerHTML = '';
-  if (!currentUser) {
-    const btn = document.createElement("div");
-    btn.className = "nav-loginicon";
-    btn.innerHTML = `<svg width="25" height="25" fill="none" stroke="#4f46e5" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M4 19.5a8 8 0 0116 0"/></svg>`;
-    btn.onclick = openLoginModal;
-    root.appendChild(btn);
-  } else {
-    // Avatar dropdown
-    const wrap = document.createElement("div");
-    wrap.style.position = "relative";
-    const avatarDiv = document.createElement("div");
-    avatarDiv.className = "nav-avatar";
-    avatarDiv.innerHTML = `<img src="${userAvatarUrl(currentUser)}" alt="Avatar"/>`;
-    avatarDiv.onclick = (e) => {
-      e.stopPropagation();
-      toggleProfileDropdown();
-    };
-    wrap.appendChild(avatarDiv);
+    // --- Password Show/Hide ---
+    loginPasswordToggle.addEventListener('click', () => {
+      loginPassword.type = loginPassword.type === "password" ? "text" : "password";
+      loginPasswordToggle.innerHTML = loginPassword.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    });
+    signupPasswordToggle.addEventListener('click', () => {
+      signupPassword.type = signupPassword.type === "password" ? "text" : "password";
+      signupPasswordToggle.innerHTML = signupPassword.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    });
 
-    // Dropdown
-    let dd = document.createElement("div");
-    dd.className = "user-dropdown";
-    dd.id = "user-dropdown-menu";
-    dd.innerHTML = `
-      <button class="user-dropdown-btn" onclick="openProfileModal();closeAllModals()"> 
-        <svg width="22" height="22"><use href="#user" /></svg>View Profile
-      </button>
-      <button class="user-dropdown-btn" onclick="openEditProfileModal();closeAllModals()">
-        <svg width="22" height="22"><use href="#edit-3" /></svg>Edit Profile
-      </button>
-      <button class="user-dropdown-btn" onclick="logoutUser()">
-        <svg width="22" height="22"><use href="#log-out" /></svg>Logout
-      </button>
-    `;
-    wrap.appendChild(dd);
-    root.appendChild(wrap);
-    // Global click to close dropdown
-    document.onclick = () => { if (isProfileDropdownOpen) {dd.classList.remove("active"); isProfileDropdownOpen=false;} };
-  }
-  // Icons sprite
-  loadSvgSprite();
-}
-function toggleProfileDropdown() {
-  const dd = $("user-dropdown-menu");
-  if (!dd) return;
-  isProfileDropdownOpen = !isProfileDropdownOpen;
-  dd.classList.toggle("active", isProfileDropdownOpen);
-}
-function openLoginModal() {
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <h2 style="text-align:center;font-family:Lexend;font-size:1.28em;color:var(--primary);margin-bottom:18px;">Sign in to Feedback Pro</h2>
-    <form id="login-form">
-      <div class="flabel-group">
-        <input id="login-email" name="email" type="email" autocomplete="username" required />
-        <label for="login-email">Email Address</label>
-      </div>
-      <div class="flabel-group" style="margin-top:13px;">
-        <input id="login-password" name="password" type="password" autocomplete="current-password" required />
-        <label for="login-password">Password</label>
-        <span id="login-pwd-toggle" class="pwd-toggle">👁️</span>
-      </div>
-      <div style="text-align:right;">
-        <a href="#" style="color:var(--primary);font-size:0.99em;" onclick="event.preventDefault();openResetPwdModal()">Forgot password?</a>
-      </div>
-      <button type="submit" class="btn" style="width:100%;margin-top:14px;">Login</button>
-    </form>
-    <div style="text-align:center;font-size:.99em;color:#555;margin:20px 0 6px 0;position:relative;">
-      <span style="background:#fff;padding:0 7px;">or</span>
-      <div style="height:1.5px;background:#eee;position:absolute;left:0;right:0;top:12px;z-index:-1;"></div>
-    </div>
-    <button class="btn-google" style="width:100%;" onclick="startGoogleSignin()">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="width:23px;height:23px;"> Sign in with Google
-    </button>
-    <div style="margin-top:19px;text-align:center;">
-      <span>Don’t have an account?</span>
-      <a href="#" onclick="event.preventDefault();openSignupModal()" style="color:var(--primary);font-weight:600;">Sign Up</a>
-    </div>
-    <style>
-      .flabel-group { position:relative;margin-bottom:9px;}
-      .flabel-group input {
-        width:100%;font-size:1.08em;padding:13px 12px 11px 10px;border:1.3px solid var(--border);border-radius:8px;
-        background:#fafaff;transition:border .17s,box-shadow .14s;outline:none;
-      }
-      .flabel-group input:focus { border:1.5px solid var(--primary);}
-      .flabel-group label {
-        position:absolute;top:13px;left:12px;font-size:1em;color:#8782ae;pointer-events:none;
-        background:#fff;transition:all .17s;font-family:'Inter';
-      }
-      .flabel-group input:focus + label,
-      .flabel-group input:not(:placeholder-shown) + label {
-        top:-9px;left:9px;font-size:.89em;color:var(--primary);background:#fff;padding:0 3px;
-      }
-      .pwd-toggle {
-        position:absolute;right:12px;top:14px;cursor:pointer;user-select:none;color:#686de0;font-size:1.14em;
-      }
-    </style>
-  `);
-  $("login-pwd-toggle").onclick = function(){
-    let pwd = $("login-password");
-    pwd.type = pwd.type === "password" ? "text" : "password";
-    this.textContent = pwd.type === "password" ? "👁️" : "🙈";
-  }
-  $("login-form").onsubmit = async function(e){
-    e.preventDefault();
-    let email = $("login-email").value.trim();
-    let password = $("login-password").value;
-    if (!email || !password) return showToast("Please fill all fields.", "warn");
-    try {
-      let res = await fetch(API_BASE+"/api/auth/login", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ email, password })
-      });
-      let data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        jwtToken = data.token; currentUser = data.user;
-        closeAllModals(); showToast("Logged in successfully!","success");
-        await fetchCurrentUser();
-        renderAll();
-      } else showToast(data.message || "Login failed","error");
-    } catch(e){ showToast("Network error! "+e,"error"); }
-  }
-}
-function openSignupModal() {
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <h2 style="text-align:center;font-family:Lexend;font-size:1.25em;color:var(--primary);margin-bottom:18px;">Create your Account</h2>
-    <form id="signup-form">
-      <div class="flabel-group">
-        <input id="signup-name" name="name" type="text" maxlength="30" required />
-        <label for="signup-name">Full Name</label>
-      </div>
-      <div class="flabel-group">
-        <input id="signup-email" name="email" type="email" required />
-        <label for="signup-email">Email Address</label>
-      </div>
-      <div class="flabel-group" style="margin-top:13px;">
-        <input id="signup-password" name="password" type="password" required />
-        <label for="signup-password">Password</label>
-        <span id="signup-pwd-toggle" class="pwd-toggle">👁️</span>
-      </div>
-      <button type="submit" class="btn" style="width:100%;margin-top:14px;">Sign Up</button>
-    </form>
-    <div style="margin-top:19px;text-align:center;">
-      <span>Already have an account?</span>
-      <a href="#" onclick="event.preventDefault();openLoginModal()" style="color:var(--primary);font-weight:600;">Login</a>
-    </div>
-  `);
-  $("signup-pwd-toggle").onclick = function(){
-    let pwd = $("signup-password");
-    pwd.type = pwd.type === "password" ? "text" : "password";
-    this.textContent = pwd.type === "password" ? "👁️" : "🙈";
-  }
-  $("signup-form").onsubmit = async function(e){
-    e.preventDefault();
-    let name = $("signup-name").value.trim();
-    let email = $("signup-email").value.trim();
-    let password = $("signup-password").value;
-    if (!name || !email || !password) return showToast("All fields required.","warn");
-    if (password.length < 6) return showToast("Password should be 6+ chars","warn");
-    try {
-      let res = await fetch(API_BASE+"/api/auth/signup", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ name, email, password })
-      });
-      let data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        jwtToken = data.token; currentUser = data.user;
-        closeAllModals(); showToast("Signup successful!","success");
-        await fetchCurrentUser();
-        renderAll();
-      } else showToast(data.message || "Signup failed","error");
-    } catch(e){ showToast("Network error! "+e,"error"); }
-  }
-}
-function openResetPwdModal() {
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <h2 style="text-align:center;font-family:Lexend;color:var(--primary);margin-bottom:15px;">Reset your Password</h2>
-    <form id="reset-form">
-      <div class="flabel-group">
-        <input id="reset-email" name="email" type="email" required />
-        <label for="reset-email">Enter your Email Address</label>
-      </div>
-      <button type="submit" class="btn" style="width:100%;margin-top:13px;">Send Reset Link</button>
-    </form>
-    <div style="margin-top:19px;text-align:center;">
-      <a href="#" onclick="event.preventDefault();openLoginModal()" style="color:var(--primary);font-weight:600;">Back to Login</a>
-    </div>
-  `);
-  $("reset-form").onsubmit = async function(e){
-    e.preventDefault();
-    let email = $("reset-email").value.trim();
-    if (!email) return showToast("Enter your email.","warn");
-    try {
-      let res = await fetch(API_BASE+"/api/auth/request-password-reset", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ email })
-      });
-      let data = await res.json();
-      if (res.ok) {
-        showToast(data.message || "Reset link sent!","success");
-        setTimeout(openLoginModal, 900);
-      } else showToast(data.message || "Request failed","error");
-    } catch(e){ showToast("Network error! "+e,"error"); }
-  }
-}
+    // --- Toast Notification System ---
+    function showToast({ message, type = "info", icon = "info", duration = 3200 }) {
+      const toast = document.createElement('div');
+      toast.className = `toast-msg toast-${type}`;
+      toast.innerHTML = `<i data-lucide="${icon}"></i> <span>${message}</span>`;
+      toastStack.appendChild(toast);
+      window.lucide && window.lucide.createIcons({ icons: [toast.querySelector("i")] });
+      setTimeout(() => {
+        toast.classList.add('animate__fadeOutRight');
+        setTimeout(()=> toast.remove(), 460);
+      }, duration);
+    }
 
-// --- GOOGLE OAUTH2 ---
-function startGoogleSignin() {
-  closeAllModals();
-  let w = 480, h = 600;
-  let dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
-  let dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
-  let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth;
-  let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
-  let left = ((width / 2) - (w / 2)) + dualScreenLeft;
-  let top = ((height / 2) - (h / 2)) + dualScreenTop;
-  // Google identity services
-  if (!window.google || !window.google.accounts) {
-    showToast("Google API failed to load! Try again.", "error"); return;
-  }
-  window.google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: async (response) => {
-      if (!response.credential) return showToast("Google login failed!", "error");
+    // Example: showToast({ message: "Welcome, Nobita!", type: "success", icon: "stars" });
+    
+    // --- CONSTANTS ---
+    const API_BASE = "https://nobita-feedback-app-online.onrender.com";
+    const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
+
+    // State: Current user
+    let currentUser = null;
+    let jwtToken = localStorage.getItem('token') || null;
+
+    // --- Auth Form Submit ---
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = loginPassword.value;
+      if (!email || !password) return showToast({ message: "Email aur password zaroori hai.", type: "error", icon: "alert-triangle" });
       try {
-        let res = await fetch(API_BASE+"/api/auth/google-signin", {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: response.credential })
+          body: JSON.stringify({ email, password })
         });
-        let data = await res.json();
-        if (res.ok) {
-          localStorage.setItem("token", data.token);
-          jwtToken = data.token; currentUser = data.user;
-          showToast("Google login successful!", "success");
-          await fetchCurrentUser();
-          renderAll();
-        } else showToast(data.message || "Google login error", "error");
-      } catch(e){ showToast("Google login error: "+e, "error"); }
-    }
-  });
-  window.google.accounts.id.prompt();
-}
-// Google One Tap and button loader
-(function(){
-  let s = document.createElement("script");
-  s.src = "https://accounts.google.com/gsi/client";
-  s.async = true;
-  document.body.appendChild(s);
-})();
-
-// --- LOGOUT
-function logoutUser() {
-  localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
-  showToast("Logged out!", "success");
-  renderAll();
-}
-
-// --- FETCH CURRENT USER
-async function fetchCurrentUser() {
-  if (!jwtToken) return null;
-  try {
-    let res = await fetch(API_BASE+"/api/auth/me", {
-      headers: { Authorization: "Bearer "+jwtToken }
-    });
-    if (res.ok) {
-      let data = await res.json();
-      currentUser = data;
-      return data;
-    } else {
-      localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
-      showToast("Session expired. Please log in again.","error");
-      renderAll();
-      return null;
-    }
-  } catch(e){
-    localStorage.removeItem("token"); jwtToken = ""; currentUser = null;
-    showToast("Session error. Please log in again.","error");
-    renderAll();
-    return null;
-  }
-}
-
-// ---------- PROFILE UI ----------
-function openProfileModal() {
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <div style="display:flex;flex-direction:column;align-items:center;">
-      <div style="width:84px;height:84px;border-radius:50%;overflow:hidden;margin-bottom:16px;box-shadow:0 4px 19px #ede9fe;">
-        <img src="${userAvatarUrl(currentUser)}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
-      </div>
-      <div style="font-family:'Lexend';font-size:1.2em;font-weight:700;color:var(--primary);">${escapeHtml(currentUser.name)}</div>
-      <div style="margin:8px 0 2px 0;font-size:1em;color:#555;">${maskEmail(currentUser.email)}</div>
-      <div style="font-size:.98em;color:#999;margin-bottom:12px;">Joined: ${formatDate(currentUser.createdAt)}</div>
-      <button class="btn" style="margin-top:8px;" onclick="openEditProfileModal()">Edit Profile</button>
-    </div>
-  `);
-}
-function openEditProfileModal() {
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <div style="display:flex;flex-direction:column;align-items:center;">
-      <form id="edit-profile-form" style="width:100%;">
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <div id="profile-avatar-dropzone" style="width:92px;height:92px;border:2.1px dashed var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;background:#fafaff;margin-bottom:12px;position:relative;">
-            <img id="edit-avatar-preview" src="${userAvatarUrl(currentUser)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
-            <div id="avatar-drop-hint" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--primary);background:rgba(252,252,255,0.86);font-size:.98em;opacity:0;transition:opacity .19s;">${randomCloudIcon()}<span style="margin-left:6px;">Drop Image</span></div>
-          </div>
-          <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
-          <div style="width:100%;">
-            <div class="flabel-group">
-              <input id="edit-name" name="name" type="text" maxlength="30" required value="${escapeHtml(currentUser.name)}" />
-              <label for="edit-name">Name</label>
-            </div>
-          </div>
-          <button type="submit" class="btn" style="width:100%;margin-top:12px;">Save Changes</button>
-        </div>
-      </form>
-    </div>
-    
-      // Drag and drop avatar
-      let dropZone = document.getElementById('profile-avatar-dropzone');
-      let preview = document.getElementById('edit-avatar-preview');
-      let fileInput = document.getElementById('avatar-file-input');
-      let hint = document.getElementById('avatar-drop-hint');
-      dropZone.onclick = () => fileInput.click();
-      dropZone.ondragover = e => { e.preventDefault(); hint.style.opacity = 1; }
-      dropZone.ondragleave = e => { e.preventDefault(); hint.style.opacity = 0; }
-      dropZone.ondrop = e => {
-        e.preventDefault(); hint.style.opacity = 0;
-        let file = e.dataTransfer.files[0];
-        if (!file || !file.type.startsWith('image/')) return showToast("Only image allowed","warn");
-        fileInput.files = e.dataTransfer.files;
-        let reader = new FileReader();
-        reader.onload = ev => preview.src = ev.target.result;
-        reader.readAsDataURL(file);
-      };
-      fileInput.onchange = () => {
-        let file = fileInput.files[0];
-        if (!file || !file.type.startsWith('image/')) return showToast("Only image allowed","warn");
-        let reader = new FileReader();
-        reader.onload = ev => preview.src = ev.target.result;
-        reader.readAsDataURL(file);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Login error");
+        jwtToken = data.token;
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        currentUser = data.user;
+        showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
+        closeAuthModal();
+        updateUIAfterLogin();
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
       }
-      document.getElementById('edit-profile-form').onsubmit = async function(e){
-        e.preventDefault();
-        let name = document.getElementById('edit-name').value.trim();
-        let avatarFile = fileInput.files[0];
-        let avatarUrl = null;
-        if (avatarFile) {
-          let formData = new FormData();
-          formData.append("avatar", avatarFile);
-          let res = await fetch(API_BASE+"/api/user/upload-avatar", {
-            method: "POST",
-            headers: { Authorization: "Bearer "+jwtToken },
-            body: formData
-          });
-          let data = await res.json();
-          if (res.ok) {
-            avatarUrl = data.avatarUrl;
-            showToast("Avatar Updated!","success");
-          } else {
-            showToast(data.message || "Avatar upload failed","error");
+    });
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = signupPassword.value;
+      if (!name || !email || !password) return showToast({ message: "Naam, email, aur password chahiye.", type: "error", icon: "alert-triangle" });
+      if (password.length < 6) return showToast({ message: "Password kam se kam 6 char ka hona chahiye.", type: "warn", icon: "lock" });
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Signup error");
+        jwtToken = data.token;
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        currentUser = data.user;
+        showToast({ message: `Account created! Welcome, ${currentUser.name}`, type: "success", icon: "user-plus" });
+        closeAuthModal();
+        updateUIAfterLogin();
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+      }
+    });
+
+    // --- Google Sign-In (Pop Up) ---
+    googleSigninBtn.addEventListener('click', async () => {
+      showToast({ message: "Redirecting to Google...", type: "info", icon: "circle-dot" });
+      // Use Google OAuth2 endpoint
+      const params = [
+        `client_id=${GOOGLE_CLIENT_ID}`,
+        `redirect_uri=${window.location.origin}`,
+        `response_type=token`,
+        `scope=profile email`,
+        `prompt=select_account`
+      ].join('&');
+      const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+      // Open Google OAuth in popup
+      const popup = window.open(oauthUrl, "GoogleSignIn", "width=480,height=600");
+      // Listen to hash change or message event for access_token
+      const pollTimer = setInterval(async () => {
+        try {
+          if (popup.closed) {
+            clearInterval(pollTimer);
+            showToast({ message: "Google Sign-In cancelled.", type: "warn", icon: "x-circle" });
             return;
           }
-        }
-        // Save name/avatar
-        let res2 = await fetch(API_BASE+"/api/user/profile", {
-          method: "PUT",
-          headers: { "Content-Type":"application/json", Authorization: "Bearer "+jwtToken },
-          body: JSON.stringify({ name, avatarUrl })
-        });
-        let data2 = await res2.json();
-        if (res2.ok) {
-          localStorage.setItem("token", data2.token);
-          jwtToken = data2.token; currentUser = data2.user;
-          showToast("Profile updated!","success");
-          closeAllModals();
-          await fetchCurrentUser();
-          renderAll();
-        } else showToast(data2.message || "Update failed","error");
-      };
-    
-  `);
-}
-
-// ICONS SPRITE
-function loadSvgSprite() {
-  if ($("svg-icon-sprite")) return;
-  $("svg-icon-loader").innerHTML = `
-  <svg id="svg-icon-sprite" style="display:none">
-    <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M4 19.5a8 8 0 0116 0"/></symbol>
-    <symbol id="edit-3" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></symbol>
-    <symbol id="log-out" viewBox="0 0 24 24"><path d="M9 16l-4-4m0 0l4-4m-4 4h14"/><path d="M17 12H9"/><path d="M15 6V4a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/></symbol>
-    <symbol id="star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
-    <symbol id="star-off" viewBox="0 0 24 24"><polygon points="12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21 12 17.27" fill="#e5e7eb"/></symbol>
-    <symbol id="check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke-width="2.4" fill="none"/></symbol>
-    <symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></symbol>
-    <symbol id="trash-2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
-  </svg>
-  `;
-}
-// -------- FEEDBACK SYSTEM --------
-async function fetchFeedbacks() {
-  $("root-main").innerHTML = `<div class="main-loader"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="22" stroke="#4f46e5" stroke-width="5" fill="none"/><path d="M25 5a20 20 0 1 1-16 32" stroke="#10b981" stroke-width="4" fill="none"/></svg></div>`;
-  try {
-    let res = await fetch(API_BASE + "/api/feedbacks");
-    let data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to fetch feedbacks");
-    feedbacks = data;
-    renderAll();
-  } catch (e) {
-    $("root-main").innerHTML = `<div style="color:var(--error);text-align:center;padding:44px 0 60px 0;"><b>Error loading feedbacks:</b> ${e.message || e}</div>`;
-  }
-}
-
-function renderAll() {
-  renderNavBar();
-  // Welcome Hero
-  let heroName = currentUser ? `Welcome, <span style="color:#10b981;">${escapeHtml(currentUser.name)}</span>!` : `Share Your Feedback!`;
-  // Feedback Form
-  let canSubmit = !!currentUser;
-  let formHtml = `
-    <div class="feedback-form-card" style="background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow);padding:24px 19px 19px 19px;margin-bottom:12px;">
-      <div class="hero-welcome">${heroName}</div>
-      ${canSubmit ? `
-      <form id="feedback-form" autocomplete="off">
-        <div style="margin-bottom:14px;">
-          <span style="font-size:1.04em;font-weight:600;">Your Rating:</span>
-          <span id="star-rating-block" style="margin-left:8px;"></span>
-        </div>
-        <div style="margin-bottom:13px;">
-          <textarea id="feedback-text" rows="2" required style="width:100%;resize:vertical;border-radius:10px;padding:12px 10px;font-size:1.12em;border:1.2px solid var(--border);background:#fafaff;min-height:56px;"></textarea>
-        </div>
-        <button type="submit" class="btn" style="width:100%;margin-top:4px;">${isEditingFeedbackId ? "Update Feedback" : "Submit Feedback"}</button>
-        ${isEditingFeedbackId ? `<button type="button" onclick="cancelEditFeedback()" class="btn" style="margin-left:9px;margin-top:8px;background:#e0e7ff;color:#4f46e5;">Cancel Edit</button>` : ""}
-      </form>` : `
-      <div style="text-align:center;color:#888;font-size:1.13em;margin:14px 0 4px 0;">
-        <span style="color:var(--primary);font-weight:700;">Sign in</span> to submit your feedback!
-      </div>
-      `}
-    </div>
-  `;
-  // Overall Rating
-  let avg = 0, cnt = feedbacks.length;
-  if (cnt) avg = feedbacks.reduce((sum, f) => sum + (f.rating||0), 0)/cnt;
-  overallRating = avg; feedbackCount = cnt;
-  let avgBlock = `
-    <div class="overall-summary" style="margin-bottom:30px;background:linear-gradient(90deg,#e0e7ff 10%,#f9fafb 100%);border-radius:17px;box-shadow:0 2px 16px #f4f3fd;display:flex;align-items:center;gap:23px;padding:24px 26px 18px 18px;max-width:450px;">
-      <span style="font-size:2.9em;display:flex;align-items:center;gap:8px;">${avg?avg.toFixed(1):"--"}
-        <svg width="34" height="34" style="margin-left:5px;"><use href="#star" /></svg>
-      </span>
-      <span style="font-size:1.14em;color:#4f46e5;flex:1;">Overall Rating<br>
-        <span style="color:#9f7aea;font-size:.92em;">Based on ${cnt} feedback${cnt==1?'':'s'}</span>
-      </span>
-    </div>
-  `;
-  // Feedback List
-  let listHtml = `
-    <div class="feedback-list-card" style="background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow);padding:24px 10px 9px 10px;">
-      ${avgBlock}
-      <div id="feedback-list-root" style="display:flex;flex-direction:column;gap:20px;"></div>
-    </div>
-  `;
-  $("root-main").innerHTML = `<div class="feedback-main">${formHtml}${listHtml}</div>`;
-  // Render rating
-  if (canSubmit) renderStarRating(currentUser, isEditingFeedbackId);
-  // Feedbacks
-  renderFeedbackList();
-}
-
-function renderStarRating(user, editingId) {
-  let el = $("star-rating-block");
-  if (!el) return;
-  let val = editingId
-    ? (feedbacks.find(f=>f._id===editingId)?.rating || 0)
-    : (user?.lastRating || 0);
-  el.innerHTML = "";
-  for (let i=1;i<=5;i++) {
-    let svg = document.createElement("svg");
-    svg.setAttribute("width", "32"); svg.setAttribute("height","32");
-    svg.setAttribute("data-rate",i);
-    svg.innerHTML = `<use href="${i<=val?'#star':'#star-off'}"></use>`;
-    svg.style.cursor="pointer";
-    svg.style.transition="transform .13s";
-    svg.onmouseover = ()=>{ highlightStars(i); };
-    svg.onmouseleave = ()=>{ highlightStars(val); };
-    svg.onclick = ()=>{ setRating(i); };
-    el.appendChild(svg);
-  }
-  highlightStars(val);
-
-  function highlightStars(n){
-    let svgs = el.querySelectorAll("svg");
-    svgs.forEach((svg,j)=>{
-      svg.innerHTML = `<use href="${j<n?'#star':'#star-off'}"></use>`;
-      svg.style.transform = j<n ? "scale(1.13)" : "scale(1.00)";
-      svg.style.filter = j<n ? "drop-shadow(0 3px 7px #fde68a90)" : "";
+          if (popup.location && popup.location.href && popup.location.href.startsWith(window.location.origin)) {
+            clearInterval(pollTimer);
+            const hash = popup.location.hash;
+            if (hash) {
+              const params = new URLSearchParams(hash.substr(1));
+              const googleToken = params.get('access_token');
+              popup.close();
+              if (googleToken) {
+                // Exchange Google token with server for JWT
+                try {
+                  const res = await fetch(`${API_BASE}/api/auth/google-signin`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: googleToken })
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message || "Google login error");
+                  jwtToken = data.token;
+                  localStorage.setItem('token', jwtToken);
+                  localStorage.setItem('currentUser', JSON.stringify(data.user));
+                  currentUser = data.user;
+                  showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
+                  closeAuthModal();
+                  updateUIAfterLogin();
+                } catch (err) {
+                  showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+                }
+              }
+            }
+          }
+        } catch { /* Ignore cross-origin errors */ }
+      }, 800);
     });
-  }
-  function setRating(n){
-    user.lastRating = n;
-    highlightStars(n);
-  }
-}
 
-function getSelectedRating() {
-  return currentUser?.lastRating || 0;
-}
-
-// Feedback List
-function renderFeedbackList() {
-  let root = $("feedback-list-root");
-  if (!root) return;
-  if (!feedbacks.length) {
-    root.innerHTML = `<div style="text-align:center;font-size:1.13em;color:#888;padding:38px 0;">No feedback yet. Be the first!</div>`;
-    return;
-  }
-  root.innerHTML = "";
-  feedbacks.forEach(fb=>{
-    let isOwn = (currentUser && fb.userId && fb.userId===currentUser.userId);
-    let isEditing = (isEditingFeedbackId===fb._id);
-    let card = document.createElement("div");
-    card.className = "feedback-card";
-    card.style=`display:flex;align-items:flex-start;gap:15px;background:${isOwn?'#f3f0ff':'#fff'};border-radius:17px;box-shadow:0 3px 21px #c7d2fe26;margin-bottom:2px;padding:18px 18px 14px 14px;transition:.15s;position:relative;${isOwn?'border-left:7px solid var(--primary)':''}`;
-    card.innerHTML = `
-      <div style="flex-shrink:0;width:55px;height:55px;border-radius:50%;overflow:hidden;border:3px solid #ede9fe;background:#fafaff;box-shadow:0 1.5px 8px #ede9fe;">
-        <img src="${userAvatarUrl(fb)}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
-      </div>
-      <div style="flex:1;">
-        <div style="display:flex;align-items:center;gap:10px;font-size:1.08em;font-family:'Lexend';font-weight:700;color:#262a56;">
-          ${escapeHtml(fb.name||"User")}
-          <span style="font-size:.91em;font-weight:400;color:#aaa;margin-left:6px;">${formatDate(fb.timestamp)}</span>
-          ${fb.isEdited?`<span style="margin-left:8px;color:#7c3aed;font-size:.83em;font-weight:600;background:#ede9fe;padding:2px 7px;border-radius:7px;">edited</span>`:""}
-        </div>
-        <div style="margin-top:5px;display:flex;align-items:center;gap:2.5px;">${renderMiniStars(fb.rating)}</div>
-        <div style="margin:7px 0 11px 0;font-size:1.11em;color:#464775;">${escapeHtml(fb.feedback)}</div>
-        ${fb.replies && fb.replies.length ? fb.replies.map(rep=>
-          `<div style="margin-top:7px;padding:10px 12px 10px 10px;background:#f1f5f9;border-left:4px solid #4f46e5;border-radius:7px 11px 12px 7px;display:flex;align-items:center;gap:10px;">
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Admin" style="width:32px;height:32px;border-radius:50%;border:2px solid #8b5cf6;">
-            <div>
-              <div style="font-size:.98em;font-weight:700;color:#4f46e5;">Admin Response</div>
-              <div style="font-size:.97em;color:#454;height:100%;">${escapeHtml(rep.text)}</div>
-              <div style="font-size:.86em;color:#888;">${formatDate(rep.timestamp)}</div>
-            </div>
-          </div>`
-        ).join("") : ""}
-      </div>
-      ${isOwn ? `
-        <div style="display:flex;flex-direction:column;gap:7px;align-items:center;justify-content:center;margin-left:6px;">
-          <button onclick="editFeedback('${fb._id}')" title="Edit" style="background:none;border:none;cursor:pointer;"><svg width="23" height="23"><use href="#edit" /></svg></button>
-          <button onclick="deleteFeedback('${fb._id}')" title="Delete" style="background:none;border:none;cursor:pointer;"><svg width="23" height="23"><use href="#trash-2" /></svg></button>
-        </div>
-      ` : ""}
-    `;
-    root.appendChild(card);
-    // Fade in
-    card.style.opacity=0; setTimeout(()=>{card.style.opacity=1;},120);
-  });
-}
-function renderMiniStars(rating) {
-  let s = "";
-  for(let i=1;i<=5;i++)
-    s += `<svg width="19" height="19" style="vertical-align:-4px;"><use href="${i<=rating?'#star':'#star-off'}"/></svg>`;
-  return s;
-}
-
-// -------- FEEDBACK FORM SUBMIT --------
-document.addEventListener("submit", async function(e){
-  let form = e.target;
-  if (form && form.id==="feedback-form") {
-    e.preventDefault();
-    let rating = getSelectedRating();
-    let text = $("feedback-text").value.trim();
-    if (!rating) return showToast("Please select rating!","warn");
-    if (!text) return showToast("Write some feedback!","warn");
-    let btn = form.querySelector("button[type=submit]");
-    btn.disabled = true; btn.textContent = isEditingFeedbackId?"Updating...":"Submitting...";
-    try {
-      let url, method, body;
-      if (isEditingFeedbackId) {
-        url = API_BASE+"/api/feedback/"+isEditingFeedbackId; method="PUT";
-        body = JSON.stringify({ feedback: text, rating });
+    // --- JWT Load & UI After Login ---
+    function updateUIAfterLogin() {
+      currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+      jwtToken = localStorage.getItem('token') || null;
+      // Navbar: avatar visible, login icon hidden
+      if (currentUser && jwtToken) {
+        loginIconTrigger.style.display = "none";
+        userAvatarTrigger.style.display = "flex";
+        navAvatarImg.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+        navAvatarImg.alt = currentUser.name || "Avatar";
+        // Badge: admin/shield, top user, verified, etc.
+        avatarBadge.style.display = "none"; // For now (add badge in next part)
+        // TODO: Check user for badge and set
       } else {
-        url = API_BASE+"/api/feedback"; method="POST";
-        body = JSON.stringify({ feedback: text, rating });
+        loginIconTrigger.style.display = "flex";
+        userAvatarTrigger.style.display = "none";
+        navAvatarImg.src = "";
+        avatarBadge.style.display = "none";
       }
-      let res = await fetch(url, {
-        method, headers: {
-          "Content-Type":"application/json",
-          Authorization: "Bearer "+jwtToken
-        }, body
+      window.lucide && window.lucide.createIcons();
+    }
+    // On load
+    updateUIAfterLogin();
+
+    // --- Profile Dropdown + Modal (Next Section) ---
+    let profileDropdown = null;
+    userAvatarTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (profileDropdown && profileDropdown.parentNode) {
+        profileDropdown.remove();
+        profileDropdown = null;
+        return;
+      }
+      // Create dropdown
+      profileDropdown = document.createElement('div');
+      profileDropdown.className = "profile-dropdown-menu";
+      profileDropdown.style = `
+        position: absolute;
+        top: 52px; right: 10px;
+        background: var(--glass-modal);
+        border-radius: 13px;
+        box-shadow: 0 2px 16px #3735ba3b;
+        min-width: 170px;
+        z-index: 222;
+        font-family: var(--font-main);
+        display: flex; flex-direction: column; align-items: stretch; gap: 2px;
+        padding: 12px 0;
+        animation: scaleModalIn 0.22s;
+      `;
+      profileDropdown.innerHTML = `
+        <button class="profile-dropdown-item" id="profile-view-btn"><i data-lucide="user-round"></i> Profile</button>
+        <button class="profile-dropdown-item" id="profile-logout-btn"><i data-lucide="log-out"></i> Logout</button>
+        <button class="profile-dropdown-item" id="admin-panel-btn" style="display:${currentUser && currentUser.email==='samshaad365@gmail.com' ? '' : 'none'}"><i data-lucide="settings"></i> Admin Panel</button>
+      `;
+      document.body.appendChild(profileDropdown);
+      window.lucide && window.lucide.createIcons({ icons: [...profileDropdown.querySelectorAll('i')] });
+      // Click outside closes dropdown
+      setTimeout(() => {
+        document.addEventListener('mousedown', closeDropdown);
+      }, 10);
+
+      function closeDropdown(e) {
+        if (!profileDropdown.contains(e.target) && e.target !== userAvatarTrigger) {
+          profileDropdown.remove();
+          profileDropdown = null;
+          document.removeEventListener('mousedown', closeDropdown);
+        }
+      }
+
+      // Profile view click
+      profileDropdown.querySelector('#profile-view-btn').addEventListener('click', () => {
+        openProfileModal();
+        profileDropdown.remove();
+        profileDropdown = null;
       });
-      let data = await res.json();
-      if (res.ok) {
-        showToast(isEditingFeedbackId?"Feedback updated!":"Feedback submitted!","success");
-        isEditingFeedbackId = null;
-        currentUser.lastRating = 0;
-        await fetchFeedbacks();
-      } else if (res.status===401 || res.status===403) {
-        showToast("Session expired. Please login again.","error");
-        logoutUser();
-      } else showToast(data.message || "Error!","error");
-    } catch(e){ showToast("Network error! "+e,"error"); }
-    btn.disabled = false; btn.textContent = isEditingFeedbackId?"Update Feedback":"Submit Feedback";
-    $("feedback-text").value="";
-  }
-});
-
-function editFeedback(id) {
-  isEditingFeedbackId = id;
-  let fb = feedbacks.find(f=>f._id===id);
-  if (!fb) return;
-  currentUser.lastRating = fb.rating;
-  setTimeout(()=>{
-    $("feedback-text").value = fb.feedback;
-    renderAll();
-  },80);
-}
-function cancelEditFeedback() {
-  isEditingFeedbackId = null;
-  currentUser.lastRating = 0;
-  $("feedback-text").value = "";
-  renderAll();
-}
-function deleteFeedback(id) {
-  // Confirm modal
-  openModal(`
-    ${modalCloseBtnHtml()}
-    <div style="text-align:center;padding:18px 0 6px 0;">
-      <svg width="54" height="54"><use href="#trash-2" /></svg>
-      <div style="margin:17px 0;font-size:1.1em;color:#333;">Are you sure you want to <b>delete</b> this feedback? <br>This action cannot be undone.</div>
-      <button class="btn" onclick="doDeleteFeedback('${id}')" style="background:var(--error);margin-top:12px;">Yes, Delete</button>
-      <button class="btn" onclick="closeAllModals()" style="background:#f3f0ff;color:#4f46e5;margin-left:10px;">Cancel</button>
-    </div>
-  `);
-}
-async function doDeleteFeedback(id) {
-  closeAllModals();
-  try {
-    let res = await fetch(API_BASE+"/api/feedback/"+id, {
-      method: "DELETE",
-      headers: { Authorization: "Bearer "+jwtToken }
+      // Logout
+      profileDropdown.querySelector('#profile-logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        jwtToken = null;
+        currentUser = null;
+        showToast({ message: "Logged out.", type: "success", icon: "log-out" });
+        updateUIAfterLogin();
+        profileDropdown.remove();
+        profileDropdown = null;
+      });
+      // Admin Panel (if admin)
+      if (currentUser && currentUser.email==='samshaad365@gmail.com') {
+        profileDropdown.querySelector('#admin-panel-btn').addEventListener('click', () => {
+          window.open('/admin-panel-nobita', '_blank');
+          profileDropdown.remove();
+          profileDropdown = null;
+        });
+      }
     });
-    let data = await res.json();
-    if (res.ok) {
-      showToast("Feedback deleted!","success");
-      await fetchFeedbacks();
-    } else if (res.status===401 || res.status===403) {
-      showToast("Session expired. Please login again.","error");
-      logoutUser();
-    } else showToast(data.message || "Delete failed!","error");
-  } catch(e){ showToast("Network error! "+e,"error"); }
-}
 
-// -------- ONLOAD: AUTO LOGIN, RENDER, FETCH --------
-(async function() {
-  loadSvgSprite();
-  await fetchCurrentUser();
-  await fetchFeedbacks();
-})();
+    // --- PROFILE MODAL (View Profile) ---
+  </script>
+  <!-- ======= PROFILE MODAL ======= -->
+  <div class="modal-overlay" id="profile-modal-overlay" style="display:none;">
+    <div class="glass-modal" id="profile-modal" style="max-width:420px;min-height:320px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="profile-modal-title">
+      <button class="modal-close-btn" id="profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <img id="profile-display-avatar" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;"/>
+        <div style="font-family:'Lexend',sans-serif;font-weight:bold;font-size:1.51rem;color:#2c247e;text-align:center;" id="profile-display-name"></div>
+        <div style="font-size:1.05em;color:#aaa8de;margin-bottom:2px;display:flex;align-items:center;gap:8px;">
+          <span id="profile-display-email"></span>
+          <button id="copy-email-btn" title="Copy Email" style="background:none;border:none;outline:none;cursor:pointer;padding:2px 3px;"><i data-lucide="copy"></i></button>
+        </div>
+        <div style="font-size:1em;color:#b4b5cc;" id="profile-display-joined"></div>
+      </div>
+      <button id="edit-profile-btn" style="margin-top:19px;width:100%;padding:13px 0;font-weight:bold;font-size:1.06em;background:#6366f1;color:#fff;border:none;border-radius:9px;box-shadow:0 2px 12px #d9d7fd23;cursor:pointer;transition:background 0.16s;">Edit Information <i data-lucide="pencil"></i></button>
+    </div>
+  </div>
+  <div class="modal-overlay" id="edit-profile-modal-overlay" style="display:none;">
+    <div class="glass-modal" id="edit-profile-modal" style="max-width:480px;min-height:350px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="edit-profile-modal-title">
+      <button class="modal-close-btn" id="edit-profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <div class="modal-title" id="edit-profile-modal-title" style="margin-bottom:16px;">Edit Profile</div>
+      <!-- Edit avatar, name, password fields will be added next part -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <!-- Avatar upload/drag zone (next part) -->
+        <img id="edit-avatar-preview" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;margin-bottom:8px;"/>
+        <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;" />
+        <button id="upload-avatar-btn" style="background:#e0e7ff;color:#6366f1;border:none;padding:7px 19px;border-radius:7px;font-weight:bold;cursor:pointer;margin-bottom:5px;display:inline-flex;align-items:center;gap:7px;"><i data-lucide="cloud-upload"></i> Choose & Upload Avatar</button>
+      </div>
+      <form id="edit-profile-form" style="margin-top:13px;">
+        <div class="floating-label-group">
+          <input type="text" id="edit-profile-name" name="name" required maxlength="32" placeholder=" " />
+          <label for="edit-profile-name">Name</label>
+        </div>
+        <div style="font-size:1.01em;color:#c1c1c9;padding-bottom:9px;">
+          <i data-lucide="mail"></i> <span id="edit-profile-email"></span> (cannot change)
+        </div>
+        <div style="font-size:1.06em;font-weight:bold;color:#675ae6;margin-bottom:7px;margin-top:18px;">Change Password</div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-current-password" name="currentPassword" placeholder=" " autocomplete="current-password" />
+          <label for="edit-current-password">Current Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-current-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-new-password" name="newPassword" placeholder=" " autocomplete="new-password" />
+          <label for="edit-new-password">New Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-new-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-confirm-password" name="confirmPassword" placeholder=" " autocomplete="new-password" />
+          <label for="edit-confirm-password">Confirm New Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-confirm-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <button type="submit" id="save-profile-btn" style="width:100%;margin-top:14px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.08em;border:none;border-radius:9px;box-shadow:0 2px 10px #d3e7fd14;cursor:pointer;transition:background 0.16s;">Save Changes <i data-lucide="save"></i></button>
+      </form>
+    </div>
+  </div>
 
-</script>
+    // --- PROFILE MODAL LOGIC ---
+    const profileModalOverlay = document.getElementById('profile-modal-overlay');
+    const profileModal = document.getElementById('profile-modal');
+    const profileModalCloseBtn = document.getElementById('profile-modal-close-btn');
+    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
+    const profileDisplayName = document.getElementById('profile-display-name');
+    const profileDisplayEmail = document.getElementById('profile-display-email');
+    const profileDisplayJoined = document.getElementById('profile-display-joined');
+    const copyEmailBtn = document.getElementById('copy-email-btn');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+
+    function openProfileModal() {
+      if (!currentUser) return;
+      profileDisplayAvatar.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+      profileDisplayName.textContent = currentUser.name;
+      profileDisplayEmail.textContent = currentUser.email;
+      // Joined date
+      const joined = currentUser.joinedOn || currentUser.createdAt;
+      let joinedStr = '';
+      if (joined) {
+        const dt = new Date(joined);
+        joinedStr = "Joined " + dt.toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+      }
+      profileDisplayJoined.textContent = joinedStr;
+      profileModalOverlay.style.display = 'flex';
+      setTimeout(()=>profileModalOverlay.classList.remove('hide'), 10);
+      window.lucide && window.lucide.createIcons();
+    }
+    function closeProfileModal() {
+      profileModalOverlay.classList.add('hide');
+      setTimeout(()=>{ profileModalOverlay.style.display='none'; }, 260);
+    }
+    profileModalCloseBtn.addEventListener('click', closeProfileModal);
+    profileModalOverlay.addEventListener('click', e => {
+      if(e.target === profileModalOverlay) closeProfileModal();
+    });
+
+    copyEmailBtn.addEventListener('click', () => {
+      if (!currentUser) return;
+      navigator.clipboard.writeText(currentUser.email).then(() => {
+        showToast({ message: "Email copied!", type: "success", icon: "copy" });
+      });
+    });
+    editProfileBtn.addEventListener('click', () => {
+      openEditProfileModal();
+      closeProfileModal();
+    });
+
+    // Edit Profile Modal logic, fields, upload avatar — **to be continued in Part 4**
+
+    <script>
+    // ===== EDIT PROFILE MODAL LOGIC =====
+    const editProfileModalOverlay = document.getElementById('edit-profile-modal-overlay');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const editProfileModalCloseBtn = document.getElementById('edit-profile-modal-close-btn');
+    const editAvatarPreview = document.getElementById('edit-avatar-preview');
+    const avatarInput = document.getElementById('avatar-upload-input');
+    const uploadBtn = document.getElementById('upload-avatar-btn');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const editProfileName = document.getElementById('edit-profile-name');
+    const editProfileEmail = document.getElementById('edit-profile-email');
+    const editCurrentPassword = document.getElementById('edit-current-password');
+    const editNewPassword = document.getElementById('edit-new-password');
+    const editConfirmPassword = document.getElementById('edit-confirm-password');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+
+    // Eye toggles
+    const editCurrentPasswordToggle = document.getElementById('edit-current-password-toggle');
+    const editNewPasswordToggle = document.getElementById('edit-new-password-toggle');
+    const editConfirmPasswordToggle = document.getElementById('edit-confirm-password-toggle');
+
+    function openEditProfileModal() {
+      if (!currentUser) return;
+      editAvatarPreview.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+      editProfileName.value = currentUser.name || "";
+      editProfileEmail.textContent = currentUser.email || "";
+      editCurrentPassword.value = '';
+      editNewPassword.value = '';
+      editConfirmPassword.value = '';
+      editProfileModalOverlay.style.display = 'flex';
+      setTimeout(()=>editProfileModalOverlay.classList.remove('hide'), 10);
+      window.lucide && window.lucide.createIcons();
+    }
+    function closeEditProfileModal() {
+      editProfileModalOverlay.classList.add('hide');
+      setTimeout(()=>{ editProfileModalOverlay.style.display='none'; }, 260);
+    }
+    editProfileModalCloseBtn.addEventListener('click', closeEditProfileModal);
+    editProfileModalOverlay.addEventListener('click', e => {
+      if(e.target === editProfileModalOverlay) closeEditProfileModal();
+    });
+
+    // Eye toggles for all password fields
+    function togglePassword(input, btn) {
+      input.type = input.type === "password" ? "text" : "password";
+      btn.innerHTML = input.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    }
+    editCurrentPasswordToggle.addEventListener('click', ()=>togglePassword(editCurrentPassword, editCurrentPasswordToggle));
+    editNewPasswordToggle.addEventListener('click', ()=>togglePassword(editNewPassword, editNewPasswordToggle));
+    editConfirmPasswordToggle.addEventListener('click', ()=>togglePassword(editConfirmPassword, editConfirmPasswordToggle));
+
+    // Avatar Upload Logic (Cloudinary, via backend)
+    uploadBtn.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', async () => {
+      const file = avatarInput.files[0];
+      if (!file) return showToast({ message: "Select a file!", type: "error", icon: "alert-triangle" });
+      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
+      const formData = new FormData();
+      formData.append('avatar', file);
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Uploading...';
+      try {
+        const res = await fetch(`${API_BASE}/api/user/upload-avatar`, {
+          method: "POST",
+          headers: { 'Authorization': `Bearer ${jwtToken}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Avatar upload failed.");
+        editAvatarPreview.src = data.avatarUrl;
+        currentUser.avatarUrl = data.avatarUrl;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateUIAfterLogin();
+        showToast({ message: "Avatar updated!", type: "success", icon: "cloud-upload" });
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+      }
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i data-lucide="cloud-upload"></i> Choose & Upload Avatar';
+      window.lucide && window.lucide.createIcons();
+    });
+
+    // Save Profile (Name + Password)
+    editProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
+      saveProfileBtn.disabled = true;
+      saveProfileBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Saving...';
+
+      // Name update
+      const newName = editProfileName.value.trim();
+      let changed = false;
+      if (newName && newName !== currentUser.name) {
+        try {
+          const res = await fetch(`${API_BASE}/api/user/update-name`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({ name: newName })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Name update failed.");
+          currentUser.name = data.user.name;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          showToast({ message: "Name updated!", type: "success", icon: "user" });
+          changed = true;
+        } catch (err) {
+          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+        }
+      }
+
+      // Password update logic
+      const curPass = editCurrentPassword.value, newPass = editNewPassword.value, confPass = editConfirmPassword.value;
+      if (curPass || newPass || confPass) {
+        if (!curPass || !newPass || !confPass) {
+          showToast({ message: "All password fields required.", type: "error", icon: "lock" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        if (newPass !== confPass) {
+          showToast({ message: "Passwords do not match.", type: "error", icon: "alert-triangle" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        if (newPass.length < 6) {
+          showToast({ message: "Password must be 6+ chars.", type: "error", icon: "lock" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/api/user/change-password`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({
+              currentPassword: curPass,
+              newPassword: newPass
+            })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Password change failed.");
+          showToast({ message: "Password changed!", type: "success", icon: "lock" });
+          changed = true;
+        } catch (err) {
+          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+        }
+      }
+      saveProfileBtn.disabled = false;
+      saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+      window.lucide && window.lucide.createIcons();
+      if (changed) {
+        setTimeout(closeEditProfileModal, 1200);
+        setTimeout(updateUIAfterLogin, 1800);
+      }
+    });
+
+    // Keyboard accessibility: ESC to close modals
+    document.addEventListener('keydown', (e) => {
+      if(e.key==="Escape") {
+        if(editProfileModalOverlay.style.display==='flex') closeEditProfileModal();
+        if(profileModalOverlay.style.display==='flex') closeProfileModal();
+      }
+    });
+    <style>
+    /* --- HERO SECTION --- */
+    .hero-welcome {
+      font-family: var(--font-title);
+      font-size: 2.2em;
+      font-weight: 700;
+      color: #23244f;
+      text-align: center;
+      margin: 58px 0 0 0;
+      letter-spacing: 1.7px;
+      opacity: 0;
+      animation: fadeInHero 1s 0.22s forwards;
+      text-shadow: 0 8px 40px #d9b8ff0d, 0 2px 7px #e7d7fc10;
+    }
+    @keyframes fadeInHero { to { opacity: 1; } }
+    /* --- FEEDBACK SUBMIT PANEL --- */
+    .feedback-panel {
+      background: rgba(255,255,255,0.89);
+      border-radius: 16px;
+      box-shadow: 0 2px 22px #b1aaff14;
+      padding: 32px 18px 18px 18px;
+      max-width: 570px;
+      margin: 30px auto 26px auto;
+      font-family: var(--font-main);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 17px;
+      transition: box-shadow 0.18s;
+    }
+    /* Star Rating */
+    .star-rating {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 2.3em;
+      margin-bottom: 3px;
+      justify-content: center;
+    }
+    .star-icon {
+      cursor: pointer;
+      opacity: 0.74;
+      transition: color 0.18s, opacity 0.18s, transform 0.11s;
+    }
+    .star-icon.selected,
+    .star-icon.hovered { color: #f59e42; opacity: 1; transform: scale(1.22);}
+    .star-icon:not(.selected):hover { color: #fbbf24; opacity: 0.98; }
+    /* Feedback textarea */
+    .feedback-textarea-group {
+      position: relative;
+      margin-top: 8px;
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 55px;
+      max-height: 190px;
+      padding: 17px 13px 17px 13px;
+      font-size: 1.12em;
+      border-radius: 8px;
+      border: 1.7px solid #b9bcf1;
+      resize: vertical;
+      outline: none;
+      background: #faf7ff;
+      color: #292241;
+      box-shadow: 0 1px 8px #b5a7fd10;
+      transition: border 0.13s, box-shadow 0.18s;
+    }
+    .feedback-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 2px 18px #b1b7ff15;
+    }
+    .feedback-textarea-label {
+      position: absolute;
+      top: 12px; left: 17px;
+      color: #8581c0;
+      font-size: 1.07em;
+      font-weight: 500;
+      pointer-events: none;
+      transition: all 0.14s;
+      opacity: 0.82;
+    }
+    .feedback-textarea:focus ~ .feedback-textarea-label,
+    .feedback-textarea:not(:placeholder-shown) ~ .feedback-textarea-label {
+      top: -16px;
+      left: 7px;
+      font-size: 0.97em;
+      color: var(--primary);
+      font-weight: 600;
+      opacity: 1;
+    }
+    /* Attachments & formatting */
+    .feedback-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 7px;
+      justify-content: flex-start;
+    }
+    .toolbar-btn {
+      background: none; border: none; color: #6366f1;
+      font-size: 1.18em; padding: 4px 5px;
+      border-radius: 6px; cursor: pointer;
+      transition: background 0.14s;
+    }
+    .toolbar-btn:hover { background: #d1d5ff34;}
+    .anon-toggle-group {
+      display: flex; align-items: center; gap: 8px; margin-top: 7px;
+      font-size: 1em; color: #4951aa;
+    }
+    .anon-checkbox { accent-color: #c7c6fa; width:19px; height:19px; }
+    /* Submit Button */
+    .submit-feedback-btn {
+      width: 100%; margin-top: 8px; padding: 15px 0;
+      background: var(--primary);
+      color: #fff; font-weight: bold; font-size: 1.13em;
+      border: none; border-radius: 12px;
+      box-shadow: 0 2px 10px #b7b1fd2c;
+      cursor: pointer; transition: background 0.17s;
+      display: flex; align-items: center; justify-content: center; gap:9px;
+    }
+    .submit-feedback-btn:disabled { background: #bdbafc; cursor: not-allowed;}
+    /* File input & preview */
+    .attachment-label {
+      display: flex; align-items: center; gap:6px;
+      background: #ececff;
+      color: #4b53c1;
+      border: 1px dashed #acaaf3;
+      border-radius: 7px; padding: 6px 15px;
+      font-size: 1.06em; cursor: pointer; margin-bottom:6px;
+      transition: background 0.13s;
+    }
+    .attachment-label:hover { background: #d6d4fa;}
+    .attachment-preview {
+      display: flex; gap: 9px; flex-wrap: wrap; margin: 4px 0 2px 0;
+    }
+    .attachment-img {
+      max-width: 62px; max-height: 62px; border-radius: 6px;
+      border: 2px solid #e3defb; background: #f5f3ff;
+      object-fit: cover;
+    }
+    /* === FEEDBACK CARDS === */
+    .feedback-list-section { margin:40px auto 34px auto; max-width:740px; }
+    .overall-rating-block {
+      background: linear-gradient(90deg, #eef2ff 0%, #f5d0fe 100%);
+      border-radius: 12px;
+      padding: 19px 30px 10px 30px;
+      margin: 0 0 28px 0;
+      text-align: center;
+      box-shadow: 0 2px 14px #efedff16;
+    }
+    .overall-stars { font-size: 2.7em; color: #fbbf24; filter: drop-shadow(0 2px 10px #f3e8ffcc);}
+    .overall-rating-value { font-size:2.1em;font-family:var(--font-title);font-weight:800;color:#513fd9;}
+    .overall-rating-label { color:#837cb2;font-size:1em;letter-spacing:1.1px;}
+    .feedback-search-bar {
+      margin:0 0 19px 0; display:flex;align-items:center;gap:11px;
+      background:#fff;border-radius:7px;padding:10px 16px;box-shadow:0 2px 7px #cbcfff10;
+      border:1px solid #d4d5fc;
+      font-size:1.14em;
+    }
+    .feedback-search-bar input {
+      border:none;background:none;outline:none;font-size:1.13em;flex:1;
+      margin-left:5px;color:#312c6a;
+    }
+    .feedback-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #c1bbfc16;
+      padding: 20px 19px 13px 19px;
+      margin-bottom: 23px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: box-shadow 0.16s;
+      font-family: var(--font-main);
+    }
+    .feedback-header {
+      display: flex; align-items: center; gap: 13px; margin-bottom: 3px;
+    }
+    .feedback-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      object-fit: cover; background: #eceeff; border: 2px solid #ede4fd;
+    }
+    .feedback-user-info {
+      display: flex; flex-direction: column;
+      font-size: 1em;
+      min-width:0;
+    }
+    .feedback-name { font-weight: 700; color: #322984; font-size:1.13em;}
+    .feedback-timestamp { font-size:0.98em; color:#a2a2bb; }
+    .feedback-stars { display: flex; align-items: center; gap:2px; font-size:1.22em; }
+    .feedback-text { font-size:1.12em; color:#35377e; margin:7px 0; }
+    .feedback-attachments { display:flex;gap:10px;margin:5px 0;}
+    .feedback-attachment-thumb {
+      width:54px;height:54px;border-radius:7px;object-fit:cover;border:1.5px solid #c1bfff;
+    }
+    .feedback-toolbar-actions {
+      display:flex;gap:13px;align-items:center;justify-content:flex-end;
+    }
+    .feedback-action-btn {
+      background: none; border: none; color: #6366f1; font-size: 1.23em;
+      padding: 4px 6px; border-radius: 7px; cursor: pointer; transition: background 0.11s;
+    }
+    .feedback-action-btn:hover { background:#e1e7ff4d;}
+    .feedback-admin-reply {
+      background: #f1f5ff; border-left: 5px solid #4285F4;
+      border-radius: 7px; margin: 7px 0 2px 0; padding: 11px 17px;
+      font-size:1.07em;color:#2259a0;display:flex;align-items:center;gap:12px;
+    }
+    .admin-reply-badge {
+      background:#3b82f6;color:#fff;padding:2px 9px;font-size:0.98em;
+      border-radius:7px;margin-right:7px;display:inline-flex;align-items:center;gap:5px;
+      font-weight:bold;letter-spacing:0.4px;
+    }
+    /* Infinite Scroll Loader */
+    .infinite-loader {
+      display:flex;justify-content:center;align-items:center;
+      margin:12px 0 15px 0;
+    }
+    @media (max-width:600px) {
+      .feedback-panel,.feedback-list-section {max-width:99vw;padding:14px;}
+      .overall-rating-block{padding:12px 2vw;}
+    }
+  </style>
+  <!-- ==== HERO + FEEDBACK SUBMIT PANEL ==== -->
+  <div class="hero-welcome" id="hero-welcome">Welcome!</div>
+  <div class="feedback-panel" id="feedback-panel" style="display:none;">
+    <div class="star-rating" id="star-rating"></div>
+    <div class="feedback-textarea-group">
+      <textarea id="feedback-text" class="feedback-textarea" placeholder=" " rows="2" maxlength="700" required></textarea>
+      <label class="feedback-textarea-label" for="feedback-text">Your feedback...</label>
+    </div>
+    <div class="feedback-toolbar">
+      <label class="attachment-label" for="feedback-attach"><i data-lucide="paperclip"></i>Attach File/Image
+        <input type="file" id="feedback-attach" style="display:none;" accept="image/*,.pdf,.doc,.docx,.txt" />
+      </label>
+      <button class="toolbar-btn" type="button" title="Bold" onclick="insertFormat('bold')"><i data-lucide="bold"></i></button>
+      <button class="toolbar-btn" type="button" title="Italic" onclick="insertFormat('italic')"><i data-lucide="italic"></i></button>
+      <button class="toolbar-btn" type="button" title="Bullet" onclick="insertFormat('bullet')"><i data-lucide="list"></i></button>
+      <button class="toolbar-btn" type="button" title="Emoji" onclick="insertFormat('emoji')"><i data-lucide="smile"></i></button>
+      <button class="toolbar-btn" type="button" title="Code" onclick="insertFormat('code')"><i data-lucide="code"></i></button>
+    </div>
+    <div class="attachment-preview" id="attach-preview"></div>
+    <div class="anon-toggle-group">
+      <input type="checkbox" id="anon-toggle" class="anon-checkbox"/>
+      <label for="anon-toggle"><i data-lucide="user-x"></i>Submit as Anonymous</label>
+    </div>
+    <button class="submit-feedback-btn" id="submit-feedback-btn" disabled>Submit Feedback <i data-lucide="send"></i></button>
+  </div>
+  <!-- ==== FEEDBACK LIST, RATING, SEARCH ==== -->
+  <div class="feedback-list-section" id="feedback-list-section" style="display:none;">
+    <div class="overall-rating-block" id="overall-rating-block" style="display:none;">
+      <div class="overall-stars" id="overall-stars"></div>
+      <div class="overall-rating-value" id="overall-rating-value">–</div>
+      <div class="overall-rating-label" id="overall-rating-label">Based on 0 feedbacks</div>
+    </div>
+    <div class="feedback-search-bar">
+      <i data-lucide="search"></i>
+      <input type="text" id="search-feedback" placeholder="Search feedback..." autocomplete="off" />
+    </div>
+    <div id="feedback-list"></div>
+    <div class="infinite-loader" id="infinite-loader" style="display:none;">
+      <i data-lucide="loader" class="lucide-spin"></i> Loading...
+    </div>
+  </div>
+  
+    // -- HERO GREETING --
+    function greetUser() {
+      const hero = document.getElementById('hero-welcome');
+      if (currentUser) {
+        hero.textContent = `Welcome, ${currentUser.name}!`;
+      } else {
+        hero.textContent = `Welcome! Please log in to give feedback.`;
+      }
+      hero.style.display = "";
+    }
+    // --- STAR RATING (Submit Panel) ---
+    let selectedRating = 0, hoverRating = 0;
+    const starRatingDiv = document.getElementById('star-rating');
+    function renderStars() {
+      starRatingDiv.innerHTML = '';
+      for (let i=1; i<=5; ++i) {
+        const star = document.createElement('i');
+        star.setAttribute('data-lucide', 'star');
+        star.className = "star-icon" + (i <= (hoverRating || selectedRating) ? ' selected' : '');
+        star.title = `${i} Star${i>1?'s':''}`;
+        star.setAttribute('tabindex', '0');
+        star.setAttribute('aria-label', `${i} Star`);
+        star.addEventListener('mouseenter', ()=>{hoverRating = i; renderStars();});
+        star.addEventListener('mouseleave', ()=>{hoverRating = 0; renderStars();});
+        star.addEventListener('click', ()=>{selectedRating = i; renderStars(); checkFeedbackBtn();});
+        star.addEventListener('keydown', (e)=>{ if(['Enter',' '].includes(e.key)) {selectedRating = i; renderStars(); checkFeedbackBtn();} });
+        starRatingDiv.appendChild(star);
+      }
+      window.lucide && window.lucide.createIcons({ icons: starRatingDiv.querySelectorAll('i') });
+    }
+    function checkFeedbackBtn() {
+      const txt = document.getElementById('feedback-text').value.trim();
+      document.getElementById('submit-feedback-btn').disabled = !(selectedRating && txt.length > 0);
+    }
+    // --- Feedback Textarea ---
+    document.getElementById('feedback-text').addEventListener('input', checkFeedbackBtn);
+
+    // --- Attachment logic ---
+    let attachmentFile = null;
+    document.getElementById('feedback-attach').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      attachmentFile = file;
+      const preview = document.getElementById('attach-preview');
+      preview.innerHTML = '';
+      if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.className = "attachment-img";
+        img.src = URL.createObjectURL(file);
+        preview.appendChild(img);
+      } else {
+        preview.innerHTML = `<div style="color:#555;font-size:1.04em;"><i data-lucide="file"></i> ${file.name}</div>`;
+        window.lucide && window.lucide.createIcons();
+      }
+    });
+
+    // --- Formatting Toolbar (simple insert) ---
+    function insertFormat(type) {
+      const textarea = document.getElementById('feedback-text');
+      let insert = '';
+      if (type === 'bold') insert = '**Bold** ';
+      else if (type === 'italic') insert = '_Italic_ ';
+      else if (type === 'bullet') insert = '\n- ';
+      else if (type === 'emoji') insert = '🙂 ';
+      else if (type === 'code') insert = '`code` ';
+      const start = textarea.selectionStart, end = textarea.selectionEnd;
+      textarea.value = textarea.value.slice(0, start) + insert + textarea.value.slice(end);
+      textarea.focus(); textarea.selectionEnd = start + insert.length;
+      checkFeedbackBtn();
+    }
+    window.insertFormat = insertFormat; // Expose for inline onclick
+
+    // --- Anon toggle logic ---
+    let isAnon = false;
+    document.getElementById('anon-toggle').addEventListener('change', (e)=>{
+      isAnon = e.target.checked;
+    });
+
+    // --- Feedback Submit ---
+    document.getElementById('submit-feedback-btn').addEventListener('click', async () => {
+      if (!currentUser || !jwtToken) {
+        showToast({ message: "Login required to submit feedback.", type: "error", icon: "alert-triangle" }); return;
+      }
+      if (!selectedRating) { showToast({ message: "Please select a rating.", type: "warn", icon: "star" }); return; }
+      const text = document.getElementById('feedback-text').value.trim();
+      if (!text) { showToast({ message: "Enter feedback.", type: "error", icon: "edit-3" }); return; }
+      document.getElementById('submit-feedback-btn').disabled = true;
+      let attachmentUrl = null;
+      if (attachmentFile) {
+        const formData = new FormData(); formData.append('file', attachmentFile);
+        try {
+          const res = await fetch(`${API_BASE}/api/feedback/upload-attachment`, {
+            method:"POST",
+            headers: { 'Authorization': `Bearer ${jwtToken}` },
+            body: formData
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Attachment upload failed.");
+          attachmentUrl = data.url;
+        } catch (err) {
+          showToast({ message: "Attachment upload failed.", type:"error", icon:"alert-triangle"});
+          document.getElementById('submit-feedback-btn').disabled = false; return;
+        }
+      }
+      // Now submit feedback
+      try {
+        const res = await fetch(`${API_BASE}/api/feedback/create`, {
+          method:"POST",
+          headers: {
+            "Content-Type":"application/json",
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({
+            rating: selectedRating, text, anonymous: isAnon, attachment: attachmentUrl
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Feedback failed.");
+        showToast({ message:"Feedback submitted!", type:"success", icon:"send"});
+        // Optimistically add to list:
+        fetchFeedbacks(true); // refresh top
+        document.getElementById('feedback-text').value = '';
+        document.getElementById('attach-preview').innerHTML = '';
+        document.getElementById('feedback-attach').value = '';
+        attachmentFile = null; selectedRating = 0; hoverRating = 0;
+        renderStars(); checkFeedbackBtn();
+      } catch (err) {
+        showToast({ message: err.message, type:"error", icon:"alert-triangle"});
+      }
+      document.getElementById('submit-feedback-btn').disabled = false;
+    });
+
+    // --- Feedback List + Rating ---
+    let feedbacks = [], feedbackPage = 1, hasMoreFeedback = true, searchQuery = "";
+    async function fetchFeedbacks(refresh=false) {
+      if (refresh) { feedbackPage=1; hasMoreFeedback=true; feedbacks=[]; }
+      if (!hasMoreFeedback) return;
+      document.getElementById('infinite-loader').style.display = "flex";
+      let url = `${API_BASE}/api/feedback/list?page=${feedbackPage}`;
+      if (searchQuery) url = `${API_BASE}/api/feedback/search?query=${encodeURIComponent(searchQuery)}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': jwtToken ? `Bearer ${jwtToken}` : undefined }
+      });
+      const data = await res.json();
+      document.getElementById('infinite-loader').style.display = "none";
+      if (Array.isArray(data.feedbacks)) {
+        if (refresh) feedbacks = [];
+        feedbacks = feedbacks.concat(data.feedbacks);
+        renderFeedbacks();
+        feedbackPage++;
+        hasMoreFeedback = data.feedbacks.length >= 10;
+      }
+      // Update overall rating
+      fetchOverallRating();
+    }
+
+    function renderFeedbacks() {
+      const list = document.getElementById('feedback-list');
+      list.innerHTML = '';
+      feedbacks.forEach(fb => {
+        const card = document.createElement('div');
+        card.className = 'feedback-card';
+        // Avatar
+        const avatarUrl = fb.anonymous
+          ? "https://api.dicebear.com/8.x/micah/svg?seed=Anonymous"
+          : (fb.user?.avatarUrl || "https://api.dicebear.com/8.x/adventurer/svg?seed=" + encodeURIComponent(fb.user?.name || "Nobita"));
+        // Header
+        card.innerHTML = `
+          <div class="feedback-header">
+            <img src="${avatarUrl}" class="feedback-avatar" alt="Avatar"/>
+            <div class="feedback-user-info">
+              <div class="feedback-name">${fb.anonymous ? 'Anonymous' : (fb.user?.name||"Unknown")}</div>
+              <div class="feedback-timestamp">${new Date(fb.createdAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+              <div class="feedback-stars">${Array.from({length:fb.rating}).map(()=>'<i data-lucide="star"></i>').join('')}</div>
+            </div>
+          </div>
+          <div class="feedback-text">${formatMarkdown(fb.text)}</div>
+          ${fb.attachment? `<div class="feedback-attachments"><a href="${fb.attachment}" target="_blank">${fb.attachment.endsWith('.jpg')||fb.attachment.endsWith('.png')? `<img src="${fb.attachment}" class="feedback-attachment-thumb"/>` : `<i data-lucide="file"></i> File`}</a></div>` : ''}
+          <div class="feedback-toolbar-actions"></div>
+        `;
+        // Action buttons
+        const toolbar = card.querySelector('.feedback-toolbar-actions');
+        if (currentUser && (fb.userId === currentUser._id || currentUser.email === "samshaad365@gmail.com")) {
+          const editBtn = document.createElement('button');
+          editBtn.className = "feedback-action-btn";
+          editBtn.title = "Edit Feedback"; editBtn.innerHTML = '<i data-lucide="edit-3"></i>';
+          // TODO: Add edit feedback logic/modal
+          const delBtn = document.createElement('button');
+          delBtn.className = "feedback-action-btn";
+          delBtn.title = "Delete Feedback"; delBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+          delBtn.onclick = ()=>deleteFeedback(fb._id);
+          toolbar.appendChild(editBtn); toolbar.appendChild(delBtn);
+        }
+        // Share button
+        const shareBtn = document.createElement('button');
+        shareBtn.className = "feedback-action-btn"; shareBtn.title="Share";
+        shareBtn.innerHTML = '<i data-lucide="share-2"></i>';
+        shareBtn.onclick = ()=>shareFeedback(fb._id);
+        toolbar.appendChild(shareBtn);
+
+        // If admin reply present
+        if (fb.adminReply) {
+          card.innerHTML += `
+            <div class="feedback-admin-reply">
+              <span class="admin-reply-badge"><i data-lucide="shield"></i> Admin Response</span>
+              ${formatMarkdown(fb.adminReply.text)}
+            </div>
+          `;
+        }
+        list.appendChild(card);
+      });
+      window.lucide && window.lucide.createIcons({ icons: list.querySelectorAll('i') });
+    }
+
+    // --- Feedback Actions (delete, share) ---
+    async function deleteFeedback(id) {
+      if (!confirm("Are you sure you want to delete this feedback?")) return;
+      const res = await fetch(`${API_BASE}/api/feedback/delete/${id}`, {
+        method: "DELETE",
+        headers: { 'Authorization': `Bearer ${jwtToken}` }
+      });
+      const data = await res.json();
+      if (!res.ok) showToast({ message: data.message, type:"error", icon:"alert-triangle"});
+      else { showToast({ message:"Feedback deleted!", type:"success", icon:"trash-2"}); fetchFeedbacks(true);}
+    }
+    function shareFeedback(id) {
+      const url = `${window.location.origin}/feedback/${id}`;
+      navigator.clipboard.writeText(url);
+      showToast({ message:"Feedback link copied!", type:"success", icon:"copy"});
+    }
+    function formatMarkdown(text) {
+      return text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+        .replace(/_(.*?)_/g,'<i>$1</i>')
+        .replace(/`(.*?)`/g,'<code>$1</code>')
+        .replace(/\n- (.*?)(?=\n|$)/g,'<ul><li>$1</li></ul>')
+        .replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>')
+        .replace(/\n/g,"<br/>");
+    }
+
+    // --- Search logic ---
+    document.getElementById('search-feedback').addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      fetchFeedbacks(true);
+    });
+
+    // --- Infinite Scroll ---
+    window.addEventListener('scroll', ()=>{
+      if(window.innerHeight+window.scrollY+50 >= document.body.offsetHeight && hasMoreFeedback){
+        fetchFeedbacks();
+      }
+    });
+
+    // --- Overall Rating ---
+    async function fetchOverallRating() {
+      const res = await fetch(`${API_BASE}/api/feedback/overall-rating`);
+      const data = await res.json();
+      if (!data || !data.avg) return document.getElementById('overall-rating-block').style.display="none";
+      document.getElementById('overall-rating-block').style.display="";
+      document.getElementById('overall-stars').innerHTML = Array.from({length:Math.round(data.avg)}).map(()=>'<i data-lucide="star"></i>').join('');
+      document.getElementById('overall-rating-value').textContent = Number(data.avg).toFixed(2);
+      document.getElementById('overall-rating-label').textContent = `Based on ${data.count} feedback${data.count>1?'s':''}`;
+      window.lucide && window.lucide.createIcons({ icons: document.getElementById('overall-stars').querySelectorAll('i') });
+    }
+
+    // --- INIT ALL ---
+    function appInit() {
+      renderStars(); greetUser();
+      if(currentUser) {
+        document.getElementById('feedback-panel').style.display = "";
+        document.getElementById('feedback-list-section').style.display = "";
+        fetchFeedbacks(true);
+      } else {
+        document.getElementById('feedback-panel').style.display = "none";
+        document.getElementById('feedback-list-section').style.display = "";
+        fetchFeedbacks(true);
+      }
+    }
+    appInit();
+    // On login/logout
+    window.updateUIAfterLogin = function() {
+      greetUser(); appInit();
+      // Other UI updates from previous parts
+      // ...already wired!
+    }
+  </script>
+  <!-- Lucide icon refresh -->
+  <script>window.lucide && window.lucide.createIcons();</script>
 </body>
 </html>
