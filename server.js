@@ -543,6 +543,18 @@ app.get('*', (req, res) => {
   }
 });
 
+// Mongoose Feedback model pe depend karega, variable ka naam change ho toh uske hisaab se karna
+app.get('/api/feedback/overall-rating', async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({});
+    if (feedbacks.length === 0) return res.json({ avg: 0, count: 0 });
+    const avg = feedbacks.reduce((a, b) => a + b.rating, 0) / feedbacks.length;
+    res.json({ avg, count: feedbacks.length });
+  } catch (e) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 app.listen(PORT, () => {
     console.log(`Nobita ka server port ${PORT} par chalu ho gaya hai: http://localhost:${PORT}`);
 });
