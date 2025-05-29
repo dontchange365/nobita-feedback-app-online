@@ -2485,37 +2485,38 @@
                 if (fbData.replies && fbData.replies.length > 0) {
                     const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
                     if (latestReply && latestReply.text) {
-                        const adminReplyDiv = document.createElement('div');
-                        adminReplyDiv.className = 'admin-reply';
+                const adminReplyContent = document.createElement('div');
+adminReplyContent.className = 'admin-reply-content';
 
-                        const adminAvatar = document.createElement('img');
-                        adminAvatar.className = 'admin-reply-avatar';
-                        adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar (or specific admin avatar from backend)
-                        adminAvatar.alt = 'Admin';
+let replyTimestampText = ''; // 🟢 space added after let
 
-                        const adminReplyContent = document.createElement('div');
-                        adminReplyContent.className = 'admin-reply-content';
-                        let replyTimestampText = '';
-                        try {
-                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;
-                        } catch(e) {
-                            replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`;
-                        }
-                        adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
+try {
+  // 🕐 Format timestamp in Indian time
+  replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'short',
+    timeStyle: 'short'
+  })})`;
+} catch (e) {
+  // 🔁 Fallback format
+  replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`; // ✅ "new Date", not "newDate"
+}
 
-                        adminReplyDiv.append(adminAvatar, adminReplyContent);
-                        detailsDiv.appendChild(adminReplyDiv);
-                    }
-                }
+adminReplyContent.innerHTML = `
+  <strong>(${latestReply.adminName || 'Admin'}):</strong> 
+  ${latestReply.text} 
+  <span class="reply-timestamp">${replyTimestampText}</span>
+`;
 
-                item.append(avatarImg, detailsDiv);
-                feedbackListContainer.appendChild(item); // Add the feedback item to the list
-            }
+adminReplyDiv.append(adminAvatar, adminReplyContent);
+detailsDiv.appendChild(adminReplyDiv);
 
-            // Initial calls on load
-            updateUIAfterLogout(); // Set initial UI state (guest mode)
-            checkLoginStatus(); // Check if user is already logged in via token
-        });
+item.append(avatarImg, detailsDiv);
+feedbackListContainer.appendChild(item);
+
+// UI init
+updateUIAfterLogout(); // Guest mode
+checkLoginStatus();    // Check user login status
     </script>
 </body>
 </html>
