@@ -1630,7 +1630,8 @@
         const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned';
         const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-        // Helper function to safely get the feedback owner's ID
+        // Helper function to safely get a string ID from a potentially populated userId field
+        // This function handles userId being an object with _id, a plain string, or null/undefined.
         function getFeedbackOwnerId(userIdData) {
             if (userIdData) {
                 if (typeof userIdData === 'string') {
@@ -2010,7 +2011,7 @@
                 if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/70/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
-                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Ensure this is correctly fetched
+                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
@@ -2053,7 +2054,7 @@
                 nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
                 nameInputInFeedbackForm.disabled = false;
             }
-            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Ensure this is correctly fetched
+            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
             if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
         }
 
@@ -2319,22 +2320,28 @@
 
         if(submitButton) submitButton.addEventListener('click', async () => {
             const feedbackContent = feedbackTextarea.value.trim();
-            const ratingValue = ratingInput.value;
-            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Get the span for the displayed username
-            let nameValue = nameInputInFeedbackForm.value.trim(); // Use the actual input's value
+            const ratingValue = parseInt(ratingInput.value); // Ensure rating is an integer here
+
+            let nameValue = nameInputInFeedbackForm.value.trim();
 
             if (!currentUser && !nameValue) {
                 return showStylishPopup('error', 'Name Required', 'If you are not logged in, please enter your name.');
             }
-            if (!feedbackContent || ratingValue === '0') {
-                return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');
+            // Add validation for rating range here before sending to backend
+            if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+                 return showStylishPopup('error', 'Invalid Rating!', 'Please select a star rating between 1 and 5.');
             }
-            if (!currentUser) { // Check if user is NOT logged in and prompt via icon
+            if (!feedbackContent) {
+                return showStylishPopup('error', 'Empty Feedback!', 'Feedback message is required!');
+            }
+
+            if (!currentUser) {
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
                 return;
             }
 
-            let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
+            let feedbackPayload = { feedback: feedbackContent, rating: ratingValue };
+
             const url = isEditing ? `<span class="math-inline">\{API\_FEEDBACK\_URL\}/</span>{currentEditFeedbackId}` : API_FEEDBACK_URL;
             const method = isEditing ? 'PUT' : 'POST';
 
@@ -2356,7 +2363,7 @@
         });
 
         function resetFeedbackForm() {
-            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Ensure this is correctly fetched
+            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
             if (currentUser) {
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
@@ -2508,22 +2515,20 @@
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
 
-            // Robust check for disabling the edit button on render
-            const feedbackOwnerId = getFeedbackOwnerId(fbData.userId); // Use the helper function here
+            const feedbackOwnerId = getFeedbackOwnerId(fbData.userId);
             editButton.disabled = !(currentUser && feedbackOwnerId && currentUser.userId === feedbackOwnerId);
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 
-                // Robust permission check on click
-                const clickCheckOwnerId = getFeedbackOwnerId(fbData.userId); // Use the helper function here as well
+                const clickCheckOwnerId = getFeedbackOwnerId(fbData.userId);
                 if (!currentUser || !clickCheckOwnerId || currentUser.userId !== clickCheckOwnerId) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
                 
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 
-                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username'); // Ensure this is fetched here
+                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
 
                 if (nameInputInFeedbackForm) {
                     nameInputInFeedbackForm.value = fbData.name;
@@ -2582,6 +2587,5 @@
         checkLoginStatus();
     });
 </script>
-
-</body>
+</body/>
 </html>
