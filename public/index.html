@@ -2104,6 +2104,9 @@
 
                                         // Update currentUser and UI with new avatar URL
                                         currentUser.avatarUrl = backendUpdateResponse.user.avatarUrl;
+                                        // Explicitly update the profile modal avatar display
+                                        if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; 
+
                                         updateUIAfterLogin(); // Re-call this to update the corner trigger and menu avatar
                                         await fetchFeedbacks(); // Re-fetch feedbacks to update all avatars in the list
                                         avatarUploadInput.value = ''; // Clear the file input after successful upload
