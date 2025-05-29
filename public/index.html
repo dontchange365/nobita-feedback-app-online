@@ -1851,7 +1851,7 @@
             });
         };
         if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn;
-        if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
+        if (modalGoogleSignupBtn) modalGoogleSignupSignIn;
 
         window.onload = function () {
             // Initialize Google Sign-In only if the script is loaded
@@ -2354,7 +2354,8 @@
                     feedbackListContainer.appendChild(msgP);
                     updateAverageRating(0, 0); // Display 0 average if no feedbacks
                 } else {
-                    const totalRatings = data.reduce((sum, fb) => sum + fb.rating, 0);
+                    // *** CORRECTION HERE: Use parseInt for fb.rating to ensure numeric addition ***
+                    const totalRatings = data.reduce((sum, fb) => sum + parseInt(fb.rating), 0);
                     const average = totalRatings / data.length;
                     updateAverageRating(average, data.length);
                     data.forEach((fb, index) => addFeedbackToDOM(fb, index));
