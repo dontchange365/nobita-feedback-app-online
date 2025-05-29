@@ -2628,7 +2628,10 @@
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
                 // Double-check permission on click as well for security
-                if (!currentUser || currentUser.userId !== fbData.userId) {
+                // Permission check ko robust banayenge
+                if (!currentUser || !fbData.userId || !fbData.userId._id || currentUser.userId !== fbData.userId._id.toString()) {
+                return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
+}
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
