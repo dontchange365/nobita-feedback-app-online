@@ -1200,48 +1200,9 @@
             margin-left: 7px;
         }
 
-        /* NEW: Edit Feedback Button Styling */
-        .edit-feedback-btn {
-            background: none;
-            border: none;
-            color: #5bc0de; /* Light blue */
-            cursor: pointer;
-            font-size: 1.25em;
-            position: absolute; /* Position relative to .feedback-item */
-            top: 10px;
-            right: 10px;
-            padding: 4px; /* Make click area larger */
-            opacity: 0.75;
-            z-index: 10; /* Ensure it's clickable */
-            transition: color 0.25s ease, transform 0.15s;
-        }
-
-        .edit-feedback-btn:hover {
-            color: #31b0d5; /* Darker blue on hover */
-            transform: scale(1.08) rotate(4deg); /* Pop and slight rotate */
-            opacity: 1;
-        }
-
-        .edit-feedback-btn[disabled] {
-            display: none !important; /* Hide completely when disabled */
-        }
-
-        .edited-tag {
-            background-color: #f0ad4e; /* Orange-yellow */
-            color: white;
-            padding: 2.5px 7px;
-            border-radius: 4.5px;
-            font-size: 0.65em;
-            font-weight: bold;
-            margin-left: 7px;
-            vertical-align: middle; /* Align with text */
-            animation: fadeIn 0.45s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        /* REMOVED .edit-feedback-btn CSS */
+        /* REMOVED .edit-feedback-btn[disabled] CSS */
+        /* REMOVED .edited-tag CSS */
 
         /* Confetti animation */
         .confetti-container {
@@ -1536,15 +1497,16 @@
 
         // Corner Triggers
         const loginIconTrigger = document.getElementById('login-icon-trigger');
+        // Renamed from userAvatarTrigger to userProfileTrigger for clarity
         const userProfileTrigger = document.getElementById('user-profile-trigger');
-        const userProfileAvatarImg = document.getElementById('user-profile-avatar');
-        const userProfileNameSpan = document.getElementById('user-profile-name');
+        const userProfileAvatarImg = document.getElementById('user-profile-avatar'); // Image inside the profile badge
+        const userProfileNameSpan = document.getElementById('user-profile-name'); // Name inside the profile badge
 
         // Auth Modals & Menu
         const loginModal = document.getElementById('loginModal');
         const signupModal = document.getElementById('signupModal');
         const userMenu = document.getElementById('userMenu');
-        const userProfileModal = document.getElementById('userProfileModal');
+        const userProfileModal = document.getElementById('userProfileModal'); // New Profile Modal
 
         // Login Modal Elements
         const emailLoginForm = document.getElementById('email-login-form');
@@ -1571,7 +1533,7 @@
 
         // Universal Stylish Popup Elements
         const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-        const stylishPopupCard = document.getElementById('stylishPopupCard');
+        const stylishPopupCard = document.getElementById('stylishPopupCard'); // For overlay click check
         const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
         const stylishPopupIcon = document.getElementById('stylishPopupIcon');
         const stylishPopupTitle = document.getElementById('stylishPopupTitle');
@@ -1579,10 +1541,10 @@
         const stylishPopupFormArea = document.getElementById('stylishPopupFormArea');
         const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
 
-        // User Profile Modal Elements
+        // User Profile Modal Elements (New)
         const profileDisplayAvatar = document.getElementById('profile-display-avatar');
         const avatarUploadInput = document.getElementById('avatar-upload-input');
-        const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
+        const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn'); // **NEW BUTTON ELEMENT**
         const uploadProgressBar = document.getElementById('upload-progress-bar');
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
@@ -1601,55 +1563,49 @@
         const feedbackFormContainer = document.getElementById('feedback-form-container');
         const feedbackListContainer = document.getElementById('feedback-list-container');
         const averageRatingDisplayEl = document.getElementById('average-rating-display');
-        const nameInputInFeedbackForm = document.getElementById('name');
+        const nameInputInFeedbackForm = document.getElementById('name'); // The name input in the main feedback form
+        const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
         const feedbackTextarea = document.getElementById('feedback');
         const ratingInput = document.getElementById('rating');
         const submitButton = document.getElementById('submit-feedback');
         const starsElements = document.querySelectorAll('.star');
-        const mainTitle = document.getElementById('main-title');
+        const mainTitle = document.getElementById('main-title'); // For Typed.js
 
-        let currentUser = null;
+        let currentUser = null; // Stores current logged-in user data
         let currentSelectedRating = 0;
-        let isEditing = false;
-        let currentEditFeedbackId = null;
+        // REMOVED: let isEditing = false;
+        // REMOVED: let currentEditFeedbackId = null;
 
         // API Endpoints
+        // Replace with your actual backend URL, e.g., 'http://localhost:3000' or your deployed backend URL
         const BASE_API_URL = window.location.origin;
         const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
         const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
         const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
         const API_VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
         const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
-        const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`;
-        const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
-        const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`;
-        const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`;
+        const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`; // For POST feedback
+        const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`; // For GET all feedbacks
+        const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`; // New endpoint for profile update
+        const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`; // New endpoint for password change
 
+        // **********************************************
         // CLOUDINARY DIRECT UPLOAD CONFIGURATION
-        const CLOUDINARY_CLOUD_NAME = 'dyv7xav3e';
-        const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned';
+        // **********************************************
+        const CLOUDINARY_CLOUD_NAME = 'dyv7xav3e'; // Your Cloudinary Cloud Name
+        const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned'; // Your unsigned upload preset name from Cloudinary
+
+        // This URL is for direct upload to Cloudinary's API
         const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-        // Helper function to safely get a string ID from a potentially populated userId field
-        // This function handles userId being an object with _id, a plain string, or null/undefined.
-        function getFeedbackOwnerId(userIdData) {
-            if (userIdData) {
-                if (typeof userIdData === 'string') {
-                    return userIdData;
-                }
-                if (typeof userIdData === 'object' && userIdData._id) {
-                    return userIdData._id.toString();
-                }
-            }
-            return null;
-        }
-
+        // Initialize Typed.js for the main title and typed output
         if (mainTitle) {
             new Typed('#main-title', {
                 strings: ["✨ Welcome to Nobita's Feedback Portal! ✨"],
                 typeSpeed: 50,
                 showCursor: false,
                 onComplete: (self) => {
+                    // After main title is typed, start secondary message
                     new Typed('#typed-output', {
                         strings: [
                             "Share your thoughts and help us improve!",
@@ -1665,6 +1621,8 @@
             });
         }
 
+        // --- Stylish Popup Functionality ---
+        // Generic function to show a styled popup for various messages (success, error, info, confirm, etc.)
         function showStylishPopup(type, title, message, options = {}) {
             console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
             if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
@@ -1673,8 +1631,9 @@
                 return;
             }
 
-            stylishPopupIcon.className = 'popup-icon-area';
-            stylishPopupIcon.innerHTML = '';
+            // Reset icon and add type-specific class
+            stylishPopupIcon.className = 'popup-icon-area'; // Reset classes
+            stylishPopupIcon.innerHTML = ''; // Clear existing icon
             const iconsFA = {
                 'success': '<i class="fas fa-check-circle"></i>',
                 'error': '<i class="fas fa-times-circle"></i>',
@@ -1691,6 +1650,7 @@
             stylishPopupTitle.textContent = title;
             stylishPopupMessage.innerHTML = `<p>${message}</p>`;
 
+            // Handle form HTML
             if (options.formHTML) {
                 stylishPopupFormArea.innerHTML = options.formHTML;
                 stylishPopupFormArea.style.display = 'block';
@@ -1699,6 +1659,7 @@
                 stylishPopupFormArea.style.display = 'none';
             }
 
+            // Clear existing buttons and add new ones based on options
             stylishPopupButtonContainer.innerHTML = '';
             if (options.isConfirm) {
                 const cancelBtn = document.createElement('button');
@@ -1737,11 +1698,13 @@
             console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
         }
 
+        // Close popup on close button click
         if(closeStylishPopupBtn) {
             closeStylishPopupBtn.addEventListener('click', () => {
                 if(stylishPopupOverlay) stylishPopupOverlay.classList.remove('active');
             });
         }
+        // Close popup on overlay click (if not clicking the card itself)
         if(stylishPopupOverlay) {
             stylishPopupOverlay.addEventListener('click', e => {
                 if (e.target === stylishPopupOverlay) {
@@ -1750,6 +1713,8 @@
             });
         }
 
+        // --- New UI Trigger Logic & Modal Control ---
+        // Show login modal when login icon is clicked
         if (loginIconTrigger) {
             loginIconTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1758,6 +1723,8 @@
                 if (userProfileModal) userProfileModal.classList.remove('active');
             });
         }
+        // Show/hide user menu when user avatar is clicked
+        // Changed from userAvatarTrigger to userProfileTrigger
         if (userProfileTrigger) {
             userProfileTrigger.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1766,17 +1733,24 @@
                 if (userProfileModal) userProfileModal.classList.remove('active');
             });
         }
+        // Close user menu when clicking anywhere else on the document
         document.addEventListener('click', (e) => {
+            // Changed from userAvatarTrigger to userProfileTrigger
             if (userMenu && userMenu.classList.contains('active') && userProfileTrigger && !userProfileTrigger.contains(e.target) && !userMenu.contains(e.target)) {
                 userMenu.classList.remove('active');
             }
         });
 
+        // MODAL CLOSING LOGIC: Corrected to handle all [data-modal-close] buttons
         [loginModal, signupModal, userProfileModal].forEach(modal => {
             if (modal) {
                 modal.addEventListener('click', e => {
+                    // Close if clicking on the overlay itself
                     if (e.target === modal) modal.classList.remove('active');
                 });
+
+                // Target all elements within the modal that have the data-modal-close attribute
+                // This will include both the 'x' button and any other buttons like the 'Close' button
                 const closeTriggers = modal.querySelectorAll('[data-modal-close]');
                 closeTriggers.forEach(trigger => {
                     trigger.addEventListener('click', () => {
@@ -1790,6 +1764,8 @@
             }
         });
 
+
+        // Helper for API requests
         async function apiRequest(url, method, body = null, isFormData = false) {
             const headers = {};
             if (!isFormData) {
@@ -1805,13 +1781,16 @@
             else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
             else if(url.includes('/api/user/change-password')) submitBtn = changePasswordBtn;
             else if(url.includes('/api/feedback')) submitBtn = submitButton;
+            // The uploadAvatarNowBtn is handled separately for Cloudinary direct upload
+            // So, no need to add it here in generic apiRequest function for enabling/disabling
 
             if(submitBtn) {
                 submitBtn.disabled = true;
+                // Check if it already has an icon, otherwise add one
                 if (!submitBtn.innerHTML.includes('<i class="fas fa-spinner fa-spin"></i>')) {
                     submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${submitBtn.textContent}...`;
                 } else {
-                    submitBtn.innerHTML = submitBtn.innerHTML.replace('...', '...');
+                    submitBtn.innerHTML = submitBtn.innerHTML.replace('...', '...'); // Just keep it as is if already spinning
                 }
             }
 
@@ -1825,27 +1804,34 @@
                 if (!(url.includes('/api/auth/me') && error.message && error.message.toLowerCase().includes("token valid nahi hai"))) {
                     showStylishPopup('error', 'Error', error.message || 'Server communication error.');
                 }
+                // Re-enable button on error, setting original text
                 if(submitBtn) {
                     submitBtn.disabled = false;
+                    // Reset text for specific buttons
                     if(url.includes('login')) submitBtn.textContent = "Login";
                     else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
                     else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
                     else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                    else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    // REMOVED: else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    else if(url.includes('/api/feedback')) submitBtn.textContent = "SUBMIT FEEDBACK"; // Always submit
                 }
                 throw error;
             } finally {
+                // This finally block ensures buttons are re-enabled even if an error occurs but wasn't caught by a specific handler.
                 if(submitBtn && submitBtn.disabled && submitBtn.innerHTML.includes('spinner')) {
+                    // Only reset if it's currently showing spinner/processing text
                     if(url.includes('login')) submitBtn.textContent = "Login";
                     else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
                     else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
                     else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                    else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    // REMOVED: else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    else if(url.includes('/api/feedback')) submitBtn.textContent = "SUBMIT FEEDBACK"; // Always submit
                     submitBtn.disabled = false;
                 }
             }
         }
 
+        // Function to handle common actions after successful authentication
         async function handleAuthResponse(data) {
             if (loginModal) loginModal.classList.remove('active');
             if (signupModal) signupModal.classList.remove('active');
@@ -1853,9 +1839,10 @@
             currentUser = data.user;
             updateUIAfterLogin();
             showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
-            await fetchFeedbacks();
+            await fetchFeedbacks(); // Refresh feedbacks after login
         }
 
+        // Email Login Form Submission
         if (emailLoginForm) {
             emailLoginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1867,10 +1854,13 @@
                 try {
                     const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
                     handleAuthResponse(data);
-                } catch (error) {}
+                } catch (error) {
+                    // Error handled by apiRequest function already, so nothing explicit here
+                }
             });
         }
 
+        // Email Signup Form Submission
         if (emailSignupForm) {
             emailSignupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1890,10 +1880,13 @@
                 try {
                     const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
                     handleAuthResponse(data);
-                } catch (error) {}
+                } catch (error) {
+                    // Error handled
+                }
             });
         }
 
+        // Navigation between login/signup modals
         if (modalCreateAccountLink) {
             modalCreateAccountLink.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1909,10 +1902,11 @@
             });
         }
 
+        // Forgot Password Link Handler
         if (modalForgotPasswordLink) {
             modalForgotPasswordLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (loginModal) loginModal.classList.remove('active');
+                if (loginModal) loginModal.classList.remove('active'); // Close login modal first
                 showStylishPopup('forgot_password', 'Forgot Password?',
                     'Enter your registered email address. We will send you a link to reset your password.',
                     {
@@ -1923,19 +1917,25 @@
                         onConfirm: async () => {
                             const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                             if (!forgotEmailVal) {
+                                // Update message in current popup
                                 stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' +
                                                                 'Enter your registered email address. We will send you a link to reset your password.';
                                 document.getElementById('popup-forgot-email').focus();
-                                return;
+                                return; // Keep popup open
                             }
+                            // Disable button and show loading state
                             const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
                             if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Sending...";}
                             try {
                                 const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
-                                stylishPopupOverlay.classList.remove('active');
+                                stylishPopupOverlay.classList.remove('active'); // Close this popup
                                 showStylishPopup('success', 'Link Sent!', data.message);
                             } catch (error) {
+                                // Error already shown by apiRequest, just re-enable button if it exists
                                 if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
+                                // Optionally, to keep the forgot password dialog open on API error:
+                                // Do not call stylishPopupOverlay.classList.remove('active');
+                                // showStylishPopup was already called by apiRequest for the error.
                             }
                         }
                     }
@@ -1943,11 +1943,15 @@
             });
         }
 
+
+        // Google Sign-In Initialization and Callback
         const triggerGoogleSignIn = () => {
+            // Hide existing modals before showing Google prompt
             if (loginModal) loginModal.classList.remove('active');
             if (signupModal) signupModal.classList.remove('active');
             if (userProfileModal) userProfileModal.classList.remove('active');
             google.accounts.id.prompt((notification) => {
+                // Optional: Handle notification for UX, e.g., if prompt is not displayed
                 if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
                     console.warn('Google Sign-In prompt was not displayed/skipped.');
                 }
@@ -1957,15 +1961,17 @@
         if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
 
         window.onload = function () {
+            // Initialize Google Sign-In only if the script is loaded
             if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleCredentialResponse
+                    callback: handleGoogleCredentialResponse // Our custom callback
                 });
             } else {
                 console.error("Google Identity Services script abhi load nahi hua hai.");
             }
-            checkLoginStatus();
+            checkLoginStatus(); // Check user's login status on page load
+            // Animate elements in
             if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
             if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
             if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
@@ -1975,9 +1981,12 @@
             try {
                 const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
                 handleAuthResponse(data);
-            } catch (error) {}
+            } catch (error) {
+                // Error handled by apiRequest
+            }
         }
 
+        // Check Login Status from local storage and validate token
         async function checkLoginStatus() {
             const token = localStorage.getItem('authToken');
             if (token) {
@@ -1986,6 +1995,7 @@
                     currentUser = userData;
                     updateUIAfterLogin();
                 } catch (error) {
+                    // Token invalid or expired, clear and update UI
                     localStorage.removeItem('authToken');
                     currentUser = null;
                     updateUIAfterLogout();
@@ -1993,17 +2003,22 @@
             } else {
                 updateUIAfterLogout();
             }
-            await fetchFeedbacks();
+            await fetchFeedbacks(); // Always fetch feedbacks regardless of login status
         }
 
+        // Update UI based on logged in user
         function updateUIAfterLogin() {
             if (currentUser) {
-                if(loginIconTrigger) loginIconTrigger.style.display = 'none';
+                if(loginIconTrigger) loginIconTrigger.style.display = 'none'; // Login icon hide karega
+
                 if(userProfileTrigger) {
-                    userProfileTrigger.style.display = 'flex';
-                    userProfileTrigger.classList.remove('hidden');
-                    userProfileTrigger.style.opacity = '1';
-                    userProfileTrigger.style.pointerEvents = 'auto';
+                    userProfileTrigger.style.display = 'flex'; // Explicitly set to flex to ensure it displays
+                    userProfileTrigger.classList.remove('hidden'); // hidden class ko remove karega
+                    // **FIX:** Login hone par opacity aur pointer-events ko reset karein
+                    userProfileTrigger.style.opacity = '1'; // Pura visible karega
+                    userProfileTrigger.style.pointerEvents = 'auto'; // Clickable banayega
+                    
+                    // Set avatar and name in the profile badge
                     if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/40/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
                 }
@@ -2011,57 +2026,65 @@
                 if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/70/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
-                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
-                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+                if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true; // Disable name input when logged in
+                if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure form is visible
 
+                // Set profile modal fields
                 if (profileNameInput) profileNameInput.value = currentUser.name;
                 if (profileEmailInput) profileEmailInput.value = currentUser.email;
                 if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
 
+                // Disable profile edit for Google users' name and password as they log in via Google
                 if (currentUser.loginMethod === 'google') {
                     if(profileNameInput) profileNameInput.disabled = true;
                     if(profileNameInput) profileNameInput.title = "Name is managed by your Google account.";
-                    if(profileEditForm) saveProfileChangesBtn.disabled = true;
-                    if(changePasswordForm) changePasswordForm.style.display = 'none';
+                    if(profileEditForm) saveProfileChangesBtn.disabled = true; // Disable save changes for Google users (only name can be changed, not email or password)
+                    if(changePasswordForm) changePasswordForm.style.display = 'none'; // Hide password change form for Google users
                 } else {
                     if(profileNameInput) profileNameInput.disabled = false;
                     if(profileNameInput) profileNameInput.title = "";
                     if(profileEditForm) saveProfileChangesBtn.disabled = false;
                     if(changePasswordForm) changePasswordForm.style.display = 'block';
                 }
-                saveProfileChangesBtn.disabled = true;
-                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+
+                // Re-enable save changes button only if input fields are changed (handled by event listeners)
+                saveProfileChangesBtn.disabled = true; // Initially disabled until changes are made
+                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; // Hide upload button on initial load
             }
         }
 
+        // Update UI after logout
         function updateUIAfterLogout() {
-            if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
+            if(loginIconTrigger) loginIconTrigger.style.display = 'flex'; // Show login icon
+            // Use userProfileTrigger for the new profile badge
             if(userProfileTrigger) {
-                userProfileTrigger.classList.add('hidden');
+                userProfileTrigger.classList.add('hidden'); // Hide the profile badge
+                // **SOLUTION:** Logout hone par avatar image source clear karein aur opacity/pointer-events set karein
+                // Using a transparent GIF placeholder as a fallback image source
                 if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                userProfileTrigger.style.opacity = '0';
-                userProfileTrigger.style.pointerEvents = 'none';
+                // **ADD THESE TWO LINES FOR A MORE ROBUST HIDE:**
+                userProfileTrigger.style.opacity = '0'; // Pura transparent kar dega
+                userProfileTrigger.style.pointerEvents = 'none'; // Ispe click nahi hoga
             }
-            if(userMenu) userMenu.classList.remove('active');
-            if(userProfileModal) userProfileModal.classList.remove('active');
+            if(userMenu) userMenu.classList.remove('active'); // Close menu on logout
+            if(userProfileModal) userProfileModal.classList.remove('active'); // Close profile modal on logout
 
-            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
+            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Form always visible
             if(nameInputInFeedbackForm) {
                 nameInputInFeedbackForm.value = '';
                 nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
-                nameInputInFeedbackForm.disabled = false;
+                nameInputInFeedbackForm.disabled = false; // Enable name input for guests
             }
-            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
             if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
         }
 
+        // Logout functionality
         if(menuLogoutLink) {
             menuLogoutLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                if(userMenu) userMenu.classList.remove('active');
+                if(userMenu) userMenu.classList.remove('active'); // Close menu
                 showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', {
                     isConfirm: true,
                     confirmText: 'Logout',
@@ -2069,29 +2092,33 @@
                     onConfirm: () => {
                         localStorage.removeItem('authToken');
                         currentUser = null;
+                        // Also disable Google's auto-select for future logins
                         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                             google.accounts.id.disableAutoSelect();
                         }
                         updateUIAfterLogout();
                         showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
-                        fetchFeedbacks();
+                        fetchFeedbacks(); // Refresh feedbacks after logout
                     }
                 });
             });
         }
 
+        // View Profile Link Handler (New)
         if(menuViewProfileLink) {
             menuViewProfileLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                if(userMenu) userMenu.classList.remove('active');
-                if(userProfileModal) userProfileModal.classList.add('active');
-                updateUIAfterLogin();
+                if(userMenu) userMenu.classList.remove('active'); // Close user menu
+                if(userProfileModal) userProfileModal.classList.add('active'); // Open profile modal
+                updateUIAfterLogin(); // Refresh profile data in modal
             });
         }
 
+        // Profile Edit Form - Save Changes (Now primarily for name)
         if(profileEditForm) {
             profileEditForm.addEventListener('input', () => {
-                if (currentUser && currentUser.loginMethod !== 'google') {
+                // Enable save button if any name change detected
+                if (currentUser && currentUser.loginMethod !== 'google') { // Only for email users
                     const nameChanged = profileNameInput.value.trim() !== currentUser.name;
                     saveProfileChangesBtn.disabled = !nameChanged;
                 }
@@ -2114,45 +2141,61 @@
 
                 try {
                     const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
-                    if (data.token) {
-                        localStorage.setItem('authToken', data.token);
+
+                    // Update localStorage with the new token if it was part of the response
+                    if (data.token) { //
+                        localStorage.setItem('authToken', data.token); //
                     }
-                    currentUser.name = data.user.name;
-                    updateUIAfterLogin();
+
+                    currentUser.name = data.user.name; // Update current user name
+                    updateUIAfterLogin(); // Refresh main UI elements and profile modal
                     showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated successfully!');
+
                 } catch (error) {
+                    // Error handled by apiRequest already
                 } finally {
-                    saveProfileChangesBtn.disabled = true;
+                    saveProfileChangesBtn.disabled = true; // Disable after saving
                     saveProfileChangesBtn.textContent = "Save Changes";
                 }
             });
         }
 
+        // Avatar Upload Input Change Listener (triggers UPLOAD AVATAR button)
         if (avatarUploadInput) {
             avatarUploadInput.addEventListener('change', () => {
                 if (avatarUploadInput.files.length > 0) {
+                    // Display selected image immediately
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         profileDisplayAvatar.src = e.target.result;
                     };
                     reader.readAsDataURL(avatarUploadInput.files[0]);
 
+                    // Show the dedicated UPLOAD AVATAR button
                     if(uploadAvatarNowBtn) {
                         uploadAvatarNowBtn.style.display = 'block';
-                        uploadAvatarNowBtn.disabled = false;
-                        uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> UPLOAD AVATAR';
+                        uploadAvatarNowBtn.disabled = false; // Enable it
+                        uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> UPLOAD AVATAR'; // Reset text
                     }
+                    // Disable save changes button as avatar upload is now a separate process
                     saveProfileChangesBtn.disabled = true;
+
                 } else {
+                    // If no file selected, hide UPLOAD AVATAR button
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                    // Revert to current user avatar if no file selected
                     if (currentUser) {
                         profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
-                        profileEditForm.dispatchEvent(new Event('input'));
+                        // Re-evaluate if save button should be enabled based on name changes only
+                        profileEditForm.dispatchEvent(new Event('input')); // Trigger input event to re-check name
                     }
                 }
             });
         }
 
+        // **********************************************
+        // NEW: UPLOAD AVATAR BUTTON CLICK HANDLER (Direct to Cloudinary)
+        // **********************************************
         if (uploadAvatarNowBtn) {
             uploadAvatarNowBtn.addEventListener('click', async () => {
                 if (!currentUser) {
@@ -2165,7 +2208,7 @@
                 const file = avatarUploadInput.files[0];
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); // Use your unsigned upload preset
 
                 uploadAvatarNowBtn.disabled = true;
                 uploadAvatarNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloudinary...';
@@ -2188,24 +2231,30 @@
                             uploadProgressBar.style.display = 'none';
                             if (xhr.status >= 200 && xhr.status < 300) {
                                 const cloudinaryResponse = JSON.parse(xhr.responseText);
-                                const imageUrl = cloudinaryResponse.secure_url;
+                                const imageUrl = cloudinaryResponse.secure_url; // This is the URL from Cloudinary
 
+                                // Now, send this URL to your backend to update the user's profile
                                 try {
                                     const backendUpdateResponse = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', {
-                                        name: currentUser.name,
-                                        avatarUrl: imageUrl
+                                        name: currentUser.name, // Keep current name or send what's in the input field
+                                        avatarUrl: imageUrl // Send the Cloudinary URL
                                     });
 
+                                    // FIX STARTS HERE: Save the new token received from backend
                                     if (backendUpdateResponse.token) {
                                         localStorage.setItem('authToken', backendUpdateResponse.token);
                                     }
+                                    // FIX ENDS HERE
+
+                                    // Update currentUser and UI with new avatar URL
                                     currentUser.avatarUrl = backendUpdateResponse.user.avatarUrl;
+                                    // Explicitly update the profile modal avatar display
                                     if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl;
 
-                                    updateUIAfterLogin();
-                                    await fetchFeedbacks();
-                                    avatarUploadInput.value = '';
-                                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                                    updateUIAfterLogin(); // Re-call this to update the corner trigger and menu avatar
+                                    await fetchFeedbacks(); // Re-fetch feedbacks to update all avatars in the list
+                                    avatarUploadInput.value = ''; // Clear the file input after successful upload
+                                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; // Hide UPLOAD button
 
                                     showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been uploaded and profile updated successfully.');
                                     resolve();
@@ -2215,6 +2264,7 @@
                                 }
                             } else {
                                 const errorResponse = JSON.parse(xhr.responseText);
+                                // Cloudinary error message will be in errorResponse.error.message
                                 showStylishPopup('error', 'Cloudinary Upload Error!', errorResponse.error.message || 'Avatar upload failed.');
                                 reject(new Error(errorResponse.error.message));
                             }
@@ -2224,10 +2274,11 @@
                             showStylishPopup('error', 'Network Error!', 'Avatar upload failed due to network issues.');
                             reject(new Error('Network error during avatar upload.'));
                         };
-                        xhr.send(formData);
+                        xhr.send(formData); // Send the FormData directly to Cloudinary
                     });
 
                 } catch (error) {
+                    // Any error during Cloudinary upload or backend update will be caught here
                     console.error("Overall avatar upload process failed:", error);
                 } finally {
                     uploadAvatarNowBtn.disabled = false;
@@ -2236,6 +2287,8 @@
             });
         }
 
+
+        // Change Password Form Submission
         if(changePasswordForm) {
             changePasswordForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -2266,12 +2319,14 @@
                 try {
                     const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword, newPassword });
                     showStylishPopup('success', 'Password Changed!', data.message);
+                    // Clear password fields
                     currentPasswordInput.value = '';
                     newPasswordProfileInput.value = '';
-                    newPasswordProfileInput.classList.remove('is-valid', 'is-invalid');
+                    newPasswordProfileInput.classList.remove('is-valid', 'is-invalid'); // Clear validation styles
                     confirmNewPasswordProfileInput.value = '';
-                    confirmNewPasswordProfileInput.classList.remove('is-valid', 'is-invalid');
+                    confirmNewPasswordProfileInput.classList.remove('is-valid', 'is-invalid'); // Clear validation styles
                 } catch (error) {
+                    // Error handled by apiRequest
                 } finally {
                     changePasswordBtn.disabled = false;
                     changePasswordBtn.textContent = "Change Password";
@@ -2279,6 +2334,7 @@
             });
         }
 
+        // --- Star Rating Functionality ---
         starsElements.forEach(star => {
             star.addEventListener('click', () => {
                 const value = parseInt(star.dataset.value);
@@ -2289,11 +2345,11 @@
 
             star.addEventListener('mouseover', () => {
                 const value = parseInt(star.dataset.value);
-                updateStarVisuals(value, true);
+                updateStarVisuals(value, true); // Highlight up to this star
             });
 
             star.addEventListener('mouseout', () => {
-                updateStarVisuals(currentSelectedRating);
+                updateStarVisuals(currentSelectedRating); // Revert to selected rating or none
             });
         });
 
@@ -2306,88 +2362,88 @@
                     } else {
                         star.classList.remove('highlighted');
                     }
-                    star.classList.remove('selected');
+                    star.classList.remove('selected'); // Remove selected class during hover
                 } else {
                     if (starValue <= highlightValue) {
                         star.classList.add('selected');
                     } else {
                         star.classList.remove('selected');
                     }
-                    star.classList.remove('highlighted');
+                    star.classList.remove('highlighted'); // Remove highlighted class after hover
                 }
             });
         }
 
+        // Submit Feedback (Removed Edit Logic)
         if(submitButton) submitButton.addEventListener('click', async () => {
             const feedbackContent = feedbackTextarea.value.trim();
-            const ratingValue = parseInt(ratingInput.value); // Ensure rating is an integer here
-
+            const ratingValue = ratingInput.value;
             let nameValue = nameInputInFeedbackForm.value.trim();
 
             if (!currentUser && !nameValue) {
                 return showStylishPopup('error', 'Name Required', 'If you are not logged in, please enter your name.');
             }
-            // Add validation for rating range here before sending to backend
-            if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
-                 return showStylishPopup('error', 'Invalid Rating!', 'Please select a star rating between 1 and 5.');
+            if (!feedbackContent || ratingValue === '0') {
+                return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');
             }
-            if (!feedbackContent) {
-                return showStylishPopup('error', 'Empty Feedback!', 'Feedback message is required!');
-            }
-
+            // If not logged in, prompt to log in via the icon
             if (!currentUser) {
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
                 return;
             }
 
-            let feedbackPayload = { feedback: feedbackContent, rating: ratingValue };
-
-            const url = isEditing ? `<span class="math-inline">\{API\_FEEDBACK\_URL\}/</span>{currentEditFeedbackId}` : API_FEEDBACK_URL;
-            const method = isEditing ? 'PUT' : 'POST';
+            let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
+            
+            // Always use POST for submission (no edit)
+            const url = API_FEEDBACK_URL;
+            const method = 'POST';
 
             submitButton.disabled = true;
-            submitButton.textContent = isEditing ? "UPDATING..." : "SUBMITTING...";
+            submitButton.textContent = "SUBMITTING..."; // Simplified text
 
             try {
                 const data = await apiRequest(url, method, feedbackPayload);
-                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message);
-                resetFeedbackForm();
-                await fetchFeedbacks();
+                showStylishPopup('success', 'Feedback Submitted!', data.message);
+                resetFeedbackForm(); // Clear form after submission
+                await fetchFeedbacks(); // Refresh feedbacks to show new one
             }
             catch (error) {
+                // Error handled by apiRequest function
             }
             finally {
                 submitButton.disabled = false;
-                submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                submitButton.textContent = "SUBMIT FEEDBACK";
             }
         });
 
+        // Reset Feedback Form
         function resetFeedbackForm() {
-            const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
             if (currentUser) {
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
+                nameInputInFeedbackForm.value = currentUser.name;
+                feedbackFormUsernameSpan.textContent = currentUser.name;
+                nameInputInFeedbackForm.disabled = true; // Keep disabled if logged in
             } else {
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = '';
-                if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = false;
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.placeholder = 'Your name here...';
+                nameInputInFeedbackForm.value = '';
+                feedbackFormUsernameSpan.textContent = 'Guest';
+                nameInputInFeedbackForm.disabled = false;
+                nameInputInFeedbackForm.placeholder = 'Your name here...';
             }
             feedbackTextarea.value = '';
             ratingInput.value = '0';
             currentSelectedRating = 0;
-            updateStarVisuals(0);
-            submitButton.textContent = 'SUBMIT FEEDBACK';
-            isEditing = false;
-            currentEditFeedbackId = null;
+            updateStarVisuals(0); // Reset stars
+            submitButton.textContent = 'SUBMIT FEEDBACK'; // Reset button text
+            // REMOVED: isEditing = false;
+            // REMOVED: currentEditFeedbackId = null;
         }
 
+        // Fetch and Display Feedbacks
         async function fetchFeedbacks() {
              try {
                 const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);
-                console.log("DEBUG: Fetched raw feedbacks data:", data);
+                console.log("DEBUG: Fetched raw feedbacks data:", data); // Check the raw data received from server
 
+                // Clear previous feedbacks before adding new ones
                 const childrenToRemove = Array.from(feedbackListContainer.children);
                 childrenToRemove.forEach(child => {
                     if (child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2') {
@@ -2395,6 +2451,7 @@
                     }
                 });
 
+                // Re-append averageRatingDisplayEl and h2Title if they were implicitly removed or if this is the first render
                 if (!feedbackListContainer.contains(averageRatingDisplayEl)) {
                     feedbackListContainer.prepend(averageRatingDisplayEl);
                 }
@@ -2412,13 +2469,16 @@
                     msgP.style.padding='20px';
                     msgP.style.color='rgba(255,255,255,0.7)';
                     feedbackListContainer.appendChild(msgP);
-                    updateAverageRating(0, 0);
+                    updateAverageRating(0, 0); // Display 0 average if no feedbacks
                 } else {
                     const totalRatings = data.reduce((sum, fb) => {
+                        // Debugging logs for each rating
+                        console.log(`DEBUG: Processing feedback ID: ${fb._id}, Rating: ${fb.rating}, Type: ${typeof fb.rating}`);
+                        // Ensure rating is a number before adding, or convert if it's a string
                         const ratingAsNumber = typeof fb.rating === 'number' ? fb.rating : parseInt(fb.rating);
                         if (isNaN(ratingAsNumber)) {
                             console.warn(`WARN: Feedback ID: ${fb._id} has invalid rating value: ${fb.rating}. Treating as 0 for average calculation.`);
-                            return sum;
+                            return sum; // Don't add to sum if it's invalid
                         }
                         return sum + ratingAsNumber;
                     }, 0);
@@ -2429,26 +2489,28 @@
                     data.forEach((fb, index) => addFeedbackToDOM(fb, index));
                 }
             } catch (err) {
-                console.error("Error fetching feedbacks:", err);
+                console.error("Error fetching feedbacks:", err); // Log the full error
             }
         }
 
+        // Update Average Rating Display
         function updateAverageRating(avg, count) {
             const avgNum = parseFloat(avg);
-            let starsHtml = '☆☆☆☆☆';
+            let starsHtml = '☆☆☆☆☆'; // Default to empty stars
             if (!isNaN(avgNum) && avgNum > 0) {
                 const fullStars = Math.floor(avgNum);
-                const halfStar = (avgNum % 1) >= 0.5 ? '★' : '';
+                const halfStar = (avgNum % 1) >= 0.5 ? '★' : ''; // Simple half star logic
                 starsHtml = '★'.repeat(fullStars) + halfStar + '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0));
             }
             averageRatingDisplayEl.innerHTML = `
         <div class="average-rating-container">
             <h3>Overall Average Rating</h3>
-            <div class="average-number"><span class="math-inline">\{isNaN\(avgNum\) ? '0\.0' \: avgNum\.toFixed\(1\)\}</div\>
-<div class\="average\-stars"\></span>{starsHtml}</div>
+            <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
+            <div class="average-stars">${starsHtml}</div>
             <div class="total-feedbacks-count">(${count} feedbacks)</div>
         </div>
     `;
+            // Animate the average rating container in if it's new/hidden
             setTimeout(() => {
                 const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
                 if (avgContainer && !avgContainer.classList.contains('animate-in')) {
@@ -2457,16 +2519,18 @@
             }, 50);
         }
 
+        // Add Feedback to DOM (Removed Edit Button HTML & Logic)
         function addFeedbackToDOM(fbData, index) {
             const item = document.createElement('div');
             item.className = 'feedback-item';
-            item.dataset.feedbackId = fbData._id;
+            // REMOVED: item.dataset.feedbackId = fbData._id; // Store ID for potential updates/deletions
 
             const avatarImg = document.createElement('img');
             avatarImg.className = 'avatar-img';
             const defaultAvatarChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
             avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             avatarImg.alt = fbData.name || 'User Avatar';
+            // Fallback for broken image links
             avatarImg.onerror = function() {
                 this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             };
@@ -2477,21 +2541,18 @@
             const strongName = document.createElement('strong');
             let nameContent = fbData.name || 'Anonymous';
             let userTypeTag = '';
+            // Use userId.loginMethod if available, otherwise fallback based on googleIdSubmitter or default to email
             if (fbData.userId && fbData.userId.loginMethod) {
                 userTypeTag = fbData.userId.loginMethod === 'google' ? `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>` : `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
-            } else if (fbData.googleIdSubmitter) {
+            } else if (fbData.googleIdSubmitter) { // Fallback for older feedbacks or if userId.loginMethod not populated
                 userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
             } else {
                 userTypeTag = `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
             }
             strongName.innerHTML = `${nameContent} ${userTypeTag}`;
 
-            if (fbData.isEdited) {
-                const editedTag = document.createElement('span');
-                editedTag.className = 'edited-tag';
-                editedTag.textContent = 'Edited';
-                strongName.appendChild(editedTag);
-            }
+
+            // REMOVED: if (fbData.isEdited) { ... } (edited-tag HTML)
 
             const starsDiv = document.createElement('div');
             starsDiv.className = 'feedback-stars';
@@ -2503,65 +2564,26 @@
             const timestampDiv = document.createElement('div');
             timestampDiv.className = 'feedback-timestamp';
             try {
+                // Indian Time Zone for timestamp
                 timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
             } catch(e) {
-                timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
+                timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; // Fallback
             }
 
             detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
 
-            const editButton = document.createElement('button');
-            editButton.className = 'edit-feedback-btn';
-            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-            editButton.title = 'Edit this feedback';
+            // REMOVED: Edit Button HTML creation and event listener
 
-            const feedbackOwnerId = getFeedbackOwnerId(fbData.userId);
-            editButton.disabled = !(currentUser && feedbackOwnerId && currentUser.userId === feedbackOwnerId);
-
-            editButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                
-                const clickCheckOwnerId = getFeedbackOwnerId(fbData.userId);
-                if (!currentUser || !clickCheckOwnerId || currentUser.userId !== clickCheckOwnerId) {
-                    return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
-                }
-                
-                showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
-                
-                const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
-
-                if (nameInputInFeedbackForm) {
-                    nameInputInFeedbackForm.value = fbData.name;
-                    nameInputInFeedbackForm.disabled = true;
-                }
-                if (feedbackFormUsernameSpan) {
-                     feedbackFormUsernameSpan.textContent = fbData.name;
-                }
-               
-                feedbackTextarea.value = fbData.feedback;
-                currentSelectedRating = fbData.rating;
-                ratingInput.value = fbData.rating;
-                updateStarVisuals(fbData.rating);
-
-                submitButton.textContent = 'UPDATE FEEDBACK';
-                isEditing = true;
-                currentEditFeedbackId = fbData._id;
-
-                if(feedbackFormContainer) {
-                    feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-            item.appendChild(editButton);
-
+            // Admin Reply (if exists)
             if (fbData.replies && fbData.replies.length > 0) {
-                const latestReply = fbData.replies[fbData.replies.length - 1];
+                const latestReply = fbData.replies[fbData.replies.length - 1]; // Get the most recent reply
                 if (latestReply && latestReply.text) {
                     const adminReplyDiv = document.createElement('div');
                     adminReplyDiv.className = 'admin-reply';
 
                     const adminAvatar = document.createElement('img');
                     adminAvatar.className = 'admin-reply-avatar';
-                    adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+                    adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Nobita's avatar (or specific admin avatar from backend)
                     adminAvatar.alt = 'Admin';
 
                     const adminReplyContent = document.createElement('div');
@@ -2572,7 +2594,7 @@
                     } catch(e) {
                         replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')})`;
                     }
-                    adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> <span class="math-inline">\{latestReply\.text\} <span class\="reply\-timestamp"\></span>{replyTimestampText}</span>`;
+                    adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
 
                     adminReplyDiv.append(adminAvatar, adminReplyContent);
                     detailsDiv.appendChild(adminReplyDiv);
@@ -2580,12 +2602,14 @@
             }
 
             item.append(avatarImg, detailsDiv);
-            feedbackListContainer.appendChild(item);
+            feedbackListContainer.appendChild(item); // Add the feedback item to the list
         }
 
-        updateUIAfterLogout();
-        checkLoginStatus();
+        // Initial calls on load
+        updateUIAfterLogout(); // Set initial UI state (guest mode)
+        checkLoginStatus(); // Check if user is already logged in via token
     });
 </script>
-</body/>
+
+</body>
 </html>
