@@ -276,7 +276,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // Multer setup for file uploads (max 5MB)
 const storage = multer.memoryStorage(); // Store files in memory as buffers
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
     fileFilter: (req, file, cb) => {
@@ -431,7 +431,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
     try { 
         // Populate userId to get loginMethod for distinguishing user types in frontend
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 }); 
+        // Also select name and email for display in admin panel and to correctly reflect user name in feedback list.
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email' }).sort({ timestamp: -1 }); 
         res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
@@ -439,27 +440,98 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
-    let feedbackData = { name: req.user.name, avatarUrl: req.user.avatarUrl, userId: req.user.userId, feedback, rating: parseInt(rating), userIp, isEdited: false };
-    if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (err) { console.error("Error fetching user for googleIdSubmitter:", err); }}
-    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
-    } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
+    
+    // Fetch the latest user info from DB to ensure name and avatar are current
+    const userFromDb = await User.findById(req.user.userId);
+    if (!userFromDb) {
+        return res.status(404).json({ message: 'User not found in database.' });
+    }
+
+    let feedbackData = { 
+        name: userFromDb.name, // Use name from DB
+        avatarUrl: userFromDb.avatarUrl, // Use avatarUrl from DB
+        userId: userFromDb._id, // Use userId from DB
+        feedback, 
+        rating: parseInt(rating), 
+        userIp, 
+        isEdited: false 
+    };
+    
+    if (userFromDb.loginMethod === 'google' && userFromDb.googleId) { 
+        feedbackData.googleIdSubmitter = userFromDb.googleId; 
+    }
+
+    try { 
+        const newFeedback = new Feedback(feedbackData); 
+        await newFeedback.save(); 
+        // Re-fetch with populate to send back consistent data structure as GET /feedbacks
+        const populatedFeedback = await Feedback.findById(newFeedback._id).populate({ path: 'userId', select: 'loginMethod name email' });
+
+        res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: populatedFeedback });
+    } catch (error) { 
+        console.error("Feedback save error:", error); 
+        res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });
+    }
 });
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
-    const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
+    const feedbackId = req.params.id; 
+    const { feedback, rating } = req.body; 
+    const loggedInJwtUser = req.user; // User info from JWT
+
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
+    
     try {
         const existingFeedback = await Feedback.findById(feedbackId);
         if (!existingFeedback) return res.status(404).json({ message: 'Yeh feedback ID mila nahi.' });
-        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
-        const currentNameFromJwt = loggedInJwtUser.name; const parsedRating = parseInt(rating);
-        const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating || existingFeedback.name !== currentNameFromJwt || existingFeedback.avatarUrl !== loggedInJwtUser.avatarUrl;
-        if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp };}
-            existingFeedback.name = currentNameFromJwt; existingFeedback.feedback = feedback; existingFeedback.rating = parsedRating; existingFeedback.timestamp = Date.now(); existingFeedback.isEdited = true; existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl;
+
+        // Ensure the logged-in user is the creator of the feedback
+        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) {
+            return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
         }
+
+        // Fetch the latest user info from DB to ensure name and avatar are current
+        const userFromDb = await User.findById(loggedInJwtUser.userId);
+        if (!userFromDb) {
+            return res.status(404).json({ message: 'User not found in database for update verification.' });
+        }
+
+        const parsedRating = parseInt(rating);
+
+        // Check if content actually changed
+        const contentActuallyChanged = 
+            existingFeedback.feedback !== feedback || 
+            existingFeedback.rating !== parsedRating ||
+            existingFeedback.name !== userFromDb.name || // Compare with current user name from DB
+            existingFeedback.avatarUrl !== userFromDb.avatarUrl; // Compare with current user avatar from DB
+
+        if (contentActuallyChanged) {
+            if (!existingFeedback.originalContent) { 
+                // Save original content only once if this is the first edit
+                existingFeedback.originalContent = { 
+                    name: existingFeedback.name, 
+                    feedback: existingFeedback.feedback, 
+                    rating: existingFeedback.rating, 
+                    timestamp: existingFeedback.timestamp 
+                };
+            }
+            existingFeedback.name = userFromDb.name; // Update name from current user profile
+            existingFeedback.avatarUrl = userFromDb.avatarUrl; // Update avatar from current user profile
+            existingFeedback.feedback = feedback; 
+            existingFeedback.rating = parsedRating; 
+            existingFeedback.timestamp = Date.now(); // Update timestamp to current time for edit
+            existingFeedback.isEdited = true; 
+        }
+        
         await existingFeedback.save();
-        res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
-    } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
+
+        // Re-fetch with populate to send back consistent data structure as GET /feedbacks
+        const populatedFeedback = await Feedback.findById(existingFeedback._id).populate({ path: 'userId', select: 'loginMethod name email' });
+
+        res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: populatedFeedback });
+    } catch (error) { 
+        console.error(`Feedback update error (ID: ${feedbackId}):`, error); 
+        res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });
+    }
 });
 
 // Admin Panel Routes
