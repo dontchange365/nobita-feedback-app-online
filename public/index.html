@@ -77,7 +77,7 @@
             height: 48px; /* Fixed height for circular shape */
             background-color: var(--secondary-color);
             color: var(--primary-color);
-            border: 2px solid var(--primary-color);
+            border: 1.5px solid var(--primary-color); /* Thinner outline */
             display: none; /* Hidden by default, shown by JS */
             align-items: center;
             justify-content: center;
@@ -90,9 +90,8 @@
             z-index: 1000; /* Ensure it's above other content but below modals */
         }
 
-        /* REMOVED: .corner-trigger.avatar-mode as the base .corner-trigger is now circular */
-        /* If you still want distinct sizing/styling for avatar-mode, re-add specific overrides here.
-           For now, both will have the same circular 48px look. */
+        /* Removed .corner-trigger.avatar-mode as the base .corner-trigger is now circular and scaled */
+        /* If you still want distinct sizing/styling for avatar-mode, re-add specific overrides here */
 
         .corner-trigger:hover {
             transform: scale(1.08);
@@ -100,8 +99,7 @@
         }
 
         #login-icon-trigger .fas {
-            font-size: 1.8em; /* Adjusted icon size to better fill the circle */
-            /* margin-right: 5px; REMOVED as icon is now centered */
+            font-size: 2.2em; /* Increased icon size to make icon appear larger within its container */
         }
 
         #user-avatar-trigger img {
@@ -1177,7 +1175,7 @@
                 height:45px;
             }
             #login-icon-trigger .fas {
-                font-size: 1.7em; /* Adjust icon size for smaller trigger */
+                font-size: 2em; /* Adjust icon size for smaller trigger to look good */
             }
 
             .auth-modal-content{
