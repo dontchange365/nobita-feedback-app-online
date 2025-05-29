@@ -371,716 +371,6 @@
       100% { opacity: 1; transform: translateX(0) scale(1);}
     }
     /* More to be added in next parts... */
-  </style>
-</head>
-<body>
-  <!-- ======== NAVIGATION BAR ======== -->
-  <nav class="navbar">
-    <div class="nav-left">
-      <div class="navbar-logo" id="navbar-logo" tabindex="0" aria-label="Reload homepage">
-        <i data-lucide="stars"></i>
-        NobitaFeedback
-      </div>
-    </div>
-    <div class="nav-right">
-      <!-- Bell/Notifications -->
-      <button class="nav-btn" id="notifications-btn" aria-label="Notifications">
-        <i data-lucide="bell"></i>
-        <span id="bell-badge" class="bell-badge" style="display:none;">0</span>
-      </button>
-      <!-- Theme toggle -->
-      <button class="nav-btn theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Theme">
-        <i data-lucide="moon"></i>
-      </button>
-      <!-- Language toggle -->
-      <button class="nav-btn" id="language-toggle-btn" aria-label="Switch Language">
-        <i data-lucide="globe"></i>
-      </button>
-      <!-- User icon or avatar (dynamic) -->
-      <button class="nav-btn" id="login-icon-trigger" aria-label="Login" style="display:flex;">
-        <i data-lucide="user"></i>
-      </button>
-      <button class="nav-avatar-btn" id="user-avatar-trigger" aria-label="Profile" style="display:none;">
-        <img src="" class="nav-avatar-img" id="nav-avatar-img" alt="User Avatar" />
-        <span class="avatar-badge" id="avatar-badge" style="display:none;"></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- ======== MODALS ======== -->
-
-  <!-- ==== LOGIN/SIGNUP MODAL ==== -->
-  <div class="modal-overlay" id="auth-modal-overlay" style="display:none;">
-    <div class="glass-modal animate__animated" id="auth-modal" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="auth-modal-title">
-      <button class="modal-close-btn" id="auth-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
-      <h2 class="modal-title" id="auth-modal-title">Sign in / Register</h2>
-      <!-- Tabs, form, Google btn will come in PART 2 -->
-    </div>
-  </div>
-        <!-- ==== LOGIN / SIGNUP TABS ==== -->
-      <div style="display:flex;justify-content:center;gap:18px;margin-bottom:10px;">
-        <button id="auth-tab-login" type="button" class="auth-tab-btn" aria-selected="true" style="background:none;border:none;color:#fff;font-weight:bold;font-size:1.16em;letter-spacing:1.2px;padding:7px 20px;border-bottom:3px solid #6366f1;outline:none;cursor:pointer;">Login</button>
-        <button id="auth-tab-signup" type="button" class="auth-tab-btn" aria-selected="false" style="background:none;border:none;color:#d8d8fc;font-weight:600;font-size:1.09em;letter-spacing:1px;padding:7px 20px;border-bottom:3px solid transparent;outline:none;cursor:pointer;">Signup</button>
-      </div>
-      <form id="auth-login-form" autocomplete="on">
-        <div class="floating-label-group">
-          <input type="email" id="login-email" name="email" required placeholder=" " autocomplete="username" spellcheck="false" />
-          <label for="login-email">Email</label>
-        </div>
-        <div class="floating-label-group">
-          <input type="password" id="login-password" name="password" required placeholder=" " minlength="6" autocomplete="current-password" />
-          <label for="login-password">Password</label>
-          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="login-password-toggle"><i data-lucide="eye"></i></button>
-        </div>
-        <div style="text-align:right;margin-top:-12px;margin-bottom:12px;">
-          <a href="#" id="forgot-password-link" style="color:#9db6f9;font-size:0.96em;text-decoration:underline;cursor:pointer;">Forgot password?</a>
-        </div>
-        <button type="submit" style="width:100%;margin-top:6px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Log In <i data-lucide="log-in" style="vertical-align:middle;margin-left:7px;"></i></button>
-      </form>
-      <form id="auth-signup-form" autocomplete="on" style="display:none;">
-        <div class="floating-label-group">
-          <input type="text" id="signup-name" name="name" required placeholder=" " maxlength="32" autocomplete="name" />
-          <label for="signup-name">Name</label>
-        </div>
-        <div class="floating-label-group">
-          <input type="email" id="signup-email" name="email" required placeholder=" " autocomplete="email" />
-          <label for="signup-email">Email</label>
-        </div>
-        <div class="floating-label-group">
-          <input type="password" id="signup-password" name="password" required placeholder=" " minlength="6" autocomplete="new-password" />
-          <label for="signup-password">Password</label>
-          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="signup-password-toggle"><i data-lucide="eye"></i></button>
-        </div>
-        <button type="submit" style="width:100%;margin-top:8px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Sign Up <i data-lucide="user-plus" style="vertical-align:middle;margin-left:7px;"></i></button>
-      </form>
-
-      <!-- ==== Google Sign-In Button ==== -->
-      <button class="google-signin-btn" id="google-signin-btn" type="button">
-        <svg class="google-logo-svg" viewBox="0 0 32 32"><g><path fill="#4285F4" d="M16.64 13.204v3.284h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-4.868 3.9-8.828 8.68-8.828 2.72 0 4.54 1.088 5.58 2.016l3.8-3.804C22.88 1.468 20.1 0 16.64 0c-8.04 0-14.58 6.552-14.58 14.628 0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28 0-.96-.108-1.7-.24-2.436H16.64z"/><path fill="#34A853" d="M3.44 8.868l3.24 2.38c.892-1.86 2.16-3.372 3.88-4.336L6.32 4.052A12.39 12.39 0 0 0 3.44 8.868z"/><path fill="#FBBC05" d="M16.64 4.8c2.1 0 3.684.72 4.544 1.376l3.408-3.404C22.88 1.468 20.1 0 16.64 0 11.252 0 6.436 2.904 3.44 8.868l3.24 2.38C8.6 7.852 12.04 4.8 16.64 4.8z"/><path fill="#EA4335" d="M29.44 14.388c0-.916-.08-1.632-.24-2.436H16.64v4.02h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-1.372.28-2.68.78-3.84l-3.24-2.38C2.1 9.72 1.4 12.084 1.4 14.628c0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28z"/></g></svg>
-        Sign in with Google
-      </button>
-    </div>
-  </div>
-
-  <!-- ======= TOAST STACK ======= -->
-  <div class="toast-stack" id="toast-stack"></div>
-
-  <!-- ======= MAIN APP CONTENT (rest will come next) ======= -->
-  <div class="main-app-content" id="main-app-content">
-
-  <!-- ... PART 3 onwards ... -->
-
-  </div>
-  
-  <!-- ============ AUTH & UI SCRIPT PART 1 ============ -->
-  <script>
-    // Lucide icons init
-    window.lucide && window.lucide.createIcons();
-
-    // === Modal, Auth Tabs, Password Toggle, Toast ===
-    const loginIconTrigger = document.getElementById('login-icon-trigger');
-    const userAvatarTrigger = document.getElementById('user-avatar-trigger');
-    const navAvatarImg = document.getElementById('nav-avatar-img');
-    const avatarBadge = document.getElementById('avatar-badge');
-    const authModalOverlay = document.getElementById('auth-modal-overlay');
-    const authModal = document.getElementById('auth-modal');
-    const authModalCloseBtn = document.getElementById('auth-modal-close-btn');
-    const toastStack = document.getElementById('toast-stack');
-    const authTabLogin = document.getElementById('auth-tab-login');
-    const authTabSignup = document.getElementById('auth-tab-signup');
-    const loginForm = document.getElementById('auth-login-form');
-    const signupForm = document.getElementById('auth-signup-form');
-    const loginPassword = document.getElementById('login-password');
-    const loginPasswordToggle = document.getElementById('login-password-toggle');
-    const signupPassword = document.getElementById('signup-password');
-    const signupPasswordToggle = document.getElementById('signup-password-toggle');
-    const googleSigninBtn = document.getElementById('google-signin-btn');
-    const modalOverlay = document.getElementById('auth-modal-overlay');
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-
-    // --- Modal Open/Close Functions ---
-    function openAuthModal(tab = "login") {
-      authModalOverlay.style.display = 'flex';
-      setTimeout(() => authModalOverlay.classList.remove('hide'), 10);
-      if(tab === "login") {
-        switchAuthTab("login");
-      } else {
-        switchAuthTab("signup");
-      }
-      setTimeout(() => {
-        // Focus first input
-        const input = tab === "login" ? document.getElementById('login-email') : document.getElementById('signup-name');
-        if(input) input.focus();
-      }, 150);
-    }
-    function closeAuthModal() {
-      authModalOverlay.classList.add('hide');
-      setTimeout(() => { authModalOverlay.style.display = 'none'; }, 260);
-    }
-    // NavBar click triggers
-    loginIconTrigger.addEventListener('click', () => openAuthModal('login'));
-    authModalCloseBtn.addEventListener('click', closeAuthModal);
-    // ESC close
-    document.addEventListener('keydown', (e) => {
-      if(e.key === "Escape" && authModalOverlay.style.display === 'flex') closeAuthModal();
-    });
-    // Overlay click close
-    authModalOverlay.addEventListener('click', e => {
-      if(e.target === authModalOverlay) closeAuthModal();
-    });
-
-    // --- Auth Tab Switch Logic ---
-    function switchAuthTab(tab) {
-      if(tab === "login") {
-        authTabLogin.setAttribute('aria-selected', "true");
-        authTabLogin.style.color = "#fff";
-        authTabLogin.style.borderBottom = "3px solid #6366f1";
-        authTabSignup.setAttribute('aria-selected', "false");
-        authTabSignup.style.color = "#d8d8fc";
-        authTabSignup.style.borderBottom = "3px solid transparent";
-        loginForm.style.display = "";
-        signupForm.style.display = "none";
-      } else {
-        authTabLogin.setAttribute('aria-selected', "false");
-        authTabLogin.style.color = "#d8d8fc";
-        authTabLogin.style.borderBottom = "3px solid transparent";
-        authTabSignup.setAttribute('aria-selected', "true");
-        authTabSignup.style.color = "#fff";
-        authTabSignup.style.borderBottom = "3px solid #6366f1";
-        loginForm.style.display = "none";
-        signupForm.style.display = "";
-      }
-      window.lucide && window.lucide.createIcons();
-    }
-    authTabLogin.addEventListener('click', ()=>switchAuthTab('login'));
-    authTabSignup.addEventListener('click', ()=>switchAuthTab('signup'));
-
-    // --- Password Show/Hide ---
-    loginPasswordToggle.addEventListener('click', () => {
-      loginPassword.type = loginPassword.type === "password" ? "text" : "password";
-      loginPasswordToggle.innerHTML = loginPassword.type === "password"
-        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
-      window.lucide && window.lucide.createIcons();
-    });
-    signupPasswordToggle.addEventListener('click', () => {
-      signupPassword.type = signupPassword.type === "password" ? "text" : "password";
-      signupPasswordToggle.innerHTML = signupPassword.type === "password"
-        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
-      window.lucide && window.lucide.createIcons();
-    });
-
-    // --- Toast Notification System ---
-    function showToast({ message, type = "info", icon = "info", duration = 3200 }) {
-      const toast = document.createElement('div');
-      toast.className = `toast-msg toast-${type}`;
-      toast.innerHTML = `<i data-lucide="${icon}"></i> <span>${message}</span>`;
-      toastStack.appendChild(toast);
-      window.lucide && window.lucide.createIcons({ icons: [toast.querySelector("i")] });
-      setTimeout(() => {
-        toast.classList.add('animate__fadeOutRight');
-        setTimeout(()=> toast.remove(), 460);
-      }, duration);
-    }
-
-    // Example: showToast({ message: "Welcome, Nobita!", type: "success", icon: "stars" });
-    
-    // --- CONSTANTS ---
-    const API_BASE = "https://nobita-feedback-app-online.onrender.com";
-    const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
-
-    // State: Current user
-    let currentUser = null;
-    let jwtToken = localStorage.getItem('token') || null;
-
-    // --- Auth Form Submit ---
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = loginPassword.value;
-      if (!email || !password) return showToast({ message: "Email aur password zaroori hai.", type: "error", icon: "alert-triangle" });
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Login error");
-        jwtToken = data.token;
-        localStorage.setItem('token', jwtToken);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        currentUser = data.user;
-        showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
-        closeAuthModal();
-        updateUIAfterLogin();
-      } catch (err) {
-        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-      }
-    });
-
-    signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('signup-name').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const password = signupPassword.value;
-      if (!name || !email || !password) return showToast({ message: "Naam, email, aur password chahiye.", type: "error", icon: "alert-triangle" });
-      if (password.length < 6) return showToast({ message: "Password kam se kam 6 char ka hona chahiye.", type: "warn", icon: "lock" });
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/signup`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Signup error");
-        jwtToken = data.token;
-        localStorage.setItem('token', jwtToken);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        currentUser = data.user;
-        showToast({ message: `Account created! Welcome, ${currentUser.name}`, type: "success", icon: "user-plus" });
-        closeAuthModal();
-        updateUIAfterLogin();
-      } catch (err) {
-        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-      }
-    });
-
-    // --- Google Sign-In (Pop Up) ---
-    googleSigninBtn.addEventListener('click', async () => {
-      showToast({ message: "Redirecting to Google...", type: "info", icon: "circle-dot" });
-      // Use Google OAuth2 endpoint
-      const params = [
-        `client_id=${GOOGLE_CLIENT_ID}`,
-        `redirect_uri=${window.location.origin}`,
-        `response_type=token`,
-        `scope=profile email`,
-        `prompt=select_account`
-      ].join('&');
-      const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-      // Open Google OAuth in popup
-      const popup = window.open(oauthUrl, "GoogleSignIn", "width=480,height=600");
-      // Listen to hash change or message event for access_token
-      const pollTimer = setInterval(async () => {
-        try {
-          if (popup.closed) {
-            clearInterval(pollTimer);
-            showToast({ message: "Google Sign-In cancelled.", type: "warn", icon: "x-circle" });
-            return;
-          }
-          if (popup.location && popup.location.href && popup.location.href.startsWith(window.location.origin)) {
-            clearInterval(pollTimer);
-            const hash = popup.location.hash;
-            if (hash) {
-              const params = new URLSearchParams(hash.substr(1));
-              const googleToken = params.get('access_token');
-              popup.close();
-              if (googleToken) {
-                // Exchange Google token with server for JWT
-                try {
-                  const res = await fetch(`${API_BASE}/api/auth/google-signin`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: googleToken })
-                  });
-                  const data = await res.json();
-                  if (!res.ok) throw new Error(data.message || "Google login error");
-                  jwtToken = data.token;
-                  localStorage.setItem('token', jwtToken);
-                  localStorage.setItem('currentUser', JSON.stringify(data.user));
-                  currentUser = data.user;
-                  showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
-                  closeAuthModal();
-                  updateUIAfterLogin();
-                } catch (err) {
-                  showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-                }
-              }
-            }
-          }
-        } catch { /* Ignore cross-origin errors */ }
-      }, 800);
-    });
-
-    // --- JWT Load & UI After Login ---
-    function updateUIAfterLogin() {
-      currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-      jwtToken = localStorage.getItem('token') || null;
-      // Navbar: avatar visible, login icon hidden
-      if (currentUser && jwtToken) {
-        loginIconTrigger.style.display = "none";
-        userAvatarTrigger.style.display = "flex";
-        navAvatarImg.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
-        navAvatarImg.alt = currentUser.name || "Avatar";
-        // Badge: admin/shield, top user, verified, etc.
-        avatarBadge.style.display = "none"; // For now (add badge in next part)
-        // TODO: Check user for badge and set
-      } else {
-        loginIconTrigger.style.display = "flex";
-        userAvatarTrigger.style.display = "none";
-        navAvatarImg.src = "";
-        avatarBadge.style.display = "none";
-      }
-      window.lucide && window.lucide.createIcons();
-    }
-    // On load
-    updateUIAfterLogin();
-
-    // --- Profile Dropdown + Modal (Next Section) ---
-    let profileDropdown = null;
-    userAvatarTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (profileDropdown && profileDropdown.parentNode) {
-        profileDropdown.remove();
-        profileDropdown = null;
-        return;
-      }
-      // Create dropdown
-      profileDropdown = document.createElement('div');
-      profileDropdown.className = "profile-dropdown-menu";
-      profileDropdown.style = `
-        position: absolute;
-        top: 52px; right: 10px;
-        background: var(--glass-modal);
-        border-radius: 13px;
-        box-shadow: 0 2px 16px #3735ba3b;
-        min-width: 170px;
-        z-index: 222;
-        font-family: var(--font-main);
-        display: flex; flex-direction: column; align-items: stretch; gap: 2px;
-        padding: 12px 0;
-        animation: scaleModalIn 0.22s;
-      `;
-      profileDropdown.innerHTML = `
-        <button class="profile-dropdown-item" id="profile-view-btn"><i data-lucide="user-round"></i> Profile</button>
-        <button class="profile-dropdown-item" id="profile-logout-btn"><i data-lucide="log-out"></i> Logout</button>
-        <button class="profile-dropdown-item" id="admin-panel-btn" style="display:${currentUser && currentUser.email==='samshaad365@gmail.com' ? '' : 'none'}"><i data-lucide="settings"></i> Admin Panel</button>
-      `;
-      document.body.appendChild(profileDropdown);
-      window.lucide && window.lucide.createIcons({ icons: [...profileDropdown.querySelectorAll('i')] });
-      // Click outside closes dropdown
-      setTimeout(() => {
-        document.addEventListener('mousedown', closeDropdown);
-      }, 10);
-
-      function closeDropdown(e) {
-        if (!profileDropdown.contains(e.target) && e.target !== userAvatarTrigger) {
-          profileDropdown.remove();
-          profileDropdown = null;
-          document.removeEventListener('mousedown', closeDropdown);
-        }
-      }
-
-      // Profile view click
-      profileDropdown.querySelector('#profile-view-btn').addEventListener('click', () => {
-        openProfileModal();
-        profileDropdown.remove();
-        profileDropdown = null;
-      });
-      // Logout
-      profileDropdown.querySelector('#profile-logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('currentUser');
-        jwtToken = null;
-        currentUser = null;
-        showToast({ message: "Logged out.", type: "success", icon: "log-out" });
-        updateUIAfterLogin();
-        profileDropdown.remove();
-        profileDropdown = null;
-      });
-      // Admin Panel (if admin)
-      if (currentUser && currentUser.email==='samshaad365@gmail.com') {
-        profileDropdown.querySelector('#admin-panel-btn').addEventListener('click', () => {
-          window.open('/admin-panel-nobita', '_blank');
-          profileDropdown.remove();
-          profileDropdown = null;
-        });
-      }
-    });
-
-    // --- PROFILE MODAL (View Profile) ---
-  
-  <!-- ======= PROFILE MODAL ======= -->
-  <div class="modal-overlay" id="profile-modal-overlay" style="display:none;">
-    <div class="glass-modal" id="profile-modal" style="max-width:420px;min-height:320px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="profile-modal-title">
-      <button class="modal-close-btn" id="profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
-        <img id="profile-display-avatar" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;"/>
-        <div style="font-family:'Lexend',sans-serif;font-weight:bold;font-size:1.51rem;color:#2c247e;text-align:center;" id="profile-display-name"></div>
-        <div style="font-size:1.05em;color:#aaa8de;margin-bottom:2px;display:flex;align-items:center;gap:8px;">
-          <span id="profile-display-email"></span>
-          <button id="copy-email-btn" title="Copy Email" style="background:none;border:none;outline:none;cursor:pointer;padding:2px 3px;"><i data-lucide="copy"></i></button>
-        </div>
-        <div style="font-size:1em;color:#b4b5cc;" id="profile-display-joined"></div>
-      </div>
-      <button id="edit-profile-btn" style="margin-top:19px;width:100%;padding:13px 0;font-weight:bold;font-size:1.06em;background:#6366f1;color:#fff;border:none;border-radius:9px;box-shadow:0 2px 12px #d9d7fd23;cursor:pointer;transition:background 0.16s;">Edit Information <i data-lucide="pencil"></i></button>
-    </div>
-  </div>
-  <div class="modal-overlay" id="edit-profile-modal-overlay" style="display:none;">
-    <div class="glass-modal" id="edit-profile-modal" style="max-width:480px;min-height:350px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="edit-profile-modal-title">
-      <button class="modal-close-btn" id="edit-profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
-      <div class="modal-title" id="edit-profile-modal-title" style="margin-bottom:16px;">Edit Profile</div>
-      <!-- Edit avatar, name, password fields will be added next part -->
-      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
-        <!-- Avatar upload/drag zone (next part) -->
-        <img id="edit-avatar-preview" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;margin-bottom:8px;"/>
-        <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;" />
-        <button id="upload-avatar-btn" style="background:#e0e7ff;color:#6366f1;border:none;padding:7px 19px;border-radius:7px;font-weight:bold;cursor:pointer;margin-bottom:5px;display:inline-flex;align-items:center;gap:7px;"><i data-lucide="cloud-upload"></i> Choose & Upload Avatar</button>
-      </div>
-      <form id="edit-profile-form" style="margin-top:13px;">
-        <div class="floating-label-group">
-          <input type="text" id="edit-profile-name" name="name" required maxlength="32" placeholder=" " />
-          <label for="edit-profile-name">Name</label>
-        </div>
-        <div style="font-size:1.01em;color:#c1c1c9;padding-bottom:9px;">
-          <i data-lucide="mail"></i> <span id="edit-profile-email"></span> (cannot change)
-        </div>
-        <div style="font-size:1.06em;font-weight:bold;color:#675ae6;margin-bottom:7px;margin-top:18px;">Change Password</div>
-        <div class="floating-label-group">
-          <input type="password" id="edit-current-password" name="currentPassword" placeholder=" " autocomplete="current-password" />
-          <label for="edit-current-password">Current Password</label>
-          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-current-password-toggle"><i data-lucide="eye"></i></button>
-        </div>
-        <div class="floating-label-group">
-          <input type="password" id="edit-new-password" name="newPassword" placeholder=" " autocomplete="new-password" />
-          <label for="edit-new-password">New Password</label>
-          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-new-password-toggle"><i data-lucide="eye"></i></button>
-        </div>
-        <div class="floating-label-group">
-          <input type="password" id="edit-confirm-password" name="confirmPassword" placeholder=" " autocomplete="new-password" />
-          <label for="edit-confirm-password">Confirm New Password</label>
-          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-confirm-password-toggle"><i data-lucide="eye"></i></button>
-        </div>
-        <button type="submit" id="save-profile-btn" style="width:100%;margin-top:14px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.08em;border:none;border-radius:9px;box-shadow:0 2px 10px #d3e7fd14;cursor:pointer;transition:background 0.16s;">Save Changes <i data-lucide="save"></i></button>
-      </form>
-    </div>
-  </div>
-
-    // --- PROFILE MODAL LOGIC ---
-    const profileModalOverlay = document.getElementById('profile-modal-overlay');
-    const profileModal = document.getElementById('profile-modal');
-    const profileModalCloseBtn = document.getElementById('profile-modal-close-btn');
-    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-    const profileDisplayName = document.getElementById('profile-display-name');
-    const profileDisplayEmail = document.getElementById('profile-display-email');
-    const profileDisplayJoined = document.getElementById('profile-display-joined');
-    const copyEmailBtn = document.getElementById('copy-email-btn');
-    const editProfileBtn = document.getElementById('edit-profile-btn');
-
-    function openProfileModal() {
-      if (!currentUser) return;
-      profileDisplayAvatar.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
-      profileDisplayName.textContent = currentUser.name;
-      profileDisplayEmail.textContent = currentUser.email;
-      // Joined date
-      const joined = currentUser.joinedOn || currentUser.createdAt;
-      let joinedStr = '';
-      if (joined) {
-        const dt = new Date(joined);
-        joinedStr = "Joined " + dt.toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
-      }
-      profileDisplayJoined.textContent = joinedStr;
-      profileModalOverlay.style.display = 'flex';
-      setTimeout(()=>profileModalOverlay.classList.remove('hide'), 10);
-      window.lucide && window.lucide.createIcons();
-    }
-    function closeProfileModal() {
-      profileModalOverlay.classList.add('hide');
-      setTimeout(()=>{ profileModalOverlay.style.display='none'; }, 260);
-    }
-    profileModalCloseBtn.addEventListener('click', closeProfileModal);
-    profileModalOverlay.addEventListener('click', e => {
-      if(e.target === profileModalOverlay) closeProfileModal();
-    });
-
-    copyEmailBtn.addEventListener('click', () => {
-      if (!currentUser) return;
-      navigator.clipboard.writeText(currentUser.email).then(() => {
-        showToast({ message: "Email copied!", type: "success", icon: "copy" });
-      });
-    });
-    editProfileBtn.addEventListener('click', () => {
-      openEditProfileModal();
-      closeProfileModal();
-    });
-
-    // Edit Profile Modal logic, fields, upload avatar — **to be continued in Part 4**
-
-    
-    // ===== EDIT PROFILE MODAL LOGIC =====
-    const editProfileModalOverlay = document.getElementById('edit-profile-modal-overlay');
-    const editProfileModal = document.getElementById('edit-profile-modal');
-    const editProfileModalCloseBtn = document.getElementById('edit-profile-modal-close-btn');
-    const editAvatarPreview = document.getElementById('edit-avatar-preview');
-    const avatarInput = document.getElementById('avatar-upload-input');
-    const uploadBtn = document.getElementById('upload-avatar-btn');
-    const editProfileForm = document.getElementById('edit-profile-form');
-    const editProfileName = document.getElementById('edit-profile-name');
-    const editProfileEmail = document.getElementById('edit-profile-email');
-    const editCurrentPassword = document.getElementById('edit-current-password');
-    const editNewPassword = document.getElementById('edit-new-password');
-    const editConfirmPassword = document.getElementById('edit-confirm-password');
-    const saveProfileBtn = document.getElementById('save-profile-btn');
-
-    // Eye toggles
-    const editCurrentPasswordToggle = document.getElementById('edit-current-password-toggle');
-    const editNewPasswordToggle = document.getElementById('edit-new-password-toggle');
-    const editConfirmPasswordToggle = document.getElementById('edit-confirm-password-toggle');
-
-    function openEditProfileModal() {
-      if (!currentUser) return;
-      editAvatarPreview.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
-      editProfileName.value = currentUser.name || "";
-      editProfileEmail.textContent = currentUser.email || "";
-      editCurrentPassword.value = '';
-      editNewPassword.value = '';
-      editConfirmPassword.value = '';
-      editProfileModalOverlay.style.display = 'flex';
-      setTimeout(()=>editProfileModalOverlay.classList.remove('hide'), 10);
-      window.lucide && window.lucide.createIcons();
-    }
-    function closeEditProfileModal() {
-      editProfileModalOverlay.classList.add('hide');
-      setTimeout(()=>{ editProfileModalOverlay.style.display='none'; }, 260);
-    }
-    editProfileModalCloseBtn.addEventListener('click', closeEditProfileModal);
-    editProfileModalOverlay.addEventListener('click', e => {
-      if(e.target === editProfileModalOverlay) closeEditProfileModal();
-    });
-
-    // Eye toggles for all password fields
-    function togglePassword(input, btn) {
-      input.type = input.type === "password" ? "text" : "password";
-      btn.innerHTML = input.type === "password"
-        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
-      window.lucide && window.lucide.createIcons();
-    }
-    editCurrentPasswordToggle.addEventListener('click', ()=>togglePassword(editCurrentPassword, editCurrentPasswordToggle));
-    editNewPasswordToggle.addEventListener('click', ()=>togglePassword(editNewPassword, editNewPasswordToggle));
-    editConfirmPasswordToggle.addEventListener('click', ()=>togglePassword(editConfirmPassword, editConfirmPasswordToggle));
-
-    // Avatar Upload Logic (Cloudinary, via backend)
-    uploadBtn.addEventListener('click', () => avatarInput.click());
-    avatarInput.addEventListener('change', async () => {
-      const file = avatarInput.files[0];
-      if (!file) return showToast({ message: "Select a file!", type: "error", icon: "alert-triangle" });
-      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
-      const formData = new FormData();
-      formData.append('avatar', file);
-      uploadBtn.disabled = true;
-      uploadBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Uploading...';
-      try {
-        const res = await fetch(`${API_BASE}/api/user/upload-avatar`, {
-          method: "POST",
-          headers: { 'Authorization': `Bearer ${jwtToken}` },
-          body: formData
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Avatar upload failed.");
-        editAvatarPreview.src = data.avatarUrl;
-        currentUser.avatarUrl = data.avatarUrl;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        updateUIAfterLogin();
-        showToast({ message: "Avatar updated!", type: "success", icon: "cloud-upload" });
-      } catch (err) {
-        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-      }
-      uploadBtn.disabled = false;
-      uploadBtn.innerHTML = '<i data-lucide="cloud-upload"></i> Choose & Upload Avatar';
-      window.lucide && window.lucide.createIcons();
-    });
-
-    // Save Profile (Name + Password)
-    editProfileForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
-      saveProfileBtn.disabled = true;
-      saveProfileBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Saving...';
-
-      // Name update
-      const newName = editProfileName.value.trim();
-      let changed = false;
-      if (newName && newName !== currentUser.name) {
-        try {
-          const res = await fetch(`${API_BASE}/api/user/update-name`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': `Bearer ${jwtToken}`
-            },
-            body: JSON.stringify({ name: newName })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || "Name update failed.");
-          currentUser.name = data.user.name;
-          localStorage.setItem('currentUser', JSON.stringify(currentUser));
-          showToast({ message: "Name updated!", type: "success", icon: "user" });
-          changed = true;
-        } catch (err) {
-          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-        }
-      }
-
-      // Password update logic
-      const curPass = editCurrentPassword.value, newPass = editNewPassword.value, confPass = editConfirmPassword.value;
-      if (curPass || newPass || confPass) {
-        if (!curPass || !newPass || !confPass) {
-          showToast({ message: "All password fields required.", type: "error", icon: "lock" });
-          saveProfileBtn.disabled = false;
-          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
-          window.lucide && window.lucide.createIcons();
-          return;
-        }
-        if (newPass !== confPass) {
-          showToast({ message: "Passwords do not match.", type: "error", icon: "alert-triangle" });
-          saveProfileBtn.disabled = false;
-          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
-          window.lucide && window.lucide.createIcons();
-          return;
-        }
-        if (newPass.length < 6) {
-          showToast({ message: "Password must be 6+ chars.", type: "error", icon: "lock" });
-          saveProfileBtn.disabled = false;
-          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
-          window.lucide && window.lucide.createIcons();
-          return;
-        }
-        try {
-          const res = await fetch(`${API_BASE}/api/user/change-password`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': `Bearer ${jwtToken}`
-            },
-            body: JSON.stringify({
-              currentPassword: curPass,
-              newPassword: newPass
-            })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || "Password change failed.");
-          showToast({ message: "Password changed!", type: "success", icon: "lock" });
-          changed = true;
-        } catch (err) {
-          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
-        }
-      }
-      saveProfileBtn.disabled = false;
-      saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
-      window.lucide && window.lucide.createIcons();
-      if (changed) {
-        setTimeout(closeEditProfileModal, 1200);
-        setTimeout(updateUIAfterLogin, 1800);
-      }
-    });
-
-    // Keyboard accessibility: ESC to close modals
-    document.addEventListener('keydown', (e) => {
-      if(e.key==="Escape") {
-        if(editProfileModalOverlay.style.display==='flex') closeEditProfileModal();
-        if(profileModalOverlay.style.display==='flex') closeProfileModal();
-      }
-    });
-    <style>
     /* --- HERO SECTION --- */
     .hero-welcome {
       font-family: var(--font-title);
@@ -1303,7 +593,163 @@
       .feedback-panel,.feedback-list-section {max-width:99vw;padding:14px;}
       .overall-rating-block{padding:12px 2vw;}
     }
-  </style>
+   </style>
+</head>
+<body>
+  <!-- ======== NAVIGATION BAR ======== -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <div class="navbar-logo" id="navbar-logo" tabindex="0" aria-label="Reload homepage">
+        <i data-lucide="stars"></i>
+        NobitaFeedback
+      </div>
+    </div>
+    <div class="nav-right">
+      <!-- Bell/Notifications -->
+      <button class="nav-btn" id="notifications-btn" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+        <span id="bell-badge" class="bell-badge" style="display:none;">0</span>
+      </button>
+      <!-- Theme toggle -->
+      <button class="nav-btn theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Theme">
+        <i data-lucide="moon"></i>
+      </button>
+      <!-- Language toggle -->
+      <button class="nav-btn" id="language-toggle-btn" aria-label="Switch Language">
+        <i data-lucide="globe"></i>
+      </button>
+      <!-- User icon or avatar (dynamic) -->
+      <button class="nav-btn" id="login-icon-trigger" aria-label="Login" style="display:flex;">
+        <i data-lucide="user"></i>
+      </button>
+      <button class="nav-avatar-btn" id="user-avatar-trigger" aria-label="Profile" style="display:none;">
+        <img src="" class="nav-avatar-img" id="nav-avatar-img" alt="User Avatar" />
+        <span class="avatar-badge" id="avatar-badge" style="display:none;"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ======== MODALS ======== -->
+
+  <!-- ==== LOGIN/SIGNUP MODAL ==== -->
+  <div class="modal-overlay" id="auth-modal-overlay" style="display:none;">
+    <div class="glass-modal animate__animated" id="auth-modal" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="auth-modal-title">
+      <button class="modal-close-btn" id="auth-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <h2 class="modal-title" id="auth-modal-title">Sign in / Register</h2>
+      <!-- Tabs, form, Google btn will come in PART 2 -->
+    </div>
+  </div>
+        <!-- ==== LOGIN / SIGNUP TABS ==== -->
+      <div style="display:flex;justify-content:center;gap:18px;margin-bottom:10px;">
+        <button id="auth-tab-login" type="button" class="auth-tab-btn" aria-selected="true" style="background:none;border:none;color:#fff;font-weight:bold;font-size:1.16em;letter-spacing:1.2px;padding:7px 20px;border-bottom:3px solid #6366f1;outline:none;cursor:pointer;">Login</button>
+        <button id="auth-tab-signup" type="button" class="auth-tab-btn" aria-selected="false" style="background:none;border:none;color:#d8d8fc;font-weight:600;font-size:1.09em;letter-spacing:1px;padding:7px 20px;border-bottom:3px solid transparent;outline:none;cursor:pointer;">Signup</button>
+      </div>
+      <form id="auth-login-form" autocomplete="on">
+        <div class="floating-label-group">
+          <input type="email" id="login-email" name="email" required placeholder=" " autocomplete="username" spellcheck="false" />
+          <label for="login-email">Email</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="login-password" name="password" required placeholder=" " minlength="6" autocomplete="current-password" />
+          <label for="login-password">Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="login-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div style="text-align:right;margin-top:-12px;margin-bottom:12px;">
+          <a href="#" id="forgot-password-link" style="color:#9db6f9;font-size:0.96em;text-decoration:underline;cursor:pointer;">Forgot password?</a>
+        </div>
+        <button type="submit" style="width:100%;margin-top:6px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Log In <i data-lucide="log-in" style="vertical-align:middle;margin-left:7px;"></i></button>
+      </form>
+      <form id="auth-signup-form" autocomplete="on" style="display:none;">
+        <div class="floating-label-group">
+          <input type="text" id="signup-name" name="name" required placeholder=" " maxlength="32" autocomplete="name" />
+          <label for="signup-name">Name</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="email" id="signup-email" name="email" required placeholder=" " autocomplete="email" />
+          <label for="signup-email">Email</label>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="signup-password" name="password" required placeholder=" " minlength="6" autocomplete="new-password" />
+          <label for="signup-password">Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="signup-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <button type="submit" style="width:100%;margin-top:8px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.12em;border:none;border-radius:11px;box-shadow:0 2px 8px #5758fa1a;cursor:pointer;transition:background 0.16s;">Sign Up <i data-lucide="user-plus" style="vertical-align:middle;margin-left:7px;"></i></button>
+      </form>
+
+      <!-- ==== Google Sign-In Button ==== -->
+      <button class="google-signin-btn" id="google-signin-btn" type="button">
+        <svg class="google-logo-svg" viewBox="0 0 32 32"><g><path fill="#4285F4" d="M16.64 13.204v3.284h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-4.868 3.9-8.828 8.68-8.828 2.72 0 4.54 1.088 5.58 2.016l3.8-3.804C22.88 1.468 20.1 0 16.64 0c-8.04 0-14.58 6.552-14.58 14.628 0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28 0-.96-.108-1.7-.24-2.436H16.64z"/><path fill="#34A853" d="M3.44 8.868l3.24 2.38c.892-1.86 2.16-3.372 3.88-4.336L6.32 4.052A12.39 12.39 0 0 0 3.44 8.868z"/><path fill="#FBBC05" d="M16.64 4.8c2.1 0 3.684.72 4.544 1.376l3.408-3.404C22.88 1.468 20.1 0 16.64 0 11.252 0 6.436 2.904 3.44 8.868l3.24 2.38C8.6 7.852 12.04 4.8 16.64 4.8z"/><path fill="#EA4335" d="M29.44 14.388c0-.916-.08-1.632-.24-2.436H16.64v4.02h7.94c-.32 2.08-2.392 6.1-7.94 6.1-4.78 0-8.68-3.96-8.68-8.828 0-1.372.28-2.68.78-3.84l-3.24-2.38C2.1 9.72 1.4 12.084 1.4 14.628c0 8.076 6.54 14.628 14.58 14.628 8.44 0 14.016-5.924 14.016-14.28z"/></g></svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ======= TOAST STACK ======= -->
+  <div class="toast-stack" id="toast-stack"></div>
+
+  <!-- ======= MAIN APP CONTENT (rest will come next) ======= -->
+  <div class="main-app-content" id="main-app-content">
+
+  <!-- ... PART 3 onwards ... -->
+
+  </div>
+     // --- PROFILE MODAL (View Profile) ---
+  </script>
+  <!-- ======= PROFILE MODAL ======= -->
+  <div class="modal-overlay" id="profile-modal-overlay" style="display:none;">
+    <div class="glass-modal" id="profile-modal" style="max-width:420px;min-height:320px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="profile-modal-title">
+      <button class="modal-close-btn" id="profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <img id="profile-display-avatar" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;"/>
+        <div style="font-family:'Lexend',sans-serif;font-weight:bold;font-size:1.51rem;color:#2c247e;text-align:center;" id="profile-display-name"></div>
+        <div style="font-size:1.05em;color:#aaa8de;margin-bottom:2px;display:flex;align-items:center;gap:8px;">
+          <span id="profile-display-email"></span>
+          <button id="copy-email-btn" title="Copy Email" style="background:none;border:none;outline:none;cursor:pointer;padding:2px 3px;"><i data-lucide="copy"></i></button>
+        </div>
+        <div style="font-size:1em;color:#b4b5cc;" id="profile-display-joined"></div>
+      </div>
+      <button id="edit-profile-btn" style="margin-top:19px;width:100%;padding:13px 0;font-weight:bold;font-size:1.06em;background:#6366f1;color:#fff;border:none;border-radius:9px;box-shadow:0 2px 12px #d9d7fd23;cursor:pointer;transition:background 0.16s;">Edit Information <i data-lucide="pencil"></i></button>
+    </div>
+  </div>
+  <div class="modal-overlay" id="edit-profile-modal-overlay" style="display:none;">
+    <div class="glass-modal" id="edit-profile-modal" style="max-width:480px;min-height:350px;" tabindex="0" aria-modal="true" role="dialog" aria-labelledby="edit-profile-modal-title">
+      <button class="modal-close-btn" id="edit-profile-modal-close-btn" aria-label="Close Modal"><i data-lucide="x"></i></button>
+      <div class="modal-title" id="edit-profile-modal-title" style="margin-bottom:16px;">Edit Profile</div>
+      <!-- Edit avatar, name, password fields will be added next part -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <!-- Avatar upload/drag zone (next part) -->
+        <img id="edit-avatar-preview" src="" alt="Avatar" style="width:88px;height:88px;border-radius:50%;box-shadow:0 2px 16px #928ff633;border:3px solid #6366f1;background:#f5f5ff;margin-bottom:8px;"/>
+        <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;" />
+        <button id="upload-avatar-btn" style="background:#e0e7ff;color:#6366f1;border:none;padding:7px 19px;border-radius:7px;font-weight:bold;cursor:pointer;margin-bottom:5px;display:inline-flex;align-items:center;gap:7px;"><i data-lucide="cloud-upload"></i> Choose & Upload Avatar</button>
+      </div>
+      <form id="edit-profile-form" style="margin-top:13px;">
+        <div class="floating-label-group">
+          <input type="text" id="edit-profile-name" name="name" required maxlength="32" placeholder=" " />
+          <label for="edit-profile-name">Name</label>
+        </div>
+        <div style="font-size:1.01em;color:#c1c1c9;padding-bottom:9px;">
+          <i data-lucide="mail"></i> <span id="edit-profile-email"></span> (cannot change)
+        </div>
+        <div style="font-size:1.06em;font-weight:bold;color:#675ae6;margin-bottom:7px;margin-top:18px;">Change Password</div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-current-password" name="currentPassword" placeholder=" " autocomplete="current-password" />
+          <label for="edit-current-password">Current Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-current-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-new-password" name="newPassword" placeholder=" " autocomplete="new-password" />
+          <label for="edit-new-password">New Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-new-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <div class="floating-label-group">
+          <input type="password" id="edit-confirm-password" name="confirmPassword" placeholder=" " autocomplete="new-password" />
+          <label for="edit-confirm-password">Confirm New Password</label>
+          <button type="button" class="input-password-toggle" tabindex="-1" aria-label="Show/Hide Password" id="edit-confirm-password-toggle"><i data-lucide="eye"></i></button>
+        </div>
+        <button type="submit" id="save-profile-btn" style="width:100%;margin-top:14px;padding:13px 0;background:#6366f1;color:#fff;font-weight:bold;font-size:1.08em;border:none;border-radius:9px;box-shadow:0 2px 10px #d3e7fd14;cursor:pointer;transition:background 0.16s;">Save Changes <i data-lucide="save"></i></button>
+      </form>
+    </div>
+  </div>
   <!-- ==== HERO + FEEDBACK SUBMIT PANEL ==== -->
   <div class="hero-welcome" id="hero-welcome">Welcome!</div>
   <div class="feedback-panel" id="feedback-panel" style="display:none;">
@@ -1345,8 +791,554 @@
       <i data-lucide="loader" class="lucide-spin"></i> Loading...
     </div>
   </div>
-  
-    // -- HERO GREETING --
+    <!-- ============ AUTH & UI SCRIPT PART 1 ============ -->
+  <script>
+    // Lucide icons init
+    window.lucide && window.lucide.createIcons();
+
+    // === Modal, Auth Tabs, Password Toggle, Toast ===
+    const loginIconTrigger = document.getElementById('login-icon-trigger');
+    const userAvatarTrigger = document.getElementById('user-avatar-trigger');
+    const navAvatarImg = document.getElementById('nav-avatar-img');
+    const avatarBadge = document.getElementById('avatar-badge');
+    const authModalOverlay = document.getElementById('auth-modal-overlay');
+    const authModal = document.getElementById('auth-modal');
+    const authModalCloseBtn = document.getElementById('auth-modal-close-btn');
+    const toastStack = document.getElementById('toast-stack');
+    const authTabLogin = document.getElementById('auth-tab-login');
+    const authTabSignup = document.getElementById('auth-tab-signup');
+    const loginForm = document.getElementById('auth-login-form');
+    const signupForm = document.getElementById('auth-signup-form');
+    const loginPassword = document.getElementById('login-password');
+    const loginPasswordToggle = document.getElementById('login-password-toggle');
+    const signupPassword = document.getElementById('signup-password');
+    const signupPasswordToggle = document.getElementById('signup-password-toggle');
+    const googleSigninBtn = document.getElementById('google-signin-btn');
+    const modalOverlay = document.getElementById('auth-modal-overlay');
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+
+    // --- Modal Open/Close Functions ---
+    function openAuthModal(tab = "login") {
+      authModalOverlay.style.display = 'flex';
+      setTimeout(() => authModalOverlay.classList.remove('hide'), 10);
+      if(tab === "login") {
+        switchAuthTab("login");
+      } else {
+        switchAuthTab("signup");
+      }
+      setTimeout(() => {
+        // Focus first input
+        const input = tab === "login" ? document.getElementById('login-email') : document.getElementById('signup-name');
+        if(input) input.focus();
+      }, 150);
+    }
+    function closeAuthModal() {
+      authModalOverlay.classList.add('hide');
+      setTimeout(() => { authModalOverlay.style.display = 'none'; }, 260);
+    }
+    // NavBar click triggers
+    loginIconTrigger.addEventListener('click', () => openAuthModal('login'));
+    authModalCloseBtn.addEventListener('click', closeAuthModal);
+    // ESC close
+    document.addEventListener('keydown', (e) => {
+      if(e.key === "Escape" && authModalOverlay.style.display === 'flex') closeAuthModal();
+    });
+    // Overlay click close
+    authModalOverlay.addEventListener('click', e => {
+      if(e.target === authModalOverlay) closeAuthModal();
+    });
+
+    // --- Auth Tab Switch Logic ---
+    function switchAuthTab(tab) {
+      if(tab === "login") {
+        authTabLogin.setAttribute('aria-selected', "true");
+        authTabLogin.style.color = "#fff";
+        authTabLogin.style.borderBottom = "3px solid #6366f1";
+        authTabSignup.setAttribute('aria-selected', "false");
+        authTabSignup.style.color = "#d8d8fc";
+        authTabSignup.style.borderBottom = "3px solid transparent";
+        loginForm.style.display = "";
+        signupForm.style.display = "none";
+      } else {
+        authTabLogin.setAttribute('aria-selected', "false");
+        authTabLogin.style.color = "#d8d8fc";
+        authTabLogin.style.borderBottom = "3px solid transparent";
+        authTabSignup.setAttribute('aria-selected', "true");
+        authTabSignup.style.color = "#fff";
+        authTabSignup.style.borderBottom = "3px solid #6366f1";
+        loginForm.style.display = "none";
+        signupForm.style.display = "";
+      }
+      window.lucide && window.lucide.createIcons();
+    }
+    authTabLogin.addEventListener('click', ()=>switchAuthTab('login'));
+    authTabSignup.addEventListener('click', ()=>switchAuthTab('signup'));
+
+    // --- Password Show/Hide ---
+    loginPasswordToggle.addEventListener('click', () => {
+      loginPassword.type = loginPassword.type === "password" ? "text" : "password";
+      loginPasswordToggle.innerHTML = loginPassword.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    });
+    signupPasswordToggle.addEventListener('click', () => {
+      signupPassword.type = signupPassword.type === "password" ? "text" : "password";
+      signupPasswordToggle.innerHTML = signupPassword.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    });
+
+    // --- Toast Notification System ---
+    function showToast({ message, type = "info", icon = "info", duration = 3200 }) {
+      const toast = document.createElement('div');
+      toast.className = `toast-msg toast-${type}`;
+      toast.innerHTML = `<i data-lucide="${icon}"></i> <span>${message}</span>`;
+      toastStack.appendChild(toast);
+      window.lucide && window.lucide.createIcons({ icons: [toast.querySelector("i")] });
+      setTimeout(() => {
+        toast.classList.add('animate__fadeOutRight');
+        setTimeout(()=> toast.remove(), 460);
+      }, duration);
+    }
+
+    // Example: showToast({ message: "Welcome, Nobita!", type: "success", icon: "stars" });
+      // --- CONSTANTS ---
+    const API_BASE = "https://nobita-feedback-app-online.onrender.com";
+    const GOOGLE_CLIENT_ID = "609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com";
+
+    // State: Current user
+    let currentUser = null;
+    let jwtToken = localStorage.getItem('token') || null;
+
+    // --- Auth Form Submit ---
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = loginPassword.value;
+      if (!email || !password) return showToast({ message: "Email aur password zaroori hai.", type: "error", icon: "alert-triangle" });
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Login error");
+        jwtToken = data.token;
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        currentUser = data.user;
+        showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
+        closeAuthModal();
+        updateUIAfterLogin();
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+      }
+    });
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = signupPassword.value;
+      if (!name || !email || !password) return showToast({ message: "Naam, email, aur password chahiye.", type: "error", icon: "alert-triangle" });
+      if (password.length < 6) return showToast({ message: "Password kam se kam 6 char ka hona chahiye.", type: "warn", icon: "lock" });
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Signup error");
+        jwtToken = data.token;
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        currentUser = data.user;
+        showToast({ message: `Account created! Welcome, ${currentUser.name}`, type: "success", icon: "user-plus" });
+        closeAuthModal();
+        updateUIAfterLogin();
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+      }
+    });
+
+    // --- Google Sign-In (Pop Up) ---
+    googleSigninBtn.addEventListener('click', async () => {
+      showToast({ message: "Redirecting to Google...", type: "info", icon: "circle-dot" });
+      // Use Google OAuth2 endpoint
+      const params = [
+        `client_id=${GOOGLE_CLIENT_ID}`,
+        `redirect_uri=${window.location.origin}`,
+        `response_type=token`,
+        `scope=profile email`,
+        `prompt=select_account`
+      ].join('&');
+      const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+      // Open Google OAuth in popup
+      const popup = window.open(oauthUrl, "GoogleSignIn", "width=480,height=600");
+      // Listen to hash change or message event for access_token
+      const pollTimer = setInterval(async () => {
+        try {
+          if (popup.closed) {
+            clearInterval(pollTimer);
+            showToast({ message: "Google Sign-In cancelled.", type: "warn", icon: "x-circle" });
+            return;
+          }
+          if (popup.location && popup.location.href && popup.location.href.startsWith(window.location.origin)) {
+            clearInterval(pollTimer);
+            const hash = popup.location.hash;
+            if (hash) {
+              const params = new URLSearchParams(hash.substr(1));
+              const googleToken = params.get('access_token');
+              popup.close();
+              if (googleToken) {
+                // Exchange Google token with server for JWT
+                try {
+                  const res = await fetch(`${API_BASE}/api/auth/google-signin`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: googleToken })
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message || "Google login error");
+                  jwtToken = data.token;
+                  localStorage.setItem('token', jwtToken);
+                  localStorage.setItem('currentUser', JSON.stringify(data.user));
+                  currentUser = data.user;
+                  showToast({ message: `Welcome, ${currentUser.name}!`, type: "success", icon: "user" });
+                  closeAuthModal();
+                  updateUIAfterLogin();
+                } catch (err) {
+                  showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+                }
+              }
+            }
+          }
+        } catch { /* Ignore cross-origin errors */ }
+      }, 800);
+    });
+
+    // --- JWT Load & UI After Login ---
+    function updateUIAfterLogin() {
+      currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+      jwtToken = localStorage.getItem('token') || null;
+      // Navbar: avatar visible, login icon hidden
+      if (currentUser && jwtToken) {
+        loginIconTrigger.style.display = "none";
+        userAvatarTrigger.style.display = "flex";
+        navAvatarImg.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+        navAvatarImg.alt = currentUser.name || "Avatar";
+        // Badge: admin/shield, top user, verified, etc.
+        avatarBadge.style.display = "none"; // For now (add badge in next part)
+        // TODO: Check user for badge and set
+      } else {
+        loginIconTrigger.style.display = "flex";
+        userAvatarTrigger.style.display = "none";
+        navAvatarImg.src = "";
+        avatarBadge.style.display = "none";
+      }
+      window.lucide && window.lucide.createIcons();
+    }
+    // On load
+    updateUIAfterLogin();
+
+    // --- Profile Dropdown + Modal (Next Section) ---
+    let profileDropdown = null;
+    userAvatarTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (profileDropdown && profileDropdown.parentNode) {
+        profileDropdown.remove();
+        profileDropdown = null;
+        return;
+      }
+      // Create dropdown
+      profileDropdown = document.createElement('div');
+      profileDropdown.className = "profile-dropdown-menu";
+      profileDropdown.style = `
+        position: absolute;
+        top: 52px; right: 10px;
+        background: var(--glass-modal);
+        border-radius: 13px;
+        box-shadow: 0 2px 16px #3735ba3b;
+        min-width: 170px;
+        z-index: 222;
+        font-family: var(--font-main);
+        display: flex; flex-direction: column; align-items: stretch; gap: 2px;
+        padding: 12px 0;
+        animation: scaleModalIn 0.22s;
+      `;
+      profileDropdown.innerHTML = `
+        <button class="profile-dropdown-item" id="profile-view-btn"><i data-lucide="user-round"></i> Profile</button>
+        <button class="profile-dropdown-item" id="profile-logout-btn"><i data-lucide="log-out"></i> Logout</button>
+        <button class="profile-dropdown-item" id="admin-panel-btn" style="display:${currentUser && currentUser.email==='samshaad365@gmail.com' ? '' : 'none'}"><i data-lucide="settings"></i> Admin Panel</button>
+      `;
+      document.body.appendChild(profileDropdown);
+      window.lucide && window.lucide.createIcons({ icons: [...profileDropdown.querySelectorAll('i')] });
+      // Click outside closes dropdown
+      setTimeout(() => {
+        document.addEventListener('mousedown', closeDropdown);
+      }, 10);
+
+      function closeDropdown(e) {
+        if (!profileDropdown.contains(e.target) && e.target !== userAvatarTrigger) {
+          profileDropdown.remove();
+          profileDropdown = null;
+          document.removeEventListener('mousedown', closeDropdown);
+        }
+      }
+
+      // Profile view click
+      profileDropdown.querySelector('#profile-view-btn').addEventListener('click', () => {
+        openProfileModal();
+        profileDropdown.remove();
+        profileDropdown = null;
+      });
+      // Logout
+      profileDropdown.querySelector('#profile-logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        jwtToken = null;
+        currentUser = null;
+        showToast({ message: "Logged out.", type: "success", icon: "log-out" });
+        updateUIAfterLogin();
+        profileDropdown.remove();
+        profileDropdown = null;
+      });
+      // Admin Panel (if admin)
+      if (currentUser && currentUser.email==='samshaad365@gmail.com') {
+        profileDropdown.querySelector('#admin-panel-btn').addEventListener('click', () => {
+          window.open('/admin-panel-nobita', '_blank');
+          profileDropdown.remove();
+          profileDropdown = null;
+        });
+      }
+    });
+    // --- PROFILE MODAL LOGIC ---
+    const profileModalOverlay = document.getElementById('profile-modal-overlay');
+    const profileModal = document.getElementById('profile-modal');
+    const profileModalCloseBtn = document.getElementById('profile-modal-close-btn');
+    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
+    const profileDisplayName = document.getElementById('profile-display-name');
+    const profileDisplayEmail = document.getElementById('profile-display-email');
+    const profileDisplayJoined = document.getElementById('profile-display-joined');
+    const copyEmailBtn = document.getElementById('copy-email-btn');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+
+    function openProfileModal() {
+      if (!currentUser) return;
+      profileDisplayAvatar.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+      profileDisplayName.textContent = currentUser.name;
+      profileDisplayEmail.textContent = currentUser.email;
+      // Joined date
+      const joined = currentUser.joinedOn || currentUser.createdAt;
+      let joinedStr = '';
+      if (joined) {
+        const dt = new Date(joined);
+        joinedStr = "Joined " + dt.toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+      }
+      profileDisplayJoined.textContent = joinedStr;
+      profileModalOverlay.style.display = 'flex';
+      setTimeout(()=>profileModalOverlay.classList.remove('hide'), 10);
+      window.lucide && window.lucide.createIcons();
+    }
+    function closeProfileModal() {
+      profileModalOverlay.classList.add('hide');
+      setTimeout(()=>{ profileModalOverlay.style.display='none'; }, 260);
+    }
+    profileModalCloseBtn.addEventListener('click', closeProfileModal);
+    profileModalOverlay.addEventListener('click', e => {
+      if(e.target === profileModalOverlay) closeProfileModal();
+    });
+
+    copyEmailBtn.addEventListener('click', () => {
+      if (!currentUser) return;
+      navigator.clipboard.writeText(currentUser.email).then(() => {
+        showToast({ message: "Email copied!", type: "success", icon: "copy" });
+      });
+    });
+    editProfileBtn.addEventListener('click', () => {
+      openEditProfileModal();
+      closeProfileModal();
+    });
+
+    // Edit Profile Modal logic, fields, upload avatar — **to be continued in Part 4**
+
+  // ===== EDIT PROFILE MODAL LOGIC =====
+    const editProfileModalOverlay = document.getElementById('edit-profile-modal-overlay');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const editProfileModalCloseBtn = document.getElementById('edit-profile-modal-close-btn');
+    const editAvatarPreview = document.getElementById('edit-avatar-preview');
+    const avatarInput = document.getElementById('avatar-upload-input');
+    const uploadBtn = document.getElementById('upload-avatar-btn');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const editProfileName = document.getElementById('edit-profile-name');
+    const editProfileEmail = document.getElementById('edit-profile-email');
+    const editCurrentPassword = document.getElementById('edit-current-password');
+    const editNewPassword = document.getElementById('edit-new-password');
+    const editConfirmPassword = document.getElementById('edit-confirm-password');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+
+    // Eye toggles
+    const editCurrentPasswordToggle = document.getElementById('edit-current-password-toggle');
+    const editNewPasswordToggle = document.getElementById('edit-new-password-toggle');
+    const editConfirmPasswordToggle = document.getElementById('edit-confirm-password-toggle');
+
+    function openEditProfileModal() {
+      if (!currentUser) return;
+      editAvatarPreview.src = currentUser.avatarUrl || `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent(currentUser.name)}&radius=50`;
+      editProfileName.value = currentUser.name || "";
+      editProfileEmail.textContent = currentUser.email || "";
+      editCurrentPassword.value = '';
+      editNewPassword.value = '';
+      editConfirmPassword.value = '';
+      editProfileModalOverlay.style.display = 'flex';
+      setTimeout(()=>editProfileModalOverlay.classList.remove('hide'), 10);
+      window.lucide && window.lucide.createIcons();
+    }
+    function closeEditProfileModal() {
+      editProfileModalOverlay.classList.add('hide');
+      setTimeout(()=>{ editProfileModalOverlay.style.display='none'; }, 260);
+    }
+    editProfileModalCloseBtn.addEventListener('click', closeEditProfileModal);
+    editProfileModalOverlay.addEventListener('click', e => {
+      if(e.target === editProfileModalOverlay) closeEditProfileModal();
+    });
+
+    // Eye toggles for all password fields
+    function togglePassword(input, btn) {
+      input.type = input.type === "password" ? "text" : "password";
+      btn.innerHTML = input.type === "password"
+        ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+      window.lucide && window.lucide.createIcons();
+    }
+    editCurrentPasswordToggle.addEventListener('click', ()=>togglePassword(editCurrentPassword, editCurrentPasswordToggle));
+    editNewPasswordToggle.addEventListener('click', ()=>togglePassword(editNewPassword, editNewPasswordToggle));
+    editConfirmPasswordToggle.addEventListener('click', ()=>togglePassword(editConfirmPassword, editConfirmPasswordToggle));
+
+    // Avatar Upload Logic (Cloudinary, via backend)
+    uploadBtn.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', async () => {
+      const file = avatarInput.files[0];
+      if (!file) return showToast({ message: "Select a file!", type: "error", icon: "alert-triangle" });
+      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
+      const formData = new FormData();
+      formData.append('avatar', file);
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Uploading...';
+      try {
+        const res = await fetch(`${API_BASE}/api/user/upload-avatar`, {
+          method: "POST",
+          headers: { 'Authorization': `Bearer ${jwtToken}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Avatar upload failed.");
+        editAvatarPreview.src = data.avatarUrl;
+        currentUser.avatarUrl = data.avatarUrl;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateUIAfterLogin();
+        showToast({ message: "Avatar updated!", type: "success", icon: "cloud-upload" });
+      } catch (err) {
+        showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+      }
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i data-lucide="cloud-upload"></i> Choose & Upload Avatar';
+      window.lucide && window.lucide.createIcons();
+    });
+
+    // Save Profile (Name + Password)
+    editProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!jwtToken) return showToast({ message: "Login required.", type: "error", icon: "alert-triangle" });
+      saveProfileBtn.disabled = true;
+      saveProfileBtn.innerHTML = '<i data-lucide="loader" class="lucide-spin"></i> Saving...';
+
+      // Name update
+      const newName = editProfileName.value.trim();
+      let changed = false;
+      if (newName && newName !== currentUser.name) {
+        try {
+          const res = await fetch(`${API_BASE}/api/user/update-name`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({ name: newName })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Name update failed.");
+          currentUser.name = data.user.name;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          showToast({ message: "Name updated!", type: "success", icon: "user" });
+          changed = true;
+        } catch (err) {
+          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+        }
+      }
+
+      // Password update logic
+      const curPass = editCurrentPassword.value, newPass = editNewPassword.value, confPass = editConfirmPassword.value;
+      if (curPass || newPass || confPass) {
+        if (!curPass || !newPass || !confPass) {
+          showToast({ message: "All password fields required.", type: "error", icon: "lock" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        if (newPass !== confPass) {
+          showToast({ message: "Passwords do not match.", type: "error", icon: "alert-triangle" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        if (newPass.length < 6) {
+          showToast({ message: "Password must be 6+ chars.", type: "error", icon: "lock" });
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+          window.lucide && window.lucide.createIcons();
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/api/user/change-password`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${jwtToken}`
+            },
+            body: JSON.stringify({
+              currentPassword: curPass,
+              newPassword: newPass
+            })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Password change failed.");
+          showToast({ message: "Password changed!", type: "success", icon: "lock" });
+          changed = true;
+        } catch (err) {
+          showToast({ message: err.message, type: "error", icon: "alert-triangle" });
+        }
+      }
+      saveProfileBtn.disabled = false;
+      saveProfileBtn.innerHTML = 'Save Changes <i data-lucide="save"></i>';
+      window.lucide && window.lucide.createIcons();
+      if (changed) {
+        setTimeout(closeEditProfileModal, 1200);
+        setTimeout(updateUIAfterLogin, 1800);
+      }
+    });
+
+    // Keyboard accessibility: ESC to close modals
+    document.addEventListener('keydown', (e) => {
+      if(e.key==="Escape") {
+        if(editProfileModalOverlay.style.display==='flex') closeEditProfileModal();
+        if(profileModalOverlay.style.display==='flex') closeProfileModal();
+      }
+    });
+      // -- HERO GREETING --
     function greetUser() {
       const hero = document.getElementById('hero-welcome');
       if (currentUser) {
