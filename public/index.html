@@ -1300,7 +1300,7 @@
                 flex-direction: column; /* Stack avatar and name vertically */
                 gap: 4px; /* Smaller gap */
                 padding: 8px 10px; /* Adjust padding for vertical layout */
-                top: 15px; /* Slightly more spaced from edge */
+                top: 15px;
                 right: 15px;
             }
             #user-profile-name {
@@ -2618,11 +2618,14 @@
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
             // Disable edit button if not the current user's feedback
-            editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
-
+            // Check if fbData.userId and fbData.userId._id exist before comparing
+            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser._id === fbData.userId._id); // Changed currentUser.userId to currentUser._id
+            
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
-                if (!currentUser || currentUser.userId !== fbData.userId) {
+                // Inside editButton.addEventListener('click', ...):
+                // Check if fbData.userId and fbData.userId._id exist
+                if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser._id !== fbData.userId._id) { // Changed currentUser.userId to currentUser._id
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
