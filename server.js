@@ -186,7 +186,7 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Signup mein error:', error);
-        res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });
+        res.status(500).json({ message: "Account banane mein kuch दिक्कत aa gayi.", error: error.message });
     }
 });
 app.post('/api/auth/login', async (req, res) => {
@@ -202,7 +202,7 @@ app.post('/api/auth/login', async (req, res) => {
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
-    } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch dikkat aa gayi.", error: error.message });}
+    } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch दिक्कत aa gayi.", error: error.message });}
 });
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
@@ -251,7 +251,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
              res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
-             res.status(500).json({ message: "Password reset request process karne mein kuch dikkat aa gayi hai." });
+             res.status(500).json({ message: "Password reset request process karne mein kuch दिक्कत aa gayi hai." });
         }
     }
 });
@@ -271,12 +271,12 @@ app.post('/api/auth/reset-password', async (req, res) => {
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
-    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
+    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
 });
 
 // Multer setup for file uploads (max 5MB)
 const storage = multer.memoryStorage(); // Store files in memory as buffers
-const upload = multer({
+const upload = multer({ 
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
     fileFilter: (req, file, cb) => {
@@ -399,7 +399,7 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
         }, async (error, result) => {
             if (error) {
                 console.error('Cloudinary upload error:', error);
-                return res.status(500).json({ message: 'Avatar upload karne mein dikkat aa gayi.', error: error.message });
+                return res.status(500).json({ message: 'Avatar upload karne mein दिक्कत aa gayi.', error: error.message });
             }
             if (!result || !result.secure_url) {
                 return res.status(500).json({ message: 'Cloudinary se URL nahi mila.' });
@@ -431,8 +431,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
     try { 
         // Populate userId to get loginMethod for distinguishing user types in frontend
-        // Also select name and email for display in admin panel and to correctly reflect user name in feedback list.
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email' }).sort({ timestamp: -1 }); 
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 }); 
         res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
@@ -440,98 +439,27 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
-    
-    // Fetch the latest user info from DB to ensure name and avatar are current
-    const userFromDb = await User.findById(req.user.userId);
-    if (!userFromDb) {
-        return res.status(404).json({ message: 'User not found in database.' });
-    }
-
-    let feedbackData = { 
-        name: userFromDb.name, // Use name from DB
-        avatarUrl: userFromDb.avatarUrl, // Use avatarUrl from DB
-        userId: userFromDb._id, // Use userId from DB
-        feedback, 
-        rating: parseInt(rating), 
-        userIp, 
-        isEdited: false 
-    };
-    
-    if (userFromDb.loginMethod === 'google' && userFromDb.googleId) { 
-        feedbackData.googleIdSubmitter = userFromDb.googleId; 
-    }
-
-    try { 
-        const newFeedback = new Feedback(feedbackData); 
-        await newFeedback.save(); 
-        // Re-fetch with populate to send back consistent data structure as GET /feedbacks
-        const populatedFeedback = await Feedback.findById(newFeedback._id).populate({ path: 'userId', select: 'loginMethod name email' });
-
-        res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: populatedFeedback });
-    } catch (error) { 
-        console.error("Feedback save error:", error); 
-        res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });
-    }
+    let feedbackData = { name: req.user.name, avatarUrl: req.user.avatarUrl, userId: req.user.userId, feedback, rating: parseInt(rating), userIp, isEdited: false };
+    if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (err) { console.error("Error fetching user for googleIdSubmitter:", err); }}
+    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक जमा ho gaya!', feedback: newFeedback });
+    } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
-    const feedbackId = req.params.id; 
-    const { feedback, rating } = req.body; 
-    const loggedInJwtUser = req.user; // User info from JWT
-
+    const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
-    
     try {
         const existingFeedback = await Feedback.findById(feedbackId);
         if (!existingFeedback) return res.status(404).json({ message: 'Yeh feedback ID mila nahi.' });
-
-        // Ensure the logged-in user is the creator of the feedback
-        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) {
-            return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
-        }
-
-        // Fetch the latest user info from DB to ensure name and avatar are current
-        const userFromDb = await User.findById(loggedInJwtUser.userId);
-        if (!userFromDb) {
-            return res.status(404).json({ message: 'User not found in database for update verification.' });
-        }
-
-        const parsedRating = parseInt(rating);
-
-        // Check if content actually changed
-        const contentActuallyChanged = 
-            existingFeedback.feedback !== feedback || 
-            existingFeedback.rating !== parsedRating ||
-            existingFeedback.name !== userFromDb.name || // Compare with current user name from DB
-            existingFeedback.avatarUrl !== userFromDb.avatarUrl; // Compare with current user avatar from DB
-
+        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
+        const currentNameFromJwt = loggedInJwtUser.name; const parsedRating = parseInt(rating);
+        const contentActuallyChanged = existingFeedback.feedback !== feedback || existingFeedback.rating !== parsedRating || existingFeedback.name !== currentNameFromJwt || existingFeedback.avatarUrl !== loggedInJwtUser.avatarUrl;
         if (contentActuallyChanged) {
-            if (!existingFeedback.originalContent) { 
-                // Save original content only once if this is the first edit
-                existingFeedback.originalContent = { 
-                    name: existingFeedback.name, 
-                    feedback: existingFeedback.feedback, 
-                    rating: existingFeedback.rating, 
-                    timestamp: existingFeedback.timestamp 
-                };
-            }
-            existingFeedback.name = userFromDb.name; // Update name from current user profile
-            existingFeedback.avatarUrl = userFromDb.avatarUrl; // Update avatar from current user profile
-            existingFeedback.feedback = feedback; 
-            existingFeedback.rating = parsedRating; 
-            existingFeedback.timestamp = Date.now(); // Update timestamp to current time for edit
-            existingFeedback.isEdited = true; 
+            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp };}
+            existingFeedback.name = currentNameFromJwt; existingFeedback.feedback = feedback; existingFeedback.rating = parsedRating; existingFeedback.timestamp = Date.now(); existingFeedback.isEdited = true; existingFeedback.avatarUrl = loggedInJwtUser.avatarUrl;
         }
-        
         await existingFeedback.save();
-
-        // Re-fetch with populate to send back consistent data structure as GET /feedbacks
-        const populatedFeedback = await Feedback.findById(existingFeedback._id).populate({ path: 'userId', select: 'loginMethod name email' });
-
-        res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: populatedFeedback });
-    } catch (error) { 
-        console.error(`Feedback update error (ID: ${feedbackId}):`, error); 
-        res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });
-    }
+        res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
+    } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
 });
 
 // Admin Panel Routes
@@ -556,14 +484,19 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
         } else {
             for (const fb of feedbacks) {
-                let userTag = ''; let userDisplayName = fb.name; let userEmailDisplay = '';
+                let userTag = ''; 
+                let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name; // Fixed: Prioritize userId.name, then fb.name
+                // Add a final safeguard if both are somehow missing
+                if (!userDisplayName) {
+                    userDisplayName = 'Unknown User'; // Default fallback name
+                }
+                let userEmailDisplay = '';
                 if (fb.userId) {
                    userTag = fb.userId.loginMethod === 'google' ? `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>` : `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`;
-                   userDisplayName = fb.userId.name || fb.name;
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
-                html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0)}"></div><div class="feedback-info"><h4>${userDisplayName} ${userEmailDisplay} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
+                html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${userEmailDisplay} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
                 if (fb.isEdited && fb.originalContent) { html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original"></div><div class="feedback-info"><h4>ORIGINAL: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button></div></div>`;}
                 html += `</div></div>`;
             }
