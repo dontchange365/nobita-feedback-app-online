@@ -152,24 +152,20 @@ const authenticateToken = (req, res, next) => {
     if (token == null) return res.status(401).json({ message: "Authentication token nahi mila." });
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) { console.error("JWT Verification Error:", err.message); return res.status(403).json({ message: "Token valid nahi hai ya expire ho gaya hai." });}
-        // Include isVerified status in req.user for easier access in routes
         req.user = { ...user, isVerified: user.isVerified }; 
         next();
     });
 };
 
-// Middleware to check if email is verified for sensitive actions
 const isEmailVerified = async (req, res, next) => {
     if (!req.user || !req.user.userId) {
         return res.status(401).json({ message: "Authentication required." });
     }
     try {
-        // Fetch user from DB to get the most current isVerified status
         const user = await User.findById(req.user.userId);
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
-        // Google users are considered verified by default as Google handles it
         if (user.loginMethod === 'google' || user.isVerified) {
             next();
         } else {
@@ -196,7 +192,6 @@ async function sendEmail(options) {
     } catch (error) { console.error('Nodemailer se email bhejne mein error:', error); if(error.responseCode === 535 || (error.command && error.command === 'AUTH LOGIN')) { console.error("SMTP Authentication Error: Username/Password galat ho sakta hai ya Gmail 'less secure app access'/'App Password' aavashyak hai."); } throw error; }
 }
 
-// Auth Routes
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Naam, email, aur password zaroori hai." });
@@ -216,7 +211,7 @@ app.post('/api/auth/signup', async (req, res) => {
             loginMethod: 'email',
             isVerified: false,
             emailVerificationToken: verificationToken,
-            emailVerificationExpires: Date.now() + 10 * 60 * 1000 // 10 minutes expiry
+            emailVerificationExpires: Date.now() + 10 * 60 * 1000
         });
         await newUser.save();
 
@@ -224,10 +219,10 @@ app.post('/api/auth/signup', async (req, res) => {
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         const emailSubject = 'Nobita Feedback App: Email Verification';
         const emailText = `Namaste ${newUser.name},\n\nAapne Nobita Feedback App par account banaya hai. Kripya apna email verify karne ke liye neeche diye gaye link par click karein:\n${verifyUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
-        const emailHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification</h2><p>Namaste ${newUser.name},</p><p>Aapne Nobita Feedback App par account banaya hai.</p><p>Kripya neeche diye gaye button par click karke apna email verify karein. Yeh link <strong>10 minute</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>Aapke email ki verification ke baad hi aap app ke sabhi features ka upyog kar payenge.</p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification</h2><p>Namaste ${newUser.name},</p><p>Aapne Nobita Feedback App par account banaya hai.</p><p>Kripya neeche diye gaye button par click karke apna email verify karein. Yeh link <strong>10 minute</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>Aapke email ki verification ke baad hi aap app ke sabhi features ka upyog kar payenge.</p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         
         try {
-            await sendEmail({ email: newUser.email, subject: emailSubject, message: emailText, html: emailHtml });
+            await sendEmail({ email: newUser.email, subject: emailSubject, message: emailText, html: htmlMessage });
         } catch (emailError) {
             console.error("Verification email bhejne mein error:", emailError);
         }
@@ -298,7 +293,6 @@ app.post('/api/auth/google-signin', async (req, res) => {
 });
 app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
-// Password Reset Routes
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
@@ -575,7 +569,6 @@ app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.s
 });
 
 
-// Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
     try { 
@@ -584,7 +577,6 @@ app.get('/api/feedbacks', async (req, res) => {
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
 
-// Feedback submission DOES NOT require email verification anymore (only authentication)
 app.post('/api/feedback', authenticateToken, async (req, res) => { 
     const { feedback, rating } = req.body; const userIp = req.clientIp;
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
@@ -619,7 +611,6 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     }
 });
 
-// Feedback edit WILL require email verification
 app.put('/api/feedback/:id', authenticateToken, isEmailVerified, async (req, res) => {
     const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
@@ -669,15 +660,692 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     console.log("Admin panel access attempt.");
     try {
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 });
+
+        // --- Calculate Dashboard Stats (Statically for UI demo) ---
+        const totalFeedbacksCount = feedbacks.length;
+        const verifiedUsersCount = feedbacks.filter(fb => fb.userId && fb.userId.isVerified).length;
+        const emailUsersCount = feedbacks.filter(fb => fb.userId && fb.userId.loginMethod === 'email').length;
+        const googleUsersCount = feedbacks.filter(fb => fb.userId && fb.userId.loginMethod === 'google').length;
+        const emailGoogleRatio = (emailUsersCount > 0 && googleUsersCount > 0) ? `${emailUsersCount}:${googleUsersCount}` : 'N/A';
+        const unrepliedFeedbacks = feedbacks.filter(fb => !fb.replies || fb.replies.length === 0).length;
+
+
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
-        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Example admin avatar
 
-        let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:space-between;margin-bottom:20px;padding:0 10px;align-items:center;}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.verified-tag{background-color:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.unverified-tag{background-color:#ffc107;color:#333;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545} .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; } .select-all-container label { font-size: 1.1em; color: #FFD700; } .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; } .bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;} .bulk-delete-btn:hover { background-color: #C0392B; transform: translateY(-2px); } .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; } @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}</style>`;
+        let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 NOBITA'S COMMAND CENTER 👑</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <style>
+        :root {
+            --dark-bg-start: #0a0a0c; /* Near pitch black */
+            --dark-bg-end: #1a1a2e; /* Dark navy blue */
+            --card-bg: rgba(25, 25, 40, 0.6); /* Slightly transparent dark blue/purple */
+            --card-border: rgba(50, 50, 70, 0.3); /* Softer border */
+            --text-color-light: #e0e0e0; /* Off-white for general text */
+            --highlight-yellow: #FFD700; /* Gold/Neon Yellow */
+            --highlight-cyan: #00FFFF; /* Bright Cyan */
+            --highlight-purple: #9B59B6; /* Bright Purple */
+            --neon-glow-color: #00FFFF; /* Cyan glow */
+            --neon-glow-intensity: 0 0 5px var(--neon-glow-color), 0 0 15px var(--neon-glow-color), 0 0 30px var(--neon-glow-color);
+            --delete-red: #E74C3C;
+            --delete-red-hover: #C0392B;
+            --success-green: #28a745;
+            --success-green-hover: #229954;
+            --warning-yellow: #ffc107;
+            --info-blue: #3498DB;
+            --info-blue-hover: #2980B9;
+            --admin-reply-color: #85C1E9; /* Lighter blue for admin replies */
 
+            /* Glassmorphism variables */
+            --glass-blur: 15px;
+            --glass-bg-opacity: 0.15;
+            --glass-border-opacity: 0.2;
+            --glass-shadow-opacity: 0.2;
+        }
+
+        /* Dark/Light Theme variables */
+        body.light-theme {
+            --dark-bg-start: #f0f0f5;
+            --dark-bg-end: #e0e0e8;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(150, 150, 150, 0.3);
+            --text-color-light: #333;
+            --highlight-yellow: #DAA520;
+            --highlight-cyan: #008B8B;
+            --highlight-purple: #8A2BE2;
+            --neon-glow-color: transparent; /* Neon effect off in light theme */
+            --neon-glow-intensity: none;
+            --delete-red: #DC3545;
+            --delete-red-hover: #C82333;
+            --success-green: #218838;
+            --success-green-hover: #196F3D;
+            --warning-yellow: #E0A800;
+            --info-blue: #0069D9;
+            --info-blue-hover: #0056B3;
+            --admin-reply-color: #1E90FF;
+            
+            /* Glassmorphism adjusted for light theme */
+            --glass-bg-opacity: 0.8;
+            --glass-border-opacity: 0.5;
+            --glass-shadow-opacity: 0.1;
+        }
+
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg-start), var(--dark-bg-end));
+            color: var(--text-color-light);
+            margin: 0;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.5s ease; /* Smooth theme transition */
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif; /* Futuristic font */
+            color: var(--highlight-yellow);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 3.5em; /* Larger, more impactful */
+            text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); /* Animated glow */
+            animation: pulse-glow 2s infinite ease-in-out; /* Pulsing effect */
+        }
+        @keyframes pulse-glow {
+            0% { text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); }
+            50% { text-shadow: var(--neon-glow-intensity), 0 0 35px rgba(255,215,0,0.9), 0 0 50px rgba(255,215,0,0.5); }
+            100% { text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); }
+        }
+
+        /* --- Glassmorphism Effect for containers --- */
+        .main-container, .feedback-card, .admin-custom-modal, .dashboard-stat-card {
+            background-color: rgba(25, 25, 40, var(--glass-bg-opacity)); /* Translucent background */
+            backdrop-filter: blur(var(--glass-blur)); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid rgba(var(--text-color-light), var(--glass-border-opacity)); /* Light border */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, var(--glass-shadow-opacity)); /* Soft shadow */
+            border-radius: 15px; /* Rounded corners */
+            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+
+        .main-panel-btn-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            align-items: center;
+            flex-wrap: wrap; /* For responsiveness */
+            gap: 15px; /* Space between buttons/elements */
+        }
+        .main-panel-btn {
+            background-color: var(--info-blue); /* Info blue for primary action */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color .3s ease,transform .2s, box-shadow .3s;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle glow */
+        }
+        .main-panel-btn:hover {
+            background-color: var(--info-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.8); /* Enhanced glow on hover */
+        }
+
+        /* --- Dark/Light Mode Toggle --- */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            width: 50px;
+            height: 25px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px;
+            box-shadow: var(--neon-glow-intensity);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .theme-toggle .icon {
+            font-size: 1.1em;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--highlight-yellow); /* Sun for dark, Moon for light */
+            transition: color 0.3s ease;
+        }
+        .theme-toggle .slider {
+            width: 20px;
+            height: 20px;
+            background-color: var(--highlight-purple);
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            transition: left 0.3s ease, background-color 0.3s ease;
+        }
+        body.light-theme .theme-toggle .slider {
+            left: calc(100% - 23px);
+            background-color: var(--info-blue);
+        }
+        body.light-theme .theme-toggle .icon.sun { color: var(--info-blue); }
+        body.light-theme .theme-toggle .icon.moon { color: var(--highlight-yellow); }
+
+
+        /* --- Dashboard Stats Cards --- */
+        .dashboard-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 30px;
+        }
+        .dashboard-stat-card {
+            padding: 25px;
+            text-align: center;
+            border-radius: 15px;
+            /* Glassmorphism properties already applied from .main-container */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--neon-glow-intensity);
+        }
+        .dashboard-stat-card .icon {
+            font-size: 2.5em;
+            color: var(--highlight-cyan);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--highlight-cyan);
+        }
+        .dashboard-stat-card .value {
+            font-family: 'Orbitron', sans-serif; /* Futuristic font for numbers */
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--highlight-yellow);
+            text-shadow: 0 0 8px rgba(255,215,0,0.7);
+        }
+        .dashboard-stat-card .label {
+            font-size: 0.9em;
+            color: var(--text-color-light);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+        /* --- Feedback Grid & Cards --- */
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .feedback-card {
+            position: relative;
+            min-height: 500px; /* Adjust based on content */
+            border-radius: 15px; /* Ensures glassmorphism is applied */
+            overflow: hidden; /* For inner content */
+            perspective: 1000px; /* For 3D flip */
+        }
+        .feedback-card-inner {
+            position: absolute; /* Changed to absolute for proper flipping */
+            width: 100%;
+            height: 100%;
+            transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1.0); /* Smoother flip */
+            transform-style: preserve-3d;
+            box-shadow: 0 8px 25px rgba(0,0,0,.4);
+            border-radius: 15px;
+        }
+        .feedback-card.is-flipped .feedback-card-inner {
+            transform: rotateY(180deg);
+        }
+        .feedback-card-front, .feedback-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            /* Glassmorphism properties inherited from .main-container */
+            color: var(--text-color-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto; /* Allow scrolling for long content */
+        }
+        .feedback-card-back {
+            transform: rotateY(180deg);
+            background-color: rgba(25, 25, 40, 0.8); /* Slightly less transparent for back */
+        }
+        /* 3D Hover Effect */
+        .feedback-card:hover .feedback-card-inner {
+            transform: rotateY(0deg) scale(1.01) perspective(1000px) rotateX(2deg) rotateY(2deg); /* Slight 3D tilt */
+            box-shadow: var(--neon-glow-intensity); /* Add neon glow on hover */
+        }
+        .feedback-card.is-flipped:hover .feedback-card-inner { /* Maintain flip on hover */
+            transform: rotateY(180deg) scale(1.01) perspective(1000px) rotateX(2deg) rotateY(-2deg);
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        .feedback-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid transparent; /* For animated glow */
+            box-shadow: 0 0 0 3px rgba(255,215,0,0.5); /* Default subtle glow */
+            animation: avatar-glow-unverified 2s infinite ease-in-out; /* Default glow */
+            flex-shrink: 0;
+            position: relative; /* For proper glow positioning */
+        }
+        .feedback-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Glowing Animated Avatar Borders */
+        @keyframes avatar-glow-verified {
+            0% { box-shadow: 0 0 0 3px rgba(40,167,69,0.5), 0 0 10px rgba(40,167,69,0.7); }
+            50% { box-shadow: 0 0 0 3px rgba(40,167,69,0.7), 0 0 20px rgba(40,167,69,0.9); }
+            100% { box-shadow: 0 0 0 3px rgba(40,167,69,0.5), 0 0 10px rgba(40,167,69,0.7); }
+        }
+        @keyframes avatar-glow-unverified {
+            0% { box-shadow: 0 0 0 3px rgba(255,193,7,0.5), 0 0 10px rgba(255,193,7,0.7); }
+            50% { box-shadow: 0 0 0 3px rgba(255,193,7,0.7), 0 0 20px rgba(255,193,7,0.9); }
+            100% { box-shadow: 0 0 0 3px rgba(255,193,7,0.5), 0 0 10px rgba(255,193,7,0.7); }
+        }
+        @keyframes avatar-glow-google {
+            0% { box-shadow: 0 0 0 3px rgba(66,133,244,0.5), 0 0 10px rgba(66,133,244,0.7); }
+            50% { box-shadow: 0 0 0 3px rgba(66,133,244,0.7), 0 0 20px rgba(66,133,244,0.9); }
+            100% { box-shadow: 0 0 0 3px rgba(66,133,244,0.5), 0 0 10px rgba(66,133,244,0.7); }
+        }
+
+        .feedback-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .feedback-info h4 {
+            margin: 0;
+            font-size: 1.3em;
+            color: var(--highlight-yellow);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .feedback-info h4 small {
+            font-size: 0.7em;
+            color: #bbb;
+            text-transform: none;
+            margin-left: 5px;
+        }
+        /* User Type Tags */
+        .google-user-tag, .email-user-tag, .verified-tag, .unverified-tag {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.65em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+            font-weight: 500;
+        }
+        .google-user-tag { background-color: #4285F4; color: white; }
+        .email-user-tag { background-color: #6c757d; color: white; }
+        .verified-tag { background-color: var(--success-green); color: white; }
+        .unverified-tag { background-color: var(--warning-yellow); color: #333; }
+
+        .feedback-info .rating {
+            font-size: 1.1em;
+            color: #F39C12;
+            margin-top: 5px;
+        }
+        .feedback-info .user-ip {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8em;
+            color: #AAB7B8;
+            margin-top: 5px;
+        }
+        .feedback-body {
+            font-size: 1em;
+            color: var(--text-color-light);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+        .feedback-date {
+            font-size: 0.8em;
+            color: #7F8C8D;
+            text-align: right;
+            margin-bottom: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+            flex-shrink: 0;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .action-buttons button, .flip-btn {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .3s ease-in-out;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(25, 25, 40, 0.8); /* Slightly transparent */
+            box-shadow: var(--neon-glow-intensity);
+            text-shadow: 0 0 5px var(--neon-glow-color);
+        }
+        .action-buttons button:hover, .flip-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--neon-glow-intensity), 0 0 40px var(--neon-glow-color);
+            text-shadow: 0 0 10px var(--neon-glow-color), 0 0 20px var(--neon-glow-color);
+        }
+        .delete-btn { background-color: var(--delete-red); }
+        .delete-btn:hover { background-color: var(--delete-red-hover); box-shadow: 0 0 5px var(--delete-red), 0 0 15px var(--delete-red), 0 0 30px var(--delete-red); text-shadow: 0 0 5px var(--delete-red); }
+        .change-avatar-btn { background-color: var(--info-blue); }
+        .change-avatar-btn:hover { background-color: var(--info-blue-hover); box-shadow: 0 0 5px var(--info-blue), 0 0 15px var(--info-blue), 0 0 30px var(--info-blue); text-shadow: 0 0 5px var(--info-blue); }
+        .flip-btn { background-color: var(--highlight-purple); color: white; margin-top: 10px; }
+        .flip-btn:hover { background-color: rgba(155,89,182,0.8); box-shadow: 0 0 5px var(--highlight-purple), 0 0 15px var(--highlight-purple), 0 0 30px var(--highlight-purple); text-shadow: 0 0 5px var(--highlight-purple); }
+
+
+        .reply-section {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+        .reply-section textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background-color: rgba(50, 50, 70, 0.4);
+            color: var(--text-color-light);
+            resize: vertical;
+            min-height: 50px;
+            margin-bottom: 10px;
+            font-size: .95em;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+        }
+        .reply-section textarea::placeholder { color: #A9B7C0; }
+        .reply-btn {
+            background-color: var(--success-green);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color .3s ease,transform .2s, box-shadow .3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 5px var(--success-green);
+            text-shadow: 0 0 5px var(--success-green);
+        }
+        .reply-btn:hover {
+            background-color: var(--success-green-hover);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 0 15px var(--success-green), 0 0 30px var(--success-green);
+            text-shadow: 0 0 10px var(--success-green);
+        }
+
+        .replies-display {
+            margin-top: 15px;
+            background-color: rgba(25, 25, 40, 0.4);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            max-height: 150px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        .replies-display h4 {
+            color: var(--admin-reply-color);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+        .single-reply {
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-size: .9em;
+            color: var(--text-color-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .single-reply:last-child { border-bottom: none; margin-bottom: 0; }
+        .admin-reply-avatar-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--highlight-purple);
+            flex-shrink: 0;
+            object-fit: cover;
+            box-shadow: 0 0 5px rgba(155,89,182,.5);
+        }
+        .reply-content-wrapper { flex-grow: 1; word-wrap: break-word; }
+        .reply-admin-name { font-weight: bold; color: var(--highlight-purple); display: inline; margin-right: 5px; }
+        .reply-timestamp { font-size: .75em; color: #8E9A9D; margin-left: 10px; }
+        .edited-admin-tag {
+            background-color: #5cb85c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: .75em;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        /* Stylish Modal Popups */
+        .admin-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.75);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .admin-modal-overlay.active { opacity: 1; display: flex; }
+
+        .admin-custom-modal {
+            background-color: rgba(25, 25, 40, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.5);
+            text-align: center;
+            color: var(--text-color-light);
+            width: 90%;
+            max-width: 480px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.3, 0.7, 0.4, 1.0);
+        }
+        .admin-modal-overlay.active .admin-custom-modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .admin-custom-modal h3 {
+            color: var(--highlight-yellow);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        .admin-custom-modal p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: var(--text-color-light);
+            word-wrap: break-word;
+        }
+        .admin-modal-buttons button {
+            background-color: var(--info-blue);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: background-color .3s,transform .2s, box-shadow .3s;
+            font-weight: bold;
+            box-shadow: 0 0 5px var(--info-blue);
+        }
+        .admin-modal-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--info-blue);
+        }
+        #adminModalOkButton:hover { background-color: var(--info-blue-hover); }
+        #adminModalConfirmButton { background-color: var(--success-green); }
+        #adminModalConfirmButton:hover { background-color: var(--success-green-hover); box-shadow: 0 0 15px var(--success-green); }
+        #adminModalCancelButton { background-color: var(--delete-red); }
+        #adminModalCancelButton:hover { background:none; color:var(--delete-red); box-shadow: none; }
+        
+        .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+        .select-all-container label { font-size: 1.1em; color: var(--highlight-yellow); }
+        .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .bulk-delete-btn {
+            background-color: var(--delete-red);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color .3s ease,transform .2s, box-shadow .3s;
+            text-transform: uppercase;
+            margin-left: auto;
+            box-shadow: 0 0 5px var(--delete-red);
+            text-shadow: 0 0 5px var(--delete-red);
+        }
+        .bulk-delete-btn:hover {
+            background-color: var(--delete-red-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--delete-red), 0 0 30px var(--delete-red);
+            text-shadow: 0 0 10px var(--delete-red);
+        }
+        .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }
+        
+        @media (max-width:768px){
+            h1{font-size:2.5em;}
+            .dashboard-stats-grid { grid-template-columns: 1fr; }
+            .feedback-grid{grid-template-columns:1fr;}
+            .main-panel-btn-container{flex-direction:column; gap: 15px;}
+            .select-all-container {margin-right: 0;}
+            .bulk-delete-btn {width: 100%; margin-left: 0;}
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <span class="icon sun"><i class="fas fa-sun"></i></span>
+        <span class="icon moon"><i class="fas fa-moon"></i></span>
+        <div class="slider"></div>
+    </div>
+
+    <h1 id="animated-header">👑 NOBITA'S COMMAND CENTER 👑</h1>
+
+    <div class="dashboard-stats-grid">
+        <div class="dashboard-stat-card">
+            <div class="icon"><i class="fas fa-comments"></i></div>
+            <div class="value" id="stat-total-feedbacks">${totalFeedbacksCount}</div>
+            <div class="label">Total Feedbacks</div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon"><i class="fas fa-user-check"></i></div>
+            <div class="value" id="stat-verified-users">${verifiedUsersCount}</div>
+            <div class="label">Verified Users</div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="value" id="stat-user-ratio">${emailGoogleRatio}</div>
+            <div class="label">Email : Google Users</div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon"><i class="fas fa-inbox"></i></div>
+            <div class="value" id="stat-unreplied-feedbacks">${unrepliedFeedbacks}</div>
+            <div class="label">Unreplied Feedbacks</div>
+        </div>
+    </div>
+
+
+    <div class="main-panel-btn-container">
+        <a href="/" class="main-panel-btn"><i class="fas fa-arrow-left"></i> MAIN FEEDBACK PANEL</a>
+        <div class="select-all-container">
+            <input type="checkbox" id="selectAllFeedbacks" onchange="toggleSelectAll(this.checked)">
+            <label for="selectAllFeedbacks">Select All</label>
+        </div>
+        <button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()"><i class="fas fa-trash-alt"></i> DELETE SELECTED</button>
+    </div>
+
+    <div class="feedback-grid">`;
         if (feedbacks.length === 0) {
-            html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
+            html += `<p style="text-align:center;color:var(--text-color-light);font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
         } else {
             for (const fb of feedbacks) {
                 let userTag = ''; 
@@ -687,10 +1355,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     userDisplayName = 'Unknown User'; 
                 }
                 let userEmailDisplay = '';
+                let avatarGlowClass = '';
 
                 if (fb.userId && typeof fb.userId === 'object') {
                    if (fb.userId.loginMethod === 'google') {
                        userTag = `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>`;
+                       avatarGlowClass = 'avatar-glow-google';
+                   } else {
+                       avatarGlowClass = fb.userId.isVerified ? 'avatar-glow-verified' : 'avatar-glow-unverified';
                    }
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
@@ -702,67 +1374,281 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 } else if (fb.googleIdSubmitter) {
                     userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                     userTag += `<span class="verified-tag" title="Email Verified">✔ Verified</span>`;
+                    avatarGlowClass = 'avatar-glow-google';
                 } else {
                     userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
+                    avatarGlowClass = 'avatar-glow-unverified';
                 }
 
-                html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><input type="checkbox" class="feedback-checkbox" value="${fb._id}"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
-                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
-                if (fb.isEdited && fb.originalContent) { html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original"></div><div class="feedback-info"><h4>ORIGINAL: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button></div></div>`;}
+                html += `<div class="feedback-card" id="card-${fb._id}">
+                            <div class="feedback-card-inner">
+                                <div class="feedback-card-front">
+                                    <div class="feedback-header">
+                                        <input type="checkbox" class="feedback-checkbox" value="${fb._id}">
+                                        <div class="feedback-avatar ${avatarGlowClass}">
+                                            <img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}">
+                                        </div>
+                                        <div class="feedback-info">
+                                            <h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
+                                            <small style="font-size:0.7em; color:#bbb; text-transform:none; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
+                                            <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
+                                            <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="feedback-body">
+                                        <p>${fb.feedback}</p>
+                                        <div style="text-align: right; margin-top: 10px; font-size: 1.5em;">
+                                            ${fb.rating === 5 ? '😍' : fb.rating === 4 ? '👍' : fb.rating === 3 ? '😐' : fb.rating === 2 ? '👎' : '😤'}
+                                        </div>
+                                    </div>
+                                    <div class="feedback-date">
+                                        ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                    </div>
+                                    <div class="action-buttons">
+                                        <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')"><i class="fas fa-trash-alt"></i> DELETE</button>
+                                        ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')"><i class="fas fa-user-circle"></i> AVATAR</button>` : ''}
+                                    </div>
+                                    <div class="reply-section">
+                                        <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
+                                        <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')"><i class="fas fa-reply"></i> REPLY</button>
+                                        <div class="replies-display">
+                                            ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
+                                            ${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
+                                        </div>
+                                    </div>
+                                    ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')"><i class="fas fa-sync-alt"></i> VIEW ORIGINAL</button>` : ''}
+                                </div>`;
+                if (fb.isEdited && fb.originalContent) {
+                    html += `<div class="feedback-card-back">
+                                    <div class="feedback-header">
+                                        <div class="feedback-avatar">
+                                            <img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original">
+                                        </div>
+                                        <div class="feedback-info">
+                                            <h4>ORIGINAL: ${fb.originalContent.name}</h4>
+                                            <div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="feedback-body">
+                                        <p>${fb.originalContent.feedback}</p>
+                                        <div style="text-align: right; margin-top: 10px; font-size: 1.5em;">
+                                            ${fb.originalContent.rating === 5 ? '😍' : fb.originalContent.rating === 4 ? '👍' : fb.originalContent.rating === 3 ? '😐' : fb.originalContent.rating === 2 ? '👎' : '😤'}
+                                        </div>
+                                    </div>
+                                    <div class="feedback-date">
+                                        Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}
+                                    </div>
+                                    <div style="margin-top:auto;">
+                                        <button class="flip-btn" onclick="flipCard('${fb._id}')"><i class="fas fa-sync-alt"></i> VIEW EDITED</button>
+                                    </div>
+                                </div>`;
+                }
                 html += `</div></div>`;
             }
         }
-        html += `</div><div id="adminModalOverlay" class="admin-modal-overlay"><div class="admin-custom-modal"><h3 id="adminModalTitle"></h3><p id="adminModalMessage"></p><div class="admin-modal-buttons"><button id="adminModalOkButton">OK</button><button id="adminModalConfirmButton" style="display:none;">Confirm</button><button id="adminModalCancelButton" style="display:none;">Cancel</button></div></div></div>`;
-        html += `<script>const AUTH_HEADER = '${authHeaderValue}';
-            if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") { console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!"); alert("Admin authentication is not configured properly. Actions will fail.");}
-            const adminModalOverlay=document.getElementById('adminModalOverlay');const adminModalTitle=document.getElementById('adminModalTitle');const adminModalMessage=document.getElementById('adminModalMessage');const adminModalOkButton=document.getElementById('adminModalOkButton');const adminModalConfirmButton=document.getElementById('adminModalConfirmButton');const adminModalCancelButton=document.getElementById('adminModalCancelButton');let globalConfirmCallback=null;function showAdminModal(type,title,message,confirmCallbackFn=null){adminModalTitle.textContent=title;adminModalMessage.textContent=message;globalConfirmCallback=confirmCallbackFn;adminModalOkButton.style.display=type==='confirm'?'none':'inline-block';adminModalConfirmButton.style.display=type==='confirm'?'inline-block':'none';adminModalCancelButton.style.display=type==='confirm'?'inline-block':'none';adminModalOverlay.style.display='flex'}
-            adminModalOkButton.addEventListener('click',()=>adminModalOverlay.style.display='none');adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(true)});adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(false)});function flipCard(id){document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped')}
-            async function tryDeleteFeedback(id){console.log("Attempting to delete feedback ID:",id);showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Delete failed response:",err);showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`)}}catch(e){console.error("Delete fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during delete: \${e.message}\`)}}})}
-            async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
-            async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
+        html += `</div>
+
+    <div id="adminModalOverlay" class="admin-modal-overlay">
+        <div class="admin-custom-modal">
+            <h3 id="adminModalTitle"></h3>
+            <p id="adminModalMessage"></p>
+            <div class="admin-modal-buttons">
+                <button id="adminModalOkButton">OK</button>
+                <button id="adminModalConfirmButton" style="display:none;">Confirm</button>
+                <button id="adminModalCancelButton" style="display:none;">Cancel</button>
+            </div>
+             <div id="lottie-animation-container" style="width: 100px; height: 100px; margin: 0 auto; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_HEADER = '${authHeaderValue}';
+        if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") { console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!"); alert("Admin authentication is not configured properly. Actions will fail.");}
+
+        const adminModalOverlay=document.getElementById('adminModalOverlay');
+        const adminModalTitle=document.getElementById('adminModalTitle');
+        const adminModalMessage=document.getElementById('adminModalMessage');
+        const adminModalOkButton=document.getElementById('adminModalOkButton');
+        const adminModalConfirmButton=document.getElementById('adminModalConfirmButton');
+        const adminModalCancelButton=document.getElementById('adminModalCancelButton');
+        const lottieAnimationContainer = document.getElementById('lottie-animation-container');
+
+        let globalConfirmCallback=null;
+        let lottieInstance = null;
+
+        function showAdminModal(type, title, message, confirmCallbackFn = null, lottieFile = null) {
+            adminModalTitle.textContent = title;
+            adminModalMessage.textContent = message;
+            globalConfirmCallback = confirmCallbackFn;
+
+            adminModalOkButton.style.display = type === 'confirm' ? 'none' : 'inline-block';
+            adminModalConfirmButton.style.display = type === 'confirm' ? 'inline-block' : 'none';
+            adminModalCancelButton.style.display = type === 'confirm' ? 'inline-block' : 'none';
             
-            // New functions for multi-select delete
-            function toggleSelectAll(checked) {
-                document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
-                    checkbox.checked = checked;
+            if (lottieInstance) {
+                lottieInstance.destroy();
+                lottieInstance = null;
+            }
+            if (lottieFile) {
+                lottieAnimationContainer.style.display = 'block';
+                lottieInstance = lottie.loadAnimation({
+                    container: lottieAnimationContainer,
+                    renderer: 'svg',
+                    loop: false,
+                    autoplay: true,
+                    path: lottieFile
                 });
+                lottieInstance.play();
+            } else {
+                lottieAnimationContainer.style.display = 'none';
             }
 
-            async function tryDeleteSelectedFeedbacks() {
-                const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
-                if (selectedFeedbackIds.length === 0) {
-                    showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
-                    return;
-                }
+            adminModalOverlay.classList.add('active');
+        }
+        
+        adminModalOkButton.addEventListener('click',()=>adminModalOverlay.classList.remove('active'));
+        adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.classList.remove('active');if(globalConfirmCallback)globalConfirmCallback(true)});
+        adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.classList.remove('active');if(globalConfirmCallback)globalConfirmCallback(false)});
+        
+        function flipCard(id){
+            document.getElementById(`card-${id}`).classList.toggle('is-flipped');
+        }
 
-                showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
-                    if (confirmed) {
-                        try {
-                            const res = await fetch('/api/admin/feedbacks/batch-delete', {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': AUTH_HEADER
-                                },
-                                body: JSON.stringify({ ids: selectedFeedbackIds })
-                            });
-                            if (res.ok) {
-                                showAdminModal('alert','Deleted!',\`\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
-                                setTimeout(()=>location.reload(),1000);
-                            } else {
-                                const err = await res.json();
-                                console.error("Batch delete failed response:",err);
-                                showAdminModal('alert','Error!',\`Failed to delete selected feedbacks: \${err.message||res.statusText}\`);
-                            }
-                        } catch (e) {
-                            console.error("Batch delete fetch error:",e);
-                            showAdminModal('alert','Fetch Error!',\`Error during batch delete: \${e.message}\`);
+        async function tryDeleteFeedback(id){
+            console.log("Attempting to delete feedback ID:",id);
+            showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{
+                if(confirmed){
+                    try{
+                        const res=await fetch(`/api/admin/feedback/${id}`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});
+                        if(res.ok){
+                            showAdminModal('alert','Deleted!','Feedback deleted successfully.', null, 'https://assets2.lottiefiles.com/packages/lf20_t3982e0j.json');
+                            setTimeout(()=>location.reload(),1500);
+                        }else{
+                            const err=await res.json();
+                            console.error("Delete failed response:",err);
+                            showAdminModal('alert','Error!',`Failed to delete: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
+                    }catch(e){
+                        console.error("Delete fetch error:",e);
+                        showAdminModal('alert','Fetch Error!',`Error during delete: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
-                });
+                }
+            });
+        }
+
+        async function tryPostReply(fbId,txtId){
+            const replyText=document.getElementById(txtId).value.trim();
+            console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);
+            if(!replyText){
+                showAdminModal('alert','Empty Reply','Please write something to reply.');
+                return;
+            }
+            showAdminModal('confirm','Post Reply?',`Confirm reply: "${replyText.substring(0,50)}..."`,async confirmed=>{
+                if(confirmed){
+                    try{
+                        const res=await fetch(`/api/admin/feedback/${fbId}/reply`,{
+                            method:'POST',
+                            headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},
+                            body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})
+                        });
+                        if(res.ok){
+                            showAdminModal('alert','Replied!','Reply posted.', null, 'https://assets8.lottiefiles.com/packages/lf20_xctj7873.json');
+                            setTimeout(()=>location.reload(),1500);
+                        }else{
+                            const err=await res.json();
+                            console.error("Reply failed response:",err);
+                            showAdminModal('alert','Error!',`Failed to reply: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        }
+                    }catch(e){
+                        console.error("Reply fetch error:",e);
+                        showAdminModal('alert','Fetch Error!',`Error during reply: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                    }
+                }
+            });
+        }
+
+        async function tryChangeUserAvatar(userId,userName){
+            console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);
+            showAdminModal('confirm','Change Avatar?',`Change avatar for ${userName}? This will regenerate avatar for this email user.`,async confirmed=>{
+                if(confirmed){
+                    try{
+                        const res=await fetch(`/api/admin/user/${userId}/change-avatar`,{
+                            method:'PUT',
+                            headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}
+                        });
+                        if(res.ok){
+                            showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.', null, 'https://assets2.lottiefiles.com/packages/lf20_t3982e0j.json');
+                            setTimeout(()=>location.reload(),1500);
+                        }else{
+                            const err=await res.json();
+                            console.error("Change avatar failed response:",err);
+                            showAdminModal('alert','Error!',`Failed to change avatar: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        }
+                    }catch(e){
+                        console.error("Change avatar fetch error:",e);
+                        showAdminModal('alert','Fetch Error!',`Error during avatar change: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                    }
+                }
+            });
+        }
+        
+        function toggleSelectAll(checked) {
+            document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
+                checkbox.checked = checked;
+            });
+        }
+
+        async function tryDeleteSelectedFeedbacks() {
+            const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
+            if (selectedFeedbackIds.length === 0) {
+                showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
+                return;
             }
 
-        </script></body></html>`;
+            showAdminModal('confirm', 'Delete Selected Feedbacks?', `Are you sure you want to delete ${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.`, async confirmed => {
+                if (confirmed) {
+                    try {
+                        const res = await fetch('/api/admin/feedbacks/batch-delete', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': AUTH_HEADER
+                            },
+                            body: JSON.stringify({ ids: selectedFeedbackIds })
+                        });
+                        if (res.ok) {
+                            showAdminModal('alert','Deleted!',`${selectedFeedbackIds.length} feedback(s) deleted successfully.`, null, 'https://assets2.lottiefiles.com/packages/lf20_t3982e0j.json');
+                            setTimeout(()=>location.reload(),1500);
+                        } else {
+                            const err = await res.json();
+                            console.error("Batch delete failed response:",err);
+                            showAdminModal('alert','Error!',`Failed to delete selected feedbacks: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        }
+                    } catch (e) {
+                        console.error("Batch delete fetch error:",e);
+                        showAdminModal('alert','Fetch Error!',`Error during batch delete: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                    }
+                }
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('adminTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        }
+
+        (function() {
+            const savedTheme = localStorage.getItem('adminTheme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+        })();
+
+    </script>
+</body>
+</html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
 });
@@ -814,14 +1700,10 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     } catch (error) { console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error); res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });}
 });
 
-// Yeh route ensure karega ki frontend ke routes (agar aap React Router, Vue Router etc. use karte hain)
-// direct access par bhi index.html serve karein.
-// Agar /reset-password.html jaisi specific file hai, toh express.static usko pehle hi serve kar dega.
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   } else {
-    // Agar /api/ route match nahi hua toh 404
     res.status(404).json({message: "API endpoint not found."});
   }
 });
