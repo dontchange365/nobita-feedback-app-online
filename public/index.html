@@ -1433,7 +1433,7 @@
             }
         }
 </style>
-</head>
+ </head>
 <body>
     <div id="login-icon-trigger" class="corner-trigger-base" title="Login / Sign Up">
         <i class="fas fa-user-circle"></i>
@@ -1577,7 +1577,7 @@
             <h1 id="main-title"></h1>
             <div id="typed-output"></div>
             <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
-                <p><i class="fas fa-exclamation-triangle"></i> Feedback submit karne, profile edit karne aur avatar upload karne ke liye kripya apna email verify karein.</p>
+                <p><i class="fas fa-exclamation-triangle"></i> Feedback edit karne, profile edit karne aur avatar upload karne ke liye kripya apna email verify karein.</p>
                 <button id="send-verification-email-btn-form">Verify Email Send Karein</button>
             </div>
             <form id="feedback-form">
@@ -1899,13 +1899,15 @@
             else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
             else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
             else if(url.includes('/api/user/change-password')) submitBtn = changePasswordBtn;
-            else if(url.includes('/api/feedback')) submitBtn = submitButton;
+            else if(url.includes('/api/feedback') && method === 'PUT') submitBtn = submitButton; // Only for edit feedback
             else if(url.includes('/api/auth/request-email-verification')) {
                 if (sendVerificationEmailBtn) sendVerificationEmailBtn.disabled = true;
                 if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.disabled = true;
                 if (sendVerificationEmailBtn) sendVerificationEmailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
                 if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             }
+            // For feedback submission, the submitButton is handled separately to allow unverified users
+            // So, no `submitButton` disabling here for POST /api/feedback
 
             if(submitBtn) {
                 submitBtn.disabled = true;
@@ -1938,7 +1940,7 @@
                     else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
                     else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
                     else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                    else if(url.includes('/api/feedback')) submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    else if(url.includes('/api/feedback') && method === 'PUT') submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
                 }
                 if (sendVerificationEmailBtn) {
                     sendVerificationEmailBtn.disabled = false;
@@ -2142,10 +2144,11 @@
                 if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
 
+                // Control visibility of verification prompts
                 if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
                     if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
-                    if(submitButton) submitButton.disabled = true;
+                    // Disable actions that require verification
                     if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
                     if(changePasswordBtn) changePasswordBtn.disabled = true;
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = true;
@@ -2153,12 +2156,16 @@
                 } else {
                     if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
                     if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-                    if(submitButton) submitButton.disabled = false;
+                    // Enable actions if verified or Google user
                     if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = false;
                     if(changePasswordBtn) changePasswordBtn.disabled = false;
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = false;
                     if(avatarUploadInput) avatarUploadInput.disabled = false;
                 }
+
+                // Feedback submission is now allowed even if unverified (handled by submitButton.disabled below)
+                // Feedback editing still requires verification (handled by editButton.disabled in addFeedbackToDOM)
+
 
                 if (currentUser.loginMethod === 'google') {
                     if(profileNameInput) {
@@ -2167,9 +2174,9 @@
                     }
                     if(profileEditForm) saveProfileChangesBtn.disabled = true;
                     if(changePasswordForm) changePasswordForm.style.display = 'none';
-                    if(submitButton) submitButton.disabled = false;
+                    if(submitButton) submitButton.disabled = false; // Google users can always submit
                     if(avatarUploadInput) avatarUploadInput.disabled = false;
-                } else {
+                } else { // Email user
                     if(profileNameInput) {
                         profileNameInput.disabled = false;
                         profileNameInput.title = "";
@@ -2185,6 +2192,12 @@
                     }
                 }
                 if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+
+                // Enable/Disable submit feedback button based on login status (always enabled if logged in)
+                // Verification is not required for submission, only for editing.
+                if (submitButton) {
+                    submitButton.disabled = false; 
+                }
             }
         }
 
@@ -2210,6 +2223,7 @@
             }
             if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
 
+            // Disable all actions for logged out users or guests
             if(submitButton) submitButton.disabled = true;
             if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
             if(changePasswordBtn) changePasswordBtn.disabled = true;
@@ -2540,10 +2554,8 @@
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
                 return;
             }
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                showStylishPopup('warning', 'Email Verification Required!', 'Feedback submit karne ke liye kripya apna email verify karein.');
-                return;
-            }
+            // Feedback submission now does NOT require email verification
+            // The backend /api/feedback route no longer has isEmailVerified middleware
 
             const feedbackContent = feedbackTextarea.value.trim();
             const ratingValue = ratingInput.value;
@@ -2556,6 +2568,13 @@
             let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
             const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
             const method = isEditing ? 'PUT' : 'POST';
+
+            // If editing, check for verification. If submitting, no verification needed.
+            if (isEditing && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+                showStylishPopup('warning', 'Email Verification Required!', 'Feedback edit karne ke liye kripya apna email verify karein.');
+                return;
+            }
+
 
             submitButton.disabled = true;
             submitButton.textContent = isEditing ? "UPDATING..." : "SUBMITTING...";
@@ -2594,10 +2613,11 @@
             isEditing = false;
             currentEditFeedbackId = null;
 
-            if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                submitButton.disabled = true;
-            } else {
+            // Submit button is always enabled if logged in (verification not required for submission)
+            if (currentUser) {
                 submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true; // Disabled if not logged in
             }
         }
 
@@ -2699,13 +2719,11 @@
             let verificationTag = '';
 
             if (fbData.userId && typeof fbData.userId === 'object') {
-                // Only add 'G' for Google users, removed 'E' for email users
                 if (fbData.userId.loginMethod === 'google') {
                     userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 }
                 
                 if (fbData.userId.isVerified) {
-                    // Instagram-like blue tick
                     verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
                 } else if (fbData.userId.loginMethod === 'email') {
                     verificationTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
@@ -2713,7 +2731,7 @@
             } else if (fbData.googleIdSubmitter) {
                 userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
-            } else { // Generic user if no userId or googleIdSubmitter is found
+            } else {
                 userTypeTag = ''; // Removed 'U' tag too if it's not distinguishable now
                 verificationTag = `<span class="unverified-tag-feedback" title="Verification Status Unknown">?</span>`;
             }
@@ -2749,14 +2767,16 @@
             editButton.className = 'edit-feedback-btn';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
-            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id && currentUser.isVerified);
+            // Edit button is disabled if not current user's feedback OR if current user is not verified (for email users)
+            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id && (currentUser.loginMethod === 'google' || currentUser.isVerified));
             
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
-                if (!currentUser.isVerified) {
+                // Explicitly check verification for editing, even if button is enabled
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Feedback edit karne ke liye kripya apna email verify karein.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
@@ -2814,5 +2834,3 @@
         checkLoginStatus();
     });
 </script>
-</body>
-</html>
