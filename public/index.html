@@ -1652,8 +1652,8 @@
         const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
 
         // User Profile Modal Elements (New)
-        const emailVerificationPrompt = document.getElementById('email-verification-prompt'); // New element
-        const sendVerificationEmailBtn = document.getElementById('send-verification-email-btn'); // New button
+        const emailVerificationPrompt = document.getElementById('email-verification-prompt');
+        const sendVerificationEmailBtn = document.getElementById('send-verification-email-btn');
 
         const profileDisplayAvatar = document.getElementById('profile-display-avatar');
         const avatarUploadInput = document.getElementById('avatar-upload-input');
@@ -1683,8 +1683,8 @@
         const submitButton = document.getElementById('submit-feedback');
         const starsElements = document.querySelectorAll('.star');
         const mainTitle = document.getElementById('main-title'); // For Typed.js
-        const feedbackVerificationPrompt = document.getElementById('feedback-verification-prompt'); // New element
-        const sendVerificationEmailBtnForm = document.getElementById('send-verification-email-btn-form'); // New button
+        const feedbackVerificationPrompt = document.getElementById('feedback-verification-prompt');
+        const sendVerificationEmailBtnForm = document.getElementById('send-verification-email-btn-form');
 
 
         let currentUser = null; // Stores current logged-in user data
@@ -1699,7 +1699,7 @@
         const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
         const API_VALIDATE_TOKEN_URL = `${BASE_API_URL}/api/auth/me`;
         const API_REQUEST_RESET_URL = `${BASE_API_URL}/api/auth/request-password-reset`;
-        const API_REQUEST_VERIFICATION_URL = `${BASE_API_URL}/api/auth/request-email-verification`; // New Endpoint
+        const API_REQUEST_VERIFICATION_URL = `${BASE_API_URL}/api/auth/request-email-verification`;
         const API_FEEDBACK_URL = `${BASE_API_URL}/api/feedback`; // For POST feedback
         const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`; // For GET all feedbacks
         const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`; // New endpoint for profile update
@@ -1757,7 +1757,7 @@
                 'warning':'<i class="fas fa-exclamation-triangle"></i>',
                 'confirm': '<i class="fas fa-question-circle"></i>',
                 'forgot_password': '<i class="fas fa-key"></i>',
-                'verify_email': '<i class="fas fa-envelope"></i>' // New icon for email verification
+                'verify_email': '<i class="fas fa-envelope"></i>'
             };
             if(iconsFA[type]) {
                 stylishPopupIcon.innerHTML = iconsFA[type];
@@ -2336,7 +2336,7 @@
             profileEditForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to update your profile.');
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { //
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Profile update karne ke liye kripya apna email verify karein.');
                 }
 
@@ -2383,7 +2383,7 @@
         if (avatarUploadInput) {
             avatarUploadInput.addEventListener('change', () => {
                 if (avatarUploadInput.files.length > 0) {
-                    if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) { //
+                    if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                         showStylishPopup('warning', 'Email Verification Required!', 'Avatar upload karne ke liye kripya apna email verify karein.');
                         avatarUploadInput.value = ''; // Clear selection
                         return;
@@ -2425,7 +2425,7 @@
                 if (!currentUser) {
                     return showStylishPopup('error', 'Error', 'You must be logged in to upload avatar.');
                 }
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { //
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Avatar upload karne ke liye kripya apna email verify karein.');
                 }
                 if (avatarUploadInput.files.length === 0) {
@@ -2525,7 +2525,7 @@
                 if (currentUser.loginMethod === 'google') {
                     return showStylishPopup('error', 'Google User', 'Google users cannot change password from here.');
                 }
-                if (!currentUser.isVerified) { //
+                if (!currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Password badalne ke liye kripya apna email verify karein.');
                 }
 
@@ -2616,7 +2616,7 @@
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
                 return;
             }
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { //
+            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                 showStylishPopup('warning', 'Email Verification Required!', 'Feedback submit karne ke liye kripya apna email verify karein.');
                 return;
             }
@@ -2790,13 +2790,14 @@
                 userTypeTag = fbData.userId.loginMethod === 'google' ? `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>` : `<span class="user-type-indicator email-user-indicator" title="Email User">E</span>`;
                 
                 if (fbData.userId.isVerified) {
-                    verificationTag = `<span class="verified-tag-feedback" title="Email Verified">✔ Verified</span>`;
+                    // Changed from text to a Font Awesome check-circle icon
+                    verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle" style="color:#007bff;"></i></span>`;
                 } else if (fbData.userId.loginMethod === 'email') {
                     verificationTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
                 }
             } else if (fbData.googleIdSubmitter) { // Fallback for older feedbacks or if userId not populated but googleId exists
                 userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                verificationTag = `<span class="verified-tag-feedback" title="Email Verified">✔ Verified</span>`; // Assume legacy Google users were verified
+                verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle" style="color:#007bff;"></i></span>`; // Assume legacy Google users were verified
             } else { // Generic user if no userId or googleIdSubmitter is found
                 userTypeTag = `<span class="user-type-indicator email-user-indicator" title="User">U</span>`;
                 // Cannot determine verification for generic users, assume unverified or don't display
@@ -2845,7 +2846,7 @@
                 if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
-                if (!currentUser.isVerified) { //
+                if (!currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Feedback edit karne ke liye kripya apna email verify karein.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
@@ -2907,6 +2908,5 @@
         checkLoginStatus(); // Check if user is already logged in via token
     });
 </script>
-
 </body>
 </html>
