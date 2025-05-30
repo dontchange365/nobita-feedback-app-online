@@ -1387,21 +1387,21 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         </div>
                                     </div>
                                     <div class="feedback-date">
-                                        ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
+                                        ${new Date(fb.timestamp).toLocaleString()}
                                     </div>
                                     <div class="action-buttons">
-                                        <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')"><i class="fas fa-trash-alt"></i> DELETE</button>
-                                        ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')"><i class="fas fa-user-circle"></i> AVATAR</button>` : ''}
+                                        <button class="delete-btn" onclick="tryDeleteFeedback(\`\${fb._id}\`)"><i class="fas fa-trash-alt"></i> DELETE</button>
+                                        ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar(\`\${fb.userId._id}\`, \`\${userDisplayName}\`)"><i class="fas fa-user-circle"></i> AVATAR</button>` : ''}
                                     </div>
                                     <div class="reply-section">
                                         <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
-                                        <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')"><i class="fas fa-reply"></i> REPLY</button>
+                                        <button class="reply-btn" onclick="tryPostReply(\`\${fb._id}\`, \`reply-text-\${fb._id}\`)"><i class="fas fa-reply"></i> REPLY</button>
                                         <div class="replies-display">
                                             ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
-                                            ${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
+                                            ${fb.replies.map(reply => `<div class="single-reply"><img src="<span class="math-inline">\{nobitaAvatarUrl\}" alt\="Admin" class\="admin\-reply\-avatar\-sm"\><div class\="reply\-content\-wrapper"\><span class\="reply\-admin\-name"\></span>{reply.adminName}:</span> <span class="math-inline">\{reply\.text\}<span class\="reply\-timestamp"\>\(</span>{new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
                                         </div>
                                     </div>
-                                    ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')"><i class="fas fa-sync-alt"></i> VIEW ORIGINAL</button>` : ''}
+                                    ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard(\`\${fb._id}\`)"><i class="fas fa-sync-alt"></i> VIEW ORIGINAL</button>` : ''}
                                 </div>`;
                 if (fb.isEdited && fb.originalContent) {
                     html += `<div class="feedback-card-back">
@@ -1424,7 +1424,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}
                                     </div>
                                     <div style="margin-top:auto;">
-                                        <button class="flip-btn" onclick="flipCard('${fb._id}')"><i class="fas fa-sync-alt"></i> VIEW EDITED</button>
+                                        <button class="flip-btn" onclick="flipCard(\`\${fb._id}\`)"><i class="fas fa-sync-alt"></i> VIEW EDITED</button>
                                     </div>
                                 </div>`;
                 }
@@ -1496,7 +1496,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.classList.remove('active');if(globalConfirmCallback)globalConfirmCallback(false)});
         
         function flipCard(id){
-            document.getElementById(`card-${id}`).classList.toggle('is-flipped');
+            // FIXED: Escaped backticks for the template literal here
+            document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped');
         }
 
         async function tryDeleteFeedback(id){
@@ -1504,18 +1505,19 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{
                 if(confirmed){
                     try{
-                        const res=await fetch(`/api/admin/feedback/${id}`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});
+                        // FIXED: Escaped backticks for the template literal here
+                        const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});
                         if(res.ok){
                             showAdminModal('alert','Deleted!','Feedback deleted successfully.', null, 'https://assets2.lottiefiles.com/packages/lf20_t3982e0j.json');
                             setTimeout(()=>location.reload(),1500);
                         }else{
                             const err=await res.json();
                             console.error("Delete failed response:",err);
-                            showAdminModal('alert','Error!',`Failed to delete: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                            showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
                     }catch(e){
                         console.error("Delete fetch error:",e);
-                        showAdminModal('alert','Fetch Error!',`Error during delete: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        showAdminModal('alert','Fetch Error!',`Error during delete: \${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
                 }
             });
@@ -1528,10 +1530,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 showAdminModal('alert','Empty Reply','Please write something to reply.');
                 return;
             }
-            showAdminModal('confirm','Post Reply?',`Confirm reply: "${replyText.substring(0,50)}..."`,async confirmed=>{
+            // FIXED: Escaped backticks for the template literal here
+            showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{
                 if(confirmed){
                     try{
-                        const res=await fetch(`/api/admin/feedback/${fbId}/reply`,{
+                        // FIXED: Escaped backticks for the template literal here
+                        const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{
                             method:'POST',
                             headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},
                             body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})
@@ -1542,11 +1546,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         }else{
                             const err=await res.json();
                             console.error("Reply failed response:",err);
-                            showAdminModal('alert','Error!',`Failed to reply: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                            showAdminModal('alert','Error!',`Failed to reply: \${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
                     }catch(e){
                         console.error("Reply fetch error:",e);
-                        showAdminModal('alert','Fetch Error!',`Error during reply: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        showAdminModal('alert','Fetch Error!',`Error during reply: \${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
                 }
             });
@@ -1554,10 +1558,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
         async function tryChangeUserAvatar(userId,userName){
             console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);
-            showAdminModal('confirm','Change Avatar?',`Change avatar for ${userName}? This will regenerate avatar for this email user.`,async confirmed=>{
+            // FIXED: Escaped backticks for the template literal here
+            showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{
                 if(confirmed){
                     try{
-                        const res=await fetch(`/api/admin/user/${userId}/change-avatar`,{
+                        // FIXED: Escaped backticks for the template literal here
+                        const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{
                             method:'PUT',
                             headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}
                         });
@@ -1567,11 +1573,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         }else{
                             const err=await res.json();
                             console.error("Change avatar failed response:",err);
-                            showAdminModal('alert','Error!',`Failed to change avatar: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                            showAdminModal('alert','Error!',`Failed to change avatar: \${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
                     }catch(e){
                         console.error("Change avatar fetch error:",e);
-                        showAdminModal('alert','Fetch Error!',`Error during avatar change: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        showAdminModal('alert','Fetch Error!',`Error during avatar change: \${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
                 }
             });
@@ -1590,7 +1596,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 return;
             }
 
-            showAdminModal('confirm', 'Delete Selected Feedbacks?', `Are you sure you want to delete ${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.`, async confirmed => {
+            // FIXED: Escaped backticks for the template literal here
+            showAdminModal('confirm', 'Delete Selected Feedbacks?', `Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.`, async confirmed => {
                 if (confirmed) {
                     try {
                         const res = await fetch('/api/admin/feedbacks/batch-delete', {
@@ -1607,11 +1614,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         } else {
                             const err = await res.json();
                             console.error("Batch delete failed response:",err);
-                            showAdminModal('alert','Error!',`Failed to delete selected feedbacks: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                            showAdminModal('alert','Error!',`Failed to delete selected feedbacks: \${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
                     }catch(e){
                         console.error("Batch delete fetch error:",e);
-                        showAdminModal('alert','Fetch Error!',`Error during batch delete: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
+                        showAdminModal('alert','Fetch Error!',`Error during batch delete: \${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
                 }
             });
