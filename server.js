@@ -1,9 +1,4 @@
 // server.js
-
-// ... (existing top-level imports and configurations)
-// 예를 들어, dotenv, express, body-parser, cors, mongoose, etc.
-// Ye sab code jaisa hai waisa hi rehne dein
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -14,7 +9,7 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto'); // Crypto import rehne dein
+const crypto = require('crypto');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 
@@ -23,7 +18,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ... (existing environment variable loading)
+// Load from .env (Render par yeh dashboard se aayenge)
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -46,7 +41,7 @@ cloudinary.config({
     api_secret: CLOUDINARY_API_SECRET
 });
 
-// ... (Debugging Environment Variables Check - isko bhi rehne dein)
+// --- Debugging Environment Variables ---
 console.log("--- Environment Variable Check (server.js start) ---");
 console.log("PORT (from process.env):", process.env.PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
@@ -64,7 +59,7 @@ console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SE
 console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
-// Zaroori environment variables check karna (isko bhi rehne dein)
+// Zaroori environment variables check karna
 if (!MONGODB_URI || !JWT_SECRET || !FRONTEND_URL) {
     console.error("CRITICAL ERROR: MONGODB_URI, JWT_SECRET, ya FRONTEND_URL environment variable nahi mila.");
     console.error("Kripya Render dashboard ke 'Environment' section mein check karein ki yeh variables sahi Key aur Value ke saath set hain aur khaali (empty) nahi hain.");
@@ -120,7 +115,6 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// ... (feedbackSchema, Feedback model, app.use middleware - yeh sab same rehne dein)
 const feedbackSchema = new mongoose.Schema({
     name: { type: String, required: true },
     feedback: { type: String, required: true },
@@ -166,7 +160,6 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// sendEmail function jaisa hai waisa hi rehne dein
 async function sendEmail(options) {
     if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
         console.error("Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain.");
@@ -174,7 +167,7 @@ async function sendEmail(options) {
     }
     console.log(`Email bhejne ki koshish: To: ${options.email}, Subject: ${options.subject} (Host: ${EMAIL_HOST})`);
     const transporter = nodemailer.createTransport({
-        host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465, // Note: For port 587, 'secure' is usually false with 'tls' option or implicit. For Gmail, it's generally secure.
+        host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465,
         auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     });
     const mailOptions = { from: `"Nobita Feedback App" <${EMAIL_USER}>`, to: options.email, subject: options.subject, text: options.message, html: options.html };
@@ -192,7 +185,6 @@ app.post('/api/auth/signup', async (req, res) => {
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            // Agar user exist karta hai lekin verified nahi hai, to dobara verification email bhejne ka option de sakte hain
             if (existingUser.loginMethod === 'email' && !existingUser.isVerified) {
                 return res.status(400).json({ message: "Yeh email pehle se register hai, lekin verified nahi hai. Kripya apne email par verification link check karein, ya login karein." });
             }
@@ -202,7 +194,6 @@ app.post('/api/auth/signup', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
         const userAvatar = getDiceBearAvatarUrl(name);
 
-        // Naya verification token generate karein
         const emailVerificationToken = crypto.randomBytes(32).toString('hex');
         const emailVerificationExpires = Date.now() + 3600000; // 1 ghanta
 
@@ -212,7 +203,7 @@ app.post('/api/auth/signup', async (req, res) => {
             password: hashedPassword,
             avatarUrl: userAvatar,
             loginMethod: 'email',
-            isVerified: false, // Abhi verified nahi hai
+            isVerified: false,
             emailVerificationToken: emailVerificationToken,
             emailVerificationExpires: emailVerificationExpires
         });
@@ -237,10 +228,8 @@ app.post('/api/auth/signup', async (req, res) => {
             res.status(201).json({ message: "Account successfully created. Kripya apne email ko verify karein (verification link aapke inbox mein bhej diya gaya hai)." });
         } catch (emailError) {
             console.error('Signup ke baad verification email bhejne mein error:', emailError);
-            // Agar email bhejne mein dikkat aati hai, to bhi account bana dein,
-            // lekin frontend ko message dein ki email nahi ja paya
             res.status(201).json({
-                token: null, // No token yet, verification pending
+                token: null,
                 user: { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email', isVerified: false },
                 message: "Account successfully created, lekin verification email bhejne mein kuch दिक्कत aa gayi. Kripya thodi der baad dobara koshish karein ya login karte samay email verify karein."
             });
@@ -251,7 +240,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-// LOGIN route mein check add karein ki user verified hai ya nahi (optional, but good practice)
+// LOGIN route mein check add karein ki user verified hai ya nahi
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email aur password zaroori hai." });
@@ -262,21 +251,18 @@ app.post('/api/auth/login', async (req, res) => {
         // --- EMAIL VERIFICATION CHECK LOGIN PAR ---
         if (user.loginMethod === 'email' && !user.isVerified) {
             return res.status(401).json({ message: "Kripya pehle apne email ko verify karein. Verification link aapke inbox mein bhej diya gaya hai." });
-            // Optionally, yahan se aap dobara verification email bhejne ka option bhi de sakte hain
         }
 
         if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
         if (!user.password) return res.status(401).json({ message: "Login credentials sahi nahi hain." });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: "Email ya password galat hai." });
-        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; // Add isVerified to token
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch दिक्कत aa gayi.", error: error.message });}
 });
 
-// Google Sign-in route mein isVerified default true hoga ya check nahi hoga,
-// kyuki Google already email verified deta hai
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
@@ -292,7 +278,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
                 if (user.loginMethod === 'email') {
                     user.googleId = googleId;
                     user.avatarUrl = googleAvatar || user.avatarUrl;
-                    user.isVerified = true; // Google se login kiya to verified maan sakte hain
+                    user.isVerified = true;
                 }
             } else {
                 user = new User({
@@ -301,14 +287,14 @@ app.post('/api/auth/google-signin', async (req, res) => {
                     email: email.toLowerCase(),
                     avatarUrl: googleAvatar || getDiceBearAvatarUrl(name),
                     loginMethod: 'google',
-                    isVerified: true // Google users ko directly verified mark karein
+                    isVerified: true
                 });
             }
             await user.save();
         } else {
             if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
         }
-        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified }; // Add isVerified to token
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Google signin mein error:', error); res.status(401).json({ message: 'Google token invalid hai.', error: error.message });}
@@ -316,15 +302,14 @@ app.post('/api/auth/google-signin', async (req, res) => {
 
 app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
-// Password Reset Routes (yeh jaisa hai waisa hi rehne dein, yeh kaam kar raha hai)
-// ... (Your existing /api/auth/request-password-reset and /api/auth/reset-password routes)
+// Password Reset Routes
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
     if (!FRONTEND_URL) { console.error("CRITICAL: FRONTEND_URL .env file mein set nahi hai. Password reset link nahi banega."); return res.status(500).json({ message: "Server configuration mein error hai (FRONTEND_URL missing)." });}
     try {
         const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email' });
-        if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila ya email/password account nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayega." });}
+        if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila ya email/password account nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayga." });}
         const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
         console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
@@ -333,7 +318,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) {
-        console.error('Request password reset API mein error:', error); // Log full error
+        console.error('Request password reset API mein error:', error);
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
             res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
@@ -363,54 +348,45 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // --- NAYA ROUTE: EMAIL VERIFICATION HANDLE KARNE KE LIYE ---
 app.get('/api/auth/verify-email', async (req, res) => {
-    const { token } = req.query; // URL se token nikalenge
+    const { token } = req.query;
     console.log(`Email verification request received for token: ${token ? token.substring(0, 10) + '...' : 'NO TOKEN'}`);
 
     if (!token) {
-        // res.status(400).json({ message: "Email verification token nahi mila." });
-        // Frontend par redirect karein error message ke saath
         return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification token nahi mila.")}`);
     }
 
     try {
         const user = await User.findOne({
             emailVerificationToken: token,
-            emailVerificationExpires: { $gt: Date.now() } // Token expire nahi hua ho
+            emailVerificationExpires: { $gt: Date.now() }
         });
 
         if (!user) {
             console.log(`Email verification: Invalid or expired token "${token ? token.substring(0, 10) + '...' : 'NO TOKEN'}"`);
-            // res.status(400).json({ message: "Email verification token invalid hai ya expire ho chuka hai." });
-            // Frontend par redirect karein error message ke saath
             return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification link invalid hai ya expire ho chuka hai. Kripya dobara signup karein.")}`);
         }
 
-        // User ko verified mark karein
         user.isVerified = true;
-        user.emailVerificationToken = undefined; // Token hata dein
-        user.emailVerificationExpires = undefined; // Expiry hata dein
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
         await user.save();
 
         console.log(`Email safaltapoorvak verify hua user ke liye: ${user.email}`);
 
-        // Frontend par success page par redirect karein
-        // Ensure aapke public folder mein ya frontend routes mein ek success page ho
-        return res.redirect(`${FRONTEND_URL}/verification-success.html`); // Ya koi aur success page
+        return res.redirect(`${FRONTEND_URL}/verification-success.html`);
 
     } catch (error) {
         console.error('Email verification API mein error:', error);
-        // res.status(500).json({ message: "Email verification process karne mein kuch दिक्कत aa gayi." });
-        // Frontend par generic error page par redirect karein
         return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification process karne mein kuch दिक्कत aa gayi.")}`);
     }
 });
 
 
-// Multer setup for file uploads (jaisa hai waisa hi rehne dein)
+// Multer setup for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -420,9 +396,7 @@ const upload = multer({
     }
 });
 
-// ... (remaining routes like /api/user/profile, /api/user/change-password, /api/user/upload-avatar,
-// /api/feedbacks, /api/feedback, /api/feedback/:id, admin panel routes, etc. - yeh sab same rahenge)
-
+// User Profile Management Routes
 app.put('/api/user/profile', authenticateToken, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
@@ -452,14 +426,14 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
                 user.avatarUrl = getDiceBearAvatarUrl(name);
             }
         }
-
+        
         await user.save();
 
         if (avatarUrl || (user.loginMethod === 'email' && name !== req.user.name)) {
             await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl, name: user.name } });
         }
 
-        const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; // Add isVerified
+        const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
 
         res.status(200).json({ message: 'Profile safaltapoorvak update ho gaya!', user: updatedUserForToken, token: newToken });
@@ -469,7 +443,6 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
     }
 });
 
-// ... (rest of your server.js code)
 app.post('/api/user/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
@@ -519,10 +492,10 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
 
     try {
         const result = await cloudinary.uploader.upload_stream({
-            folder: 'nobita_feedback_avatars', // Cloudinary folder
+            folder: 'nobita_feedback_avatars',
             transformation: [
-                { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" }, // Crop to circle
-                { quality: "auto:eco" } // Optimize quality
+                { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" },
+                { quality: "auto:eco" }
             ]
         }, async (error, result) => {
             if (error) {
@@ -566,7 +539,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
     let feedbackData = { name: req.user.name, avatarUrl: req.user.avatarUrl, userId: req.user.userId, feedback, rating: parseInt(rating), userIp, isEdited: false };
     if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (err) { console.error("Error fetching user for googleIdSubmitter:", err); }}
-    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक जमा ho gaya!', feedback: newFeedback });
+    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
@@ -627,7 +600,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
                 html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><input type="checkbox" class="feedback-checkbox" value="${fb._id}"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
-                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb.._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
+                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
                 if (fb.isEdited && fb.originalContent) { html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original"></div><div class="feedback-info"><h4>ORIGINAL: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button></div></div>`;}
                 html += `</div></div>`;
             }
