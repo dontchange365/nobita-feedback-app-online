@@ -1,4 +1,9 @@
 // server.js
+
+// ... (existing top-level imports and configurations)
+// 예를 들어, dotenv, express, body-parser, cors, mongoose, etc.
+// Ye sab code jaisa hai waisa hi rehne dein
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -9,16 +14,16 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto');
-const cloudinary = require('cloudinary').v2; // Cloudinary
-const multer = require('multer'); // Multer for file uploads
+const crypto = require('crypto'); // Crypto import rehne dein
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
 
-dotenv.config(); // Yeh local .env file ke liye hai, Render isko ignore karega
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Load from .env (Render par yeh dashboard se aayenge)
+// ... (existing environment variable loading)
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -28,7 +33,7 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL; // Yeh zaroori hai verification link ke liye
 
 // Cloudinary Configuration
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
@@ -36,12 +41,12 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 cloudinary.config({
-  cloud_name: CLOUDINARY_CLOUD_NAME,
-  api_key: CLOUDINARY_API_KEY,
-  api_secret: CLOUDINARY_API_SECRET
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET
 });
 
-// --- Debugging Environment Variables ---
+// ... (Debugging Environment Variables Check - isko bhi rehne dein)
 console.log("--- Environment Variable Check (server.js start) ---");
 console.log("PORT (from process.env):", process.env.PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
@@ -59,12 +64,12 @@ console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SE
 console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
-// Zaroori environment variables check karna
+// Zaroori environment variables check karna (isko bhi rehne dein)
 if (!MONGODB_URI || !JWT_SECRET || !FRONTEND_URL) {
     console.error("CRITICAL ERROR: MONGODB_URI, JWT_SECRET, ya FRONTEND_URL environment variable nahi mila.");
     console.error("Kripya Render dashboard ke 'Environment' section mein check karein ki yeh variables sahi Key aur Value ke saath set hain aur khaali (empty) nahi hain.");
     console.error("Changes save karne ke baad, service ko manually redeploy/restart karna na bhoolein.");
-    process.exit(1); // Server start hone se rok dein
+    process.exit(1);
 }
 if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
     console.warn("WARNING: ADMIN_USERNAME ya ADMIN_PASSWORD environment variable nahi mila. Admin panel login kaam nahi karega.");
@@ -72,8 +77,9 @@ if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
 if (!GOOGLE_CLIENT_ID) {
     console.warn("WARNING: GOOGLE_CLIENT_ID environment variable nahi mila. Google Sign-In kaam nahi karega.");
 }
+// Ab email service ke liye yeh warning sahi hai, kyuki ab verification bhi hoga
 if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
-    console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Password reset email kaam nahi karega.");
+    console.warn("WARNING: Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain. Email functionalities kaam nahi karengi.");
 }
 if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
     console.warn("WARNING: Cloudinary environment variables poori tarah set nahi hain. Avatar upload kaam nahi karega.");
@@ -83,12 +89,12 @@ if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('MongoDB se connection safal!'))
-  .catch(err => {
-    console.error('MongoDB connection mein gadbad:', err);
-    console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
-    process.exit(1);
-});
+    .then(() => console.log('MongoDB se connection safal!'))
+    .catch(err => {
+        console.error('MongoDB connection mein gadbad:', err);
+        console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
+        process.exit(1);
+    });
 
 function getDiceBearAvatarUrl(name, randomSeed = '') {
     const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
@@ -96,31 +102,37 @@ function getDiceBearAvatarUrl(name, randomSeed = '') {
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
+// --- USER SCHEMA MEIN CHANGES KAREIN ---
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String },
-  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
-  avatarUrl: { type: String },
-  loginMethod: { type: String, enum: ['email', 'google'], required: true },
-  createdAt: { type: Date, default: Date.now },
-  resetPasswordToken: { type: String, default: undefined },
-  resetPasswordExpires: { type: Date, default: undefined }
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    password: { type: String },
+    googleId: { type: String, sparse: true, unique: true },
+    avatarUrl: { type: String },
+    loginMethod: { type: String, enum: ['email', 'google'], required: true },
+    createdAt: { type: Date, default: Date.now },
+    resetPasswordToken: { type: String, default: undefined },
+    resetPasswordExpires: { type: Date, default: undefined },
+    // --- NAYE FIELDS EMAIL VERIFICATION KE LIYE ---
+    isVerified: { type: Boolean, default: false }, // Default false hoga
+    emailVerificationToken: { type: String, default: undefined },
+    emailVerificationExpires: { type: Date, default: undefined }
 });
 const User = mongoose.model('User', userSchema);
 
+// ... (feedbackSchema, Feedback model, app.use middleware - yeh sab same rehne dein)
 const feedbackSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  feedback: { type: String, required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
-  timestamp: { type: Date, default: Date.now },
-  avatarUrl: { type: String },
-  userIp: { type: String },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  googleIdSubmitter: { type: String, sparse: true },
-  isEdited: { type: Boolean, default: false },
-  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
-  replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
+    name: { type: String, required: true },
+    feedback: { type: String, required: true },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    timestamp: { type: Date, default: Date.now },
+    avatarUrl: { type: String },
+    userIp: { type: String },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    googleIdSubmitter: { type: String, sparse: true },
+    isEdited: { type: Boolean, default: false },
+    originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
+    replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
@@ -154,6 +166,7 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// sendEmail function jaisa hai waisa hi rehne dein
 async function sendEmail(options) {
     if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
         console.error("Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain.");
@@ -161,7 +174,7 @@ async function sendEmail(options) {
     }
     console.log(`Email bhejne ki koshish: To: ${options.email}, Subject: ${options.subject} (Host: ${EMAIL_HOST})`);
     const transporter = nodemailer.createTransport({
-        host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465,
+        host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465, // Note: For port 587, 'secure' is usually false with 'tls' option or implicit. For Gmail, it's generally secure.
         auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     });
     const mailOptions = { from: `"Nobita Feedback App" <${EMAIL_USER}>`, to: options.email, subject: options.subject, text: options.message, html: options.html };
@@ -170,40 +183,100 @@ async function sendEmail(options) {
 }
 
 // Auth Routes
+
+// --- SIGNUP ROUTE MEIN CHANGES KAREIN ---
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Naam, email, aur password zaroori hai." });
     if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase() });
-        if (existingUser) return res.status(400).json({ message: "Yeh email pehle se register hai." });
+        if (existingUser) {
+            // Agar user exist karta hai lekin verified nahi hai, to dobara verification email bhejne ka option de sakte hain
+            if (existingUser.loginMethod === 'email' && !existingUser.isVerified) {
+                return res.status(400).json({ message: "Yeh email pehle se register hai, lekin verified nahi hai. Kripya apne email par verification link check karein, ya login karein." });
+            }
+            return res.status(400).json({ message: "Yeh email pehle se register hai." });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 12);
         const userAvatar = getDiceBearAvatarUrl(name);
-        const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email' });
+
+        // Naya verification token generate karein
+        const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+        const emailVerificationExpires = Date.now() + 3600000; // 1 ghanta
+
+        const newUser = new User({
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            avatarUrl: userAvatar,
+            loginMethod: 'email',
+            isVerified: false, // Abhi verified nahi hai
+            emailVerificationToken: emailVerificationToken,
+            emailVerificationExpires: emailVerificationExpires
+        });
         await newUser.save();
-        const userForToken = { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email' };
-        const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ token: appToken, user: userForToken });
+
+        // --- VERIFICATION EMAIL BHEJEIN ---
+        const verifyPagePath = "/verify-email.html"; // Aapke public folder mein yeh file honi chahiye
+        const verificationUrl = `${FRONTEND_URL}${verifyPagePath}?token=${emailVerificationToken}`;
+
+        const verificationText = `Namaste ${newUser.name},\n\nAapne Nobita Feedback App par account banaya hai.\nKripya apne email address ko verify karne ke liye neeche diye gaye link par click karein:\n${verificationUrl}\n\nAgar aapne yeh account nahi banaya tha, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+
+        const verificationHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification</h2><p>Namaste ${newUser.name},</p><p>Aapne Nobita Feedback App par account banaya hai.</p><p>Kripya apne email address ko verify karne ke liye neeche diye gaye button par click karein:</p><p style="text-align: center; margin: 25px 0;"><a href="${verificationUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verificationUrl}" target="_blank" style="color: #3B82F6;">${verificationUrl}</a></p><p>Agar aapne yeh account nahi banaya tha, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+
+        try {
+            await sendEmail({
+                email: newUser.email,
+                subject: 'Nobita Feedback App: Apne Email Ko Verify Karein',
+                message: verificationText,
+                html: verificationHtml
+            });
+            console.log(`Verification email sent to ${newUser.email}`);
+            res.status(201).json({ message: "Account successfully created. Kripya apne email ko verify karein (verification link aapke inbox mein bhej diya gaya hai)." });
+        } catch (emailError) {
+            console.error('Signup ke baad verification email bhejne mein error:', emailError);
+            // Agar email bhejne mein dikkat aati hai, to bhi account bana dein,
+            // lekin frontend ko message dein ki email nahi ja paya
+            res.status(201).json({
+                token: null, // No token yet, verification pending
+                user: { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email', isVerified: false },
+                message: "Account successfully created, lekin verification email bhejne mein kuch दिक्कत aa gayi. Kripya thodi der baad dobara koshish karein ya login karte samay email verify karein."
+            });
+        }
     } catch (error) {
         console.error('Signup mein error:', error);
         res.status(500).json({ message: "Account banane mein kuch दिक्कत aa gayi.", error: error.message });
     }
 });
+
+// LOGIN route mein check add karein ki user verified hai ya nahi (optional, but good practice)
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email aur password zaroori hai." });
     try {
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) return res.status(401).json({ message: "Email ya password galat hai." });
+        
+        // --- EMAIL VERIFICATION CHECK LOGIN PAR ---
+        if (user.loginMethod === 'email' && !user.isVerified) {
+            return res.status(401).json({ message: "Kripya pehle apne email ko verify karein. Verification link aapke inbox mein bhej diya gaya hai." });
+            // Optionally, yahan se aap dobara verification email bhejne ka option bhi de sakte hain
+        }
+
         if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
         if (!user.password) return res.status(401).json({ message: "Login credentials sahi nahi hain." });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: "Email ya password galat hai." });
-        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; // Add isVerified to token
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch दिक्कत aa gayi.", error: error.message });}
 });
+
+// Google Sign-in route mein isVerified default true hoga ya check nahi hoga,
+// kyuki Google already email verified deta hai
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
@@ -216,22 +289,35 @@ app.post('/api/auth/google-signin', async (req, res) => {
         if (!user) {
             user = await User.findOne({ email: email.toLowerCase() });
             if (user) {
-                if (user.loginMethod === 'email') { user.googleId = googleId; user.avatarUrl = googleAvatar || user.avatarUrl; }
+                if (user.loginMethod === 'email') {
+                    user.googleId = googleId;
+                    user.avatarUrl = googleAvatar || user.avatarUrl;
+                    user.isVerified = true; // Google se login kiya to verified maan sakte hain
+                }
             } else {
-                user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), loginMethod: 'google' });
+                user = new User({
+                    googleId,
+                    name,
+                    email: email.toLowerCase(),
+                    avatarUrl: googleAvatar || getDiceBearAvatarUrl(name),
+                    loginMethod: 'google',
+                    isVerified: true // Google users ko directly verified mark karein
+                });
             }
             await user.save();
         } else {
-             if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
+            if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
         }
-        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google' };
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified }; // Add isVerified to token
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
     } catch (error) { console.error('Google signin mein error:', error); res.status(401).json({ message: 'Google token invalid hai.', error: error.message });}
 });
+
 app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
-// Password Reset Routes
+// Password Reset Routes (yeh jaisa hai waisa hi rehne dein, yeh kaam kar raha hai)
+// ... (Your existing /api/auth/request-password-reset and /api/auth/reset-password routes)
 app.post('/api/auth/request-password-reset', async (req, res) => {
     const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
     if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
@@ -249,9 +335,9 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
     } catch (error) {
         console.error('Request password reset API mein error:', error); // Log full error
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
-             res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
+            res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
-             res.status(500).json({ message: "Password reset request process karne mein kuch दिक्कत aa gayi hai." });
+            res.status(500).json({ message: "Password reset request process karne mein kuch दिक्कत aa gayi hai." });
         }
     }
 });
@@ -274,9 +360,55 @@ app.post('/api/auth/reset-password', async (req, res) => {
     } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
 });
 
-// Multer setup for file uploads (max 5MB)
-const storage = multer.memoryStorage(); // Store files in memory as buffers
-const upload = multer({ 
+
+// --- NAYA ROUTE: EMAIL VERIFICATION HANDLE KARNE KE LIYE ---
+app.get('/api/auth/verify-email', async (req, res) => {
+    const { token } = req.query; // URL se token nikalenge
+    console.log(`Email verification request received for token: ${token ? token.substring(0, 10) + '...' : 'NO TOKEN'}`);
+
+    if (!token) {
+        // res.status(400).json({ message: "Email verification token nahi mila." });
+        // Frontend par redirect karein error message ke saath
+        return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification token nahi mila.")}`);
+    }
+
+    try {
+        const user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpires: { $gt: Date.now() } // Token expire nahi hua ho
+        });
+
+        if (!user) {
+            console.log(`Email verification: Invalid or expired token "${token ? token.substring(0, 10) + '...' : 'NO TOKEN'}"`);
+            // res.status(400).json({ message: "Email verification token invalid hai ya expire ho chuka hai." });
+            // Frontend par redirect karein error message ke saath
+            return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification link invalid hai ya expire ho chuka hai. Kripya dobara signup karein.")}`);
+        }
+
+        // User ko verified mark karein
+        user.isVerified = true;
+        user.emailVerificationToken = undefined; // Token hata dein
+        user.emailVerificationExpires = undefined; // Expiry hata dein
+        await user.save();
+
+        console.log(`Email safaltapoorvak verify hua user ke liye: ${user.email}`);
+
+        // Frontend par success page par redirect karein
+        // Ensure aapke public folder mein ya frontend routes mein ek success page ho
+        return res.redirect(`${FRONTEND_URL}/verification-success.html`); // Ya koi aur success page
+
+    } catch (error) {
+        console.error('Email verification API mein error:', error);
+        // res.status(500).json({ message: "Email verification process karne mein kuch दिक्कत aa gayi." });
+        // Frontend par generic error page par redirect karein
+        return res.redirect(`${FRONTEND_URL}/error.html?message=${encodeURIComponent("Email verification process karne mein kuch दिक्कत aa gayi.")}`);
+    }
+});
+
+
+// Multer setup for file uploads (jaisa hai waisa hi rehne dein)
+const storage = multer.memoryStorage();
+const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
     fileFilter: (req, file, cb) => {
@@ -288,7 +420,9 @@ const upload = multer({
     }
 });
 
-// User Profile Management Routes
+// ... (remaining routes like /api/user/profile, /api/user/change-password, /api/user/upload-avatar,
+// /api/feedbacks, /api/feedback, /api/feedback/:id, admin panel routes, etc. - yeh sab same rahenge)
+
 app.put('/api/user/profile', authenticateToken, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
@@ -305,34 +439,27 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
 
         if (user.loginMethod === 'google') {
             if (name !== user.name) {
-                // Allow name change if it was an email user who later linked Google, but generally Google user names are synced.
-                // For simplicity, for Google users, we'll generally not allow direct name edits here unless explicitly needed.
-                // If the name changed from Google, it should be updated via Google sign-in flow.
                 return res.status(400).json({ message: 'Google login se jude accounts ka naam yahan se badla nahi ja sakta.' });
             }
             if (avatarUrl && avatarUrl !== user.avatarUrl) {
-                // Allow avatar change for Google users if they upload one manually
                 user.avatarUrl = avatarUrl;
             }
         } else { // Email user
             user.name = name;
-            if (avatarUrl) { // If an avatar URL is provided (e.g., from Cloudinary upload)
+            if (avatarUrl) {
                 user.avatarUrl = avatarUrl;
             } else if (user.avatarUrl.startsWith('https://api.dicebear.com')) {
-                // If name changes and it's a DiceBear avatar, regenerate based on new name
                 user.avatarUrl = getDiceBearAvatarUrl(name);
             }
         }
-        
+
         await user.save();
 
-        // Update avatarUrl in feedbacks if user's avatar changed
         if (avatarUrl || (user.loginMethod === 'email' && name !== req.user.name)) {
             await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl, name: user.name } });
         }
 
-        // Re-generate token with updated user info
-        const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
+        const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; // Add isVerified
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
 
         res.status(200).json({ message: 'Profile safaltapoorvak update ho gaya!', user: updatedUserForToken, token: newToken });
@@ -342,6 +469,7 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
     }
 });
 
+// ... (rest of your server.js code)
 app.post('/api/user/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
@@ -361,7 +489,7 @@ app.post('/api/user/change-password', authenticateToken, async (req, res) => {
         if (user.loginMethod === 'google') {
             return res.status(400).json({ message: 'Google login se jude accounts ka password yahan se badla nahi ja sakta.' });
         }
-        if (!user.password) { // Should not happen for email users, but as a safeguard
+        if (!user.password) {
             return res.status(400).json({ message: 'Aapke account mein password set nahi hai. Kripya password reset feature ka upyog karein.' });
         }
 
@@ -414,7 +542,6 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
             user.avatarUrl = result.secure_url;
             await user.save();
 
-            // Update avatar in feedbacks as well
             await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
 
             res.status(200).json({ message: 'Avatar safaltapoorvak upload ho gaya!', avatarUrl: user.avatarUrl });
@@ -426,12 +553,10 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
     }
 });
 
-// Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
-    try { 
-        // Populate userId to get loginMethod for distinguishing user types in frontend
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 }); 
+    try {
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 });
         res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
@@ -462,7 +587,6 @@ app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
 });
 
-// Admin Panel Routes
 const authenticateAdmin = (req, res, next) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0');
     const authHeader = req.headers.authorization; if (!authHeader) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: AUTH HEADER MISSING.' });}
@@ -480,86 +604,84 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:space-between;margin-bottom:20px;padding:0 10px;align-items:center;}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545}
-            .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
-            .select-all-container label { font-size: 1.1em; color: #FFD700; }
-            .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
-            .bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;}
-            .bulk-delete-btn:hover { background-color: #C0392B; transform: translateY(-2px); }
-            .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }
-            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1><div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a><div class="select-all-container"><input type="checkbox" id="selectAllFeedbacks" onchange="toggleSelectAll(this.checked)"><label for="selectAllFeedbacks">Select All</label></div><button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">DELETE SELECTED</button></div><div class="feedback-grid">`;
+            .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+            .select-all-container label { font-size: 1.1em; color: #FFD700; }
+            .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+            .bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;}
+            .bulk-delete-btn:hover { background-color: #C0392B; transform: translateY(-2px); }
+            .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }
+            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1><div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a><div class="select-all-container"><input type="checkbox" id="selectAllFeedbacks" onchange="toggleSelectAll(this.checked)"><label for="selectAllFeedbacks">Select All</label></div><button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">DELETE SELECTED</button></div><div class="feedback-grid">`;
         if (feedbacks.length === 0) {
             html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
         } else {
             for (const fb of feedbacks) {
-                let userTag = ''; 
-                let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name; // Fixed: Prioritize userId.name, then fb.name
-                // Add a final safeguard if both are somehow missing
+                let userTag = '';
+                let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name;
                 if (!userDisplayName) {
-                    userDisplayName = 'Unknown User'; // Default fallback name
+                    userDisplayName = 'Unknown User';
                 }
                 let userEmailDisplay = '';
                 if (fb.userId) {
-                   userTag = fb.userId.loginMethod === 'google' ? `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>` : `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`;
-                   userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
+                    userTag = fb.userId.loginMethod === 'google' ? `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>` : `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`;
+                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
                 html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><input type="checkbox" class="feedback-checkbox" value="${fb._id}"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
-                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
+                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb.._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
                 if (fb.isEdited && fb.originalContent) { html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original"></div><div class="feedback-info"><h4>ORIGINAL: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button></div></div>`;}
                 html += `</div></div>`;
             }
         }
         html += `</div><div id="adminModalOverlay" class="admin-modal-overlay"><div class="admin-custom-modal"><h3 id="adminModalTitle"></h3><p id="adminModalMessage"></p><div class="admin-modal-buttons"><button id="adminModalOkButton">OK</button><button id="adminModalConfirmButton" style="display:none;">Confirm</button><button id="adminModalCancelButton" style="display:none;">Cancel</button></div></div></div>`;
         html += `<script>const AUTH_HEADER = '${authHeaderValue}';
-            if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") { console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!"); alert("Admin authentication is not configured properly. Actions will fail.");}
-            const adminModalOverlay=document.getElementById('adminModalOverlay');const adminModalTitle=document.getElementById('adminModalTitle');const adminModalMessage=document.getElementById('adminModalMessage');const adminModalOkButton=document.getElementById('adminModalOkButton');const adminModalConfirmButton=document.getElementById('adminModalConfirmButton');const adminModalCancelButton=document.getElementById('adminModalCancelButton');let globalConfirmCallback=null;function showAdminModal(type,title,message,confirmCallbackFn=null){adminModalTitle.textContent=title;adminModalMessage.textContent=message;globalConfirmCallback=confirmCallbackFn;adminModalOkButton.style.display=type==='confirm'?'none':'inline-block';adminModalConfirmButton.style.display=type==='confirm'?'inline-block':'none';adminModalCancelButton.style.display=type==='confirm'?'inline-block':'none';adminModalOverlay.style.display='flex'}
-            adminModalOkButton.addEventListener('click',()=>adminModalOverlay.style.display='none');adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(true)});adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(false)});function flipCard(id){document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped')}
-            async function tryDeleteFeedback(id){console.log("Attempting to delete feedback ID:",id);showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Delete failed response:",err);showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`)}}catch(e){console.error("Delete fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during delete: \${e.message}\`)}}})}
-            async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
-            async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
-            
-            // New functions for multi-select delete
-            function toggleSelectAll(checked) {
-                document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
-                    checkbox.checked = checked;
-                });
-            }
+            if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") { console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!"); alert("Admin authentication is not configured properly. Actions will fail.");}
+            const adminModalOverlay=document.getElementById('adminModalOverlay');const adminModalTitle=document.getElementById('adminModalTitle');const adminModalMessage=document.getElementById('adminModalMessage');const adminModalOkButton=document.getElementById('adminModalOkButton');const adminModalConfirmButton=document.getElementById('adminModalConfirmButton');const adminModalCancelButton=document.getElementById('adminModalCancelButton');let globalConfirmCallback=null;function showAdminModal(type,title,message,confirmCallbackFn=null){adminModalTitle.textContent=title;adminModalMessage.textContent=message;globalConfirmCallback=confirmCallbackFn;adminModalOkButton.style.display=type==='confirm'?'none':'inline-block';adminModalConfirmButton.style.display=type==='confirm'?'inline-block':'none';adminModalCancelButton.style.display=type==='confirm'?'inline-block':'none';adminModalOverlay.style.display='flex'}
+            adminModalOkButton.addEventListener('click',()=>adminModalOverlay.style.display='none');adminModalConfirmButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(true)});adminModalCancelButton.addEventListener('click',()=>{adminModalOverlay.style.display='none';if(globalConfirmCallback)globalConfirmCallback(false)});function flipCard(id){document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped')}
+            async function tryDeleteFeedback(id){console.log("Attempting to delete feedback ID:",id);showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Delete failed response:",err);showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`)}}catch(e){console.error("Delete fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during delete: \${e.message}\`)}}})}
+            async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
+            async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
+            
+            function toggleSelectAll(checked) {
+                document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
+                    checkbox.checked = checked;
+                });
+            }
 
-            async function tryDeleteSelectedFeedbacks() {
-                const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
-                if (selectedFeedbackIds.length === 0) {
-                    showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
-                    return;
-                }
+            async function tryDeleteSelectedFeedbacks() {
+                const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
+                if (selectedFeedbackIds.length === 0) {
+                    showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
+                    return;
+                }
 
-                showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
-                    if (confirmed) {
-                        try {
-                            const res = await fetch('/api/admin/feedbacks/batch-delete', {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': AUTH_HEADER
-                                },
-                                body: JSON.stringify({ ids: selectedFeedbackIds })
-                            });
-                            if (res.ok) {
-                                showAdminModal('alert', 'Deleted!', \`\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
-                                setTimeout(() => location.reload(), 1000);
-                            } else {
-                                const err = await res.json();
-                                console.error("Batch delete failed response:", err);
-                                showAdminModal('alert', 'Error!', \`Failed to delete selected feedbacks: \${err.message || res.statusText}\`);
-                            }
-                        } catch (e) {
-                            console.error("Batch delete fetch error:", e);
-                            showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \${e.message}\`);
-                        }
-                    }
-                });
-            }
+                showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
+                    if (confirmed) {
+                        try {
+                            const res = await fetch('/api/admin/feedbacks/batch-delete', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': AUTH_HEADER
+                                },
+                                body: JSON.stringify({ ids: selectedFeedbackIds })
+                            });
+                            if (res.ok) {
+                                showAdminModal('alert', 'Deleted!', \`\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                const err = await res.json();
+                                console.error("Batch delete failed response:", err);
+                                showAdminModal('alert', 'Error!', \`Failed to delete selected feedbacks: \${err.message || res.statusText}\`);
+                            }
+                        } catch (e) {
+                            console.error("Batch delete fetch error:", e);
+                            showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \${e.message}\`);
+                        }
+                    }
+                });
+            }
 
-        </script></body></html>`;
+        </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
 });
@@ -567,9 +689,8 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
     try { const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id); if (!deletedFeedback) { console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });} console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`); res.status(200).json({ message: 'Feedback delete ho gaya.' });
     } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
- });
+});
 
-// NEW: Batch Delete Feedbacks
 app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => {
     const { ids } = req.body;
     console.log(`ADMIN: Received BATCH DELETE request for feedback IDs:`, ids);
@@ -611,16 +732,12 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     } catch (error) { console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error); res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });}
 });
 
-// Yeh route ensure karega ki frontend ke routes (agar aap React Router, Vue Router etc. use karte hain)
-// direct access par bhi index.html serve karein.
-// Agar /reset-password.html jaisi specific file hai, toh express.static usko pehle hi serve kar dega.
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  } else {
-    // Agar /api/ route match nahi hua toh 404
-    res.status(404).json({message: "API endpoint not found."});
-  }
+    if (!req.path.startsWith('/api/')) {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } else {
+        res.status(404).json({message: "API endpoint not found."});
+    }
 });
 
 app.listen(PORT, () => {
