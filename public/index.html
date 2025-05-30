@@ -2624,6 +2624,18 @@
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
+                
+                // --- DEBUGGING LINES START ---
+                console.log("Edit button clicked. Checking permissions...");
+                console.log("Current User (currentUser):", currentUser); // Pura currentUser object dekhein
+                console.log("Current User ID (currentUser.userId):", currentUser ? currentUser.userId : "Current user is null");
+                console.log("Feedback Data (fbData):", fbData); // Pura fbData object dekhein
+                console.log("Feedback User ID Object (fbData.userId):", fbData ? fbData.userId : "fbData is null");
+                console.log("Feedback User ID from object (fbData.userId._id):", fbData && fbData.userId && typeof fbData.userId === 'object' ? fbData.userId._id : "fbData.userId is not an object or _id is missing, or fbData itself is missing");
+                console.log("Type of fbData.userId:", fbData ? typeof fbData.userId : "fbData is null");
+                // --- DEBUGGING LINES END ---
+
+                
                 if (!currentUser || currentUser.userId !== fbData.userId) {
                 return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
             }
