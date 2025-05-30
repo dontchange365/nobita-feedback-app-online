@@ -139,7 +139,6 @@
 
         /* Mobile Version – Avatar + Name (After Login) */
         #user-profile-trigger {
-            /* REMOVED: display: none; */ /* Ab, iski initial hidden state sirf 'hidden' class se manage hogi */
             flex-direction: row; /* Default horizontal layout */
             align-items: center;
             gap: 8px; /* Spacing between avatar and name */
@@ -228,9 +227,6 @@
         }
 
 
-        /* Removed .corner-trigger.avatar-mode as the base .corner-trigger is now circular and scaled */
-        /* If you still want distinct sizing/styling for avatar-mode, re-add specific overrides here */
-
         /* --- Auth Modals (Login/Signup/Profile) --- */
         .auth-modal-overlay {
             display: none; /* Hidden by default */
@@ -261,7 +257,7 @@
             max-width: 400px;
             position: relative;
             box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-            color: var(--text-color-light);\
+            color: var(--text-color-light);
             transform: scale(0.95);
             opacity:0;
             transition: transform 0.25s ease-out, opacity 0.2s ease-out;
@@ -390,7 +386,7 @@
 
         /* --- User Profile Modal Specific Styles --- */
         .profile-modal-content {
-            max-width: 500px; /* Slightly wider for profile */
+            max-width: 500px;
             padding: 35px;
         }
 
@@ -412,7 +408,7 @@
             margin-bottom: 15px;
         }
 
-        .upload-avatar-btn { /* This is the "Change Avatar" button */
+        .upload-avatar-btn {
             background-color: var(--primary-color);
             color: var(--secondary-color);
             padding: 8px 15px;
@@ -428,7 +424,7 @@
         }
 
         .upload-avatar-btn:hover {
-            background-color: #550a8a; /* Darker primary on hover */
+            background-color: #550a8a;
             transform: translateY(-2px);
         }
 
@@ -466,9 +462,8 @@
             text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
 
-        /* Styling for the new UPLOAD AVATAR button */
         #upload-avatar-now-btn {
-            background: linear-gradient(45deg, var(--success-color), #218838); /* Green gradient */
+            background: linear-gradient(45deg, var(--success-color), #218838);
             color: #fff;
             padding: 10px 20px;
             border: none;
@@ -477,10 +472,10 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: flex; /* Use flex to align icon and text */
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Space between icon and text */
+            gap: 8px;
         }
 
         #upload-avatar-now-btn:hover {
@@ -544,27 +539,27 @@
 
         /* --- User Menu (Dropdown) --- */
         .user-profile-menu {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
-            top: 70px; /* Position below the avatar trigger */
+            top: 70px;
             right: 20px;
-            width: 240px; /* Fixed width */
-            background: var(--bg-gradient-end); /* Dark background */
+            width: 240px;
+            background: var(--bg-gradient-end);
             border: 1px solid var(--card-border);
             border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* Soft shadow */
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
             z-index: 1000;
-            opacity: 0; /* Start invisible */
-            pointer-events:none; /* Don't block clicks */
-            transform: translateY(-10px) scale(0.95); /* Slightly off for animation */
+            opacity: 0;
+            pointer-events:none;
+            transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
 
         .user-profile-menu.active {
-            display: block; /* Show when active */
+            display: block;
             opacity: 1;
             transform: translateY(0) scale(1);
-            pointer-events:all; /* Enable clicks */
+            pointer-events:all;
         }
 
         .user-profile-menu .menu-content {
@@ -607,7 +602,7 @@
             font-size: 0.95em;
             display: block;
             padding: 10px 20px;
-            border-radius: 0; /* Remove rounded corners */
+            border-radius: 0;
             transition: background-color 0.2s, color 0.2s;
         }
 
@@ -618,7 +613,7 @@
 
         .user-profile-menu ul li a .fas {
             margin-right: 10px;
-            width: 16px; /* Ensure consistent icon alignment */
+            width: 16px;
             text-align: center;
         }
 
@@ -627,39 +622,39 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw; /* Full viewport width */
-            height: 100vh; /* Full viewport height */
-            background: rgba(10, 10, 20, 0.6); /* Semi-transparent dark background */
-            backdrop-filter: blur(5px); /* Blurry background effect */
-            display: none; /* CRUCIAL: Hidden by default */
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 20, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
             align-items: center;
             justify-content: center;
-            opacity: 0; /* Start invisible for animation */
-            pointer-events: none; /* Don't block interaction when hidden */
-            transition: opacity 0.2s ease-in-out !important; /* Forcing transition */
-            z-index: 1005; /* Ensures it's on top of everything */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out !important;
+            z-index: 1005;
         }
 
         .stylish-popup-overlay.active {
-            display: flex !important; /* Show when active */
+            display: flex !important;
             opacity: 1 !important;
-            pointer-events: all !important; /* Enable interaction when active */
+            pointer-events: all !important;
         }
 
         .stylish-popup-card {
-            background: var(--card-bg-popup); /* Dark background */
+            background: var(--card-bg-popup);
             border: 1px solid var(--card-border);
-            border-radius: 12px; /* Slightly more rounded */
-            padding: 25px 30px; /* More padding */
+            border-radius: 12px;
+            padding: 25px 30px;
             max-width: 400px;
             width: 90%;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3); /* Deeper shadow */
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
             text-align: center;
-            transform: translateY(10px) scale(0.95); /* Slight movement/scale for animation */
-            opacity: 0; /* Start invisible for animation */
-            transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important; /* Bouncy transition */
-            position: relative; /* For close button positioning */
-            color: var(--text-color-light); /* Light text */
+            transform: translateY(10px) scale(0.95);
+            opacity: 0;
+            transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important;
+            position: relative;
+            color: var(--text-color-light);
         }
 
         .stylish-popup-overlay.active .stylish-popup-card {
@@ -670,16 +665,16 @@
         .stylish-popup-card .popup-icon-area {
             font-size: 2.8em;
             margin-bottom: 18px;
-            line-height: 1; /* Prevent extra space below icon */
+            line-height: 1;
         }
 
         .stylish-popup-card .popup-icon-area.success { color: var(--success-color); }
         .stylish-popup-card .popup-icon-area.error { color: var(--error-color); }
         .stylish-popup-card .popup-icon-area.info { color: var(--info-color); }
-        .stylish-popup-card .popup-icon-area.warning { color: var(--warning-color); } /* Warning color for popups */
+        .stylish-popup-card .popup-icon-area.warning { color: var(--warning-color); }
         .stylish-popup-card .popup-icon-area.confirm { color: var(--confirm-color); }
         .stylish-popup-card .popup-icon-area.forgot_password { color: var(--secondary-color); }
-        .stylish-popup-card .popup-icon-area.verify_email { color: var(--primary-color); } /* New: for email verification */
+        .stylish-popup-card .popup-icon-area.verify_email { color: var(--primary-color); }
 
 
         .stylish-popup-card h2.popup-title {
@@ -722,8 +717,8 @@
         .stylish-popup-card .popup-button-container {
             display: flex;
             justify-content: center;
-            gap: 12px; /* Space between buttons */
-            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .stylish-popup-card .popup-button {
@@ -734,13 +729,13 @@
             font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            min-width: 90px; /* Ensure buttons have a minimum width */
+            min-width: 90px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .stylish-popup-card .popup-button:hover {
-            transform: translateY(-2px); /* Lift effect */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Stronger shadow on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .stylish-popup-card .popup-button.primary {
@@ -753,7 +748,7 @@
         }
 
         .stylish-popup-card .popup-button.secondary {
-            background: #5a6268; /* Greyish */
+            background: #5a6268;
             color: #fff;
         }
 
@@ -772,7 +767,7 @@
             color: #aaa;
             transition: color 0.2s;
             padding: 5px;
-            line-height: 1; /* Prevent extra space */
+            line-height: 1;
         }
 
         .stylish-popup-card .close-popup-btn-styled:hover {
@@ -782,7 +777,7 @@
         /* --- Page Content Layout & Animations --- */
         .page-content-wrapper {
             width: 100%;
-            padding-top: 80px; /* Space for fixed header/triggers */
+            padding-top: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -794,8 +789,8 @@
             justify-content: center;
             gap: 12px;
             margin-bottom: 18px;
-            opacity: 0; /* Start hidden for animation */
-            transform: translateY(-15px); /* Start slightly above for animation */
+            opacity: 0;
+            transform: translateY(-15px);
             transition: opacity 0.7s ease-out, transform 0.7s ease-out;
         }
 
@@ -823,24 +818,24 @@
 
         .main-container {
             background: var(--card-bg);
-            backdrop-filter: blur(12px); /* Stronger blur for glass effect */
+            backdrop-filter: blur(12px);
             border: 1px solid var(--card-border);
-            border-radius: 22px; /* More rounded */
+            border-radius: 22px;
             box-shadow: var(--shadow-deep);
-            padding: 35px; /* More padding */
+            padding: 35px;
             text-align: center;
             width: 90%;
             max-width: 750px;
-            opacity: 0; /* Start hidden for animation */
-            transform: translateY(40px); /* Start below for animation */
+            opacity: 0;
+            transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
         #feedback-form-container.main-container {
-            margin-bottom: 3px; /* Smaller gap between form and list */
+            margin-bottom: 3px;
         }
         #feedback-list-container.main-container {
-            margin-top: 0; /* No top margin needed, gap controlled by form's bottom margin */
+            margin-top: 0;
             margin-bottom: 25px;
         }
 
@@ -857,25 +852,25 @@
             font-weight: 700;
             text-shadow: 0 0 12px rgba(255,215,0,0.45);
             letter-spacing: 0.5px;
-            line-height: 1.25; /* Allow for two lines on smaller screens */
-            min-height: calc(2.3em * 1.25); /* Ensure minimum height for Typed.js */
-            display: flex; /* For vertical centering with Typed.js */
+            line-height: 1.25;
+            min-height: calc(2.3em * 1.25);
+            display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Hide overflow from Typed.js cursor */
+            overflow: hidden;
         }
 
         #typed-output {
             color: var(--accent-color);
             font-size: 1.05em;
-            margin-top: -10px; /* Pull closer to title */
+            margin-top: -10px;
             margin-bottom: 22px;
             line-height: 1.35;
-            min-height: calc(1.05em * 1.35 * 2); /* Minimum height for two lines */
-            display: flex; /* For vertical centering with Typed.js */
+            min-height: calc(1.05em * 1.35 * 2);
+            display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Hide overflow from Typed.js cursor */
+            overflow: hidden;
         }
 
         .input-group {
@@ -897,14 +892,14 @@
             width: 100%;
             padding: 11px 16px;
             border: 1px solid var(--card-border);
-            border-radius: 9px; /* Slightly more rounded */
+            border-radius: 9px;
             background: var(--input-bg);
             color: var(--text-color-light);
             font-size: 0.95em;
-            outline: none; /* Remove default outline */
+            outline: none;
             transition: all 0.25s ease;
             box-sizing: border-box;
-            box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15); /* Inner shadow for depth */
+            box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15);
         }
 
         .input-group input#name:disabled {
@@ -916,7 +911,7 @@
         .input-group input:focus,
         .input-group textarea:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3.5px rgba(59,130,246,0.25), inset 1px 1px 6px rgba(0,0,0,0.2); /* Outer glow and inner shadow */
+            box-shadow: 0 0 0 3.5px rgba(59,130,246,0.25), inset 1px 1px 6px rgba(0,0,0,0.2);
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -930,12 +925,12 @@
             margin-top: 10px;
             display: flex;
             justify-content: center;
-            gap: 7px; /* Space between stars */
+            gap: 7px;
         }
 
         .star {
             font-size: 2.8em;
-            color: rgba(255, 255, 255, 0.35); /* Faded color */
+            color: rgba(255, 255, 255, 0.35);
             cursor: pointer;
             transition: color 0.25s ease, transform 0.15s ease, text-shadow 0.25s ease;
         }
@@ -943,7 +938,7 @@
         .star.highlighted,
         .star.selected {
             color: var(--secondary-color);
-            transform: scale(1.12) rotateY(8deg); /* Pop and slight 3D effect */
+            transform: scale(1.12) rotateY(8deg);
             text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.45);
         }
 
@@ -960,8 +955,8 @@
             box-shadow: 0 4px 12px rgba(59,130,246,0.35);
             letter-spacing: 0.7px;
             margin-top: 22px;
-            position: relative; /* For the subtle hover effect */
-            overflow: hidden; /* Hide the ::before pseudo-element overflow */
+            position: relative;
+            overflow: hidden;
         }
 
         button#submit-feedback::before {
@@ -985,14 +980,14 @@
 
         button#submit-feedback:hover {
             background: linear-gradient(45deg, #2563EB, var(--accent-color));
-            transform: translateY(-2.5px) scale(1.015); /* Lift and slight enlarge */
+            transform: translateY(-2.5px) scale(1.015);
             box-shadow: 0 7px 18px rgba(59,130,246,0.55);
         }
 
         /* --- Feedback List Styles --- */
         #feedback-list-container {
-            background: rgba(255, 255, 255, 0.07); /* Lighter semi-transparent */
-            backdrop-filter: blur(7px); /* Slight blur */
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(7px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
             padding: 22px;
@@ -1000,8 +995,8 @@
             box-shadow: var(--shadow-deep);
             width: 90%;
             max-width: 750px;
-            opacity: 0; /* Start hidden for animation */
-            transform: translateY(40px); /* Start below for animation */
+            opacity: 0;
+            transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
@@ -1022,25 +1017,25 @@
 
         /* Average Rating Display - Refined Professional Style */
         .average-rating-container {
-            background: rgba(255, 255, 255, 0.08); /* Lighter, more subtle background */
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Softer border */
-            border-radius: 12px; /* Slightly less rounded for a professional edge */
-            padding: 25px 30px; /* Generous padding for space */
-            margin-bottom: 30px; /* Good spacing below */
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper, softer shadow */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Balanced spacing between elements */
+            gap: 8px;
             color: var(--text-color-light);
-            opacity: 0; /* Animation start */
-            transform: translateY(20px); /* Subtle animation start */
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out; /* Smooth animation */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
             position: relative;
             z-index: 2;
-            backdrop-filter: blur(8px); /* Clearer glass effect */
+            backdrop-filter: blur(8px);
         }
 
         .average-rating-container.animate-in {
@@ -1049,61 +1044,61 @@
         }
 
         .average-rating-container h3 {
-            color: var(--secondary-color); /* Gold color for heading */
-            font-size: 1.4em; /* Clear, professional heading size */
+            color: var(--secondary-color);
+            font-size: 1.4em;
             margin: 0;
-            margin-bottom: 12px; /* Space below heading */
-            font-weight: 600; /* Good weight for readability */
-            letter-spacing: 0.8px; /* Slightly more space for clarity */
-            text-transform: uppercase; /* Professional touch */
-            border-bottom: 1px solid rgba(255, 215, 0, 0.3); /* Subtle gold line below heading */
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
             padding-bottom: 8px;
         }
 
         .average-number {
-            font-family: 'Poppins', sans-serif; /* Back to Poppins for professionalism */
-            font-size: 4em; /* Large but balanced for clarity */
-            font-weight: 700; /* Bold and impactful */
-            color: var(--secondary-color); /* Bright gold */
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5); /* Clearer, focused glow */
-            line-height: 1; /* Tight line height */
+            font-family: 'Poppins', sans-serif;
+            font-size: 4em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
+            line-height: 1;
             margin-bottom: 10px;
         }
 
         .average-stars {
-            font-size: 2.5em; /* Prominent stars */
-            color: var(--secondary-color); /* Gold stars */
-            letter-spacing: 4px; /* Clear spacing between stars */
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); /* Clearer glow */
+            font-size: 2.5em;
+            color: var(--secondary-color);
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
         }
 
         .total-feedbacks-count {
-            font-size: 0.9em; /* Readable count */
-            color: rgba(255, 255, 255, 0.7); /* Slightly muted for hierarchy */
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 400;
-            margin-top: 15px; /* More space above the count */
+            margin-top: 15px;
             padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle line above count */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Individual Feedback Item */
         .feedback-item {
-            background: rgba(255, 255, 255, 0.045); /* Very subtle background */
+            background: rgba(255, 255, 255, 0.045);
             border: 1px solid rgba(255, 255, 255, 0.09);
             border-radius: 13px;
             margin-bottom: 16px;
             padding: 16px;
             display: flex;
-            align-items: flex-start; /* Align avatar to top of text */
+            align-items: flex-start;
             gap: 16px;
             box-shadow: 0 3.5px 9px rgba(0,0,0,0.18);
             transition: transform 0.25s ease, box-shadow 0.25s ease;
-            position: relative; /* For edit button positioning */
-            overflow: hidden; /* For inner content layout */
+            position: relative;
+            overflow: hidden;
         }
 
         .feedback-item:hover {
-            transform: translateY(-4px) scale(1.005); /* Slight lift and enlarge */
+            transform: translateY(-4px) scale(1.005);
             box-shadow: 0 7px 18px rgba(0,0,0,0.28);
         }
 
@@ -1111,14 +1106,14 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
             border: 2.5px solid var(--accent-color);
             box-shadow: 0 0 9px rgba(59,130,246,0.45);
             object-fit: cover;
         }
 
         .feedback-details {
-            flex-grow: 1; /* Take remaining space */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
@@ -1126,33 +1121,44 @@
         .feedback-details strong {
             color: var(--secondary-color);
             font-size: 1.1em;
-            display: block; /* Make it block for easier margin control */
+            display: block;
             margin-bottom: 4px;
-            text-transform: capitalize; /* Capitalize user names */
+            text-transform: capitalize;
         }
 
         .user-type-indicator {
+            /* This class will now primarily affect the 'G' for Google users, if it's kept */
+            /* Removed background for 'E' by not applying this class to email users anymore */
             font-size: 0.65em;
             color: white;
             padding: 1.5px 5.5px;
             border-radius: 3.5px;
             margin-left: 7px;
             vertical-align: middle;
-            font-weight: normal; /* Override bold from strong */
+            font-weight: normal;
         }
-        
+
+        /* For the blue tick only, no background, large size */
         .verified-tag-feedback {
-            background-color: var(--success-color); /* Green */
-            color: white;
-            padding: 1.5px 5.5px;
-            border-radius: 3.5px;
-            font-size: 0.6em;
-            margin-left: 5px;
-            vertical-align: middle;
+            /* background-color: var(--success-color); <-- REMOVED */
+            color: white; /* This color will apply to the icon */
+            padding: 0; /* REMOVED padding to ensure no background shows around icon */
+            border-radius: 0; /* REMOVED border-radius */
+            font-size: 0.6em; /* Base size, adjusted by .verified-tick-icon */
+            margin-left: 5px; /* Spacing from name */
+            vertical-align: middle; /* Align with text */
+        }
+
+        /* Specific style for the blue tick icon */
+        .verified-tick-icon {
+            color: #007bff; /* Blue color for the tick */
+            font-size: 1.1em; /* Make the icon slightly larger, adjust as needed */
+            vertical-align: middle; /* Align with middle of text */
+            margin-left: -2px; /* Adjust spacing to pull closer to name if needed */
         }
 
         .unverified-tag-feedback {
-            background-color: var(--warning-color); /* Yellow */
+            background-color: var(--warning-color);
             color: #333;
             padding: 1.5px 5.5px;
             border-radius: 3.5px;
@@ -1163,7 +1169,7 @@
 
 
         .google-user-indicator { background-color: var(--google-blue); }
-        .email-user-indicator { background-color: var(--primary-color); }
+        /* The email-user-indicator is effectively removed by not applying the .user-type-indicator class to email users in JS */
 
 
         .feedback-stars {
@@ -1177,8 +1183,8 @@
         .feedback-details p {
             margin-top: 4px;
             margin-bottom: 7px;
-            word-wrap: break-word; /* Ensure long words break */
-            white-space: pre-wrap; /* Preserve newlines from textarea */
+            word-wrap: break-word;
+            white-space: pre-wrap;
             color: var(--text-color-light);
             line-height: 1.55;
             font-size: 0.95em;
@@ -1195,8 +1201,8 @@
         .admin-reply {
             margin-top: 10px;
             padding: 9px 11px;
-            background-color: rgba(255, 215, 0, 0.09); /* Light gold background */
-            border-left: 3.5px solid var(--secondary-color); /* Gold border */
+            background-color: rgba(255, 215, 0, 0.09);
+            border-left: 3.5px solid var(--secondary-color);
             border-radius: 7px;
             font-size: 0.85em;
             display: flex;
@@ -1208,15 +1214,15 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            border: 1.5px solid #9B59B6; /* Admin purple border */
+            border: 1.5px solid #9B59B6;
             flex-shrink: 0;
             object-fit: cover;
         }
 
         .admin-reply-content strong {
-            color: #9B59B6; /* Admin name purple */
+            color: #9B59B6;
             font-size: 0.95em;
-            display: inline; /* Keep strong inline */
+            display: inline;
         }
         .admin-reply-content .reply-timestamp {
             font-size: 0.65em;
@@ -1227,37 +1233,37 @@
         .edit-feedback-btn {
             background: none;
             border: none;
-            color: #5bc0de; /* Light blue */
+            color: #5bc0de;
             cursor: pointer;
             font-size: 1.25em;
             position: absolute;
             top: 10px;
             right: 10px;
-            padding: 4px; /* Make click area larger */
+            padding: 4px;
             opacity: 0.75;
-            z-index: 10; /* Ensure it's clickable */
+            z-index: 10;
             transition: color 0.25s ease, transform 0.15s;
         }
 
         .edit-feedback-btn:hover {
-            color: #31b0d5; /* Darker blue on hover */
-            transform: scale(1.08) rotate(4deg); /* Pop and slight rotate */
+            color: #31b0d5;
+            transform: scale(1.08) rotate(4deg);
             opacity: 1;
         }
 
         .edit-feedback-btn[disabled] {
-            display: none !important; /* Hide completely when disabled */
+            display: none !important;
         }
 
         .edited-tag {
-            background-color: #f0ad4e; /* Orange-yellow */
+            background-color: #f0ad4e;
             color: white;
             padding: 2.5px 7px;
             border-radius: 4.5px;
             font-size: 0.65em;
             font-weight: bold;
             margin-left: 7px;
-            vertical-align: middle; /* Align with text */
+            vertical-align: middle;
             animation: fadeIn 0.45s ease-out;
         }
 
@@ -1274,15 +1280,15 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            pointer-events: none; /* Don't block clicks */
-            z-index: 1; /* Behind content */
+            pointer-events: none;
+            z-index: 1;
         }
 
         .confetti {
             position: absolute;
             width: 9px;
             height: 9px;
-            background-color: var(--confetti-color); /* Set by JS */
+            background-color: var(--confetti-color);
             border-radius: 50%;
             opacity: 0;
             animation: confetti-fall 2.8s ease-out forwards;
@@ -1295,7 +1301,7 @@
 
         /* New styles for email verification prompt */
         .email-verification-prompt {
-            background-color: rgba(255, 193, 7, 0.2); /* Warning-like background */
+            background-color: rgba(255, 193, 7, 0.2);
             border: 1px solid var(--warning-color);
             color: var(--warning-color);
             padding: 15px;
@@ -1303,7 +1309,7 @@
             margin-bottom: 20px;
             font-size: 0.95em;
             text-align: center;
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             gap: 10px;
             align-items: center;
@@ -1312,12 +1318,12 @@
         .email-verification-prompt p {
             margin: 0;
             line-height: 1.5;
-            color: var(--text-color-light); /* Make text visible */
+            color: var(--text-color-light);
         }
 
         .email-verification-prompt button {
             background-color: var(--warning-color);
-            color: #333; /* Dark text for contrast */
+            color: #333;
             border: none;
             padding: 8px 15px;
             border-radius: 6px;
@@ -1326,7 +1332,7 @@
             transition: background-color 0.2s, transform 0.1s;
         }
         .email-verification-prompt button:hover {
-            background-color: #e0a800; /* Darker yellow */
+            background-color: #e0a800;
             transform: translateY(-1px);
         }
         .email-verification-prompt button:disabled {
@@ -1352,24 +1358,24 @@
 
             /* Responsive adjustments for corner triggers */
             #login-icon-trigger {
-                width: 44px; /* Min touchable area */
+                width: 44px;
                 height: 44px;
-                top: 15px; /* Slightly more spaced from edge */
+                top: 15px;
                 right: 15px;
             }
             #login-icon-trigger .fas {
-                font-size: 2.1em; /* Adjust icon size for smaller trigger to look good */
+                font-size: 2.1em;
             }
 
             #user-profile-trigger {
-                flex-direction: column; /* Stack avatar and name vertically */
-                gap: 4px; /* Smaller gap */
-                padding: 8px 10px; /* Adjust padding for vertical layout */
-                top: 15px; /* Slightly more spaced from edge */
+                flex-direction: column;
+                gap: 4px;
+                padding: 8px 10px;
+                top: 15px;
                 right: 15px;
             }
             #user-profile-name {
-                max-width: 80px; /* Adjust max-width for stacked name */
+                max-width: 80px;
             }
 
             .auth-modal-content{
@@ -1379,7 +1385,7 @@
                 font-size:1.5em;
             }
             .profile-modal-content {
-                padding: 25px; /* Adjust for smaller screens */
+                padding: 25px;
             }
 
             .user-profile-menu{
@@ -1407,11 +1413,11 @@
             }
 
             .profile-modal-content {
-                padding: 20px; /* Further adjust for very small screens */
+                padding: 20px;
             }
 
             .user-profile-menu{
-                width:calc(100vw - 40px); /* Fill almost full width */
+                width:calc(100vw - 40px);
                 right:10px;
             }
 
