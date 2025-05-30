@@ -1525,8 +1525,7 @@
              </div>
     </div>
 
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-<script>
+    <script>
     document.addEventListener('DOMContentLoaded', async () => {
         console.log("DOM Fully Loaded and Parsed");
 
@@ -1874,6 +1873,7 @@
             localStorage.setItem('authToken', data.token);
             currentUser = data.user;
             updateUIAfterLogin();
+            resetFeedbackForm(); // <--- ADDED THIS LINE
             showStylishPopup('success', `Welcome, ${currentUser.name}!`, currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
             await fetchFeedbacks(); // Refresh feedbacks after login
         }
@@ -2133,6 +2133,7 @@
                             google.accounts.id.disableAutoSelect();
                         }
                         updateUIAfterLogout();
+                        resetFeedbackForm(); // <--- ADDED THIS LINE
                         showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
                         fetchFeedbacks(); // Refresh feedbacks after logout
                     }
@@ -2617,34 +2618,51 @@
             editButton.className = 'edit-feedback-btn';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
-            // Disable edit button if not the current user's feedback
-            // Disable edit button if not the current user's feedback
-            // Check if fbData.userId and fbData.userId._id exist before comparing
-            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id);
             
+            // UPDATED Edit button enable/disable logic
+            let isOwner = false;
+            if (currentUser && fbData && fbData.userId) { 
+                if (typeof fbData.userId === 'string' && currentUser.userId === fbData.userId) {
+                    isOwner = true;
+                } else if (typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id) {
+                    isOwner = true;
+                }
+            }
+            editButton.disabled = !isOwner;
+
             editButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
-                // Inside editButton.addEventListener('click', ...):
-                // Check if fbData.userId and fbData.userId._id exist
-                if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
+                event.stopPropagation(); 
+                
+                // UPDATED Permission check logic
+                let canEditThisFeedback = false;
+                if (currentUser && fbData && fbData.userId) { 
+                    if (typeof fbData.userId === 'string' && currentUser.userId === fbData.userId) {
+                        canEditThisFeedback = true;
+                    } else if (typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id) {
+                        canEditThisFeedback = true;
+                    }
+                }
+
+                if (!canEditThisFeedback) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
+                
+                // Original form population logic (assuming fbData is valid if canEditThisFeedback is true)
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
-                // Populate the form for editing
+                
                 nameInputInFeedbackForm.value = fbData.name;
                 feedbackFormUsernameSpan.textContent = fbData.name;
-                nameInputInFeedbackForm.disabled = true; // Keep disabled as user is logged in
+                nameInputInFeedbackForm.disabled = true;
 
                 feedbackTextarea.value = fbData.feedback;
                 currentSelectedRating = fbData.rating;
                 ratingInput.value = fbData.rating;
                 updateStarVisuals(fbData.rating);
 
-                submitButton.textContent = 'UPDATE FEEDBACK'; // Change button text
-                isEditing = true; // Set editing mode
-                currentEditFeedbackId = fbData._id; // Store ID of feedback being edited
+                submitButton.textContent = 'UPDATE FEEDBACK'; 
+                isEditing = true; 
+                currentEditFeedbackId = fbData._id; 
 
-                // Smooth scroll to the form
                 if(feedbackFormContainer) {
                     feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
