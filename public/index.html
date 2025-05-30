@@ -1121,14 +1121,14 @@
         .feedback-details strong {
             color: var(--secondary-color);
             font-size: 1.1em;
-            display: block;
+            display: inline; /* Changed to inline so the tick can sit next to it */
             margin-bottom: 4px;
             text-transform: capitalize;
         }
 
         .user-type-indicator {
             /* This class will now primarily affect the 'G' for Google users, if it's kept */
-            /* Removed background for 'E' by not applying this class to email users anymore */
+            /* The 'E' is removed by not applying this class to email users in JS */
             font-size: 0.65em;
             color: white;
             padding: 1.5px 5.5px;
@@ -1138,23 +1138,29 @@
             font-weight: normal;
         }
 
-        /* For the blue tick only, no background, large size */
+        /* Blue Tick (Instagram-like) */
         .verified-tag-feedback {
-            /* background-color: var(--success-color); <-- REMOVED */
-            color: white; /* This color will apply to the icon */
-            padding: 0; /* REMOVED padding to ensure no background shows around icon */
-            border-radius: 0; /* REMOVED border-radius */
-            font-size: 0.6em; /* Base size, adjusted by .verified-tick-icon */
+            display: inline-flex; /* Icon and background together */
+            align-items: center; /* Vertical centering */
+            justify-content: center; /* Horizontal centering */
+            background-color: #007bff; /* Blue background */
+            color: #fff; /* Icon color (white) */
+            border-radius: 50%; /* Perfect circle */
+            width: 1.1em; /* Width of the circle, relative to parent's font-size (strong tag) */
+            height: 1.1em; /* Height of the circle */
+            font-size: 0.8em; /* Base font size for the icon itself, to make it fit within 1.1em circle */
             margin-left: 5px; /* Spacing from name */
-            vertical-align: middle; /* Align with text */
+            vertical-align: middle; /* Align with text middle */
+            flex-shrink: 0; /* Prevent it from shrinking */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle shadow */
+            line-height: 1; /* To prevent extra space below the icon */
+            position: relative; /* For precise positioning if needed, or for children */
+            top: -0.05em; /* Fine-tune vertical alignment */
         }
 
-        /* Specific style for the blue tick icon */
-        .verified-tick-icon {
-            color: #007bff; /* Blue color for the tick */
-            font-size: 1.1em; /* Make the icon slightly larger, adjust as needed */
-            vertical-align: middle; /* Align with middle of text */
-            margin-left: -2px; /* Adjust spacing to pull closer to name if needed */
+        .verified-tag-feedback .fas.fa-check-circle {
+            font-size: 0.7em; /* Make the icon smaller to fit within the 1.1em circle */
+            line-height: 1; /* Remove extra vertical space */
         }
 
         .unverified-tag-feedback {
@@ -1169,7 +1175,7 @@
 
 
         .google-user-indicator { background-color: var(--google-blue); }
-        /* The email-user-indicator is effectively removed by not applying the .user-type-indicator class to email users in JS */
+        /* The email-user-indicator is effectively removed by not adding the .user-type-indicator class to email users in JS */
 
 
         .feedback-stars {
@@ -2689,26 +2695,26 @@
 
             const strongName = document.createElement('strong');
             let nameContent = fbData.name || 'Anonymous';
-            let userTypeTag = ''; // Removed 'E' tag, only 'G' is used for Google
+            let userTypeTag = ''; // This will be empty for email users, only for Google 'G'
             let verificationTag = '';
 
             if (fbData.userId && typeof fbData.userId === 'object') {
-                // Keep 'G' for Google users
+                // Only add 'G' for Google users, removed 'E' for email users
                 if (fbData.userId.loginMethod === 'google') {
                     userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 }
                 
                 if (fbData.userId.isVerified) {
-                    // Added verified-tick-icon class for styling
-                    verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle verified-tick-icon"></i></span>`;
+                    // Instagram-like blue tick
+                    verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
                 } else if (fbData.userId.loginMethod === 'email') {
                     verificationTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
                 }
             } else if (fbData.googleIdSubmitter) {
                 userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle verified-tick-icon"></i></span>`;
+                verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
             } else { // Generic user if no userId or googleIdSubmitter is found
-                userTypeTag = `<span class="user-type-indicator email-user-indicator" title="User">U</span>`; // Fallback for old/unidentifiable entries
+                userTypeTag = ''; // Removed 'U' tag too if it's not distinguishable now
                 verificationTag = `<span class="unverified-tag-feedback" title="Verification Status Unknown">?</span>`;
             }
 
