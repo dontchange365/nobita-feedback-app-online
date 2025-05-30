@@ -86,7 +86,7 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('MongoDB se connection safal!'))
   .catch(err => {
     console.error('MongoDB connection mein gadbad:', err);
-    console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
+    console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapca IP whitelisted hai (agar zaroori ho).');
     process.exit(1);
 });
 
@@ -417,11 +417,10 @@ app.post('/api/auth/verify-email', async (req, res) => {
 });
 
 
-// Multer setup for file uploads (max 5MB)
-const storage = multer.memoryStorage(); // Store files in memory as buffers
+const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -431,8 +430,6 @@ const upload = multer({
     }
 });
 
-// User Profile Management Routes
-// Profile update, password change, and avatar upload WILL require email verification
 app.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
@@ -661,7 +658,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     try {
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 });
 
-        // --- Calculate Dashboard Stats (Statically for UI demo) ---
         const totalFeedbacksCount = feedbacks.length;
         const verifiedUsersCount = feedbacks.filter(fb => fb.userId && fb.userId.isVerified).length;
         const emailUsersCount = feedbacks.filter(fb => fb.userId && fb.userId.loginMethod === 'email').length;
@@ -673,7 +669,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
-        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Example admin avatar
+        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `<!DOCTYPE html>
 <html lang="en">
@@ -686,15 +682,15 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
     <style>
         :root {
-            --dark-bg-start: #0a0a0c; /* Near pitch black */
-            --dark-bg-end: #1a1a2e; /* Dark navy blue */
-            --card-bg: rgba(25, 25, 40, 0.6); /* Slightly transparent dark blue/purple */
-            --card-border: rgba(50, 50, 70, 0.3); /* Softer border */
-            --text-color-light: #e0e0e0; /* Off-white for general text */
-            --highlight-yellow: #FFD700; /* Gold/Neon Yellow */
-            --highlight-cyan: #00FFFF; /* Bright Cyan */
-            --highlight-purple: #9B59B6; /* Bright Purple */
-            --neon-glow-color: #00FFFF; /* Cyan glow */
+            --dark-bg-start: #0a0a0c;
+            --dark-bg-end: #1a1a2e;
+            --card-bg: rgba(25, 25, 40, 0.6);
+            --card-border: rgba(50, 50, 70, 0.3);
+            --text-color-light: #e0e0e0;
+            --highlight-yellow: #FFD700;
+            --highlight-cyan: #00FFFF;
+            --highlight-purple: #9B59B6;
+            --neon-glow-color: #00FFFF;
             --neon-glow-intensity: 0 0 5px var(--neon-glow-color), 0 0 15px var(--neon-glow-color), 0 0 30px var(--neon-glow-color);
             --delete-red: #E74C3C;
             --delete-red-hover: #C0392B;
@@ -703,7 +699,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             --warning-yellow: #ffc107;
             --info-blue: #3498DB;
             --info-blue-hover: #2980B9;
-            --admin-reply-color: #85C1E9; /* Lighter blue for admin replies */
+            --admin-reply-color: #85C1E9;
 
             /* Glassmorphism variables */
             --glass-blur: 15px;
@@ -712,7 +708,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             --glass-shadow-opacity: 0.2;
         }
 
-        /* Dark/Light Theme variables */
         body.light-theme {
             --dark-bg-start: #f0f0f5;
             --dark-bg-end: #e0e0e8;
@@ -722,7 +717,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             --highlight-yellow: #DAA520;
             --highlight-cyan: #008B8B;
             --highlight-purple: #8A2BE2;
-            --neon-glow-color: transparent; /* Neon effect off in light theme */
+            --neon-glow-color: transparent;
             --neon-glow-intensity: none;
             --delete-red: #DC3545;
             --delete-red-hover: #C82333;
@@ -750,17 +745,17 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            transition: background 0.5s ease; /* Smooth theme transition */
+            transition: background 0.5s ease;
         }
 
         h1 {
-            font-family: 'Orbitron', sans-serif; /* Futuristic font */
+            font-family: 'Orbitron', sans-serif;
             color: var(--highlight-yellow);
             text-align: center;
             margin-bottom: 40px;
-            font-size: 3.5em; /* Larger, more impactful */
-            text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); /* Animated glow */
-            animation: pulse-glow 2s infinite ease-in-out; /* Pulsing effect */
+            font-size: 3.5em;
+            text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7);
+            animation: pulse-glow 2s infinite ease-in-out;
         }
         @keyframes pulse-glow {
             0% { text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); }
@@ -768,14 +763,13 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             100% { text-shadow: var(--neon-glow-intensity), 0 0 20px rgba(255,215,0,0.7); }
         }
 
-        /* --- Glassmorphism Effect for containers --- */
         .main-container, .feedback-card, .admin-custom-modal, .dashboard-stat-card {
-            background-color: rgba(25, 25, 40, var(--glass-bg-opacity)); /* Translucent background */
-            backdrop-filter: blur(var(--glass-blur)); /* Frosted glass effect */
+            background-color: rgba(25, 25, 40, var(--glass-bg-opacity));
+            backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
-            border: 1px solid rgba(var(--text-color-light), var(--glass-border-opacity)); /* Light border */
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, var(--glass-shadow-opacity)); /* Soft shadow */
-            border-radius: 15px; /* Rounded corners */
+            border: 1px solid rgba(var(--text-color-light), var(--glass-border-opacity));
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, var(--glass-shadow-opacity));
+            border-radius: 15px;
             transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
         }
 
@@ -788,11 +782,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             margin-bottom: 20px;
             padding: 0 10px;
             align-items: center;
-            flex-wrap: wrap; /* For responsiveness */
-            gap: 15px; /* Space between buttons/elements */
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .main-panel-btn {
-            background-color: var(--info-blue); /* Info blue for primary action */
+            background-color: var(--info-blue);
             color: white;
             padding: 10px 20px;
             border: none;
@@ -804,15 +798,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             text-decoration: none;
             display: inline-block;
             text-transform: uppercase;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle glow */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
         .main-panel-btn:hover {
             background-color: var(--info-blue-hover);
             transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(0, 123, 255, 0.8); /* Enhanced glow on hover */
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.8);
         }
 
-        /* --- Dark/Light Mode Toggle --- */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -837,7 +830,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--highlight-yellow); /* Sun for dark, Moon for light */
+            color: var(--highlight-yellow);
             transition: color 0.3s ease;
         }
         .theme-toggle .slider {
@@ -857,7 +850,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         body.light-theme .theme-toggle .icon.moon { color: var(--highlight-yellow); }
 
 
-        /* --- Dashboard Stats Cards --- */
         .dashboard-stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -870,7 +862,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             padding: 25px;
             text-align: center;
             border-radius: 15px;
-            /* Glassmorphism properties already applied from .main-container */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -889,7 +880,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             text-shadow: 0 0 10px var(--highlight-cyan);
         }
         .dashboard-stat-card .value {
-            font-family: 'Orbitron', sans-serif; /* Futuristic font for numbers */
+            font-family: 'Orbitron', sans-serif;
             font-size: 2.2em;
             font-weight: 700;
             color: var(--highlight-yellow);
@@ -904,7 +895,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         }
 
 
-        /* --- Feedback Grid & Cards --- */
         .feedback-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -914,16 +904,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         }
         .feedback-card {
             position: relative;
-            min-height: 500px; /* Adjust based on content */
-            border-radius: 15px; /* Ensures glassmorphism is applied */
-            overflow: hidden; /* For inner content */
-            perspective: 1000px; /* For 3D flip */
+            min-height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            perspective: 1000px;
         }
         .feedback-card-inner {
-            position: absolute; /* Changed to absolute for proper flipping */
+            position: absolute;
             width: 100%;
             height: 100%;
-            transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1.0); /* Smoother flip */
+            transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1.0);
             transform-style: preserve-3d;
             box-shadow: 0 8px 25px rgba(0,0,0,.4);
             border-radius: 15px;
@@ -937,7 +927,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             height: 100%;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            /* Glassmorphism properties inherited from .main-container */
             color: var(--text-color-light);
             border-radius: 15px;
             padding: 25px;
@@ -945,18 +934,17 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            overflow-y: auto; /* Allow scrolling for long content */
+            overflow-y: auto;
         }
         .feedback-card-back {
             transform: rotateY(180deg);
-            background-color: rgba(25, 25, 40, 0.8); /* Slightly less transparent for back */
+            background-color: rgba(25, 25, 40, 0.8);
         }
-        /* 3D Hover Effect */
         .feedback-card:hover .feedback-card-inner {
-            transform: rotateY(0deg) scale(1.01) perspective(1000px) rotateX(2deg) rotateY(2deg); /* Slight 3D tilt */
-            box-shadow: var(--neon-glow-intensity); /* Add neon glow on hover */
+            transform: rotateY(0deg) scale(1.01) perspective(1000px) rotateX(2deg) rotateY(2deg);
+            box-shadow: var(--neon-glow-intensity);
         }
-        .feedback-card.is-flipped:hover .feedback-card-inner { /* Maintain flip on hover */
+        .feedback-card.is-flipped:hover .feedback-card-inner {
             transform: rotateY(180deg) scale(1.01) perspective(1000px) rotateX(2deg) rotateY(-2deg);
         }
 
@@ -972,11 +960,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             height: 60px;
             border-radius: 50%;
             overflow: hidden;
-            border: 3px solid transparent; /* For animated glow */
-            box-shadow: 0 0 0 3px rgba(255,215,0,0.5); /* Default subtle glow */
-            animation: avatar-glow-unverified 2s infinite ease-in-out; /* Default glow */
+            border: 3px solid transparent;
+            box-shadow: 0 0 0 3px rgba(255,215,0,0.5);
+            animation: avatar-glow-unverified 2s infinite ease-in-out;
             flex-shrink: 0;
-            position: relative; /* For proper glow positioning */
+            position: relative;
         }
         .feedback-avatar img {
             width: 100%;
@@ -984,7 +972,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             object-fit: cover;
         }
 
-        /* Glowing Animated Avatar Borders */
         @keyframes avatar-glow-verified {
             0% { box-shadow: 0 0 0 3px rgba(40,167,69,0.5), 0 0 10px rgba(40,167,69,0.7); }
             50% { box-shadow: 0 0 0 3px rgba(40,167,69,0.7), 0 0 20px rgba(40,167,69,0.9); }
@@ -1022,7 +1009,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             text-transform: none;
             margin-left: 5px;
         }
-        /* User Type Tags */
         .google-user-tag, .email-user-tag, .verified-tag, .unverified-tag {
             font-family: 'Roboto', sans-serif;
             font-size: 0.65em;
@@ -1084,7 +1070,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             text-transform: uppercase;
             position: relative;
             overflow: hidden;
-            background-color: rgba(25, 25, 40, 0.8); /* Slightly transparent */
+            background-color: rgba(25, 25, 40, 0.8);
             box-shadow: var(--neon-glow-intensity);
             text-shadow: 0 0 5px var(--neon-glow-color);
         }
@@ -1191,7 +1177,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             font-weight: bold;
             vertical-align: middle;
         }
-        /* Stylish Modal Popups */
         .admin-modal-overlay {
             position: fixed;
             top: 0;
@@ -1624,7 +1609,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             console.error("Batch delete failed response:",err);
                             showAdminModal('alert','Error!',`Failed to delete selected feedbacks: ${err.message||res.statusText}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                         }
-                    } catch (e) {
+                    }catch(e){
                         console.error("Batch delete fetch error:",e);
                         showAdminModal('alert','Fetch Error!',`Error during batch delete: ${e.message}`, null, 'https://assets4.lottiefiles.com/packages/lf20_y0u754e4.json');
                     }
