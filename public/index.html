@@ -329,10 +329,6 @@
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        .auth-modal-form button:hover {
-            transform: translateY(-1px);
-        }
-
         .auth-modal-form button:disabled {
             opacity: 0.7;
             cursor: not-allowed;
@@ -1346,7 +1342,7 @@
                 flex-direction: column; /* Stack avatar and name vertically */
                 gap: 4px; /* Smaller gap */
                 padding: 8px 10px; /* Adjust padding for vertical layout */
-                top: 15px; /* Slightly more spaced from edge */
+                top: 15px;
                 right: 15px;
             }
             #user-profile-name {
@@ -2067,10 +2063,22 @@
 
             if (verificationStatus === 'success' && newToken) {
                 localStorage.setItem('authToken', newToken); // Update token in local storage
-                checkLoginStatus(); // Re-check login status to update UI with new token
-                // Clean URL after processing
-                window.history.replaceState({}, document.title, window.location.pathname);
-                showStylishPopup('success', 'Email Verified!', 'Your email has been successfully verified. Welcome!');
+                // Use a direct API call to /api/auth/me to get fresh user data including isVerified status
+                // and then update UI
+                apiRequest(API_VALIDATE_TOKEN_URL, 'GET').then(userData => {
+                    currentUser = userData;
+                    updateUIAfterLogin();
+                    // Clean URL after processing
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showStylishPopup('success', 'Email Verified!', 'Your email has been successfully verified. Welcome!');
+                }).catch(error => {
+                    console.error("Error fetching user data after verification success:", error);
+                    localStorage.removeItem('authToken'); // Clear token if validation fails
+                    updateUIAfterLogout();
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showStylishPopup('error', 'Verification Error', 'Email verified, but failed to log you in automatically. Please try logging in manually.');
+                });
+
             }
         };
 
@@ -2139,7 +2147,7 @@
                     if(profileEditForm) saveProfileChangesBtn.disabled = false;
                     if(changePasswordForm) changePasswordForm.style.display = 'block';
 
-                    // NEW: Display/hide verify account button for email users
+                    // NEW: Display/hide verify account button for email users (uncommented for now)
                     if (currentUser.isVerified) {
                         if (verifyAccountButton) verifyAccountButton.style.display = 'none';
                     } else {
@@ -2167,10 +2175,11 @@
             if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
             if(nameInputInFeedbackForm) {
                 nameInputInFeedbackForm.value = '';
-                nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
+                feedbackFormUsernameSpan.textContent = 'Guest';
                 nameInputInFeedbackForm.disabled = false;
+                nameInputInFeedbackForm.placeholder = 'Your name here...';
             }
-            if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
+            // Feedback form will always be enabled for unverified users now
         }
 
         if(menuLogoutLink) {
@@ -2453,15 +2462,20 @@
                 return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');
             }
             if (!currentUser) {
+                // If not logged in, allow as guest, but the backend requires userId.
+                // This scenario should theoretically not happen if the form is disabled for guests.
+                // However, the `authenticateToken` middleware on the backend will block it.
+                // So, for guest submission, you'd need a separate API route.
+                // For now, if currentUser is null, we prompt login.
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
                 return;
             }
 
-            // NEW: Check if email user is verified
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                showStylishPopup('warning', 'Email Not Verified', 'Please verify your email address to submit feedback.');
-                return;
-            }
+            // REMOVED: Check if email user is verified
+            // if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+            //     showStylishPopup('warning', 'Email Not Verified', 'Please verify your email address to submit feedback.');
+            //     return;
+            // }
 
             let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
             const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
@@ -2601,12 +2615,11 @@
             let nameContent = fbData.name || 'Anonymous';
             let verifiedTickHtml = ''; // Initialize empty
 
-            // NEW: Logic to determine if blue tick should be displayed
-            // Check if userId is populated and has loginMethod and isVerified
+            // Logic to determine if blue tick should be displayed
             if (fbData.userId && typeof fbData.userId === 'object') {
                 if (fbData.userId.loginMethod === 'google') {
                     verifiedTickHtml = '<i class="fas fa-check-circle verified-tick" title="Verified by Google"></i>';
-                } else if (fbData.userId.loginMethod === 'email' && fbData.userId.isVerified) {
+                } else if (fbData.userId.loginMethod === 'email' && fbData.userId.isVerified) { // Only show if email user AND isVerified is true
                     verifiedTickHtml = '<i class="fas fa-check-circle verified-tick" title="Email Verified"></i>';
                 }
                 // If email user and not verified, verifiedTickHtml remains empty (no symbol)
@@ -2645,6 +2658,7 @@
             editButton.className = 'edit-feedback-btn';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
+            // Enable edit button if logged in AND it's their feedback
             editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id);
             
             editButton.addEventListener('click', (event) => {
@@ -2652,10 +2666,10 @@
                 if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
-                // NEW: Check verification status before editing
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    return showStylishPopup('warning', 'Email Not Verified', 'Please verify your email address before editing feedback.');
-                }
+                // REMOVED: Check verification status before editing
+                // if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+                //     return showStylishPopup('warning', 'Email Not Verified', 'Please verify your email address before editing feedback.');
+                // }
 
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 nameInputInFeedbackForm.value = fbData.name;
