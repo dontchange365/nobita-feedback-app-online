@@ -2618,13 +2618,15 @@
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
             // Disable edit button if not the current user's feedback
-            editButton.disabled = !(currentUser && currentUser.userId === fbData.userId);
+            // Check if fbData.userId and fbData.userId._id exist before comparing
+            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id);
+            
 
             editButton.addEventListener('click', (event) => {
                 event.stopPropagation(); // Prevent bubbling to parent if it has a click handler
                 if (!currentUser || currentUser.userId !== fbData.userId) {
-                    return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
-                }
+                return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
+            }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 // Populate the form for editing
                 nameInputInFeedbackForm.value = fbData.name;
