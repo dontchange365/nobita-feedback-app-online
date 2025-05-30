@@ -100,7 +100,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String },
-  googleId: { type: String, sparse: true, unique: true },
+  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -186,7 +186,7 @@ app.post('/api/auth/signup', async (req, res) => {
         res.status(201).json({ token: appToken, user: userForToken });
     } catch (error) {
         console.error('Signup mein error:', error);
-        res.status(500).json({ message: "Account banane mein kuch dikkat aa gayi.", error: error.message });
+        res.status(500).json({ message: "Account banane mein kuch दिक्कत aa gayi.", error: error.message });
     }
 });
 app.post('/api/auth/login', async (req, res) => {
@@ -202,7 +202,7 @@ app.post('/api/auth/login', async (req, res) => {
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
-    } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch dikkat aa gayi.", error: error.message });}
+    } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch दिक्कत aa gayi.", error: error.message });}
 });
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
@@ -242,16 +242,16 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
         console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
         const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
-        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke اپنا password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
         const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) {
-        console.error('Request password reset API mein error:', error);
+        console.error('Request password reset API mein error:', error); // Log full error
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
              res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
-             res.status(500).json({ message: "Password reset request process karne mein kuch dikkat aa gayi hai." });
+             res.status(500).json({ message: "Password reset request process karne mein kuch दिक्कत aa gayi hai." });
         }
     }
 });
@@ -271,12 +271,12 @@ app.post('/api/auth/reset-password', async (req, res) => {
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
-    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch dikkat aa gayi." });}
+    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
 });
 
 // Multer setup for file uploads (max 5MB)
 const storage = multer.memoryStorage(); // Store files in memory as buffers
-const upload = multer({
+const upload = multer({ 
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
     fileFilter: (req, file, cb) => {
@@ -399,7 +399,7 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
         }, async (error, result) => {
             if (error) {
                 console.error('Cloudinary upload error:', error);
-                return res.status(500).json({ message: 'Avatar upload karne mein dikkat aa gayi.', error: error.message });
+                return res.status(500).json({ message: 'Avatar upload karne mein दिक्कत aa gayi.', error: error.message });
             }
             if (!result || !result.secure_url) {
                 return res.status(500).json({ message: 'Cloudinary se URL nahi mila.' });
@@ -429,9 +429,9 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
 // Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
-    try {
+    try { 
         // Populate userId to get loginMethod for distinguishing user types in frontend
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 });
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 }); 
         res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
@@ -441,7 +441,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
     let feedbackData = { name: req.user.name, avatarUrl: req.user.avatarUrl, userId: req.user.userId, feedback, rating: parseInt(rating), userIp, isEdited: false };
     if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (err) { console.error("Error fetching user for googleIdSubmitter:", err); }}
-    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
+    try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक जमा ho gaya!', feedback: newFeedback });
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
 app.put('/api/feedback/:id', authenticateToken, async (req, res) => {
@@ -479,25 +479,23 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
         const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
-        let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:flex-start;margin-bottom:20px;padding:0 10px}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545}@media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1>
-<div class="admin-actions-top-bar" style="width:100%; max-width:1200px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding:0 10px;">
-    <div>
-        <label style="font-size:1.1em; color:#FFD700; cursor:pointer;">
-            <input type="checkbox" id="selectAllFeedbacks" onchange="toggleSelectAll(this)" style="margin-right:8px; width:20px; height:20px; vertical-align:middle;">
-            Select All
-        </label>
-    </div>
-    <button id="deleteSelectedBtn" class="delete-btn" style="padding:10px 20px; font-size:1em; display:none;" onclick="tryDeleteSelectedFeedbacks()">DELETE SELECTED (<span id="selectedCount">0</span>)</button>
-</div>
-<div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a></div><div class="feedback-grid">`;
+        let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:space-between;margin-bottom:20px;padding:0 10px;align-items:center;}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545}
+            .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+            .select-all-container label { font-size: 1.1em; color: #FFD700; }
+            .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+            .bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;}
+            .bulk-delete-btn:hover { background-color: #C0392B; transform: translateY(-2px); }
+            .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }
+            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}</style></head><body><h1>NOBITA'S FEEDBACK COMMAND CENTER</h1><div class="main-panel-btn-container"><a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a><div class="select-all-container"><input type="checkbox" id="selectAllFeedbacks" onchange="toggleSelectAll(this.checked)"><label for="selectAllFeedbacks">Select All</label></div><button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">DELETE SELECTED</button></div><div class="feedback-grid">`;
         if (feedbacks.length === 0) {
             html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
         } else {
             for (const fb of feedbacks) {
-                let userTag = '';
-                let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name;
+                let userTag = ''; 
+                let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name; // Fixed: Prioritize userId.name, then fb.name
+                // Add a final safeguard if both are somehow missing
                 if (!userDisplayName) {
-                    userDisplayName = 'Unknown User';
+                    userDisplayName = 'Unknown User'; // Default fallback name
                 }
                 let userEmailDisplay = '';
                 if (fb.userId) {
@@ -505,11 +503,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
-                html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header">
-                <input type="checkbox" class="feedback-checkbox" value="${fb._id}" onchange="updateSelectedCount()" style="margin-right: 15px; width:24px; height:24px; align-self:center; flex-shrink:0;">
-                <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
-                <small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
-                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`; // FIX APPLIED HERE: Corrected ternary operator and template literal closing
+                html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><input type="checkbox" class="feedback-checkbox" value="${fb._id}"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4><small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
+                <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div><div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString().substring(0,10) : fb.userId.toString().substring(0,10)) + '...' : 'N/A'}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}</div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}</div>`;
                 if (fb.isEdited && fb.originalContent) { html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original"></div><div class="feedback-info"><h4>ORIGINAL: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button></div></div>`;}
                 html += `</div></div>`;
             }
@@ -522,49 +517,22 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             async function tryDeleteFeedback(id){console.log("Attempting to delete feedback ID:",id);showAdminModal('confirm','Delete Feedback?','Are you sure you want to delete this feedback? This cannot be undone.',async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${id}\`,{method:'DELETE',headers:{'Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Deleted!','Feedback deleted successfully.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Delete failed response:",err);showAdminModal('alert','Error!',\`Failed to delete: \${err.message||res.statusText}\`)}}catch(e){console.error("Delete fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during delete: \${e.message}\`)}}})}
             async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
             async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
-
-            // --- New Functions for Multiple Select and Delete ---
-            function toggleSelectAll(source) {
-                const checkboxes = document.querySelectorAll('.feedback-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = source.checked;
+            
+            // New functions for multi-select delete
+            function toggleSelectAll(checked) {
+                document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
+                    checkbox.checked = checked;
                 });
-                updateSelectedCount();
-            }
-
-            function updateSelectedCount() {
-                const checkboxes = document.querySelectorAll('.feedback-checkbox:checked');
-                const deleteBtn = document.getElementById('deleteSelectedBtn');
-                const selectedCountSpan = document.getElementById('selectedCount');
-
-                selectedCountSpan.textContent = checkboxes.length;
-
-                if (checkboxes.length > 0) {
-                    deleteBtn.style.display = 'inline-block';
-                } else {
-                    deleteBtn.style.display = 'none';
-                    document.getElementById('selectAllFeedbacks').checked = false; // Uncheck "Select All" if no feedbacks are selected
-                }
-
-                // If all individual checkboxes are checked, check "Select All" checkbox
-                const allCheckboxes = document.querySelectorAll('.feedback-checkbox');
-                if (allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length) {
-                    document.getElementById('selectAllFeedbacks').checked = true;
-                } else if (checkboxes.length < allCheckboxes.length) {
-                    document.getElementById('selectAllFeedbacks').checked = false;
-                }
             }
 
             async function tryDeleteSelectedFeedbacks() {
-                const selectedCheckboxes = document.querySelectorAll('.feedback-checkbox:checked');
-                const idsToDelete = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-                if (idsToDelete.length === 0) {
-                    showAdminModal('alert', 'Nothing Selected', 'Please select at least one feedback to delete.');
+                const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
+                if (selectedFeedbackIds.length === 0) {
+                    showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
                     return;
                 }
 
-                showAdminModal('confirm', 'Delete Selected Feedbacks?', `Are you sure you want to delete ${idsToDelete.length} selected feedbacks? This cannot be undone.`, async confirmed => {
+                showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
                     if (confirmed) {
                         try {
                             const res = await fetch('/api/admin/feedbacks/batch-delete', {
@@ -573,28 +541,23 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     'Content-Type': 'application/json',
                                     'Authorization': AUTH_HEADER
                                 },
-                                body: JSON.stringify({ ids: idsToDelete })
+                                body: JSON.stringify({ ids: selectedFeedbackIds })
                             });
-
                             if (res.ok) {
-                                showAdminModal('alert', 'Deleted!', `${idsToDelete.length} feedbacks deleted successfully.`);
+                                showAdminModal('alert', 'Deleted!', \`\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
                                 setTimeout(() => location.reload(), 1000);
                             } else {
                                 const err = await res.json();
                                 console.error("Batch delete failed response:", err);
-                                showAdminModal('alert', 'Error!', `Failed to delete selected: ${err.message || res.statusText}`);
+                                showAdminModal('alert', 'Error!', \`Failed to delete selected feedbacks: \${err.message || res.statusText}\`);
                             }
                         } catch (e) {
                             console.error("Batch delete fetch error:", e);
-                            showAdminModal('alert', 'Fetch Error!', `Error during batch delete: ${e.message}`);
+                            showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \${e.message}\`);
                         }
                     }
                 });
             }
-
-            // Initial call to update count on page load (in case some were already checked or for consistency)
-            document.addEventListener('DOMContentLoaded', updateSelectedCount);
-            // --- End New Functions ---
 
         </script></body></html>`;
         res.send(html);
@@ -606,31 +569,29 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
  });
 
-// --- New API Route for Batch Deletion ---
+// NEW: Batch Delete Feedbacks
 app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => {
     const { ids } = req.body;
     console.log(`ADMIN: Received BATCH DELETE request for feedback IDs:`, ids);
 
     if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ message: 'IDs ka array zaroori hai batch deletion ke liye.' });
+        return res.status(400).json({ message: 'Delete karne ke liye koi IDs nahi di gayi hain.' });
     }
 
     try {
         const result = await Feedback.deleteMany({ _id: { $in: ids } });
-
-        if (result.deletedCount > 0) {
-            console.log(`ADMIN: Successfully deleted ${result.deletedCount} feedbacks.`);
-            res.status(200).json({ message: `${result.deletedCount} feedbacks delete ho गए.`, deletedCount: result.deletedCount });
-        } else {
-            console.log(`ADMIN: No feedbacks found to delete for provided IDs.`, ids);
-            res.status(404).json({ message: 'Koi bhi feedback delete nahi hua. Shayad IDs galat hain ya maujood nahi hain.' });
+        if (result.deletedCount === 0) {
+            console.log(`ADMIN: No feedbacks found to delete for the provided IDs.`);
+            return res.status(404).json({ message: 'Diye gaye IDs ke liye koi feedbacks nahi mile.' });
         }
+        console.log(`ADMIN: Successfully deleted ${result.deletedCount} feedbacks.`);
+        res.status(200).json({ message: `${result.deletedCount} feedbacks safaltapoorvak delete ho gaye.`, deletedCount: result.deletedCount });
     } catch (error) {
         console.error(`ADMIN: Error during batch deleting feedbacks:`, error);
-        res.status(500).json({ message: 'Batch deletion mein dikkat aa gayi.', error: error.message });
+        res.status(500).json({ message: 'Selected feedbacks delete nahi ho paye.', error: error.message });
     }
 });
-// --- End New API Route ---
+
 
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
