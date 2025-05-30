@@ -1,184 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verification - Nobita's Feedback Portal</title>
+    <title>Email Verify Karein - Nobita Feedback</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6a0dad; /* Dark Purple */
-            --secondary-color: #FFD700; /* Gold */
-            --accent-color: #3B82F6; /* Bright Blue */
-            --text-color-light: #f4f4f9; /* Off-white */
-            --bg-gradient-start: #1a1a2e; /* Darker Purple Blue */
-            --bg-gradient-end: #16213e; /* Even Darker Purple Blue */
-            --card-bg-popup: #272c3a; /* Darker grey for popup */
-            --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --success-color: #28a745; /* Green */
-            --error-color: #dc3545; /* Red */
+            --primary-color: #6a0dad; --secondary-color: #FFD700; --accent-color: #3B82F6;
+            --text-color-light: #f4f4f9; --bg-gradient-start: #1a1a2e; --bg-gradient-end: #16213e;
+            --card-bg: rgba(255, 255, 255, 0.1); --card-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --success-color: #28a745; --error-color: #dc3545;
         }
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            color: var(--text-color-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
+            font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-color-light); display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
         }
-        .container {
-            background: var(--card-bg-popup);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 40px 30px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: var(--shadow-deep);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .verify-email-container { /* Renamed from reset-password-container */
+            background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border);
+            border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px;
+            width: 90%; max-width: 450px; text-align: center;
         }
-        .icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-        }
-        .icon.success { color: var(--success-color); }
-        .icon.error { color: var(--error-color); }
-        .icon.loading { color: var(--secondary-color); animation: spin 1.5s linear infinite; }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        h1 {
-            color: var(--secondary-color);
-            font-size: 2em;
-            margin-bottom: 15px;
-        }
-        p {
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        .button {
-            background: var(--accent-color);
-            color: #fff;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .button:hover {
-            background: #3578e0;
-            transform: translateY(-2px);
-        }
-        .error-details {
-            font-size: 0.9em;
-            color: #f8d7da; /* Light red for error details */
-            background-color: #721c24; /* Dark red background */
-            border: 1px solid #f5c6cb;
-            border-radius: .25rem;
-            padding: .75rem 1.25rem;
-            margin-top: 15px;
-            word-break: break-all; /* Break long error messages */
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 30px 20px;
-            }
-            h1 {
-                font-size: 1.7em;
-            }
-            p {
-                font-size: 1em;
-            }
-            .button {
-                padding: 10px 20px;
-            }
-        }
+        .verify-email-container h2 { /* Renamed from reset-password-container h2 */
+            color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
+        .action-button { /* Retained as action-button */
+            background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; width: 100%; padding: 11px 20px; border-radius: 8px; font-size: 1em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 3px 10px rgba(59,130,246,0.3); margin-top: 10px; }
+        .action-button:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59,130,246,0.45); }
+        .action-button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
+        .message-area { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; word-wrap: break-word; font-size: 0.9em; }
+        .message-area.success { background-color: rgba(40, 167, 69, 0.2); border: 1px solid var(--success-color); color: var(--success-color); }
+        .message-area.error { background-color: rgba(220, 53, 69, 0.2); border: 1px solid var(--error-color); color: var(--error-color); }
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid var(--secondary-color); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .home-link { display: none; margin-top: 20px; color: var(--secondary-color); text-decoration: none; font-size: 0.9em;}
+        .home-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="statusIcon" class="icon loading">
-            <i class="fas fa-spinner fa-spin"></i>
+    <div class="verify-email-container"> <h2>Email Verify Karein</h2>
+        <div id="initial-message">
+            <p>Aapka email verify kiya ja raha hai. Kripya thoda intezaar karein.</p>
+            <div class="spinner" id="loading-spinner"></div>
         </div>
-        <h1 id="statusTitle">Verifying your email...</h1>
-        <p id="statusMessage">Please wait while we confirm your email address. This may take a moment.</p>
-        <div id="errorDetails" class="error-details" style="display: none;"></div>
-        <a href="index.html" id="homeButton" class="button" style="display: none;">Go to Feedback Portal</a>
+        <div id="response-message" class="message-area"></div>
+        <a href="/" class="home-link" id="login-page-link">Login Page Par Wapas Jaayein</a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const statusIcon = document.getElementById('statusIcon');
-            const statusTitle = document.getElementById('statusTitle');
-            const statusMessage = document.getElementById('statusMessage');
-            const homeButton = document.getElementById('homeButton');
-            const errorDetailsDiv = document.getElementById('errorDetails');
+            const responseMessageDiv = document.getElementById('response-message');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const initialMessageDiv = document.getElementById('initial-message');
+            const loginPageLink = document.getElementById('login-page-link');
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-
-            // Replace with your actual backend URL, e.g., 'http://localhost:3000' or your deployed backend URL
-            const BASE_API_URL = window.location.origin;
-            const VERIFY_EMAIL_API_URL = `${BASE_API_URL}/api/auth/verify-email/${token}`;
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
 
             if (!token) {
-                statusIcon.className = 'icon error';
-                statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
-                statusTitle.textContent = 'Verification Failed!';
-                statusMessage.textContent = 'No verification token found in the URL. Please ensure you clicked the correct link from your email.';
-                homeButton.style.display = 'block';
+                showMessage('error', 'Email verification link anuchit hai ya token nahi mila. Kripya sahi link ka istemal karein ya naya verification email request karein.');
+                initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
+                loginPageLink.style.display = 'inline-block';
                 return;
             }
 
+            // Immediately attempt to verify email using the token
+            loadingSpinner.style.display = 'block';
+            initialMessageDiv.style.display = 'block';
+            responseMessageDiv.style.display = 'none';
+
             try {
-                const response = await fetch(VERIFY_EMAIL_API_URL, { method: 'GET' });
+                // API URL wahi base URL hoga jo aapka main app use kar raha hai
+                const response = await fetch(`/api/auth/verify-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+                const data = await response.json();
 
                 if (response.ok) {
-                    // Backend redirects to index.html with success and token
-                    // So this block will only execute if direct API call is successful without redirect
-                    // This might be a fallback or for testing the API directly
-                    // In real scenario, the backend will handle the redirect.
-                    statusIcon.className = 'icon success';
-                    statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                    statusTitle.textContent = 'Email Verified Successfully!';
-                    statusMessage.textContent = 'Your email address has been successfully verified. You can now use all features of the Nobita Feedback App.';
+                    showMessage('success', data.message + " Aapko ab login page par redirect kiya jayega...");
+                    initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
+                    loginPageLink.style.display = 'inline-block'; // Show login link
+                    
+                    // Store the new token (which contains the updated isVerified status)
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = '/'; // Redirect to home/login page
+                    }, 4000);
                 } else {
-                    const errorData = await response.json();
-                    statusIcon.className = 'icon error';
-                    statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
-                    statusTitle.textContent = 'Verification Failed!';
-                    statusMessage.textContent = errorData.message || 'There was an issue verifying your email. The link might be invalid or expired.';
-                    errorDetailsDiv.textContent = `Error: ${response.status} - ${errorData.message || 'Unknown error'}`;
-                    errorDetailsDiv.style.display = 'block';
+                    showMessage('error', data.message || 'Email verify karne mein samasya aa gayi.');
+                    initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
+                    loginPageLink.style.display = 'inline-block';
                 }
             } catch (error) {
-                statusIcon.className = 'icon error';
-                statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
-                statusTitle.textContent = 'Network Error!';
-                statusMessage.textContent = 'Could not connect to the server to verify your email. Please check your internet connection or try again later.';
-                errorDetailsDiv.textContent = `Details: ${error.message}`;
-                errorDetailsDiv.style.display = 'block';
-                console.error("Fetch error during email verification:", error);
+                console.error('Verify email request error:', error);
+                showMessage('error', 'Network ya server error. Kripya baad mein try karein.');
+                initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
+                loginPageLink.style.display = 'inline-block';
             } finally {
-                homeButton.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+            }
+
+            function showMessage(type, message) {
+                responseMessageDiv.textContent = message;
+                responseMessageDiv.className = `message-area ${type}`;
+                responseMessageDiv.style.display = 'block';
             }
         });
     </script>
