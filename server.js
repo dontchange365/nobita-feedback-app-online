@@ -979,7 +979,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
                     .feedback-info .user-ip {
                         font-size: 0.9em;
-                        color: #AAB7B8;
+                        color: #AAB7C8;
                         margin-top: 5px;
                         display: flex;
                         align-items: center;
@@ -1979,7 +1979,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         original_timestamp: feedback.originalContent ? new Date(feedback.originalContent.timestamp).toLocaleString() : '',
                                         replies_count: feedback.replies ? feedback.replies.length : 0,
                                         // Corrected escaping for template literal within map
-                                        replies_text: feedback.replies ? feedback.replies.map(r => `[${r.adminName} @ ${new Date(r.timestamp).toLocaleString()}] ${r.text}`).join('; ') : ''
+                                        replies_text: feedback.replies ? feedback.replies.map(r => '[' + r.adminName + ' @ ' + new Date(r.timestamp).toLocaleString() + '] ' + r.text).join('; ') : ''
                                     });
                                 }
                             }
