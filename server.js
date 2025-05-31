@@ -5,7 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
-const { OAuth22Client } = require('google-auth-library'); // Typo fix here: OAuth2Client
+const { OAuth2Client } = require('google-auth-library'); // Corrected typo here
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -362,8 +362,6 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         console.log(`Email verification token for ${user.email} generate hua. Expiry: ${new Date(user.emailVerificationExpires).toLocaleString()}`);
         const verifyPagePath = "/verify-email.html";
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
-        console.log("Email Verification URL banaya gaya:", verifyUrl);
-
         const textMessage = `Namaste ${user.name},\n\nAapke Nobita Feedback App account ke liye email verification ki request mili hai.\nKripya neeche diye gaye link par click karke apna email verify karein. Yeh link 10 minute tak valid rahega:\n${verifyUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
         const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification Request</h2><p>Namaste ${user.name},</p><p>Aapke Nobita Feedback App account ke liye email verification ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna email verify karein. Yeh link <strong>10 minute</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
 
@@ -1980,6 +1978,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         original_rating: feedback.originalContent ? feedback.originalContent.rating : '',
                                         original_timestamp: feedback.originalContent ? new Date(feedback.originalContent.timestamp).toLocaleString() : '',
                                         replies_count: feedback.replies ? feedback.replies.length : 0,
+                                        // Corrected escaping for template literal within map
                                         replies_text: feedback.replies ? feedback.replies.map(r => `[${r.adminName} @ ${new Date(r.timestamp).toLocaleString()}] ${r.text}`).join('; ') : ''
                                     });
                                 }
@@ -2103,7 +2102,7 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });}
     const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
     await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } }); console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
-    res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
+    res.status(200).json({ message: 'Avatar safaltapoorvak change ho gaya!', newAvatarUrl });
     } catch (error) { console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error); res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });}
 });
 
