@@ -493,7 +493,7 @@ app.post('/api/auth/verify-email', async (req, res) => {
         const confirmationTextMessage = `Hello ${user.name},\n\nYour email on Nobita Feedback App has been successfully verified.\nYou can now use all features of the app.\n\nThank you,\nNobita Feedback App Team`;
         const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Hello ${user.name},</p><p>Your email on Nobita Feedback App has been successfully verified.</p><p>You can now use all features of the app.</p><hr><p>Thank you,<br/>Nobita Feedback App Team</p></div>`;
         try {
-            await sendEmail({ email: user.email, subject: 'Your Email Has Been Successfully Verified!', message: confirmationTextMessage, html: confirmationHtmlMessage });
+            await sendEmail({ email: user.email, subject: 'Aapka Email Safaltapoorvak Verify Ho Gaya Hai!', message: confirmationTextMessage, html: confirmationHtmlMessage });
         } catch (emailError) {
             console.error("Error sending verification confirmation email:", emailError);
         }
@@ -1039,7 +1039,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     // Basic check for AUTH_HEADER presence, though it's set by server
                     if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") {
                         console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!");
-                        // alert("Admin authentication is not configured properly. Actions will fail."); // Avoid alert()
                         // Use the custom modal instead for better UX
                         showAdminModal('alert', 'Authentication Error', 'Admin authentication is not configured properly. Actions will fail.');
                     }
@@ -1077,7 +1076,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                     // Function to flip feedback cards
                     function flipCard(id) {
-                        document.getElementById(`card-${id}`).classList.toggle('is-flipped');
+                        document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped');
                     }
 
                     // Function to delete a single feedback
@@ -1207,7 +1206,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     }
                                 } catch (e) {
                                     console.error("Batch delete fetch error:",e);
-                                    showAdminModal('alert','Fetch Error!',\`Error during batch delete: \${e.message}\`);
+                                    showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \${e.message}\`);
                                 }
                             }
                         });
