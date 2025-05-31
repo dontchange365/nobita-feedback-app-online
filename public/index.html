@@ -3,603 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Portal | Modern UI</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            color: #4338ca;
-        }
-        
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary {
-            background-color: #4338ca;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        .btn-primary:hover {
-            background-color: #3730a3;
-        }
-        
-        .btn-secondary {
-            background-color: #64748b;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #475569;
-        }
-        
-        .profile-card {
-            background: linear-gradient(135deg, #6366f1, #4338ca);
-            color: white;
-        }
-        
-        .avatar-container {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 0 auto;
-        }
-        
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid white;
-        }
-        
-        .avatar-upload {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4338ca;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .progress-bar {
-            height: 8px;
-            border-radius: 4px;
-        }
-        
-        .feedback-item {
-            border-left: 4px solid #4338ca;
-        }
-        
-        .alert-verification {
-            background-color: #ffe4e4;
-            border-left: 4px solid #f43f5e;
-            color: #be123c;
-        }
-        
-        /* Mobile Menu */
-        .mobile-menu {
-            transition: all 0.3s ease;
-            transform: translateX(-100%);
-        }
-        
-        .mobile-menu.active {
-            transform: translateX(0);
-        }
-        
-        #loginModal, #registerModal, #profileModal {
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        #loginModal.active, #registerModal.active, #profileModal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        @media (max-width: 768px) {
-            .desktop-menu {
-                display: none;
-            }
-        }
-    </style>
+    <title>𝙉𝙊𝘽𝙄 𝘽𝙊𝙏</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="min-h-screen">
-    <!-- Header Navigation -->
-    <nav class="bg-white py-3 px-6 shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <a class="navbar-brand text-2xl" href="#">FeedbackPortal</a>
-            
-            <!-- Desktop Navigation -->
-            <div class="desktop-menu hidden md:block">
-                <div class="flex items-center space-x-4" id="navLoggedOut">
-                    <button onclick="openModal('loginModal')" class="px-4 py-2 text-indigo-600 font-medium hover:text-indigo-800">Login</button>
-                    <button onclick="openModal('registerModal')" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Create New Account</button>
-                </div>
-                
-                <div class="hidden items-center space-x-4" id="navLoggedIn">
-                    <span class="font-medium" id="userNameDisplay">User Name</span>
-                    <div class="relative group">
-                        <button class="flex items-center space-x-1">
-                            <span>Menu</span>
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible">
-                            <a href="#" onclick="openModal('profileModal')" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-user mr-2"></i> View Profile
-                            </a>
-                            <a href="#" onclick="logout()" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden">
-                <button id="mobileMenuBtn" class="text-gray-500 focus:outline-none">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-    
-    <!-- Mobile Navigation Menu -->
-    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 p-5">
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-lg font-bold text-indigo-600">Menu</span>
-            <button id="closeMenuBtn" class="text-gray-500">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div id="mobileMenuLoggedOut">
-            <button onclick="openModal('loginModal'); closeMobileMenu();" class="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
-                <i class="fas fa-sign-in-alt mr-2"></i> Login
-            </button>
-            <button onclick="openModal('registerModal'); closeMobileMenu();" class="block w-full text-left px-4 py-2 bg-indigo-600 text-white rounded-md mb-2">
-                <i class="fas fa-user-plus mr-2"></i> Create New Account
-            </button>
-        </div>
-        
-        <div id="mobileMenuLoggedIn" class="hidden">
-            <span class="block mb-4 font-medium" id="mobileUserNameDisplay">User Name</span>
-            <a href="#" onclick="openModal('profileModal'); closeMobileMenu();" class="block px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
-                <i class="fas fa-user mr-2"></i> View Profile
-            </a>
-            <a href="#" onclick="logout(); closeMobileMenu();" class="block px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
-                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-            </a>
-        </div>
-    </div>
-    
-    <!-- Main Content -->
-    <main class="container mx-auto py-8 px-4">
-        <!-- Alert Messages -->
-        <div id="alertContainer" class="mb-6">
-            <div id="generalAlert" class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 hidden mb-4" role="alert">
-                <div class="flex items-center">
-                    <i class="fas fa-info-circle mr-3"></i>
-                    <span id="alertMessage">Default message.</span>
-                </div>
-                <button onclick="closeAlert('generalAlert')" class="absolute top-0 right-0 p-4">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div id="verificationAlert" class="alert-verification p-4 rounded hidden mb-4" role="alert">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle mr-3"></i>
-                    <span>Aapka email abhi tak verify nahi hua hai. Kripya apna email verify karein takki aap sabhi features ka upyog kar sakein.</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Recent Feedbacks -->
-        <section class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">Recent Feedbacks</h2>
-                <button id="newFeedbackBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 hidden">
-                    <i class="fas fa-plus mr-2"></i> New Feedback
-                </button>
-            </div>
-            
-            <div id="feedbackContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Feedback cards will be populated here -->
-                <div class="card bg-white p-6 feedback-item">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                            <i class="fas fa-user text-gray-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold">User Name</h4>
-                            <span class="text-sm text-gray-500">Posted on May 30, 2023</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 mb-4">This is a sample feedback message that would appear in the list of recent feedbacks.</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-indigo-600 hover:text-indigo-800">
-                                <i class="fas fa-thumbs-up"></i> 15
-                            </button>
-                            <button class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-comment"></i> 3
-                            </button>
-                        </div>
-                        <span class="text-sm text-gray-500">Category: General</span>
-                    </div>
-                </div>
-                
-                <div class="card bg-white p-6 feedback-item">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                            <i class="fas fa-user text-gray-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold">Another User</h4>
-                            <span class="text-sm text-gray-500">Posted on May 29, 2023</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 mb-4">Another example of feedback content that could be displayed in this feedback portal.</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-indigo-600 hover:text-indigo-800">
-                                <i class="fas fa-thumbs-up"></i> 8
-                            </button>
-                            <button class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-comment"></i> 1
-                            </button>
-                        </div>
-                        <span class="text-sm text-gray-500">Category: Feature</span>
-                    </div>
-                </div>
-            </div>
+<body>
+    <header>
+        <div class="logo">𝙉𝙊𝘽𝙄 𝘽𝙊𝙏</div>
+        <nav>
+            <button class="nav-toggle">☰</button>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#commands">Commands</a></li>
+                <li><a href="/feedback.html">Feedback</a></li>
+                <li><a href="#support">Support</a></li>
+                <li id="account-link" style="display: none;"><a href="/account.html">Account</a></li>
+                <li id="login-signup-link"><a href="/login.html">Login/Signup</a></li>
+                <li id="admin-link" style="display: none;"><a href="/admin.html">Admin Panel</a></li>
+                <li><a href="#" id="logout-link" style="display: none;">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>𝙉𝙊𝘽𝙄 𝘽𝙊𝙏</h1>
+            <p>𝘚𝘗𝘈𝘔 पर मजबूर करने वाला</p>
+            <p>Instagram DMs aur GCs me chaos aur domination ke liye banaya gaya abuser bot.</p>
+            <a href="#features" class="cta-button">Learn More</a>
+        </section>
+
+        <section id="nobi-bot-kya-hai" class="info-section">
+            <h2>NOBI BOT KYA HAI?</h2>
+            <p>Instagram DMs aur GCs me chaos aur domination ke liye banaya gaya abuser bot. Dominant fighters ko challenge karne, clans ko destroy karne, aur GCs ko disrupt karne me expert.</p>
+        </section>
+
+        <section id="features" class="info-section">
+            <h2>FEATURES:</h2>
+            <ul>
+                <li><strong>TEMP HIDE:</strong> "Nobi papa hide me" command se specific GC ya DM me hide ho sakte hai</li>
+                <li><strong>PERMANENT HIDE:</strong> Contact <span id="permanent-hide-contact">@nobibot.host</span> (Instagram DM of the owner)</li>
+                <li>Instagram DMs & GCs me kaam karta hai</li>
+            </ul>
+        </section>
+
+        <section id="warning" class="warning-section">
+            <h2>WARNING ⚠️</h2>
+            <p>Bot ke actions ki responsibility: GC ADMIN - BOT ADD KARNE WALA</p>
+        </section>
+
+        <section id="bot-add" class="info-section">
+            <h2>BOT ADD KAISE KARE:</h2>
+            <ol>
+                <li>Bot ko follow kare (<span id="bot-account">@nobibot.insta</span>)</li>
+                <li><span id="owner-account">@nobibot.host</span> ko follow kare</li>
+                <li>Bot ko GC me add kare</li>
+                <li>Settings configure kare</li>
+            </ol>
+        </section>
+
+        <section id="commands" class="info-section">
+            <h2>COMMANDS:</h2>
+            <ul>
+                <li><strong>Nobi papa hide me</strong> - Current GC/DM me instant hide</li>
+                <li><strong>Ban @username</strong> - Banning Methods Generate</li>
+                <li><strong>Target @username</strong> - 2 Min non-stop Abuse</li>
+                <li><strong>Spam @username</strong> - 2 Min non-stop Spam</li>
+                <li><strong>Fuck @username</strong> - 2 Min non-stop Nudes Spam</li>
+            </ul>
+        </section>
+
+        <section id="support" class="info-section">
+            <h2>SUPPORT:</h2>
+            <ul>
+                <li><strong>Instagram DM:</strong> <span id="support-instagram">@nobibot.host</span></li>
+                <li><strong>Email Support:</strong> <a href="mailto:nobibot.host@gmail.com">nobibot.host@gmail.com</a></li>
+                <li><strong>WhatsApp:</strong> <a href="https://wa.me/19292747234">+1 (929) 274-7234</a></li>
+                <li><strong>Direct Bot DM:</strong> <span id="support-bot-dm">@nobibot.insta</span></li>
+            </ul>
         </section>
     </main>
-    
-    <!-- Modals -->
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 flex items-center justify-center z-50">
-        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('loginModal')"></div>
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md z-10 p-6 relative">
-            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal('loginModal')">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-            
-            <div class="mb-6">
-                <button class="w-full bg-white border border-gray-300 rounded-md py-2 px-4 flex items-center justify-center text-gray-700 hover:bg-gray-50 mb-4">
-                    <i class="fab fa-google mr-2 text-red-500"></i> Sign in with Google
-                </button>
-                
-                <div class="relative flex items-center my-6">
-                    <div class="flex-grow border-t border-gray-300"></div>
-                    <span class="flex-shrink mx-4 text-gray-500">or</span>
-                    <div class="flex-grow border-t border-gray-300"></div>
-                </div>
-            </div>
-            
-            <form id="loginForm">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
-                    <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
-                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                    <div class="flex justify-end mt-1">
-                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
-                    </div>
-                </div>
-                
-                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Login
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center text-sm">
-                <p>Don't have an account? <a href="#" onclick="switchModal('loginModal', 'registerModal')" class="text-indigo-600 hover:text-indigo-800 font-medium">Create New Account</a></p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Register Modal -->
-    <div id="registerModal" class="fixed inset-0 flex items-center justify-center z-50">
-        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('registerModal')"></div>
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md z-10 p-6 relative">
-            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal('registerModal')">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <h2 class="text-2xl font-bold mb-6 text-center">Create New Account</h2>
-            
-            <div class="mb-6">
-                <button class="w-full bg-white border border-gray-300 rounded-md py-2 px-4 flex items-center justify-center text-gray-700 hover:bg-gray-50 mb-4">
-                    <i class="fab fa-google mr-2 text-red-500"></i> Sign up with Google
-                </button>
-                
-                <div class="relative flex items-center my-6">
-                    <div class="flex-grow border-t border-gray-300"></div>
-                    <span class="flex-shrink mx-4 text-gray-500">or</span>
-                    <div class="flex-grow border-t border-gray-300"></div>
-                </div>
-            </div>
-            
-            <form id="registerForm">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="name">Full Name</label>
-                    <input type="text" id="registerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
-                    <input type="email" id="registerEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
-                    <input type="password" id="registerPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                </div>
-                
-                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Create Account
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center text-sm">
-                <p>Already have an account? <a href="#" onclick="switchModal('registerModal', 'loginModal')" class="text-indigo-600 hover:text-indigo-800 font-medium">Login</a></p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 flex items-center justify-center z-50">
-        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('profileModal')"></div>
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl z-10 relative overflow-hidden">
-            <!-- Profile Header -->
-            <div class="profile-card p-8 pb-24 relative">
-                <button class="absolute top-4 right-4 text-white hover:text-gray-200" onclick="closeModal('profileModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-                
-                <h2 class="text-2xl font-bold text-center mb-4">My Profile</h2>
-            </div>
-            
-            <!-- Profile Content -->
-            <div class="px-8 pb-8 -mt-20">
-                <div class="avatar-container mb-6">
-                    <img src="https://via.placeholder.com/150" alt="Profile Avatar" class="avatar">
-                    <label for="avatarUpload" class="avatar-upload">
-                        <i class="fas fa-camera"></i>
-                    </label>
-                    <input type="file" id="avatarUpload" class="hidden" accept="image/*">
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <div class="mb-4">
-                        <h4 class="text-gray-500 text-sm mb-1">Full Name</h4>
-                        <p class="font-medium" id="profileName">User Name</p>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="text-gray-500 text-sm mb-1">Email Address</h4>
-                        <p class="font-medium" id="profileEmail">user@example.com</p>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="text-gray-500 text-sm mb-1">Account Status</h4>
-                        <div class="flex items-center">
-                            <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-2"></span>
-                            <p>Email verification pending</p>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-gray-500 text-sm mb-1">Profile Completion</h4>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mb-1">
-                            <div class="bg-indigo-600 h-2 rounded-full progress-bar" style="width: 50%"></div>
-                        </div>
-                        <span class="text-sm text-gray-500">50% Complete</span>
-                    </div>
-                </div>
-                
-                <!-- Change Password Section -->
-                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h3 class="text-lg font-semibold mb-4">Change Password</h3>
-                    
-                    <form id="changePasswordForm">
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-medium mb-2" for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newPassword">New Password</label>
-                            <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-medium mb-2" for="confirmPassword">Confirm New Password</label>
-                            <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                            Update Password
-                        </button>
-                    </form>
-                </div>
-                
-                <!-- Verification Note -->
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-sm">
-                    <p class="text-yellow-800">
-                        Feedback edit karne, profile edit karne aur avatar upload karne ke liye kripya apna email verify karein.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <footer class="bg-white py-8 border-t mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-600 mb-4">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</p>
-            <div class="flex justify-center space-x-4">
-                <a href="#" class="text-gray-400 hover:text-indigo-600">
-                    <i class="fab fa-facebook fa-lg"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-indigo-600">
-                    <i class="fab fa-twitter fa-lg"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-indigo-600">
-                    <i class="fab fa-instagram fa-lg"></i>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-indigo-600">
-                    <i class="fab fa-github fa-lg"></i>
-                </a>
-            </div>
-        </div>
+
+    <footer>
+        <p>👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 <span id="footer-owner">@nobibot.host</span></p>
+        <p>𝘛𝘖 𝘌𝘝𝘌𝘙𝘠𝘖𝘕𝘌 𝘞𝘏𝘖 𝘏𝘈𝘚 𝘛𝘏𝘌 𝘚𝘈𝘔𝘌 𝘕𝘈𝘔𝘌 𝘈𝘚 𝘔𝘌,<br>
+        𝘐 𝘈𝘔 𝘛𝘏𝘌 𝘉𝘌𝘛𝘛𝘌𝘙 𝘝𝘌𝘙𝘚𝘐𝘖𝘕!<br>
+        𝘌𝘟 𝘍𝘠𝘛𝘌𝘙 𝘕𝘖𝘉𝘐𝘛𝘈🤟</p>
+        <p>© 2025 Nobi Bot</p>
     </footer>
 
-    <script>
-        // Mock Functions (to be replaced with actual functions that connect to your backend)
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function switchModal(closeModalId, openModalId) {
-            closeModal(closeModalId);
-            setTimeout(() => {
-                openModal(openModalId);
-            }, 300);
-        }
-        
-        function logout() {
-            // Mock logout functionality
-            document.getElementById('navLoggedIn').classList.add('hidden');
-            document.getElementById('navLoggedOut').classList.remove('hidden');
-            document.getElementById('mobileMenuLoggedIn').classList.add('hidden');
-            document.getElementById('mobileMenuLoggedOut').classList.remove('hidden');
-            document.getElementById('newFeedbackBtn').classList.add('hidden');
-            document.getElementById('verificationAlert').classList.add('hidden');
-            
-            // Show success alert
-            showAlert('You have been successfully logged out.');
-        }
-        
-        function closeAlert(alertId) {
-            document.getElementById(alertId).classList.add('hidden');
-        }
-        
-        function showAlert(message) {
-            const alertElement = document.getElementById('generalAlert');
-            document.getElementById('alertMessage').textContent = message;
-            alertElement.classList.remove('hidden');
-            
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                alertElement.classList.add('hidden');
-            }, 5000);
-        }
-        
-        // Mobile menu functionality
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeMenuBtn = document.getElementById('closeMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-        
-        closeMenuBtn.addEventListener('click', () => {
-            closeMobileMenu();
-        });
-        
-        function closeMobileMenu() {
-            mobileMenu.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Form submissions
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Mock login success
-            closeModal('loginModal');
-            document.getElementById('navLoggedOut').classList.add('hidden');
-            document.getElementById('navLoggedIn').classList.remove('hidden');
-            document.getElementById('mobileMenuLoggedOut').classList.add('hidden');
-            document.getElementById('mobileMenuLoggedIn').classList.remove('hidden');
-            document.getElementById('newFeedbackBtn').classList.remove('hidden');
-            document.getElementById('verificationAlert').classList.remove('hidden');
-            
-            // Update user name displays
-            document.getElementById('userNameDisplay').textContent = 'Logged User';
-            document.getElementById('mobileUserNameDisplay').textContent = 'Logged User';
-            
-            showAlert('You have successfully logged in!');
-        });
-        
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            closeModal('registerModal');
-            showAlert('Account created successfully! Please check your email to verify your account.');
-        });
-        
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            showAlert('Password updated successfully!');
-            closeModal('profileModal');
-        });
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if the user is logged in (replace with your actual logic)
-            const isLoggedIn = false;
-            
-            if (isLoggedIn) {
-                document.getElementById('navLoggedOut').classList.add('hidden');
-                document.getElementById('navLoggedIn').classList.remove('hidden');
-                document.getElementById('mobileMenuLoggedOut').classList.add('hidden');
-                document.getElementById('mobileMenuLoggedIn').classList.remove('hidden');
-                document.getElementById('newFeedbackBtn').classList.remove('hidden');
-                document.getElementById('verificationAlert').classList.remove('hidden');
-            }
-        });
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>
