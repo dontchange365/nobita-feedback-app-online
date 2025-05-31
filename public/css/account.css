@@ -1,0 +1,130 @@
+/* public/css/account.css */
+
+.account-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.account-container h2 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    text-align: center;
+}
+
+#profile-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+#profile-info p {
+    margin-bottom: 10px;
+}
+
+#profile-info p strong {
+    font-weight: bold;
+}
+
+#update-profile-form .form-group,
+#change-password-form .form-group,
+#upload-avatar-form .form-group {
+    margin-bottom: 15px;
+}
+
+#update-profile-form label,
+#change-password-form label,
+#upload-avatar-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#update-profile-form input[type="text"],
+#update-profile-form input[type="email"],
+#change-password-form input[type="password"],
+#upload-avatar-form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#change-password-form p a {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: none;
+}
+
+#change-password-form p a:hover {
+    text-decoration: underline;
+}
+
+.submit-button,
+.logout-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+.submit-button:hover,
+.logout-button:hover {
+    background-color: #0056b3;
+}
+
+.logout-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#logout-confirm {
+    margin-top: 10px;
+}
+
+#logout-confirm button {
+    padding: 8px 15px;
+    margin: 0 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#confirm-logout {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+#confirm-logout:hover {
+    background-color: #c82333;
+}
+
+#cancel-logout {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+#cancel-logout:hover {
+    background-color: #5a6268;
+}
+
+#avatar-preview img {
+    max-width: 100px;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 50%;
+}
