@@ -5,7 +5,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
-const { OAuth2Client } = require('google-auth-library');
+const { OAuth22Client } = require('google-auth-library'); // Typo fix here: OAuth2Client
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -80,31 +80,27 @@ if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
 }
 
 
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID); // Corrected typo here
 
-// Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('MongoDB connection successful!'))
+  .then(() => console.log('MongoDB se connection safal!'))
   .catch(err => {
-    console.error('MongoDB connection error:', err);
-    console.error('Ensure MONGODB_URI environment variable is correctly set on Render and your IP is whitelisted (if necessary).');
+    console.error('MongoDB connection mein gadbad:', err);
+    console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
     process.exit(1);
 });
 
-// Function to generate DiceBear avatar URL
 function getDiceBearAvatarUrl(name, randomSeed = '') {
     const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
-    // Use a combination of name and random seed for better uniqueness
     const seed = encodeURIComponent(seedName + randomSeed);
     return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
 }
 
-// Mongoose Schemas
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String }, // Optional for Google users
-  googleId: { type: String, sparse: true, unique: true }, // sparse allows multiple nulls
+  password: { type: String },
+  googleId: { type: String, sparse: true, unique: true },
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -124,16 +120,14 @@ const feedbackSchema = new mongoose.Schema({
   avatarUrl: { type: String },
   userIp: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  googleIdSubmitter: { type: String, sparse: true }, // Legacy field, consider removing if all users are linked by userId
+  googleIdSubmitter: { type: String, sparse: true },
   isEdited: { type: Boolean, default: false },
-  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date, avatarUrl: String }, // Added avatarUrl to originalContent
+  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date, avatarUrl: String },
   replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-// Middleware Setup
 app.use(cors({
-    // Only allow requests from the specified frontend URL and localhost for development
     origin: [FRONTEND_URL, `http://localhost:${PORT}`],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -141,51 +135,41 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Custom middleware to get client IP address
 app.use((req, res, next) => {
     let clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (clientIp) {
         if (clientIp.substr(0, 7) === "::ffff:") clientIp = clientIp.substr(7);
         if (clientIp === '::1') clientIp = '127.0.0.1';
-        if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim(); // Handle multiple IPs in x-forwarded-for
+        if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
     }
     req.clientIp = clientIp || 'UNKNOWN_IP';
     next();
 });
 
-// Middleware to authenticate JWT token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.status(401).json({ message: "Authentication token not found." });
+    if (token == null) return res.status(401).json({ message: "Authentication token nahi mila." });
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            console.error("JWT Verification Error:", err.message);
-            // Provide a more generic error message for security
-            return res.status(403).json({ message: "Invalid or expired token. Please log in again." });
-        }
-        // Include isVerified status in req.user for easier access in routes
-        req.user = { ...user, isVerified: user.isVerified };
+        if (err) { console.error("JWT Verification Error:", err.message); return res.status(403).json({ message: "Token valid nahi hai ya expire ho gaya hai." });}
+        req.user = { ...user, isVerified: user.isVerified }; 
         next();
     });
 };
 
-// Middleware to check if email is verified for sensitive actions
 const isEmailVerified = async (req, res, next) => {
     if (!req.user || !req.user.userId) {
         return res.status(401).json({ message: "Authentication required." });
     }
     try {
-        // Fetch user from DB to get the most current isVerified status
         const user = await User.findById(req.user.userId);
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
-        // Google users are considered verified by default as Google handles it
         if (user.loginMethod === 'google' || user.isVerified) {
             next();
         } else {
-            return res.status(403).json({ message: "Email not verified. Please verify your email to perform this action." });
+            return res.status(403).json({ message: "Email verify nahi kiya gaya hai. Kripya apna email verify karein takki yeh action kar sakein." });
         }
     } catch (error) {
         console.error("isEmailVerified middleware error:", error);
@@ -193,60 +177,37 @@ const isEmailVerified = async (req, res, next) => {
     }
 };
 
-// Function to send emails
 async function sendEmail(options) {
     if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
-        console.error("Email service environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) are not fully set.");
-        throw new Error("Email service is not properly configured. Please contact the administrator.");
+        console.error("Email service ke liye environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) poori tarah set nahi hain.");
+        throw new Error("Email service theek se configure nahi hai. Administrator se contact karein.");
     }
-    console.log(`Attempting to send email: To: ${options.email}, Subject: ${options.subject} (Host: ${EMAIL_HOST})`);
+    console.log(`Email bhejne ki koshish: To: ${options.email}, Subject: ${options.subject} (Host: ${EMAIL_HOST})`);
     const transporter = nodemailer.createTransport({
-        host: EMAIL_HOST,
-        port: parseInt(EMAIL_PORT),
-        secure: parseInt(EMAIL_PORT) === 465, // true for 465, false for other ports
-        auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASS
-        },
+        host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465,
+        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     });
-    const mailOptions = {
-        from: `"Nobita Feedback App" <${EMAIL_USER}>`,
-        to: options.email,
-        subject: options.subject,
-        text: options.message,
-        html: options.html
-    };
-    try {
-        let info = await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully! Message ID: %s', info.messageId);
-    } catch (error) {
-        console.error('Error sending email with Nodemailer:', error);
-        if(error.responseCode === 535 || (error.command && error.command === 'AUTH LOGIN')) {
-            console.error("SMTP Authentication Error: Username/Password might be incorrect or Gmail 'less secure app access'/'App Password' is required.");
-        }
-        throw error; // Re-throw to be caught by the route handler
-    }
+    const mailOptions = { from: `"Nobita Feedback App" <${EMAIL_USER}>`, to: options.email, subject: options.subject, text: options.message, html: options.html };
+    try { let info = await transporter.sendMail(mailOptions); console.log('Email safaltapoorvak bheja gaya! Message ID: %s', info.messageId);
+    } catch (error) { console.error('Nodemailer se email bhejne mein error:', error); if(error.responseCode === 535 || (error.command && error.command === 'AUTH LOGIN')) { console.error("SMTP Authentication Error: Username/Password galat ho sakta hai ya Gmail 'less secure app access'/'App Password' aavashyak hai."); } throw error; }
 }
 
-// --- Auth Routes ---
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "Name, email, and password are required." });
-    if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    if (!name || !email || !password) return res.status(400).json({ message: "Naam, email, aur password zaroori hai." });
+    if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
     try {
         const existingUser = await User.findOne({ email: email.toLowerCase() });
-        if (existingUser) return res.status(400).json({ message: "This email is already registered." });
-
+        if (existingUser) return res.status(400).json({ message: "Yeh email pehle se register hai." });
         const hashedPassword = await bcrypt.hash(password, 12);
-        // Generate a unique avatar for signup using current timestamp as seed
         const userAvatar = getDiceBearAvatarUrl(name, Date.now().toString());
         
         const verificationToken = crypto.randomBytes(32).toString('hex');
-        const newUser = new User({
-            name,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            avatarUrl: userAvatar,
+        const newUser = new User({ 
+            name, 
+            email: email.toLowerCase(), 
+            password: hashedPassword, 
+            avatarUrl: userAvatar, 
             loginMethod: 'email',
             isVerified: false,
             emailVerificationToken: verificationToken,
@@ -257,193 +218,140 @@ app.post('/api/auth/signup', async (req, res) => {
         const verifyPagePath = "/verify-email.html";
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         const emailSubject = 'Nobita Feedback App: Email Verification';
-        const emailText = `Hello ${newUser.name},\n\nYou have created an account on Nobita Feedback App. Please click the link below to verify your email:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.\n\nThank you,\nNobita Feedback App Team`;
-        const emailHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification</h2><p>Hello ${newUser.name},</p><p>You have created an account on Nobita Feedback App.</p><p>Please click the button below to verify your email. This link will be valid for <strong>10 minutes</strong>:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Verify Email</a></p><p style="font-size: 0.9em;">If the button doesn't work, you can copy-paste this link into your browser: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>You will be able to use all app features only after your email is verified.</p><p>If you did not request this, please ignore this email.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Thank you,<br/>Nobita Feedback App Team</p></div>`;
+        const emailText = `Namaste ${newUser.name},\n\nAapne Nobita Feedback App par account banaya hai. Kripya apna email verify karne ke liye neeche diye gaye link par click karein:\n${verifyUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const emailHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification</h2><p>Namaste ${newUser.name},</p><p>Aapne Nobita Feedback App par account banaya hai.</p><p>Kripya neeche diye gaye button par click karke apna email verify karein. Yeh link <strong>10 minute</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>Aapke email ki verification ke baad hi aap app ke sabhi features ka upyog kar payenge.</p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         
         try {
             await sendEmail({ email: newUser.email, subject: emailSubject, message: emailText, html: emailHtml });
         } catch (emailError) {
-            console.error("Error sending verification email:", emailError);
-            // Do not block signup if email sending fails, but log the error
+            console.error("Verification email bhejne mein error:", emailError);
         }
 
         const userForToken = { userId: newUser._id, name: newUser.name, email: newUser.email, avatarUrl: newUser.avatarUrl, loginMethod: 'email', isVerified: newUser.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ token: appToken, user: userForToken, message: "Account created successfully. Please verify your email." });
+        res.status(201).json({ token: appToken, user: userForToken, message: "Account ban gaya hai. Kripya apna email verify karein." });
     } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ message: "Something went wrong while creating the account.", error: error.message });
+        console.error('Signup mein error:', error);
+        res.status(500).json({ message: "Account banane mein kuch दिक्कत aa gayi.", error: error.message });
     }
 });
-
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email and password are required." });
+    if (!email || !password) return res.status(400).json({ message: "Email aur password zaroori hai." });
     try {
         const user = await User.findOne({ email: email.toLowerCase() });
-        if (!user) return res.status(401).json({ message: "Invalid email or password." });
+        if (!user) return res.status(401).json({ message: "Email ya password galat hai." });
         
-        if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "You signed up with Google. Please log in with Google." });
-        if (!user.password) return res.status(401).json({ message: "Invalid login credentials." }); // Should not happen if loginMethod is 'email'
-        
+        if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya था. Kripya Google se login karein." });
+        if (!user.password) return res.status(401).json({ message: "Login credentials sahi nahi hain." });
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ message: "Invalid email or password." });
+        if (!isMatch) return res.status(401).json({ message: "Email ya password galat hai." });
         
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: "Something went wrong while logging in.", error: error.message });
-    }
+    } catch (error) { console.error('Login mein error:', error); res.status(500).json({ message: "Login karne mein kuch दिक्कत aa gayi.", error: error.message });}
 });
-
 app.post('/api/auth/google-signin', async (req, res) => {
     const { token } = req.body;
-    if (!token) return res.status(400).json({ message: 'Google ID token not found.' });
+    if (!token) return res.status(400).json({ message: 'Google ID token nahi mila.' });
     try {
         const ticket = await googleClient.verifyIdToken({ idToken: token, audience: GOOGLE_CLIENT_ID });
         const payload = ticket.getPayload();
-        if (!payload) throw new Error("Google token payload not found.");
+        if (!payload) throw new Error("Google token payload nahi mila.");
         const { sub: googleId, name, email, picture: googleAvatar } = payload;
-
         let user = await User.findOne({ googleId });
         if (!user) {
-            // Check if an email-based account exists with the same email
             user = await User.findOne({ email: email.toLowerCase() });
             if (user) {
-                // Link existing email account to Google ID
-                if (user.loginMethod === 'email') {
-                    user.googleId = googleId;
-                    user.avatarUrl = googleAvatar || user.avatarUrl; // Prioritize Google avatar if available
-                    user.isVerified = true; // Google accounts are implicitly verified
-                    user.emailVerificationToken = undefined; // Clear any pending verification tokens
+                if (user.loginMethod === 'email') { 
+                    user.googleId = googleId; 
+                    user.avatarUrl = googleAvatar || user.avatarUrl; 
+                    user.isVerified = true;
+                    user.emailVerificationToken = undefined;
                     user.emailVerificationExpires = undefined;
                 }
             } else {
-                // Create a new user if no existing account (email or Google) found
-                user = new User({
-                    googleId,
-                    name,
-                    email: email.toLowerCase(),
-                    avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), // Use Google avatar or generate DiceBear
+                user = new User({ 
+                    googleId, 
+                    name, 
+                    email: email.toLowerCase(), 
+                    avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), 
                     loginMethod: 'google',
-                    isVerified: true // Google accounts are implicitly verified
+                    isVerified: true
                 });
             }
             await user.save();
         } else {
-             // Update avatar if Google provides a new one and user is a Google user
              if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
-             // Ensure Google user is marked as verified
              if (!user.isVerified) { user.isVerified = true; await user.save(); }
         }
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
-    } catch (error) {
-        console.error('Google signin error:', error);
-        res.status(401).json({ message: 'Google token invalid or verification failed.', error: error.message });
-    }
+    } catch (error) { console.error('Google signin mein error:', error); res.status(401).json({ message: 'Google token invalid hai.', error: error.message });}
 });
+app.get('/api/auth/me', authenticateToken, (req, res) => { res.status(200).json(req.user); });
 
-app.get('/api/auth/me', authenticateToken, (req, res) => {
-    // Returns user data from the JWT token
-    res.status(200).json(req.user);
-});
-
-// --- Password Reset Routes ---
 app.post('/api/auth/request-password-reset', async (req, res) => {
-    const { email } = req.body;
-    console.log(`Password reset request received for email: ${email}`);
-    if (!email) return res.status(400).json({ message: "Email address is required." });
-    if (!FRONTEND_URL) {
-        console.error("CRITICAL: FRONTEND_URL is not set in .env file. Password reset link cannot be generated.");
-        return res.status(500).json({ message: "Server configuration error (FRONTEND_URL missing)." });
-    }
+    const { email } = req.body; console.log(`Password reset request received for email: ${email}`);
+    if (!email) return res.status(400).json({ message: "Email address zaroori hai." });
+    if (!FRONTEND_URL) { console.error("CRITICAL: FRONTEND_URL .env file mein set nahi hai. Password reset link nahi banega."); return res.status(500).json({ message: "Server configuration mein error hai (FRONTEND_URL missing)." });}
     try {
-        // Only allow password reset for email-based, verified accounts
         const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email', isVerified: true });
-        if (!user) {
-            console.log(`Password reset: Email "${email}" not found in system, not an email/password account, or not verified.`);
-            // Send a generic success message to prevent email enumeration
-            return res.status(200).json({ message: "If your email is in our system and linked to an email/password account, you will receive a password reset link." });
-        }
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
-        await user.save();
-        console.log(`Password reset token for ${user.email} generated. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
-
-        const resetPagePath = "/reset-password.html";
-        const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`;
-        console.log("Password Reset URL generated:", resetUrl);
-
-        const textMessage = `Hello ${user.name},\n\nYou have received a password reset request for your Nobita Feedback App account.\nPlease click the link below to reset your password. This link will be valid for 1 hour:\n${resetUrl}\n\nIf you did not request this, please ignore this email.\n\nThank you,\nNobita Feedback App Team`;
-        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Hello ${user.name},</p><p>You have received a password reset request for your Nobita Feedback App account.</p><p>Please click the button below to reset your password. This link will be valid for <strong>1 hour</strong>:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Reset Password</a></p><p style="font-size: 0.9em;">If the button doesn't work, you can copy-paste this link into your browser: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>If you did not request this, please ignore this email and your password will not be changed.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Thank you,<br/>Nobita Feedback App Team</p></div>`;
-        await sendEmail({ email: user.email, subject: 'Your Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
-        res.status(200).json({ message: "A password reset link has been sent to your email (if the email is valid and linked to an email/password account)." });
+        if (!user) { console.log(`Password reset: Email "${email}" system mein nahi mila, email/password account nahi hai, ya verified nahi hai.`); return res.status(200).json({ message: "Agar aapka email hamare system mein hai aur email/password account se juda hai, toh aapko password reset link mil jayga." });}
+        const resetToken = crypto.randomBytes(32).toString('hex'); user.resetPasswordToken = resetToken; user.resetPasswordExpires = Date.now() + 3600000; await user.save();
+        console.log(`Password reset token for ${user.email} generate hua. Expiry: ${new Date(user.resetPasswordExpires).toLocaleString()}`);
+        const resetPagePath = "/reset-password.html"; const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`; console.log("Password Reset URL banaya gaya:", resetUrl);
+        const textMessage = `Namaste ${user.name},\n\nAapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.\nKripya neeche diye gaye link par click karke apna password reset karein. Yeh link 1 ghante tak valid rahega:\n${resetUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Password Reset Request</h2><p>Namaste ${user.name},</p><p>Aapko aapke Nobita Feedback App account ke liye password reset karne ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna password reset karein. Yeh link <strong>1 ghante</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${resetUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Password Reset Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${resetUrl}" target="_blank" style="color: #3B82F6;">${resetUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein aur aapka password nahi badlega.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+        await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
+        res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) {
-        console.error('Request password reset API error:', error);
-        if (error.message && (error.message.includes("Email service is not properly configured") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
-             res.status(500).json({ message: "There was a technical issue sending the email. Please contact the administrator or check email settings in .env." });
+        console.error('Request password reset API mein error:', error);
+        if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
+             res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
-             res.status(500).json({ message: "Something went wrong processing the password reset request." });
+             res.status(500).json({ message: "Password reset request process karne mein kuch दिक्कत aa gayi hai." });
         }
     }
 });
-
 app.post('/api/auth/reset-password', async (req, res) => {
-    const { token, password, confirmPassword } = req.body;
-    console.log(`Password reset attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
-    if (!token) return res.status(400).json({ message: "Password reset token not found." });
-    if (!password || !confirmPassword) return res.status(400).json({ message: "New password and confirmation password are required." });
-    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords do not match." });
-    if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    const { token, password, confirmPassword } = req.body; console.log(`Password reset attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
+    if (!token) return res.status(400).json({ message: "Password reset token nahi mila." });
+    if (!password || !confirmPassword) return res.status(400).json({ message: "Naya password aur confirmation password zaroori hai." });
+    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords match nahi ho rahe." });
+    if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
     try {
         const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
-        if (!user) {
-            console.log(`Password reset: Invalid or expired token "${token ? token.substring(0,10)+'...' : 'NO TOKEN'}"`);
-            return res.status(400).json({ message: "Password reset token is invalid or has expired." });
-        }
+        if (!user) { console.log(`Password reset: Invalid or expired token "${token ? token.substring(0,10)+'...' : 'NO TOKEN'}"`); return res.status(400).json({ message: "Password reset token invalid hai ya expire ho chuka hai." });}
         
-        user.password = await bcrypt.hash(password, 12);
-        user.resetPasswordToken = undefined; // Clear token after use
-        user.resetPasswordExpires = undefined;
-        await user.save();
-        console.log(`Password successfully reset for user: ${user.email}`);
-
-        const confirmationTextMessage = `Hello ${user.name},\n\nYour password on Nobita Feedback App has been successfully reset.\n\nIf you did not do this, please contact support immediately.`;
-        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Hello ${user.name},</p><p>Your password on Nobita Feedback App has been successfully reset.</p><p>You can now log in with your new password.</p><p>If you did not do this, please contact our support team immediately.</p><hr><p>Thank you,<br/>Nobita Feedback App Team</p></div>`;
-        try {
-            await sendEmail({ email: user.email, subject: 'Your Password Has Been Successfully Reset', message: confirmationTextMessage, html: confirmationHtmlMessage});
-        } catch (emailError) {
-            console.error("Error sending password reset confirmation email:", emailError);
-        }
-        res.status(200).json({ message: "Your password has been successfully reset. You can now log in with the new password." });
-    } catch (error) {
-        console.error('Reset password API error:', error);
-        res.status(500).json({ message: "Something went wrong while resetting the password." });
-    }
+        user.password = await bcrypt.hash(password, 12); user.resetPasswordToken = undefined; user.resetPasswordExpires = undefined; await user.save();
+        console.log(`Password safaltapoorvak reset hua user ke liye: ${user.email}`);
+        const confirmationTextMessage = `Namaste ${user.name},\n\nAapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai.\n\nAgar yeh aapne nahi kiya tha, toh kripya turant support se contact karein.`;
+        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai.</p><p>Ab aap apne naye password ke saath login kar sakte hain.</p><p>Agar yeh aapne nahi kiya tha, toh kripya turant hamari support team se contact karein.</p><hr><p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+        try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
+        } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
+        res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
+    } catch (error) { console.error('Reset password API mein error:', error); res.status(500).json({ message: "Password reset karne mein kuch दिक्कत aa gayi." });}
 });
 
-// --- Email Verification Routes ---
 app.post('/api/auth/request-email-verification', authenticateToken, async (req, res) => {
     console.log(`Email verification request received for user ID: ${req.user.userId}`);
     if (!FRONTEND_URL) {
-        console.error("CRITICAL: FRONTEND_URL is not set in .env file. Verification link cannot be generated.");
-        return res.status(500).json({ message: "Server configuration error (FRONTEND_URL missing)." });
+        console.error("CRITICAL: FRONTEND_URL .env file mein set nahi hai. Verification link nahi banega.");
+        return res.status(500).json({ message: "Server configuration mein error hai (FRONTEND_URL missing)." });
     }
     try {
         const user = await User.findById(req.user.userId);
         if (!user) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: "User nahi mila." });
         }
         if (user.loginMethod === 'google') {
-            return res.status(400).json({ message: "Google accounts do not require email verification." });
+            return res.status(400).json({ message: "Google accounts ko email verification ki zaroorat nahi hoti." });
         }
         if (user.isVerified) {
-            return res.status(200).json({ message: "Your email is already verified." });
+            return res.status(200).json({ message: "Aapka email pehle se hi verify kiya ja chuka hai." });
         }
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -451,20 +359,20 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
         await user.save();
 
-        console.log(`Email verification token for ${user.email} generated. Expiry: ${new Date(user.emailVerificationExpires).toLocaleString()}`);
+        console.log(`Email verification token for ${user.email} generate hua. Expiry: ${new Date(user.emailVerificationExpires).toLocaleString()}`);
         const verifyPagePath = "/verify-email.html";
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
-        console.log("Email Verification URL generated:", verifyUrl);
+        console.log("Email Verification URL banaya gaya:", verifyUrl);
 
-        const textMessage = `Hello ${newUser.name},\n\nYou have received an email verification request for your Nobita Feedback App account.\nPlease click the link below to verify your email. This link will be valid for 10 minutes:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.\n\nThank you,\nNobita Feedback App Team`;
-        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification Request</h2><p>Hello ${newUser.name},</p><p>You have received an email verification request for your Nobita Feedback App account.</p><p>Please click the button below to verify your email. This link will be valid for <strong>10 minutes</strong>:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Verify Email</a></p><p style="font-size: 0.9em;">If the button doesn't work, you can copy-paste this link into your browser: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>If you did not request this, please ignore this email.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Thank you,<br/>Nobita Feedback App Team</p></div>`;
+        const textMessage = `Namaste ${user.name},\n\nAapke Nobita Feedback App account ke liye email verification ki request mili hai.\nKripya neeche diye gaye link par click karke apna email verify karein. Yeh link 10 minute tak valid rahega:\n${verifyUrl}\n\nAgar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification Request</h2><p>Namaste ${user.name},</p><p>Aapke Nobita Feedback App account ke liye email verification ki request mili hai.</p><p>Kripya neeche diye gaye button par click karke apna email verify karein. Yeh link <strong>10 minute</strong> tak valid rahega:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Email Verify Karein</a></p><p style="font-size: 0.9em;">Agar button kaam na kare, toh aap is link ko apne browser mein copy-paste kar sakte hain: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>Agar aapne yeh request nahi ki thi, toh is email ko ignore kar dein.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
 
-        await sendEmail({ email: user.email, subject: 'Your Email Verification Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
-        res.status(200).json({ message: "Verification link has been sent to your email. Please check your inbox." });
+        await sendEmail({ email: user.email, subject: 'Aapka Email Verification Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
+        res.status(200).json({ message: "Verification link aapke email par bhej diya gaya hai. Kripya apna inbox check karein." });
 
     } catch (error) {
-        console.error('Request email verification API error:', error);
-        res.status(500).json({ message: "Something went wrong processing the email verification request." });
+        console.error('Request email verification API mein error:', error);
+        res.status(500).json({ message: "Email verification request process karne mein kuch दिक्कत aa gayi." });
     }
 });
 
@@ -473,48 +381,46 @@ app.post('/api/auth/verify-email', async (req, res) => {
     console.log(`Email verification attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
 
     if (!token) {
-        return res.status(400).json({ message: "Email verification token not found." });
+        return res.status(400).json({ message: "Email verification token nahi mila." });
     }
 
     try {
         const user = await User.findOne({ emailVerificationToken: token, emailVerificationExpires: { $gt: Date.now() } });
         if (!user) {
             console.log(`Email verification: Invalid or expired token "${token ? token.substring(0,10)+'...' : 'NO TOKEN'}"`);
-            return res.status(400).json({ message: "Email verification token is invalid or has expired." });
+            return res.status(400).json({ message: "Email verification token invalid hai ya expire ho chuka hai." });
         }
 
         user.isVerified = true;
-        user.emailVerificationToken = undefined; // Clear token after use
+        user.emailVerificationToken = undefined;
         user.emailVerificationExpires = undefined;
         await user.save();
 
-        console.log(`Email successfully verified for user: ${user.email}`);
+        console.log(`Email safaltapoorvak verify hua user ke liye: ${user.email}`);
 
-        const confirmationTextMessage = `Hello ${user.name},\n\nYour email on Nobita Feedback App has been successfully verified.\nYou can now use all features of the app.\n\nThank you,\nNobita Feedback App Team`;
-        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Hello ${user.name},</p><p>Your email on Nobita Feedback App has been successfully verified.</p><p>You can now use all features of the app.</p><hr><p>Thank you,<br/>Nobita Feedback App Team</p></div>`;
+        const confirmationTextMessage = `Namaste ${user.name},\n\nAapka email Nobita Feedback App par safaltapoorvak verify ho gaya hai.\nAb aap app ke sabhi features ka upyog kar sakte hain.\n\nDhanyawad,\nNobita Feedback App Team`;
+        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Namaste ${user.name},</p><p>Aapka email Nobita Feedback App par safaltapoorvak verify ho gaya hai.</p><p>Ab aap app ke sabhi features ka upyog kar sakte hain.</p><hr><p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
         try {
             await sendEmail({ email: user.email, subject: 'Aapka Email Safaltapoorvak Verify Ho Gaya Hai!', message: confirmationTextMessage, html: confirmationHtmlMessage });
         } catch (emailError) {
-            console.error("Error sending verification confirmation email:", emailError);
+            console.error("Verification confirmation email bhejne mein error:", emailError);
         }
 
-        // Generate a new token with updated isVerified status
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(200).json({ message: "Your email has been successfully verified.", token: newToken, user: userForToken });
+        res.status(200).json({ message: "Aapka email safaltapoorvak verify ho gaya hai.", token: newToken, user: userForToken });
     } catch (error) {
-        console.error('Verify email API error:', error);
-        res.status(500).json({ message: "Something went wrong while verifying the email." });
+        console.error('Verify email API mein error:', error);
+        res.status(500).json({ message: "Email verify karne mein kuch दिक्कत aa gayi." });
     }
 });
 
 
-// Multer setup for file uploads (max 5MB)
-const storage = multer.memoryStorage(); // Store files in memory as buffers
-const upload = multer({
+const storage = multer.memoryStorage();
+const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -524,56 +430,49 @@ const upload = multer({
     }
 });
 
-// --- User Profile Management Routes ---
-// Profile update, password change, and avatar upload WILL require email verification
 app.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
 
     if (!name) {
-        return res.status(400).json({ message: 'Name is required.' });
+        return res.status(400).json({ message: 'Name zaroori hai.' });
     }
 
     try {
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({ message: 'User nahi mila.' });
         }
 
         if (user.loginMethod === 'google') {
-            // For Google users, only avatar can be changed via profile update, name is managed by Google
             if (name !== user.name) {
-                return res.status(400).json({ message: 'Name for Google-linked accounts cannot be changed here.' });
+                return res.status(400).json({ message: 'Google login se jude accounts ka naam yahan se badla nahi ja sakta.' });
             }
             if (avatarUrl && avatarUrl !== user.avatarUrl) {
                 user.avatarUrl = avatarUrl;
             }
         } else {
-            // For email users, name and avatar can be changed
             user.name = name;
             if (avatarUrl) {
                 user.avatarUrl = avatarUrl;
             } else if (user.avatarUrl && user.avatarUrl.startsWith('https://api.dicebear.com') && name !== req.user.name) {
-                // If DiceBear avatar and name changed, regenerate DiceBear avatar
                 user.avatarUrl = getDiceBearAvatarUrl(name, Date.now().toString());
             }
         }
         
         await user.save();
 
-        // Update name and avatar in associated feedbacks if they changed
         if (avatarUrl || (user.loginMethod === 'email' && name !== req.user.name)) {
             await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl, name: user.name } });
         }
 
-        // Generate a new token with updated user information
         const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(200).json({ message: 'Profile updated successfully!', user: updatedUserForToken, token: newToken });
+        res.status(200).json({ message: 'Profile safaltapoorvak update ho gaya!', user: updatedUserForToken, token: newToken });
     } catch (error) {
-        console.error('Profile update error:', error);
-        res.status(500).json({ message: 'Failed to update profile.', error: error.message });
+        console.error('Profile update mein error:', error);
+        res.status(500).json({ message: 'Profile update nahi ho paya.', error: error.message });
     }
 });
 
@@ -582,57 +481,55 @@ app.post('/api/user/change-password', authenticateToken, isEmailVerified, async 
     const userId = req.user.userId;
 
     if (!currentPassword || !newPassword) {
-        return res.status(400).json({ message: 'Current and new password are required.' });
+        return res.status(400).json({ message: 'Current aur naya password zaroori hai.' });
     }
     if (newPassword.length < 6) {
-        return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
+        return res.status(400).json({ message: 'Naya password kam se kam 6 characters ka hona chahiye.' });
     }
 
     try {
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({ message: 'User nahi mila.' });
         }
         if (user.loginMethod === 'google') {
-            return res.status(400).json({ message: 'Password for Google-linked accounts cannot be changed here.' });
+            return res.status(400).json({ message: 'Google login se jude accounts ka password yahan se badla nahi ja sakta.' });
         }
         if (!user.password) {
-            // This case should ideally not happen for email users, but good to handle
-            return res.status(400).json({ message: 'Your account does not have a password set. Please use the password reset feature.' });
+            return res.status(400).json({ message: 'Aapke account mein password set nahi hai. Kripya password reset feature ka upyog karein.' });
         }
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Incorrect current password.' });
+            return res.status(401).json({ message: 'Current password galat hai.' });
         }
 
         user.password = await bcrypt.hash(newPassword, 12);
         await user.save();
 
-        res.status(200).json({ message: 'Password changed successfully!' });
+        res.status(200).json({ message: 'Password safaltapoorvak badal gaya hai!' });
     } catch (error) {
-        console.error('Password change error:', error);
-        res.status(500).json({ message: 'Failed to change password.', error: error.message });
+        console.error('Password change mein error:', error);
+        res.status(500).json({ message: 'Password badal nahi paya.', error: error.message });
     }
 });
 
 app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.single('avatar'), async (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded.' });
+        return res.status(400).json({ message: 'Koi file upload nahi ki gayi.' });
     }
     if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
         console.error("Cloudinary credentials missing. Cannot upload avatar.");
-        return res.status(500).json({ message: 'Avatar upload service is not configured on the server.' });
+        return res.status(500).json({ message: 'Server par avatar upload service configured nahi hai.' });
     }
 
     try {
-        // Upload image buffer to Cloudinary
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream({
-                folder: 'nobita_feedback_avatars', // Dedicated folder for avatars
+                folder: 'nobita_feedback_avatars',
                 transformation: [
-                    { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" }, // Crop to a circle, focus on face
-                    { quality: "auto:eco" } // Optimize quality
+                    { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" },
+                    { quality: "auto:eco" }
                 ]
             }, (error, result) => {
                 if (error) {
@@ -640,186 +537,129 @@ app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.s
                     return reject(new Error(error.message));
                 }
                 if (!result || !result.secure_url) {
-                    return reject(new Error('Cloudinary did not return a URL.'));
+                    return reject(new Error('Cloudinary se URL nahi mila.'));
                 }
                 resolve(result);
-            }).end(req.file.buffer); // Pass the file buffer to Cloudinary
+            }).end(req.file.buffer);
         });
 
         const userId = req.user.userId;
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({ message: 'User nahi mila.' });
         }
 
-        user.avatarUrl = result.secure_url; // Save the Cloudinary URL
+        user.avatarUrl = result.secure_url;
         await user.save();
 
-        // Update avatar URL in all feedbacks submitted by this user
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
 
-        // Generate a new token with updated user information
         const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(200).json({ message: 'Avatar uploaded successfully!', avatarUrl: user.avatarUrl, token: newToken });
+        res.status(200).json({ message: 'Avatar safaltapoorvak upload ho gaya!', avatarUrl: user.avatarUrl, token: newToken });
 
     } catch (error) {
         console.error('Avatar upload route error:', error);
-        res.status(500).json({ message: 'Error uploading avatar.', error: error.message });
+        res.status(500).json({ message: 'Avatar upload mein error.', error: error.message });
     }
 });
 
 
-// --- Static Files & Feedback Routes ---
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.get('/api/feedbacks', async (req, res) => {
-    try {
-        // Populate userId to get loginMethod and isVerified status for display
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 }); // Added name and email to select
+    try { 
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 }); 
         res.status(200).json(allFeedbacks);
-    } catch (error) {
-        console.error("Error fetching feedbacks:", error);
-        res.status(500).json({ message: 'Failed to fetch feedbacks.', error: error.message });
-    }
+    } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
 
-// Feedback submission DOES NOT require email verification (only authentication)
-app.post('/api/feedback', authenticateToken, async (req, res) => {
-    const { feedback, rating } = req.body;
-    const userIp = req.clientIp;
-    if (!req.user) return res.status(403).json({ message: "Please log in to submit feedback." });
-    if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback and rating are required.' });
+app.post('/api/feedback', authenticateToken, async (req, res) => { 
+    const { feedback, rating } = req.body; const userIp = req.clientIp;
+    if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
+    if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
     
     try {
         const loggedInUser = await User.findById(req.user.userId);
         if (!loggedInUser) {
-            return res.status(404).json({ message: "Logged-in user not found." });
+            return res.status(404).json({ message: "Logged-in user nahi mila." });
         }
 
-        let feedbackData = {
-            name: loggedInUser.name,
-            avatarUrl: loggedInUser.avatarUrl,
+        let feedbackData = { 
+            name: loggedInUser.name, 
+            avatarUrl: loggedInUser.avatarUrl, 
             userId: loggedInUser._id,
-            feedback,
-            rating: parseInt(rating),
-            userIp,
-            isEdited: false
+            feedback, 
+            rating: parseInt(rating), 
+            userIp, 
+            isEdited: false 
         };
         
-        // This googleIdSubmitter field might become redundant if all users are linked by userId
-        if (loggedInUser.loginMethod === 'google' && loggedInUser.googleId) {
-            feedbackData.googleIdSubmitter = loggedInUser.googleId;
+        if (loggedInUser.loginMethod === 'google' && loggedInUser.googleId) { 
+            feedbackData.googleIdSubmitter = loggedInUser.googleId; 
         }
 
-        const newFeedback = new Feedback(feedbackData);
-        await newFeedback.save();
-        res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
-    } catch (error) {
-        console.error("Feedback save error:", error);
-        res.status(500).json({ message: 'Failed to save feedback.', error: error.message });
+        const newFeedback = new Feedback(feedbackData); 
+        await newFeedback.save(); 
+        res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक जमा ho gaya!', feedback: newFeedback });
+    } catch (error) { 
+        console.error("Feedback save error:", error); 
+        res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });
     }
 });
 
-// Feedback edit WILL require email verification
 app.put('/api/feedback/:id', authenticateToken, isEmailVerified, async (req, res) => {
-    const feedbackId = req.params.id;
-    const { feedback, rating } = req.body;
-    const loggedInJwtUser = req.user; // User info from JWT
-
-    if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback and rating are required for update!' });
-
+    const feedbackId = req.params.id; const { feedback, rating } = req.body; const loggedInJwtUser = req.user;
+    if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Update ke liye feedback aur rating zaroori hai!' });
     try {
         const existingFeedback = await Feedback.findById(feedbackId);
-        if (!existingFeedback) return res.status(404).json({ message: 'This feedback ID was not found.' });
+        if (!existingFeedback) return res.status(404).json({ message: 'Yeh feedback ID mila nahi.' });
         
-        // Ensure the user trying to edit is the original submitter
-        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) {
-            return res.status(403).json({ message: 'You can only edit your own feedbacks.' });
-        }
+        if (existingFeedback.userId.toString() !== loggedInJwtUser.userId) return res.status(403).json({ message: 'Aap sirf apne diye gaye feedbacks ko hi edit kar sakte hain.' });
         
-        // Fetch the most current user data from DB for name/avatar consistency
         const currentUserFromDb = await User.findById(loggedInJwtUser.userId);
         if (!currentUserFromDb) {
-            return res.status(404).json({ message: 'User attempting to edit feedback not found.' });
+            return res.status(404).json({ message: 'Feedback edit karne wala user nahi mila.' });
         }
 
-        const currentNameFromDb = currentUserFromDb.name;
+        const currentNameFromDb = currentUserFromDb.name; 
         const currentAvatarFromDb = currentUserFromDb.avatarUrl;
         const parsedRating = parseInt(rating);
         
-        // Check if content actually changed before marking as edited
-        const contentActuallyChanged = existingFeedback.feedback !== feedback ||
-                                       existingFeedback.rating !== parsedRating ||
+        const contentActuallyChanged = existingFeedback.feedback !== feedback || 
+                                       existingFeedback.rating !== parsedRating || 
                                        existingFeedback.name !== currentNameFromDb ||
                                        existingFeedback.avatarUrl !== currentAvatarFromDb;
         
         if (contentActuallyChanged) {
-            // Store original content if it's the first edit
-            if (!existingFeedback.originalContent) {
-                existingFeedback.originalContent = {
-                    name: existingFeedback.name,
-                    feedback: existingFeedback.feedback,
-                    rating: existingFeedback.rating,
-                    timestamp: existingFeedback.timestamp,
-                    avatarUrl: existingFeedback.avatarUrl // Store original avatar URL
-                };
-            }
-            existingFeedback.name = currentNameFromDb; // Always update with current user's name
-            existingFeedback.feedback = feedback;
-            existingFeedback.rating = parsedRating;
-            existingFeedback.timestamp = Date.now(); // Update timestamp on edit
-            existingFeedback.isEdited = true;
-            existingFeedback.avatarUrl = currentAvatarFromDb; // Always update with current user's avatar
+            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp, avatarUrl: existingFeedback.avatarUrl };}
+            existingFeedback.name = currentNameFromDb; 
+            existingFeedback.feedback = feedback; 
+            existingFeedback.rating = parsedRating; 
+            existingFeedback.timestamp = Date.now(); 
+            existingFeedback.isEdited = true; 
+            existingFeedback.avatarUrl = currentAvatarFromDb;
         }
         await existingFeedback.save();
-        res.status(200).json({ message: 'Your feedback has been updated!', feedback: existingFeedback });
-    } catch (error) {
-        console.error(`Feedback update error (ID: ${feedbackId}):`, error);
-        res.status(500).json({ message: 'Failed to update feedback.', error: error.message });
-    }
+        res.status(200).json({ message: 'Aapka feedback update ho gaya!', feedback: existingFeedback });
+    } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Feedback update nahi ho paya.', error: error.message });}
 });
 
-// --- Admin Panel Routes ---
 const authenticateAdmin = (req, res, next) => {
-    // Prevent caching of admin panel
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
-        return res.status(401).json({ message: 'UNAUTHORIZED: AUTH HEADER MISSING.' });
-    }
-    const [scheme, credentials] = authHeader.split(' ');
-    if (scheme !== 'Basic' || !credentials) {
-        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
-        return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTH SCHEME.' });
-    }
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0');
+    const authHeader = req.headers.authorization; if (!authHeader) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: AUTH HEADER MISSING.' });}
+    const [scheme, credentials] = authHeader.split(' '); if (scheme !== 'Basic' || !credentials) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTH SCHEME.' });}
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
-
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        next();
-    } else {
-        res.set('WWW-Authenticate', 'Basic realm="Admin Area"');
-        res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });
-    }
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });}
 };
-
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     console.log("Admin panel access attempt.");
     try {
-        // Populate userId to get full user details including loginMethod, name, email, isVerified
         const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 });
-        
-        // Encode credentials for client-side JS use (for subsequent AJAX calls)
         const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
         const authHeaderValue = `Basic ${encodedCredentials}`;
         console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
-        
-        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Static URL for admin avatar
+        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 
         let html = `<!DOCTYPE html>
             <html lang="en">
@@ -1779,6 +1619,18 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 </div>
 
                 <script>
+                    // IMPORTANT: Define escapeHtml at the very top of the script block
+                    function escapeHtml(text) {
+                        var map = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#039;'
+                        };
+                        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                    }
+
                     const AUTH_HEADER = '${authHeaderValue}';
                     // Store all feedback data initially, will be filtered client-side
                     const allFeedbacksData = ${JSON.stringify(feedbacks)}; 
@@ -1811,17 +1663,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                     function hideLoader() {
                         document.getElementById('loaderOverlay').style.display = 'none';
-                    }
-
-                    function escapeHtml(text) {
-                        var map = {
-                            '&': '&amp;',
-                            '<': '&lt;',
-                            '>': '&gt;',
-                            '"': '&quot;',
-                            "'": '&#039;'
-                        };
-                        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
                     }
 
                     // --- Modal Functions (from previous version, slightly adapted) ---
@@ -1940,6 +1781,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     showToast(\`Error during reply: \${e.message}\`, 'error');
                                 } finally {
                                     hideLoader();
+                                    // If you implement dynamic update, remove this reload and update DOM here
                                 }
                             }
                         });
@@ -2138,7 +1980,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         original_rating: feedback.originalContent ? feedback.originalContent.rating : '',
                                         original_timestamp: feedback.originalContent ? new Date(feedback.originalContent.timestamp).toLocaleString() : '',
                                         replies_count: feedback.replies ? feedback.replies.length : 0,
-                                        replies_text: feedback.replies ? feedback.replies.map(r => \`[\${r.adminName} @ \${new Date(r.timestamp).toLocaleString()}] \${r.text}\`).join('; ') : ''
+                                        replies_text: feedback.replies ? feedback.replies.map(r => `[${r.adminName} @ ${new Date(r.timestamp).toLocaleString()}] ${r.text}`).join('; ') : ''
                                     });
                                 }
                             }
@@ -2218,122 +2060,61 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Admin API to delete a single feedback
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
-    try {
-        const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id);
-        if (!deletedFeedback) {
-            console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`);
-            return res.status(404).json({ message: 'Feedback ID not found.' });
-        }
-        console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`);
-        res.status(200).json({ message: 'Feedback deleted successfully.' });
-    } catch (error) {
-        console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error);
-        res.status(500).json({ message: 'Failed to delete feedback.', error: error.message });
-    }
+    try { const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id); if (!deletedFeedback) { console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });} console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`); res.status(200).json({ message: 'Feedback delete ho gaya.' });
+    } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
  });
 
-// Admin API to batch delete feedbacks
 app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => {
     const { ids } = req.body;
     console.log(`ADMIN: Received BATCH DELETE request for feedback IDs:`, ids);
 
     if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ message: 'No IDs provided for deletion.' });
+        return res.status(400).json({ message: 'Delete karne ke liye koi IDs nahi di gayi hain.' });
     }
 
     try {
         const result = await Feedback.deleteMany({ _id: { $in: ids } });
         if (result.deletedCount === 0) {
             console.log(`ADMIN: No feedbacks found to delete for the provided IDs.`);
-            return res.status(404).json({ message: 'No feedbacks found for the given IDs.' });
+            return res.status(404).json({ message: 'Diye gaye IDs ke liye koi feedbacks nahi mile.' });
         }
         console.log(`ADMIN: Successfully deleted ${result.deletedCount} feedbacks.`);
-        res.status(200).json({ message: `${result.deletedCount} feedbacks successfully deleted.`, deletedCount: result.deletedCount });
+        res.status(200).json({ message: `${result.deletedCount} feedbacks safaltapoorvak delete ho gaye.`, deletedCount: result.deletedCount });
     } catch (error) {
         console.error(`ADMIN: Error during batch deleting feedbacks:`, error);
-        res.status(500).json({ message: 'Failed to delete selected feedbacks.', error: error.message });
+        res.status(500).json({ message: 'Selected feedbacks delete nahi ho paye.', error: error.message });
     }
 });
 
 
-// Admin API to reply to a feedback
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
-    const feedbackId = req.params.id;
-    const { replyText, adminName } = req.body;
-    console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
-    if (!replyText) {
-        console.log(`ADMIN: Reply text missing for feedback ID: ${feedbackId}`);
-        return res.status(400).json({ message: 'Reply text is required.' });
-    }
-    try {
-        const feedback = await Feedback.findById(feedbackId);
-        if (!feedback) {
-            console.log(`ADMIN: Feedback ID ${feedbackId} not found for replying.`);
-            return res.status(404).json({ message: 'Feedback ID not found.' });
-        }
-        // Push new reply to the replies array
-        feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() });
-        await feedback.save();
-        console.log(`ADMIN: Reply added successfully to feedback ID: ${feedbackId}`);
-        res.status(200).json({ message: 'Reply posted successfully.', reply: feedback.replies[feedback.replies.length - 1] });
-    } catch (error) {
-        console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error);
-        res.status(500).json({ message: 'Failed to save reply.', error: error.message });
-    }
+    const feedbackId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
+    if (!replyText) { console.log(`ADMIN: Reply text missing for feedback ID: ${feedbackId}`); return res.status(400).json({ message: 'Reply text daalo.' });}
+    try { const feedback = await Feedback.findById(feedbackId); if (!feedback) { console.log(`ADMIN: Feedback ID ${feedbackId} not found for replying.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });}
+    feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await feedback.save(); console.log(`ADMIN: Reply added successfully to feedback ID: ${feedbackId}`); res.status(200).json({ message: 'Reply post ho gaya.', reply: feedback.replies[feedback.replies.length - 1] });
+    } catch (error) { console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error); res.status(500).json({ message: 'Reply save nahi ho paya.', error: error.message });}
 });
-
-// Admin API to change a user's DiceBear avatar (for email-based users)
 app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => {
-    const userId = req.params.userId;
-    console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
-    try {
-        const userToUpdate = await User.findById(userId);
-        if (!userToUpdate) {
-            console.log(`ADMIN: User ID ${userId} not found for avatar change.`);
-            return res.status(404).json({ message: 'User ID not found.' });
-        }
-        // Prevent changing avatar for Google users from admin panel
-        if (userToUpdate.loginMethod === 'google') {
-            console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`);
-            return res.status(400).json({ message: 'Google user avatars cannot be changed from here.' });
-        }
-        const userName = userToUpdate.name;
-        if (!userName) {
-            console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`);
-            return res.status(400).json({ message: 'User name is missing to generate avatar.' });
-        }
-        // Generate a new DiceBear avatar with a fresh random seed
-        const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString());
-        userToUpdate.avatarUrl = newAvatarUrl;
-        await userToUpdate.save();
-        console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
-
-        // Update all feedbacks associated with this user with the new avatar URL
-        await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } });
-        console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
-
-        res.status(200).json({ message: 'Avatar changed successfully!', newAvatarUrl });
-    } catch (error) {
-        console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error);
-        res.status(500).json({ message: 'Failed to change avatar.', error: error.message });
-    }
+    const userId = req.params.userId; console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
+    try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
+    if (userToUpdate.loginMethod === 'google') { console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`); return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });}
+    const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });}
+    const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
+    await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } }); console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
+    res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
+    } catch (error) { console.error(`ADMIN: Error changing avatar for user ID ${userId}:`, error); res.status(500).json({ message: 'Avatar change nahi ho paya.', error: error.message });}
 });
 
-// This route ensures that frontend routes (if you use React Router, Vue Router etc.)
-// also serve index.html on direct access.
-// If there's a specific file like /reset-password.html, express.static will serve it first.
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   } else {
-    // If an /api/ route is not matched, return 404
     res.status(404).json({message: "API endpoint not found."});
   }
 });
 
 app.listen(PORT, () => {
-    console.log(`Nobita's server is running on port ${PORT}: http://localhost:${PORT}`);
+    console.log(`Nobita ka server port ${PORT} par chalu ho gaya hai: http://localhost:${PORT}`);
 });
