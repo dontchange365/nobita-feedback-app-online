@@ -1,5 +1,7 @@
+/* public/css/style.css */
+
 body {
-    font-family: sans-serif;
+    font-family: 'Roboto', sans-serif; /* Poore body ke liye Roboto font */
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
@@ -20,7 +22,20 @@ header {
 .logo {
     font-size: 1.5rem;
     font-weight: bold;
+    font-family: 'Montserrat', sans-serif; /* Logo ke liye Montserrat font */
 }
+
+h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif; /* Headings ke liye bhi Montserrat */
+    font-weight: 700; /* Headings bold rahein */
+}
+
+/* Agar aapko Roboto ko bold mein use karna hai toh: */
+strong {
+    font-weight: 700; /* Roboto bold */
+}
+
+/* ... baaki CSS rules ... */
 
 nav {
     display: flex;
