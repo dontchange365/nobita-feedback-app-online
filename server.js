@@ -677,7 +677,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
     try {
         // Populate userId to get loginMethod and isVerified status for display
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod isVerified email' }).sort({ timestamp: -1 });
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ timestamp: -1 }); // Added name and email to select
         res.status(200).json(allFeedbacks);
     } catch (error) {
         console.error("Error fetching feedbacks:", error);
@@ -857,6 +857,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         align-items: center;
                         min-height: 100vh;
                         line-height: 1.6;
+                        /* Subtle animated background gradient */
+                        background-size: 400% 400%;
+                        animation: gradientAnimation 15s ease infinite;
+                    }
+                    @keyframes gradientAnimation {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
                     }
                     h1 {
                         font-family: 'Montserrat', sans-serif;
@@ -872,6 +880,32 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         from { opacity: 0; transform: translateY(-20px); }
                         to { opacity: 1; transform: translateY(0); }
                     }
+                    .nobibot-icon {
+                        position: fixed;
+                        top: 20px;
+                        left: 20px;
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        background-color: rgba(255,215,0,0.2);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 1000;
+                        box-shadow: 0 0 15px rgba(255,215,0,0.5);
+                        animation: floatAnimation 3s ease-in-out infinite;
+                    }
+                    .nobibot-icon img {
+                        width: 80%;
+                        height: 80%;
+                        object-fit: contain;
+                    }
+                    @keyframes floatAnimation {
+                        0% { transform: translateY(0px); }
+                        50% { transform: translateY(-10px); }
+                        100% { transform: translateY(0px); }
+                    }
+
                     .main-panel-btn-container {
                         width: 100%;
                         max-width: 1200px;
@@ -881,6 +915,23 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         margin-bottom: 30px;
                         padding: 0 10px;
                         gap: 15px; /* Added gap for better spacing */
+                        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+                    }
+                    .search-filter-group {
+                        display: flex;
+                        gap: 10px;
+                        flex-grow: 1;
+                        max-width: 500px; /* Limit search bar width */
+                    }
+                    .search-input {
+                        flex-grow: 1;
+                        padding: 10px 15px;
+                        border-radius: 8px;
+                        border: 1px solid var(--border-color);
+                        background-color: #34495E;
+                        color: var(--text-light);
+                        font-size: 1em;
+                        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
                     }
                     .action-button {
                         padding: 12px 25px;
@@ -889,7 +940,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         font-size: 1.05em;
                         font-weight: 600;
                         cursor: pointer;
-                        transition: all 0.3s ease;
+                        transition: background-color 0.3s ease, transform 0.2s, box-shadow 0.3s; /* Color transition */
                         text-transform: uppercase;
                         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
                         background-color: var(--accent-blue);
@@ -898,14 +949,35 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .action-button:hover {
                         transform: translateY(-3px) scale(1.02);
                         box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-                        filter: brightness(1.1);
+                        background-color: #0056b3; /* Darker blue on hover */
                     }
                     .bulk-delete-btn {
                         background-color: var(--accent-red);
                     }
                     .bulk-delete-btn:hover {
-                        filter: brightness(1.1);
+                        background-color: #C0392B; /* Darker red on hover */
                     }
+                    .filter-button {
+                        background-color: #555;
+                        color: white;
+                    }
+                    .filter-button.active {
+                        background-color: var(--accent-yellow);
+                        color: #1A1A2E;
+                    }
+                    .filter-button:hover {
+                        background-color: #777;
+                    }
+                    .filter-button.active:hover {
+                        background-color: #E0C000;
+                    }
+                    .export-button {
+                        background-color: var(--accent-purple);
+                    }
+                    .export-button:hover {
+                        background-color: #5a0a9a;
+                    }
+
                     .select-all-container {
                         display: flex;
                         align-items: center;
@@ -915,10 +987,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         user-select: none; /* Prevent text selection */
                     }
                     .select-all-container input[type="checkbox"] {
-                        width: 22px;
-                        height: 22px;
+                        width: 28px; /* Larger for touch */
+                        height: 28px; /* Larger for touch */
                         cursor: pointer;
                         accent-color: var(--accent-yellow); /* Style checkbox */
+                        min-width: 28px; /* Ensure it stays large */
+                        min-height: 28px; /* Ensure it stays large */
                     }
 
                     .feedback-grid {
@@ -977,6 +1051,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         gap: 18px; /* Increased gap */
                         margin-bottom: 20px; /* Increased margin */
                         flex-shrink: 0;
+                        position: relative; /* For avatar change button positioning */
                     }
                     .feedback-avatar {
                         width: 70px; /* Larger avatar */
@@ -986,12 +1061,37 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         border: 4px solid var(--accent-yellow); /* Thicker border */
                         flex-shrink: 0;
                         box-shadow: 0 0 15px rgba(255,215,0,0.4);
+                        position: relative;
                     }
                     .feedback-avatar img {
                         width: 100%;
                         height: 100%;
                         object-fit: cover;
                     }
+                    .avatar-change-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.6);
+                        border-radius: 50%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                        cursor: pointer;
+                    }
+                    .feedback-avatar:hover .avatar-change-overlay {
+                        opacity: 1;
+                    }
+                    .avatar-change-overlay span {
+                        color: white;
+                        font-size: 1.8em;
+                        font-weight: bold;
+                    }
+
                     .feedback-info {
                         flex-grow: 1;
                         display: flex;
@@ -1024,6 +1124,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         margin-left: 8px;
                         vertical-align: middle;
                         white-space: nowrap; /* Prevent tags from breaking */
+                        display: inline-flex; /* For better icon alignment */
+                        align-items: center;
+                        gap: 4px;
                     }
                     .google-user-tag { background-color: #4285F4; color: white; }
                     .email-user-tag { background-color: #6c757d; color: white; }
@@ -1040,7 +1143,20 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         font-size: 0.9em;
                         color: #AAB7B8;
                         margin-top: 5px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
                     }
+                    .feedback-info .user-ip .copy-icon {
+                        cursor: pointer;
+                        color: var(--accent-blue);
+                        font-size: 1.1em;
+                        transition: color 0.2s ease;
+                    }
+                    .feedback-info .user-ip .copy-icon:hover {
+                        color: var(--accent-yellow);
+                    }
+
                     .feedback-body {
                         font-size: 1.05em; /* Slightly larger body text */
                         color: var(--text-light);
@@ -1050,10 +1166,29 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         min-height: 80px; /* Minimum height for feedback body */
                         overflow-y: auto; /* Keep scroll for long content within body */
                         word-wrap: break-word;
-                        background-color: #2A3340; /* Slightly different background for body */
+                        background-color: rgba(42, 51, 64, 0.7); /* Semi-transparent for glassmorphism */
+                        backdrop-filter: blur(5px); /* Glassmorphism effect */
                         padding: 15px;
                         border-radius: 8px;
                         box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
+                        position: relative; /* For copy button */
+                    }
+                    .feedback-body .copy-text-btn {
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: rgba(255,255,255,0.1);
+                        border: none;
+                        border-radius: 5px;
+                        color: var(--text-light);
+                        font-size: 0.9em;
+                        padding: 5px 8px;
+                        cursor: pointer;
+                        opacity: 0;
+                        transition: opacity 0.2s ease;
+                    }
+                    .feedback-body:hover .copy-text-btn {
+                        opacity: 1;
                     }
                     .feedback-date {
                         font-size: 0.85em;
@@ -1063,7 +1198,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         border-top: 1px solid var(--border-color);
                         padding-top: 15px;
                         flex-shrink: 0;
+                        display: flex; /* For icon alignment */
+                        align-items: center;
+                        justify-content: flex-end;
+                        gap: 5px;
                     }
+                    .feedback-date .icon {
+                        font-size: 1.1em;
+                        color: #7F8C8D;
+                    }
+
                     .action-buttons {
                         display: flex;
                         gap: 12px; /* Increased gap */
@@ -1125,9 +1269,34 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         margin-bottom: 12px;
                         font-size: 0.98em;
                         box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+                        transition: all 0.3s ease; /* Animation for expand/collapse */
+                    }
+                    .reply-section textarea:focus {
+                        min-height: 100px; /* Expand on focus */
+                        box-shadow: 0 0 10px rgba(255,215,0,0.3);
+                        border-color: var(--accent-yellow);
                     }
                     .reply-section textarea::placeholder {
                         color: #A9B7C0;
+                    }
+                    .smart-reply-buttons {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        margin-bottom: 12px;
+                    }
+                    .smart-reply-buttons button {
+                        background-color: #4A6070;
+                        color: var(--text-light);
+                        border: none;
+                        border-radius: 5px;
+                        padding: 8px 12px;
+                        font-size: 0.85em;
+                        cursor: pointer;
+                        transition: background-color 0.2s ease;
+                    }
+                    .smart-reply-buttons button:hover {
+                        background-color: #5A7080;
                     }
                     .reply-btn {
                         background-color: var(--accent-green);
@@ -1148,7 +1317,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
                     .replies-display {
                         margin-top: 20px;
-                        background-color: #213042;
+                        background-color: rgba(33, 48, 66, 0.7); /* Semi-transparent for glassmorphism */
+                        backdrop-filter: blur(5px); /* Glassmorphism effect */
                         border-radius: 10px;
                         padding: 15px;
                         border: 1px solid #2C3E50;
@@ -1274,6 +1444,59 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     #adminModalCancelButton { background-color: var(--accent-red); }
                     #adminModalCancelButton:hover { background-color: #C0392B; }
 
+                    /* Toast Notification */
+                    .toast-notification {
+                        position: fixed;
+                        bottom: 30px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background-color: rgba(50, 50, 50, 0.9);
+                        color: white;
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                        z-index: 2001;
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity 0.3s ease, visibility 0.3s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    .toast-notification.show {
+                        opacity: 1;
+                        visibility: visible;
+                    }
+                    .toast-notification.success { background-color: rgba(40, 167, 69, 0.9); }
+                    .toast-notification.error { background-color: rgba(220, 53, 69, 0.9); }
+                    .toast-notification .icon {
+                        font-size: 1.5em;
+                    }
+                    .loader-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.7);
+                        display: none;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 2002;
+                    }
+                    .loader {
+                        border: 8px solid #f3f3f3; /* Light grey */
+                        border-top: 8px solid var(--accent-yellow); /* Yellow */
+                        border-radius: 50%;
+                        width: 60px;
+                        height: 60px;
+                        animation: spin 1s linear infinite;
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+
                     /* Responsive Adjustments */
                     @media (max-width: 1024px) {
                         .feedback-grid {
@@ -1285,14 +1508,26 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     @media (max-width: 768px) {
                         body { padding: 20px 15px; }
                         h1 { font-size: 2.4em; margin-bottom: 30px; }
+                        .nobibot-icon {
+                            width: 50px;
+                            height: 50px;
+                            top: 15px;
+                            left: 15px;
+                        }
                         .main-panel-btn-container {
                             flex-direction: column;
                             align-items: stretch;
                             gap: 15px;
                             margin-bottom: 25px;
                         }
+                        .search-filter-group {
+                            flex-direction: column;
+                            gap: 10px;
+                            max-width: 100%;
+                        }
+                        .search-input { width: 100%; }
                         .select-all-container { margin-right: 0; justify-content: center; }
-                        .action-button, .bulk-delete-btn { width: 100%; }
+                        .action-button, .bulk-delete-btn, .filter-button, .export-button { width: 100%; }
                         .feedback-grid {
                             grid-template-columns: 1fr;
                             gap: 20px;
@@ -1309,6 +1544,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         .admin-custom-modal h3 { font-size: 1.8em; }
                         .admin-custom-modal p { font-size: 1em; }
                         .admin-modal-buttons button { padding: 10px 20px; }
+                        .toast-notification {
+                            width: 90%;
+                            text-align: center;
+                        }
                     }
                     @media (max-width: 480px) {
                         h1 { font-size: 2em; }
@@ -1321,13 +1560,25 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 </style>
             </head>
             <body>
+                <div class="nobibot-icon">
+                    <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobibot">
+                </div>
                 <h1>NOBITA'S COMMAND CENTER</h1>
                 <div class="main-panel-btn-container">
                     <div class="select-all-container">
                         <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)">
                         <label for="selectAllCheck">Select All</label>
                     </div>
+                    <div class="search-filter-group">
+                        <input type="text" id="searchFeedback" class="search-input" placeholder="Search by name or email...">
+                        <button class="action-button filter-button" id="filterUnverified">Unverified</button>
+                        <button class="action-button filter-button" id="filterEdited">Edited</button>
+                        <button class="action-button filter-button" id="filterNoReplies">No Replies</button>
+                        <button class="action-button filter-button" id="filterAll">All</button>
+                    </div>
                     <button class="action-button bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">Delete Selected</button>
+                    <button class="action-button export-button" onclick="exportFeedbacks('csv')">Export CSV</button>
+                    <button class="action-button export-button" onclick="exportFeedbacks('json')">Export JSON</button>
                 </div>
                 <div class="feedback-grid">
         `;
@@ -1368,25 +1619,42 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 }
 
                 html += `
-                    <div class="feedback-card" id="card-${fb._id}">
+                    <div class="feedback-card" id="card-${fb._id}"
+                         data-name="${userDisplayName}"
+                         data-email="${fb.userId && fb.userId.email ? fb.userId.email : ''}"
+                         data-is-verified="${fb.userId && fb.userId.isVerified ? 'true' : 'false'}"
+                         data-is-edited="${fb.isEdited ? 'true' : 'false'}"
+                         data-has-replies="${fb.replies && fb.replies.length > 0 ? 'true' : 'false'}">
                         <div class="feedback-card-inner">
                             <div class="feedback-card-front">
                                 <div class="feedback-header">
                                     <input type="checkbox" class="feedback-checkbox" value="${fb._id}">
                                     <div class="feedback-avatar">
                                         <img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}">
+                                        ${fb.userId && fb.userId.loginMethod === 'email' ? `
+                                            <div class="avatar-change-overlay" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">
+                                                <span>🔄</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                     <div class="feedback-info">
                                         <h4>${userDisplayName} ${fb.isEdited ? '<span class="tag edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
                                         <small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
-                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}</div>
+                                        <div class="user-ip">
+                                            IP: ${fb.userIp || 'N/A'}
+                                            <span class="copy-icon" onclick="copyToClipboard('${fb.userIp || 'N/A'}')">📋</span>
+                                            | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}
+                                            <span class="copy-icon" onclick="copyToClipboard('${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}')">📋</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="feedback-body">
                                     <p>${fb.feedback}</p>
+                                    <button class="copy-text-btn" onclick="copyToClipboard('${escapeHtml(fb.feedback)}')">Copy Text</button>
                                 </div>
                                 <div class="feedback-date">
+                                    <span class="icon">🕒</span>
                                     ${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}
                                     ${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
                                 </div>
@@ -1396,6 +1664,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
+                                    <div class="smart-reply-buttons">
+                                        <button onclick="insertSmartReply('reply-text-${fb._id}', 'Thanks for your feedback!')">Thanks!</button>
+                                        <button onclick="insertSmartReply('reply-text-${fb._id}', 'We are looking into this issue.')">Looking into it.</button>
+                                        <button onclick="insertSmartReply('reply-text-${fb._id}', 'Your suggestion is valuable.')">Valuable suggestion.</button>
+                                    </div>
                                     <button class="action-button reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
                                     <div class="replies-display">
                                         ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
@@ -1420,17 +1693,29 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 <div class="feedback-header">
                                     <div class="feedback-avatar">
                                         <img src="${(fb.originalContent.avatarUrl || getDiceBearAvatarUrl(fb.originalContent.name || 'Original User'))}" alt="Original">
+                                        ${fb.userId && fb.userId.loginMethod === 'email' ? `
+                                            <div class="avatar-change-overlay" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">
+                                                <span>🔄</span>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                     <div class="feedback-info">
                                         <h4>ORIGINAL: ${fb.originalContent.name}</h4>
                                         <div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div>
-                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}</div>
+                                        <div class="user-ip">
+                                            IP: ${fb.userIp || 'N/A'}
+                                            <span class="copy-icon" onclick="copyToClipboard('${fb.userIp || 'N/A'}')">📋</span>
+                                            | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}
+                                            <span class="copy-icon" onclick="copyToClipboard('${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}')">📋</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="feedback-body">
                                     <p>${fb.originalContent.feedback}</p>
+                                    <button class="copy-text-btn" onclick="copyToClipboard('${escapeHtml(fb.originalContent.feedback)}')">Copy Text</button>
                                 </div>
                                 <div class="feedback-date">
+                                    <span class="icon">🕒</span>
                                     Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}
                                 </div>
                                 <div class="action-buttons">
@@ -1439,6 +1724,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-original-${fb._id}" placeholder="Admin reply..."></textarea>
+                                    <div class="smart-reply-buttons">
+                                        <button onclick="insertSmartReply('reply-text-original-${fb._id}', 'Thanks for your feedback!')">Thanks!</button>
+                                        <button onclick="insertSmartReply('reply-text-original-${fb._id}', 'We are looking into this issue.')">Looking into it.</button>
+                                        <button onclick="insertSmartReply('reply-text-original-${fb._id}', 'Your suggestion is valuable.')">Valuable suggestion.</button>
+                                    </div>
                                     <button class="action-button reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-original-${fb._id}')">REPLY</button>
                                     <div class="replies-display">
                                         ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
@@ -1479,16 +1769,61 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     </div>
                 </div>
 
+                <div id="toastNotification" class="toast-notification">
+                    <span id="toastIcon" class="icon"></span>
+                    <span id="toastMessage"></span>
+                </div>
+
+                <div id="loaderOverlay" class="loader-overlay">
+                    <div class="loader"></div>
+                </div>
+
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
-                    // Basic check for AUTH_HEADER presence, though it's set by server
-                    if (!AUTH_HEADER || AUTH_HEADER === "Basic Og==") {
-                        console.error("CRITICAL: AUTH_HEADER is missing or invalid in admin panel script!");
-                        // Use the custom modal instead for better UX
-                        showAdminModal('alert', 'Authentication Error', 'Admin authentication is not configured properly. Actions will fail.');
+                    const allFeedbacksData = ${JSON.stringify(feedbacks)}; // Store all feedback data for client-side filtering
+
+                    // --- Utility Functions ---
+                    function showToast(message, type = 'success') {
+                        const toast = document.getElementById('toastNotification');
+                        const toastMessage = document.getElementById('toastMessage');
+                        const toastIcon = document.getElementById('toastIcon');
+
+                        toastMessage.textContent = message;
+                        toast.className = 'toast-notification show ' + type; // Reset classes and add new ones
+
+                        if (type === 'success') {
+                            toastIcon.innerHTML = '✔'; // Checkmark
+                        } else if (type === 'error') {
+                            toastIcon.innerHTML = '✖'; // Cross
+                        } else {
+                            toastIcon.innerHTML = '';
+                        }
+
+                        setTimeout(() => {
+                            toast.classList.remove('show');
+                        }, 3000); // Hide after 3 seconds
                     }
 
-                    // Modal elements and functions
+                    function showLoader() {
+                        document.getElementById('loaderOverlay').style.display = 'flex';
+                    }
+
+                    function hideLoader() {
+                        document.getElementById('loaderOverlay').style.display = 'none';
+                    }
+
+                    function escapeHtml(text) {
+                        var map = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#039;'
+                        };
+                        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                    }
+
+                    // --- Modal Functions (from previous version, slightly adapted) ---
                     const adminModalOverlay = document.getElementById('adminModalOverlay');
                     const adminModalTitle = document.getElementById('adminModalTitle');
                     const adminModalMessage = document.getElementById('adminModalMessage');
@@ -1519,16 +1854,28 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         if (globalConfirmCallback) globalConfirmCallback(false);
                     });
 
-                    // Function to flip feedback cards
+                    // --- Feedback Card Functions ---
                     function flipCard(id) {
                         document.getElementById(\`card-\${id}\`).classList.toggle('is-flipped');
                     }
 
-                    // Function to delete a single feedback
+                    // --- Copy to Clipboard ---
+                    function copyToClipboard(text) {
+                        const tempInput = document.createElement('textarea');
+                        tempInput.value = text;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand('copy'); // Deprecated but widely supported in iframes
+                        document.body.removeChild(tempInput);
+                        showToast('Copied to clipboard!', 'success');
+                    }
+
+                    // --- Admin Action Functions ---
                     async function tryDeleteFeedback(id) {
                         console.log("Attempting to delete feedback ID:", id);
                         showAdminModal('confirm', 'Delete Feedback?', 'Are you sure you want to delete this feedback? This cannot be undone.', async confirmed => {
                             if (confirmed) {
+                                showLoader();
                                 try {
                                     const res = await fetch(\`/api/admin/feedback/\${id}\`, {
                                         method: 'DELETE',
@@ -1537,31 +1884,33 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         }
                                     });
                                     if (res.ok) {
-                                        showAdminModal('alert', 'Deleted!', 'Feedback deleted successfully.');
-                                        setTimeout(() => location.reload(), 1000); // Reload page after success
+                                        showToast('Feedback deleted successfully!', 'success');
+                                        setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
                                         console.error("Delete failed response:", err);
-                                        showAdminModal('alert', 'Error!', \`Failed to delete: \${err.message || res.statusText}\`);
+                                        showToast(\`Failed to delete: \${err.message || res.statusText}\`, 'error');
                                     }
                                 } catch (e) {
                                     console.error("Delete fetch error:", e);
-                                    showAdminModal('alert', 'Fetch Error!', \`Error during delete: \${e.message}\`);
+                                    showToast(\`Error during delete: \${e.message}\`, 'error');
+                                } finally {
+                                    hideLoader();
                                 }
                             }
                         });
                     }
 
-                    // Function to post a reply to a feedback
                     async function tryPostReply(fbId, txtId) {
                         const replyText = document.getElementById(txtId).value.trim();
                         console.log("Attempting to post reply to feedback ID:", fbId, "Text:", replyText);
                         if (!replyText) {
-                            showAdminModal('alert', 'Empty Reply', 'Please write something to reply.');
+                            showToast('Please write something to reply.', 'error');
                             return;
                         }
                         showAdminModal('confirm', 'Post Reply?', \`Confirm reply: "\\\${replyText.substring(0,50)}..."\`, async confirmed => {
                             if (confirmed) {
+                                showLoader();
                                 try {
                                     const res = await fetch(\`/api/admin/feedback/\${fbId}/reply\`, {
                                         method: 'POST',
@@ -1569,29 +1918,31 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                             'Content-Type': 'application/json',
                                             'Authorization': AUTH_HEADER
                                         },
-                                        body: JSON.stringify({ replyText, adminName: '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' }) // Admin name hardcoded for now
+                                        body: JSON.stringify({ replyText, adminName: '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' })
                                     });
                                     if (res.ok) {
-                                        showAdminModal('alert', 'Replied!', 'Reply posted.');
+                                        showToast('Reply posted successfully!', 'success');
                                         setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
                                         console.error("Reply failed response:", err);
-                                        showAdminModal('alert', 'Error!', \`Failed to reply: \${err.message || res.statusText}\`);
+                                        showToast(\`Failed to reply: \${err.message || res.statusText}\`, 'error');
                                     }
                                 } catch (e) {
                                     console.error("Reply fetch error:", e);
-                                    showAdminModal('alert', 'Fetch Error!', \`Error during reply: \${e.message}\`);
+                                    showToast(\`Error during reply: \${e.message}\`, 'error');
+                                } finally {
+                                    hideLoader();
                                 }
                             }
                         });
                     }
 
-                    // Function to change a user's DiceBear avatar
                     async function tryChangeUserAvatar(userId, userName) {
                         console.log("Attempting to change avatar for user ID:", userId, "Name:", userName);
                         showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \\\${userName}? This will regenerate avatar for this email user.\`, async confirmed => {
                             if (confirmed) {
+                                showLoader();
                                 try {
                                     const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {
                                         method: 'PUT',
@@ -1601,22 +1952,23 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         }
                                     });
                                     if (res.ok) {
-                                        showAdminModal('alert', 'Avatar Changed!', 'Avatar updated for ' + userName + '.');
+                                        showToast('Avatar updated for ' + userName + '!', 'success');
                                         setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
                                         console.error("Change avatar failed response:", err);
-                                        showAdminModal('alert', 'Error!', \`Failed to change avatar: \${err.message || res.statusText}\`);
+                                        showToast(\`Failed to change avatar: \${err.message || res.statusText}\`, 'error');
                                     }
                                 } catch (e) {
                                     console.error("Change avatar fetch error:", e);
-                                    showAdminModal('alert', 'Fetch Error!', \`Error during avatar change: \${e.message}\`);
+                                    showToast(\`Error during avatar change: \${e.message}\`, 'error');
+                                } finally {
+                                    hideLoader();
                                 }
                             }
                         });
                     }
                     
-                    // New functions for multi-select delete
                     function toggleSelectAll(checked) {
                         document.querySelectorAll('.feedback-checkbox').forEach(checkbox => {
                             checkbox.checked = checked;
@@ -1626,12 +1978,13 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     async function tryDeleteSelectedFeedbacks() {
                         const selectedFeedbackIds = Array.from(document.querySelectorAll('.feedback-checkbox:checked')).map(cb => cb.value);
                         if (selectedFeedbackIds.length === 0) {
-                            showAdminModal('alert', 'No Feedbacks Selected', 'Please select at least one feedback to delete.');
+                            showToast('Please select at least one feedback to delete.', 'error');
                             return;
                         }
 
                         showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \\\${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
                             if (confirmed) {
+                                showLoader();
                                 try {
                                     const res = await fetch('/api/admin/feedbacks/batch-delete', {
                                         method: 'DELETE',
@@ -1642,20 +1995,204 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         body: JSON.stringify({ ids: selectedFeedbackIds })
                                     });
                                     if (res.ok) {
-                                        showAdminModal('alert','Deleted!',\`\\\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
-                                        setTimeout(()=>location.reload(),1000);
+                                        showToast(\`\\\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`, 'success');
+                                        setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
-                                        console.error("Batch delete failed response:",err);
-                                        showAdminModal('alert','Error!',\`Failed to delete selected feedbacks: \\\${err.message||res.statusText}\`);
+                                        console.error("Batch delete failed response:", err);
+                                        showToast(\`Failed to delete selected feedbacks: \\\${err.message || res.statusText}\`, 'error');
                                     }
                                 } catch (e) {
-                                    console.error("Batch delete fetch error:",e);
-                                    showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \\\${e.message}\`);
+                                    console.error("Batch delete fetch error:", e);
+                                    showToast(\`Error during batch delete: \\\${e.message}\`, 'error');
+                                } finally {
+                                    hideLoader();
                                 }
                             }
                         });
                     }
+
+                    // --- Filtering Functions ---
+                    let currentFilter = 'all'; // 'all', 'unverified', 'edited', 'noReplies'
+
+                    function applyFilter(filterType) {
+                        currentFilter = filterType;
+                        const feedbackCards = document.querySelectorAll('.feedback-card');
+                        const searchInput = document.getElementById('searchFeedback');
+                        const searchTerm = searchInput.value.toLowerCase();
+
+                        // Update active state of filter buttons
+                        document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
+                        document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).classList.add('active');
+
+
+                        feedbackCards.forEach(card => {
+                            const name = card.dataset.name.toLowerCase();
+                            const email = card.dataset.email.toLowerCase();
+                            const isVerified = card.dataset.isVerified === 'true';
+                            const isEdited = card.dataset.isEdited === 'true';
+                            const hasReplies = card.dataset.hasReplies === 'true';
+
+                            let matchesSearch = true;
+                            if (searchTerm) {
+                                matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+                            }
+
+                            let matchesFilter = true;
+                            if (filterType === 'unverified') {
+                                matchesFilter = !isVerified;
+                            } else if (filterType === 'edited') {
+                                matchesFilter = isEdited;
+                            } else if (filterType === 'noReplies') {
+                                matchesFilter = !hasReplies;
+                            }
+                            // 'all' filter doesn't need specific matching beyond search
+
+                            if (matchesSearch && matchesFilter) {
+                                card.style.display = 'block';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
+
+                    // Attach event listeners for filter buttons
+                    document.getElementById('filterUnverified').addEventListener('click', () => applyFilter('unverified'));
+                    document.getElementById('filterEdited').addEventListener('click', () => applyFilter('edited'));
+                    document.getElementById('filterNoReplies').addEventListener('click', () => applyFilter('noReplies'));
+                    document.getElementById('filterAll').addEventListener('click', () => applyFilter('all'));
+
+                    // Initial filter application
+                    applyFilter(currentFilter);
+
+                    // Attach event listener for search input
+                    document.getElementById('searchFeedback').addEventListener('input', () => applyFilter(currentFilter));
+
+
+                    // --- Export Functions ---
+                    function convertToCsv(data) {
+                        if (data.length === 0) return '';
+
+                        const headers = Object.keys(data[0]);
+                        const csvRows = [];
+                        csvRows.push(headers.join(',')); // Add header row
+
+                        for (const row of data) {
+                            const values = headers.map(header => {
+                                const escaped = ('' + row[header]).replace(/"/g, '""'); // Escape double quotes
+                                return `"\${escaped}"`; // Wrap in double quotes
+                            });
+                            csvRows.push(values.join(','));
+                        }
+                        return csvRows.join('\\n');
+                    }
+
+                    function downloadFile(filename, content, mimeType) {
+                        const blob = new Blob([content], { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+
+                    function exportFeedbacks(format) {
+                        const visibleFeedbacks = [];
+                        document.querySelectorAll('.feedback-card').forEach(card => {
+                            if (card.style.display !== 'none') {
+                                const id = card.id.replace('card-', '');
+                                const feedback = allFeedbacksData.find(fb => fb._id === id);
+                                if (feedback) {
+                                    // Flatten the object for export
+                                    visibleFeedbacks.push({
+                                        _id: feedback._id,
+                                        name: feedback.name,
+                                        email: feedback.userId ? feedback.userId.email : 'N/A',
+                                        feedback_text: feedback.feedback,
+                                        rating: feedback.rating,
+                                        timestamp: new Date(feedback.timestamp).toLocaleString(),
+                                        avatar_url: feedback.avatarUrl,
+                                        user_ip: feedback.userIp,
+                                        user_id_ref: feedback.userId ? (feedback.userId._id || feedback.userId) : 'N/A',
+                                        login_method: feedback.userId ? feedback.userId.loginMethod : 'N/A',
+                                        is_verified: feedback.userId ? feedback.userId.isVerified : 'N/A',
+                                        is_edited: feedback.isEdited,
+                                        original_name: feedback.originalContent ? feedback.originalContent.name : '',
+                                        original_feedback: feedback.originalContent ? feedback.originalContent.feedback : '',
+                                        original_rating: feedback.originalContent ? feedback.originalContent.rating : '',
+                                        original_timestamp: feedback.originalContent ? new Date(feedback.originalContent.timestamp).toLocaleString() : '',
+                                        replies_count: feedback.replies ? feedback.replies.length : 0,
+                                        replies_text: feedback.replies ? feedback.replies.map(r => \`[\${r.adminName} @ \${new Date(r.timestamp).toLocaleString()}] \${r.text}\`).join('; ') : ''
+                                    });
+                                }
+                            }
+                        });
+
+                        if (visibleFeedbacks.length === 0) {
+                            showToast('No feedbacks to export based on current filters.', 'error');
+                            return;
+                        }
+
+                        if (format === 'csv') {
+                            const csv = convertToCsv(visibleFeedbacks);
+                            downloadFile('feedbacks.csv', csv, 'text/csv');
+                            showToast('Feedbacks exported to CSV!', 'success');
+                        } else if (format === 'json') {
+                            const json = JSON.stringify(visibleFeedbacks, null, 2);
+                            downloadFile('feedbacks.json', json, 'application/json');
+                            showToast('Feedbacks exported to JSON!', 'success');
+                        }
+                    }
+
+                    // --- Smart Reply Functions ---
+                    function insertSmartReply(textareaId, replyText) {
+                        const textarea = document.getElementById(textareaId);
+                        if (textarea) {
+                            const currentText = textarea.value.trim();
+                            if (currentText && !currentText.endsWith(' ')) {
+                                textarea.value += ' ' + replyText + ' ';
+                            } else {
+                                textarea.value += replyText + ' ';
+                            }
+                            textarea.focus();
+                        }
+                    }
+
+                    // --- Mobile Swipe for Flip (Basic) ---
+                    document.querySelectorAll('.feedback-card-front').forEach(cardFront => {
+                        let touchstartX = 0;
+                        let touchendX = 0;
+
+                        cardFront.addEventListener('touchstart', e => {
+                            touchstartX = e.changedTouches[0].screenX;
+                        }, false);
+
+                        cardFront.addEventListener('touchend', e => {
+                            touchendX = e.changedTouches[0].screenX;
+                            handleGesture();
+                        }, false);
+
+                        function handleGesture() {
+                            const swipeThreshold = 50; // Minimum pixels for a swipe
+                            const cardId = cardFront.closest('.feedback-card').id.replace('card-', '');
+
+                            if (touchendX < touchstartX - swipeThreshold) {
+                                // Swiped left
+                                if (cardFront.closest('.feedback-card').querySelector('.flip-btn')) { // Only flip if flip button exists
+                                    flipCard(cardId);
+                                }
+                            }
+                            if (touchendX > touchstartX + swipeThreshold) {
+                                // Swiped right
+                                if (cardFront.closest('.feedback-card').querySelector('.flip-btn')) { // Only flip if flip button exists
+                                    flipCard(cardId);
+                                }
+                            }
+                        }
+                    });
 
                 </script>
             </body>
