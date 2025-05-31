@@ -826,74 +826,490 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title>
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
                 <style>
-                    body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
-                    h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}
-                    .main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:space-between;margin-bottom:20px;padding:0 10px;align-items:center;}
-                    .main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}
-                    .main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}
-                    .feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}
-                    .feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}
-                    .feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}
-                    .feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}
-                    .feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
-                    .feedback-card-back{transform:rotateY(180deg);background-color:#34495E}
-                    .feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}
-                    .feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}
-                    .feedback-avatar img{width:100%;height:100%;object-fit:cover}
-                    .feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}
-                    .feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}
-                    .feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}
-                    .google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    .email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    .verified-tag{background-color:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    .unverified-tag{background-color:#ffc107;color:#333;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    .feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}
-                    .feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}
-                    .feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}
-                    .feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}
-                    .action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}
-                    .action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}
-                    .action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}
-                    .delete-btn{background-color:#E74C3C;color:white}
-                    .delete-btn:hover{background-color:#C0392B}
-                    .change-avatar-btn{background-color:#3498DB;color:white}
-                    .change-avatar-btn:hover{background-color:#2980B9}
-                    .flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}
-                    .flip-btn:hover{background-color:#e66800}
-                    .reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}
-                    .reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}
-                    .reply-section textarea::placeholder{color:#A9B7C0}
-                    .reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}
-                    .reply-btn:hover{background-color:#229954;transform:translateY(-2px)}
-                    .replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}
-                    .replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}
-                    .single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}
-                    .single-reply:last-child{border-bottom:none;margin-bottom:0}
-                    .admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}
-                    .reply-content-wrapper{flex-grow:1;word-wrap:break-word}
-                    .reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}
-                    .reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}
-                    .edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}
-                    .admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}
-                    .admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}
-                    .admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}
-                    .admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}
-                    .admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}
-                    .admin-modal-buttons button:hover{transform:translateY(-2px)}
-                    #adminModalOkButton:hover{background-color:#0056b3}
-                    #adminModalConfirmButton{background-color:#28a745}
-                    #adminModalConfirmButton:hover{background-color:#1e7e34}
-                    #adminModalCancelButton{background-color:#dc3545}
-                    #adminModalCancelButton:hover{background:none;color:#dc3545}
-                    .select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
-                    .select-all-container label { font-size: 1.1em; color: #FFD700; }
-                    .select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
-                    .bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;}
-                    .bulk-delete-btn:hover { background-color: #C0392B; transform: translateY(-2px); }
-                    .feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }
-                    @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}
+                    :root {
+                        --bg-dark: #1A1A2E;
+                        --bg-medium: #16213E;
+                        --card-bg: #222A35;
+                        --text-light: #E0E0E0;
+                        --text-medium: #BDC3C7;
+                        --accent-yellow: #FFD700;
+                        --accent-purple: #6a0dad;
+                        --accent-green: #27AE60;
+                        --accent-red: #E74C3C;
+                        --accent-blue: #3498DB;
+                        --accent-orange: #fd7e14;
+                        --border-color: #34495E;
+                        --shadow-color: rgba(0,0,0,0.4);
+                    }
+                    body {
+                        font-family: 'Roboto', sans-serif;
+                        background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
+                        color: var(--text-light);
+                        margin: 0;
+                        padding: 30px 20px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        min-height: 100vh;
+                        line-height: 1.6;
+                    }
+                    h1 {
+                        font-family: 'Montserrat', sans-serif;
+                        color: var(--accent-yellow);
+                        text-align: center;
+                        margin-bottom: 40px;
+                        font-size: 3.2em;
+                        text-shadow: 0 0 20px rgba(255,215,0,0.6);
+                        letter-spacing: 2px;
+                        animation: fadeInDown 1s ease-out;
+                    }
+                    @keyframes fadeInDown {
+                        from { opacity: 0; transform: translateY(-20px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .main-panel-btn-container {
+                        width: 100%;
+                        max-width: 1200px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 30px;
+                        padding: 0 10px;
+                        gap: 15px; /* Added gap for better spacing */
+                    }
+                    .action-button {
+                        padding: 12px 25px;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 1.05em;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        text-transform: uppercase;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                        background-color: var(--accent-blue);
+                        color: white;
+                    }
+                    .action-button:hover {
+                        transform: translateY(-3px) scale(1.02);
+                        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                        filter: brightness(1.1);
+                    }
+                    .bulk-delete-btn {
+                        background-color: var(--accent-red);
+                    }
+                    .bulk-delete-btn:hover {
+                        filter: brightness(1.1);
+                    }
+                    .select-all-container {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 1.1em;
+                        color: var(--accent-yellow);
+                        user-select: none; /* Prevent text selection */
+                    }
+                    .select-all-container input[type="checkbox"] {
+                        width: 22px;
+                        height: 22px;
+                        cursor: pointer;
+                        accent-color: var(--accent-yellow); /* Style checkbox */
+                    }
+
+                    .feedback-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); /* Slightly wider cards */
+                        gap: 30px;
+                        width: 100%;
+                        max-width: 1200px;
+                    }
+                    .feedback-card {
+                        background-color: transparent;
+                        border-radius: 15px;
+                        perspective: 1000px;
+                        min-height: 520px; /* Slightly taller cards */
+                    }
+                    .feedback-card-inner {
+                        position: relative;
+                        width: 100%;
+                        height: 100%;
+                        transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); /* Smoother flip */
+                        transform-style: preserve-3d;
+                        box-shadow: 0 10px 30px var(--shadow-color);
+                        border-radius: 15px;
+                    }
+                    .feedback-card.is-flipped .feedback-card-inner {
+                        transform: rotateY(180deg);
+                    }
+                    .feedback-card-front, .feedback-card-back {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        -webkit-backface-visibility: hidden;
+                        backface-visibility: hidden;
+                        background-color: var(--card-bg);
+                        color: var(--text-medium);
+                        border-radius: 15px;
+                        padding: 25px;
+                        box-sizing: border-box;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        overflow-y: auto;
+                        border: 1px solid var(--border-color); /* Subtle border */
+                    }
+                    .feedback-card-back {
+                        transform: rotateY(180deg);
+                        background-color: #2C3540; /* Slightly different shade for back */
+                    }
+                    .feedback-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 18px; /* Increased gap */
+                        margin-bottom: 20px; /* Increased margin */
+                        flex-shrink: 0;
+                    }
+                    .feedback-avatar {
+                        width: 70px; /* Larger avatar */
+                        height: 70px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        border: 4px solid var(--accent-yellow); /* Thicker border */
+                        flex-shrink: 0;
+                        box-shadow: 0 0 15px rgba(255,215,0,0.4);
+                    }
+                    .feedback-avatar img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                    .feedback-info {
+                        flex-grow: 1;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    .feedback-info h4 {
+                        font-family: 'Montserrat', sans-serif;
+                        margin: 0;
+                        font-size: 1.4em; /* Larger name */
+                        color: var(--accent-yellow);
+                        text-transform: uppercase;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        line-height: 1.2;
+                    }
+                    .feedback-info h4 small {
+                        font-size: 0.75em;
+                        color: #bbb;
+                        text-transform: none;
+                        margin-left: 5px;
+                        display: block; /* Ensure email is on new line if needed */
+                    }
+                    .tag {
+                        padding: 3px 8px;
+                        border-radius: 5px;
+                        font-size: 0.7em;
+                        font-weight: bold;
+                        margin-left: 8px;
+                        vertical-align: middle;
+                        white-space: nowrap; /* Prevent tags from breaking */
+                    }
+                    .google-user-tag { background-color: #4285F4; color: white; }
+                    .email-user-tag { background-color: #6c757d; color: white; }
+                    .verified-tag { background-color: var(--accent-green); color: white; }
+                    .unverified-tag { background-color: #ffc107; color: #333; }
+                    .edited-admin-tag { background-color: #5cb85c; color: white; }
+
+                    .feedback-info .rating {
+                        font-size: 1.2em; /* Larger stars */
+                        color: #F39C12;
+                        margin-top: 8px;
+                    }
+                    .feedback-info .user-ip {
+                        font-size: 0.9em;
+                        color: #AAB7B8;
+                        margin-top: 5px;
+                    }
+                    .feedback-body {
+                        font-size: 1.05em; /* Slightly larger body text */
+                        color: var(--text-light);
+                        line-height: 1.7;
+                        margin-bottom: 20px;
+                        flex-grow: 1;
+                        overflow-y: auto;
+                        word-wrap: break-word;
+                        background-color: #2A3340; /* Slightly different background for body */
+                        padding: 15px;
+                        border-radius: 8px;
+                        box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
+                    }
+                    .feedback-date {
+                        font-size: 0.85em;
+                        color: #7F8C8D;
+                        text-align: right;
+                        margin-bottom: 15px;
+                        border-top: 1px solid var(--border-color);
+                        padding-top: 15px;
+                        flex-shrink: 0;
+                    }
+                    .action-buttons {
+                        display: flex;
+                        gap: 12px; /* Increased gap */
+                        margin-bottom: 15px;
+                        flex-shrink: 0;
+                    }
+                    .action-buttons button {
+                        flex-grow: 1;
+                        padding: 12px 15px;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 0.95em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: background-color 0.3s ease, transform 0.2s;
+                        text-transform: uppercase;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    }
+                    .action-buttons button:hover {
+                        transform: translateY(-2px);
+                        filter: brightness(1.1);
+                    }
+                    .delete-btn { background-color: var(--accent-red); color: white; }
+                    .change-avatar-btn { background-color: var(--accent-blue); color: white; }
+                    .flip-btn {
+                        background-color: var(--accent-orange);
+                        color: white;
+                        margin-top: 15px;
+                        width: 100%;
+                        padding: 12px;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: background-color 0.3s ease, transform 0.2s;
+                        text-transform: uppercase;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    }
+                    .flip-btn:hover {
+                        background-color: #e66800;
+                        transform: translateY(-2px);
+                    }
+
+                    .reply-section {
+                        border-top: 1px solid var(--border-color);
+                        padding-top: 20px;
+                        margin-top: 15px;
+                        flex-shrink: 0;
+                    }
+                    .reply-section textarea {
+                        width: calc(100% - 20px);
+                        padding: 12px;
+                        border: 1px solid #4A6070;
+                        border-radius: 8px;
+                        background-color: #34495E;
+                        color: var(--text-light);
+                        resize: vertical;
+                        min-height: 60px;
+                        margin-bottom: 12px;
+                        font-size: 0.98em;
+                        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+                    }
+                    .reply-section textarea::placeholder {
+                        color: #A9B7C0;
+                    }
+                    .reply-btn {
+                        background-color: var(--accent-green);
+                        color: white;
+                        width: 100%;
+                        padding: 12px;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: background-color 0.3s ease, transform 0.2s;
+                        text-transform: uppercase;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    }
+                    .reply-btn:hover {
+                        background-color: #229954;
+                        transform: translateY(-2px);
+                    }
+                    .replies-display {
+                        margin-top: 20px;
+                        background-color: #213042;
+                        border-radius: 10px;
+                        padding: 15px;
+                        border: 1px solid #2C3E50;
+                        max-height: 180px; /* Increased height */
+                        overflow-y: auto;
+                        box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
+                    }
+                    .replies-display h4 {
+                        font-family: 'Montserrat', sans-serif;
+                        color: #85C1E9;
+                        font-size: 1.15em;
+                        margin-bottom: 12px;
+                        border-bottom: 1px solid #34495E;
+                        padding-bottom: 10px;
+                    }
+                    .single-reply {
+                        border-bottom: 1px solid #2C3E50;
+                        padding-bottom: 12px;
+                        margin-bottom: 12px;
+                        font-size: 0.95em;
+                        color: #D5DBDB;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                    }
+                    .single-reply:last-child {
+                        border-bottom: none;
+                        margin-bottom: 0;
+                    }
+                    .admin-reply-avatar-sm {
+                        width: 35px; /* Slightly larger */
+                        height: 35px;
+                        border-radius: 50%;
+                        border: 2px solid #9B59B6;
+                        flex-shrink: 0;
+                        object-fit: cover;
+                        box-shadow: 0 0 8px rgba(155,89,182,.5);
+                    }
+                    .reply-content-wrapper {
+                        flex-grow: 1;
+                        word-wrap: break-word;
+                    }
+                    .reply-admin-name {
+                        font-weight: bold;
+                        color: #9B59B6;
+                        display: inline;
+                        margin-right: 5px;
+                    }
+                    .reply-timestamp {
+                        font-size: 0.8em;
+                        color: #8E9A9D;
+                        margin-left: 10px;
+                        white-space: nowrap; /* Prevent timestamp from breaking */
+                    }
+                    
+                    /* Custom Modal Styling */
+                    .admin-modal-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,.85); /* Darker overlay */
+                        display: none;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 2000;
+                        backdrop-filter: blur(5px); /* Blurred background */
+                    }
+                    .admin-custom-modal {
+                        background: #2C3E50; /* Darker modal background */
+                        padding: 40px; /* More padding */
+                        border-radius: 18px; /* More rounded corners */
+                        box-shadow: 0 15px 40px rgba(0,0,0,.6); /* Stronger shadow */
+                        text-align: center;
+                        color: var(--text-light);
+                        width: 90%;
+                        max-width: 550px; /* Wider modal */
+                        border: 1px solid #4A6070;
+                        animation: zoomIn 0.3s ease-out;
+                    }
+                    @keyframes zoomIn {
+                        from { transform: scale(0.8); opacity: 0; }
+                        to { transform: scale(1); opacity: 1; }
+                    }
+                    .admin-custom-modal h3 {
+                        font-family: 'Montserrat', sans-serif;
+                        color: var(--accent-yellow);
+                        margin-top: 0;
+                        margin-bottom: 20px;
+                        font-size: 2.2em;
+                        text-shadow: 0 0 10px rgba(255,215,0,0.3);
+                    }
+                    .admin-custom-modal p {
+                        margin-bottom: 30px;
+                        font-size: 1.15em;
+                        line-height: 1.7;
+                        color: #ccc;
+                        word-wrap: break-word;
+                    }
+                    .admin-modal-buttons button {
+                        background-color: var(--accent-blue);
+                        color: white;
+                        border: none;
+                        padding: 14px 28px; /* Larger buttons */
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 1.05em;
+                        margin: 8px; /* More margin */
+                        transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+                        font-weight: bold;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+                    }
+                    .admin-modal-buttons button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                        filter: brightness(1.1);
+                    }
+                    #adminModalOkButton { background-color: var(--accent-green); }
+                    #adminModalOkButton:hover { background-color: #229954; }
+                    #adminModalConfirmButton { background-color: var(--accent-green); }
+                    #adminModalConfirmButton:hover { background-color: #229954; }
+                    #adminModalCancelButton { background-color: var(--accent-red); }
+                    #adminModalCancelButton:hover { background-color: #C0392B; }
+
+                    /* Responsive Adjustments */
+                    @media (max-width: 1024px) {
+                        .feedback-grid {
+                            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                            gap: 25px;
+                        }
+                        h1 { font-size: 2.8em; }
+                    }
+                    @media (max-width: 768px) {
+                        body { padding: 20px 15px; }
+                        h1 { font-size: 2.4em; margin-bottom: 30px; }
+                        .main-panel-btn-container {
+                            flex-direction: column;
+                            align-items: stretch;
+                            gap: 15px;
+                            margin-bottom: 25px;
+                        }
+                        .select-all-container { margin-right: 0; justify-content: center; }
+                        .action-button, .bulk-delete-btn { width: 100%; }
+                        .feedback-grid {
+                            grid-template-columns: 1fr;
+                            gap: 20px;
+                        }
+                        .feedback-card { min-height: auto; } /* Allow height to adjust */
+                        .feedback-card-front, .feedback-card-back { padding: 20px; }
+                        .feedback-avatar { width: 60px; height: 60px; }
+                        .feedback-info h4 { font-size: 1.2em; }
+                        .feedback-body { font-size: 1em; padding: 12px; }
+                        .action-buttons { flex-direction: column; gap: 10px; }
+                        .action-buttons button { width: 100%; }
+                        .reply-section textarea { width: calc(100% - 16px); padding: 10px; }
+                        .admin-custom-modal { padding: 30px; }
+                        .admin-custom-modal h3 { font-size: 1.8em; }
+                        .admin-custom-modal p { font-size: 1em; }
+                        .admin-modal-buttons button { padding: 10px 20px; }
+                    }
+                    @media (max-width: 480px) {
+                        h1 { font-size: 2em; }
+                        .feedback-avatar { width: 50px; height: 50px; }
+                        .feedback-info h4 { font-size: 1.1em; }
+                        .tag { font-size: 0.65em; padding: 2px 6px; }
+                        .feedback-info .rating { font-size: 1em; }
+                        .feedback-info .user-ip { font-size: 0.8em; }
+                    }
                 </style>
             </head>
             <body>
@@ -903,7 +1319,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)">
                         <label for="selectAllCheck">Select All</label>
                     </div>
-                    <button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">Delete Selected</button>
+                    <button class="action-button bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">Delete Selected</button>
                 </div>
                 <div class="feedback-grid">
         `;
@@ -923,24 +1339,24 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 // Determine user type and verification status
                 if (fb.userId && typeof fb.userId === 'object') { // Check if userId is populated
                    if (fb.userId.loginMethod === 'google') {
-                       userTag = `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>`;
+                       userTag = `<span class="tag google-user-tag" title="Google User (${fb.userId.email || ''})">Google</span>`;
                    } else if (fb.userId.loginMethod === 'email') {
-                       userTag = `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`;
+                       userTag = `<span class="tag email-user-tag" title="Email User (${fb.userId.email || ''})">Email</span>`;
                    }
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                    if (fb.userId.isVerified) {
-                       userTag += `<span class="verified-tag" title="Email Verified">✔ Verified</span>`;
+                       userTag += `<span class="tag verified-tag" title="Email Verified">✔ Verified</span>`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       userTag += `<span class="unverified-tag" title="Email Not Verified">✖ Unverified</span>`;
+                       userTag += `<span class="tag unverified-tag" title="Email Not Verified">✖ Unverified</span>`;
                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
-                    userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
-                    userTag += `<span class="verified-tag" title="Email Verified">✔ Verified</span>`; // Assume legacy Google users were verified
+                    userTag = `<span class="tag google-user-tag" title="Google User (Legacy)">Google</span>`;
+                    userTag += `<span class="tag verified-tag" title="Email Verified">✔ Verified</span>`; // Assume legacy Google users were verified
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
-                    userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
+                    userTag = `<span class="tag email-user-tag" title="Legacy User">Unknown</span>`;
                 }
 
                 html += `
@@ -953,7 +1369,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         <img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}">
                                     </div>
                                     <div class="feedback-info">
-                                        <h4>${userDisplayName} ${fb.isEdited ? '<span class="edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
+                                        <h4>${userDisplayName} ${fb.isEdited ? '<span class="tag edited-admin-tag">EDITED</span>' : ''} ${userTag}</h4>
                                         <small style="font-size:0.7em; color:#bbb; text-transform:none; margin-top: 5px; display: block;">${userEmailDisplay.replace(/[()]/g, '')}</small>
                                         <div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
                                         <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}</div>
@@ -967,12 +1383,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     ${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}
                                 </div>
                                 <div class="action-buttons">
-                                    <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
-                                    ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}
+                                    <button class="action-button delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
+                                    ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="action-button change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}
                                 </div>
                                 <div class="reply-section">
                                     <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
-                                    <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
+                                    <button class="action-button reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
                                     <div class="replies-display">
                                         ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
                                         ${fb.replies.map(reply => `
@@ -1115,7 +1531,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             showAdminModal('alert', 'Empty Reply', 'Please write something to reply.');
                             return;
                         }
-                        showAdminModal('confirm', 'Post Reply?', \`Confirm reply: "\${replyText.substring(0,50)}..."\`, async confirmed => {
+                        showAdminModal('confirm', 'Post Reply?', \`Confirm reply: "\\\${replyText.substring(0,50)}..."\`, async confirmed => {
                             if (confirmed) {
                                 try {
                                     const res = await fetch(\`/api/admin/feedback/\${fbId}/reply\`, {
@@ -1145,7 +1561,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     // Function to change a user's DiceBear avatar
                     async function tryChangeUserAvatar(userId, userName) {
                         console.log("Attempting to change avatar for user ID:", userId, "Name:", userName);
-                        showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \${userName}? This will regenerate avatar for this email user.\`, async confirmed => {
+                        showAdminModal('confirm', 'Change Avatar?', \`Change avatar for \\\${userName}? This will regenerate avatar for this email user.\`, async confirmed => {
                             if (confirmed) {
                                 try {
                                     const res = await fetch(\`/api/admin/user/\${userId}/change-avatar\`, {
@@ -1185,7 +1601,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             return;
                         }
 
-                        showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
+                        showAdminModal('confirm', 'Delete Selected Feedbacks?', \`Are you sure you want to delete \\\${selectedFeedbackIds.length} selected feedback(s)? This cannot be undone.\`, async confirmed => {
                             if (confirmed) {
                                 try {
                                     const res = await fetch('/api/admin/feedbacks/batch-delete', {
@@ -1197,16 +1613,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         body: JSON.stringify({ ids: selectedFeedbackIds })
                                     });
                                     if (res.ok) {
-                                        showAdminModal('alert','Deleted!',\`\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
+                                        showAdminModal('alert','Deleted!',\`\\\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`);
                                         setTimeout(()=>location.reload(),1000);
                                     } else {
                                         const err = await res.json();
                                         console.error("Batch delete failed response:",err);
-                                        showAdminModal('alert','Error!',\`Failed to delete selected feedbacks: \${err.message||res.statusText}\`);
+                                        showAdminModal('alert','Error!',\`Failed to delete selected feedbacks: \\\${err.message||res.statusText}\`);
                                     }
                                 } catch (e) {
                                     console.error("Batch delete fetch error:",e);
-                                    showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \${e.message}\`);
+                                    showAdminModal('alert', 'Fetch Error!', \`Error during batch delete: \\\${e.message}\`);
                                 }
                             }
                         });
