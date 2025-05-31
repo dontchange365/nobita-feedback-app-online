@@ -929,12 +929,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         background-color: transparent;
                         border-radius: 15px;
                         perspective: 1000px;
-                        min-height: 520px; /* Slightly taller cards */
+                        /* Removed min-height to allow dynamic height */
                     }
                     .feedback-card-inner {
                         position: relative;
                         width: 100%;
-                        height: 100%;
+                        height: 100%; /* Ensure inner takes full height */
                         transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); /* Smoother flip */
                         transform-style: preserve-3d;
                         box-shadow: 0 10px 30px var(--shadow-color);
@@ -944,9 +944,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         transform: rotateY(180deg);
                     }
                     .feedback-card-front, .feedback-card-back {
-                        position: absolute;
+                        position: relative; /* Changed to relative for dynamic height */
                         width: 100%;
-                        height: 100%;
+                        height: auto; /* Changed to auto for dynamic height */
                         -webkit-backface-visibility: hidden;
                         backface-visibility: hidden;
                         background-color: var(--card-bg);
@@ -957,7 +957,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         display: flex;
                         flex-direction: column;
                         justify-content: space-between;
-                        overflow-y: auto;
+                        /* Removed overflow-y: auto; from here */
                         border: 1px solid var(--border-color); /* Subtle border */
                     }
                     .feedback-card-back {
@@ -1039,8 +1039,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         color: var(--text-light);
                         line-height: 1.7;
                         margin-bottom: 20px;
-                        flex-grow: 1;
-                        overflow-y: auto;
+                        flex-grow: 1; /* Allow to grow */
+                        overflow-y: auto; /* Keep scroll for long content within body */
                         word-wrap: break-word;
                         background-color: #2A3340; /* Slightly different background for body */
                         padding: 15px;
@@ -1144,8 +1144,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         border-radius: 10px;
                         padding: 15px;
                         border: 1px solid #2C3E50;
-                        max-height: 180px; /* Increased height */
-                        overflow-y: auto;
+                        /* Removed max-height to allow dynamic height */
+                        overflow-y: auto; /* Keep scroll for very long replies */
                         box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
                     }
                     .replies-display h4 {
