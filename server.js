@@ -456,8 +456,8 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         console.log("Email Verification URL generated:", verifyUrl);
 
-        const textMessage = `Hello ${user.name},\n\nYou have received an email verification request for your Nobita Feedback App account.\nPlease click the link below to verify your email. This link will be valid for 10 minutes:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.\n\nThank you,\nNobita Feedback App Team`;
-        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification Request</h2><p>Hello ${user.name},</p><p>You have received an email verification request for your Nobita Feedback App account.</p><p>Please click the button below to verify your email. This link will be valid for <strong>10 minutes</strong>:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Verify Email</a></p><p style="font-size: 0.9em;">If the button doesn't work, you can copy-paste this link into your browser: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>If you did not request this, please ignore this email.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Thank you,<br/>Nobita Feedback App Team</p></div>`;
+        const textMessage = `Hello ${newUser.name},\n\nYou have received an email verification request for your Nobita Feedback App account.\nPlease click the link below to verify your email. This link will be valid for 10 minutes:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.\n\nThank you,\nNobita Feedback App Team`;
+        const htmlMessage = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;"><h2 style="color: #6a0dad; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">Email Verification Request</h2><p>Hello ${newUser.name},</p><p>You have received an email verification request for your Nobita Feedback App account.</p><p>Please click the button below to verify your email. This link will be valid for <strong>10 minutes</strong>:</p><p style="text-align: center; margin: 25px 0;"><a href="${verifyUrl}" style="background-color: #FFD700; color: #1A1A2E !important; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #E0C000; display: inline-block;">Verify Email</a></p><p style="font-size: 0.9em;">If the button doesn't work, you can copy-paste this link into your browser: <a href="${verifyUrl}" target="_blank" style="color: #3B82F6;">${verifyUrl}</a></p><p>If you did not request this, please ignore this email.</p><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><p style="font-size: 0.9em; color: #777;">Thank you,<br/>Nobita Feedback App Team</p></div>`;
 
         await sendEmail({ email: user.email, subject: 'Your Email Verification Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Verification link has been sent to your email. Please check your inbox." });
@@ -1927,9 +1927,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     if (res.ok) {
                                         showToast('Reply posted successfully!', 'success');
                                         // Instead of full reload, update the specific card's replies
-                                        const updatedFeedback = await res.json(); // Assuming API returns updated feedback or just the new reply
-                                        // For simplicity, let's reload to ensure all data is consistent after reply
                                         // In a real app, you'd dynamically add the reply to the DOM
+                                        // For now, we'll reload to ensure consistency as dynamic update is complex
                                         setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
@@ -2094,7 +2093,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             const values = headers.map(header => {
                                 const value = row[header] !== null && row[header] !== undefined ? String(row[header]) : '';
                                 const escaped = value.replace(/"/g, '""'); // Escape double quotes
-                                return `\\"\${escaped}\\"`; // Wrap in double quotes
+                                return '"' + escaped + '"'; // Wrap in double quotes using concatenation
                             });
                             csvRows.push(values.join(','));
                         }
