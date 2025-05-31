@@ -1,0 +1,82 @@
+/* public/css/admin.css */
+
+.admin-container {
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.admin-container h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+#user-management,
+#feedback-management {
+    margin-bottom: 20px;
+}
+
+#user-list,
+#feedback-list-admin {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.user-item,
+.feedback-item-admin {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-item:last-child,
+.feedback-item-admin:last-child {
+    border-bottom: none;
+}
+
+.user-info,
+.feedback-info-admin {
+    flex-grow: 1;
+}
+
+.user-actions button,
+.feedback-actions-admin button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+
+.user-actions button:hover,
+.feedback-actions-admin button:hover {
+    background-color: #c82333;
+}
+
+.feedback-item-admin .user-details {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.feedback-item-admin .comment {
+    margin-top: 5px;
+}
+
+/* You can add more specific styling for tables, lists, etc. */
