@@ -3,742 +3,603 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nobita Feedback App</title>
+    <title>Feedback Portal | Modern UI</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .star-rating {
-            direction: rtl;
-            display: inline-block;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
         }
-        .star-rating input[type="radio"] {
-            display: none;
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #4338ca;
         }
-        .star-rating label {
-            color: #ddd;
-            font-size: 2rem;
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: #4338ca;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3730a3;
+        }
+        
+        .btn-secondary {
+            background-color: #64748b;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        
+        .profile-card {
+            background: linear-gradient(135deg, #6366f1, #4338ca);
+            color: white;
+        }
+        
+        .avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+        }
+        
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+        }
+        
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4338ca;
             cursor: pointer;
-            transition: color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        .star-rating input[type="radio"]:checked ~ label,
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-            color: #ffc107;
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
         }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
+        
+        .feedback-item {
+            border-left: 4px solid #4338ca;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .alert-verification {
+            background-color: #ffe4e4;
+            border-left: 4px solid #f43f5e;
+            color: #be123c;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            transition: all 0.3s ease;
+            transform: translateX(-100%);
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        #loginModal, #registerModal, #profileModal {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        #loginModal.active, #registerModal.active, #profileModal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .desktop-menu {
+                display: none;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-blue-600 text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <i class="fas fa-star text-yellow-300 text-2xl mr-3"></i>
-                    <h1 class="text-xl font-bold">Nobita Feedback App</h1>
+<body class="min-h-screen">
+    <!-- Header Navigation -->
+    <nav class="bg-white py-3 px-6 shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a class="navbar-brand text-2xl" href="#">FeedbackPortal</a>
+            
+            <!-- Desktop Navigation -->
+            <div class="desktop-menu hidden md:block">
+                <div class="flex items-center space-x-4" id="navLoggedOut">
+                    <button onclick="openModal('loginModal')" class="px-4 py-2 text-indigo-600 font-medium hover:text-indigo-800">Login</button>
+                    <button onclick="openModal('registerModal')" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Create New Account</button>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="homeBtn" class="hover:text-yellow-300 transition-colors">
-                        <i class="fas fa-home mr-2"></i>Home
-                    </button>
-                    <button id="feedbackBtn" class="hover:text-yellow-300 transition-colors">
-                        <i class="fas fa-comment mr-2"></i>Feedback
-                    </button>
-                    <button id="adminBtn" class="hover:text-yellow-300 transition-colors">
-                        <i class="fas fa-cog mr-2"></i>Admin
-                    </button>
-                    <div id="userSection" class="hidden">
-                        <span id="userName" class="mr-4"></span>
-                        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition-colors">
-                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                
+                <div class="hidden items-center space-x-4" id="navLoggedIn">
+                    <span class="font-medium" id="userNameDisplay">User Name</span>
+                    <div class="relative group">
+                        <button class="flex items-center space-x-1">
+                            <span>Menu</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
                         </button>
-                    </div>
-                    <div id="loginSection">
-                        <div id="g_id_onload"
-                             data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
-                             data-callback="handleCredentialResponse">
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible">
+                            <a href="#" onclick="openModal('profileModal')" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> View Profile
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
                         </div>
-                        <div class="g_id_signin" data-type="standard"></div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobileMenuBtn" class="text-gray-500 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
             </div>
         </div>
     </nav>
-
-    <!-- Main Content -->
-    <div class="container mx-auto px-6 py-8">
+    
+    <!-- Mobile Navigation Menu -->
+    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 p-5">
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-lg font-bold text-indigo-600">Menu</span>
+            <button id="closeMenuBtn" class="text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
         
-        <!-- Home Section -->
-        <div id="homeSection" class="fade-in">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4">Welcome to Nobita Feedback App</h2>
-                <p class="text-xl text-gray-600 mb-8">Share your thoughts and help us improve our services</p>
-                
-                <div class="grid md:grid-cols-3 gap-8 mt-12">
-                    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-                        <i class="fas fa-star text-yellow-500 text-4xl mb-4"></i>
-                        <h3 class="text-xl font-semibold mb-2">Rate & Review</h3>
-                        <p class="text-gray-600">Give us your honest feedback with our 5-star rating system</p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-                        <i class="fas fa-cloud-upload-alt text-blue-500 text-4xl mb-4"></i>
-                        <h3 class="text-xl font-semibold mb-2">Upload Files</h3>
-                        <p class="text-gray-600">Attach images or documents to support your feedback</p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-                        <i class="fas fa-shield-alt text-green-500 text-4xl mb-4"></i>
-                        <h3 class="text-xl font-semibold mb-2">Secure Login</h3>
-                        <p class="text-gray-600">Login securely with your Google account</p>
-                    </div>
+        <div id="mobileMenuLoggedOut">
+            <button onclick="openModal('loginModal'); closeMobileMenu();" class="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
+                <i class="fas fa-sign-in-alt mr-2"></i> Login
+            </button>
+            <button onclick="openModal('registerModal'); closeMobileMenu();" class="block w-full text-left px-4 py-2 bg-indigo-600 text-white rounded-md mb-2">
+                <i class="fas fa-user-plus mr-2"></i> Create New Account
+            </button>
+        </div>
+        
+        <div id="mobileMenuLoggedIn" class="hidden">
+            <span class="block mb-4 font-medium" id="mobileUserNameDisplay">User Name</span>
+            <a href="#" onclick="openModal('profileModal'); closeMobileMenu();" class="block px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
+                <i class="fas fa-user mr-2"></i> View Profile
+            </a>
+            <a href="#" onclick="logout(); closeMobileMenu();" class="block px-4 py-2 hover:bg-gray-100 rounded-md mb-2">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto py-8 px-4">
+        <!-- Alert Messages -->
+        <div id="alertContainer" class="mb-6">
+            <div id="generalAlert" class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 hidden mb-4" role="alert">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle mr-3"></i>
+                    <span id="alertMessage">Default message.</span>
                 </div>
+                <button onclick="closeAlert('generalAlert')" class="absolute top-0 right-0 p-4">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-
-            <!-- Recent Feedbacks -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
-                <h3 class="text-2xl font-semibold mb-6">Recent Feedbacks</h3>
-                <div id="recentFeedbacks" class="space-y-4">
-                    <!-- Recent feedbacks will be loaded here -->
+            
+            <div id="verificationAlert" class="alert-verification p-4 rounded hidden mb-4" role="alert">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    <span>Aapka email abhi tak verify nahi hua hai. Kripya apna email verify karein takki aap sabhi features ka upyog kar sakein.</span>
                 </div>
             </div>
         </div>
-
-        <!-- Feedback Section -->
-        <div id="feedbackSection" class="hidden fade-in">
-            <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-                <h2 class="text-3xl font-bold text-center mb-8">Submit Your Feedback</h2>
-                
-                <form id="feedbackForm" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                        <input type="text" id="feedbackName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" id="feedbackEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                        <div class="star-rating">
-                            <input type="radio" id="star5" name="rating" value="5">
-                            <label for="star5">★</label>
-                            <input type="radio" id="star4" name="rating" value="4">
-                            <label for="star4">★</label>
-                            <input type="radio" id="star3" name="rating" value="3">
-                            <label for="star3">★</label>
-                            <input type="radio" id="star2" name="rating" value="2">
-                            <label for="star2">★</label>
-                            <input type="radio" id="star1" name="rating" value="1">
-                            <label for="star1">★</label>
+        
+        <!-- Recent Feedbacks -->
+        <section class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Recent Feedbacks</h2>
+                <button id="newFeedbackBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 hidden">
+                    <i class="fas fa-plus mr-2"></i> New Feedback
+                </button>
+            </div>
+            
+            <div id="feedbackContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Feedback cards will be populated here -->
+                <div class="card bg-white p-6 feedback-item">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-gray-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">User Name</h4>
+                            <span class="text-sm text-gray-500">Posted on May 30, 2023</span>
                         </div>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                        <input type="text" id="feedbackSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <p class="text-gray-700 mb-4">This is a sample feedback message that would appear in the list of recent feedbacks.</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-thumbs-up"></i> 15
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-comment"></i> 3
+                            </button>
+                        </div>
+                        <span class="text-sm text-gray-500">Category: General</span>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                        <textarea id="feedbackMessage" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Attach Image (Optional)</label>
-                        <input type="file" id="feedbackImage" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                        <i class="fas fa-paper-plane mr-2"></i>Submit Feedback
-                    </button>
-                </form>
-            </div>
-
-            <!-- User's Feedbacks -->
-            <div id="userFeedbacks" class="max-w-4xl mx-auto mt-8 bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-2xl font-semibold mb-6">Your Feedbacks</h3>
-                <div id="userFeedbacksList">
-                    <!-- User feedbacks will be loaded here -->
                 </div>
+                
+                <div class="card bg-white p-6 feedback-item">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-gray-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Another User</h4>
+                            <span class="text-sm text-gray-500">Posted on May 29, 2023</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-4">Another example of feedback content that could be displayed in this feedback portal.</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-thumbs-up"></i> 8
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-comment"></i> 1
+                            </button>
+                        </div>
+                        <span class="text-sm text-gray-500">Category: Feature</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Modals -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('loginModal')"></div>
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md z-10 p-6 relative">
+            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal('loginModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            
+            <div class="mb-6">
+                <button class="w-full bg-white border border-gray-300 rounded-md py-2 px-4 flex items-center justify-center text-gray-700 hover:bg-gray-50 mb-4">
+                    <i class="fab fa-google mr-2 text-red-500"></i> Sign in with Google
+                </button>
+                
+                <div class="relative flex items-center my-6">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-500">or</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+            </div>
+            
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
+                    <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    <div class="flex justify-end mt-1">
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot Password?</a>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Login
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm">
+                <p>Don't have an account? <a href="#" onclick="switchModal('loginModal', 'registerModal')" class="text-indigo-600 hover:text-indigo-800 font-medium">Create New Account</a></p>
             </div>
         </div>
-
-        <!-- Admin Section -->
-        <div id="adminSection" class="hidden fade-in">
-            <div id="adminLogin" class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
-                <h2 class="text-3xl font-bold text-center mb-8">Admin Login</h2>
-                <form id="adminLoginForm" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <input type="text" id="adminUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="adminPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Login as Admin
-                    </button>
-                </form>
+    </div>
+    
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('registerModal')"></div>
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md z-10 p-6 relative">
+            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onclick="closeModal('registerModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-2xl font-bold mb-6 text-center">Create New Account</h2>
+            
+            <div class="mb-6">
+                <button class="w-full bg-white border border-gray-300 rounded-md py-2 px-4 flex items-center justify-center text-gray-700 hover:bg-gray-50 mb-4">
+                    <i class="fab fa-google mr-2 text-red-500"></i> Sign up with Google
+                </button>
+                
+                <div class="relative flex items-center my-6">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-500">or</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
             </div>
-
-            <div id="adminDashboard" class="hidden">
-                <div class="grid md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-blue-500 text-white rounded-lg p-6">
+            
+            <form id="registerForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="name">Full Name</label>
+                    <input type="text" id="registerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
+                    <input type="email" id="registerEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
+                    <input type="password" id="registerPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm">
+                <p>Already have an account? <a href="#" onclick="switchModal('registerModal', 'loginModal')" class="text-indigo-600 hover:text-indigo-800 font-medium">Login</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-black opacity-50 absolute inset-0" onclick="closeModal('profileModal')"></div>
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl z-10 relative overflow-hidden">
+            <!-- Profile Header -->
+            <div class="profile-card p-8 pb-24 relative">
+                <button class="absolute top-4 right-4 text-white hover:text-gray-200" onclick="closeModal('profileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <h2 class="text-2xl font-bold text-center mb-4">My Profile</h2>
+            </div>
+            
+            <!-- Profile Content -->
+            <div class="px-8 pb-8 -mt-20">
+                <div class="avatar-container mb-6">
+                    <img src="https://via.placeholder.com/150" alt="Profile Avatar" class="avatar">
+                    <label for="avatarUpload" class="avatar-upload">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarUpload" class="hidden" accept="image/*">
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div class="mb-4">
+                        <h4 class="text-gray-500 text-sm mb-1">Full Name</h4>
+                        <p class="font-medium" id="profileName">User Name</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-gray-500 text-sm mb-1">Email Address</h4>
+                        <p class="font-medium" id="profileEmail">user@example.com</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-gray-500 text-sm mb-1">Account Status</h4>
                         <div class="flex items-center">
-                            <i class="fas fa-comments text-3xl mr-4"></i>
-                            <div>
-                                <p class="text-blue-100">Total Feedbacks</p>
-                                <p id="totalFeedbacks" class="text-2xl font-bold">0</p>
-                            </div>
+                            <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-2"></span>
+                            <p>Email verification pending</p>
                         </div>
                     </div>
-                    <div class="bg-green-500 text-white rounded-lg p-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-star text-3xl mr-4"></i>
-                            <div>
-                                <p class="text-green-100">Average Rating</p>
-                                <p id="averageRating" class="text-2xl font-bold">0.0</p>
-                            </div>
+                    
+                    <div>
+                        <h4 class="text-gray-500 text-sm mb-1">Profile Completion</h4>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-1">
+                            <div class="bg-indigo-600 h-2 rounded-full progress-bar" style="width: 50%"></div>
                         </div>
-                    </div>
-                    <div class="bg-yellow-500 text-white rounded-lg p-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-users text-3xl mr-4"></i>
-                            <div>
-                                <p class="text-yellow-100">Total Users</p>
-                                <p id="totalUsers" class="text-2xl font-bold">0</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-purple-500 text-white rounded-lg p-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar text-3xl mr-4"></i>
-                            <div>
-                                <p class="text-purple-100">This Month</p>
-                                <p id="monthlyFeedbacks" class="text-2xl font-bold">0</p>
-                            </div>
-                        </div>
+                        <span class="text-sm text-gray-500">50% Complete</span>
                     </div>
                 </div>
-
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="text-2xl font-semibold mb-6">All Feedbacks</h3>
-                    <div class="mb-4 flex space-x-4">
-                        <select id="filterRating" class="px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="">All Ratings</option>
-                            <option value="5">5 Stars</option>
-                            <option value="4">4 Stars</option>
-                            <option value="3">3 Stars</option>
-                            <option value="2">2 Stars</option>
-                            <option value="1">1 Star</option>
-                        </select>
-                        <input type="text" id="searchFeedbacks" placeholder="Search feedbacks..." class="px-4 py-2 border border-gray-300 rounded-lg flex-1">
-                    </div>
-                    <div id="allFeedbacks">
-                        <!-- All feedbacks will be loaded here -->
-                    </div>
+                
+                <!-- Change Password Section -->
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Change Password</h3>
+                    
+                    <form id="changePasswordForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Update Password
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Verification Note -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-sm">
+                    <p class="text-yellow-800">
+                        Feedback edit karne, profile edit karne aur avatar upload karne ke liye kripya apna email verify karein.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 text-center">
-            <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-4"></i>
-            <p>Loading...</p>
+    
+    <!-- Footer -->
+    <footer class="bg-white py-8 border-t mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600 mb-4">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#" class="text-gray-400 hover:text-indigo-600">
+                    <i class="fab fa-facebook fa-lg"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-indigo-600">
+                    <i class="fab fa-twitter fa-lg"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-indigo-600">
+                    <i class="fab fa-instagram fa-lg"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-indigo-600">
+                    <i class="fab fa-github fa-lg"></i>
+                </a>
+            </div>
         </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div id="toastContainer" class="fixed top-4 right-4 z-50"></div>
+    </footer>
 
     <script>
-        // Configuration
-        const API_BASE_URL = 'http://localhost:3000'; // Change this to your server URL
-        const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
-
-        // Global variables
-        let currentUser = null;
-        let currentSection = 'home';
-        let isAdminLoggedIn = false;
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            setupEventListeners();
-            checkAuthStatus();
-        });
-
-        function initializeApp() {
-            showSection('home');
-            loadRecentFeedbacks();
+        // Mock Functions (to be replaced with actual functions that connect to your backend)
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
-
-        function setupEventListeners() {
-            // Navigation
-            document.getElementById('homeBtn').addEventListener('click', () => showSection('home'));
-            document.getElementById('feedbackBtn').addEventListener('click', () => showSection('feedback'));
-            document.getElementById('adminBtn').addEventListener('click', () => showSection('admin'));
-            
-            // Forms
-            document.getElementById('feedbackForm').addEventListener('submit', handleFeedbackSubmit);
-            document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
-            
-            // Logout
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            
-            // Admin filters
-            document.getElementById('filterRating')?.addEventListener('change', filterFeedbacks);
-            document.getElementById('searchFeedbacks')?.addEventListener('input', filterFeedbacks);
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
-
-        function showSection(section) {
-            // Hide all sections
-            document.getElementById('homeSection').classList.add('hidden');
-            document.getElementById('feedbackSection').classList.add('hidden');
-            document.getElementById('adminSection').classList.add('hidden');
-            
-            // Show selected section
-            document.getElementById(section + 'Section').classList.remove('hidden');
-            currentSection = section;
-            
-            if (section === 'feedback' && currentUser) {
-                loadUserFeedbacks();
-            } else if (section === 'admin' && isAdminLoggedIn) {
-                loadAdminDashboard();
-            }
-        }
-
-        // Google Sign-In
-        function handleCredentialResponse(response) {
-            const token = response.credential;
-            
-            fetch(`${API_BASE_URL}/api/auth/google`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token: token })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentUser = data.user;
-                    localStorage.setItem('authToken', data.token);
-                    updateUIForLoggedInUser();
-                    showToast('Login successful!', 'success');
-                } else {
-                    showToast('Login failed: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Login error:', error);
-                showToast('Login failed', 'error');
-            });
-        }
-
-        function checkAuthStatus() {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                fetch(`${API_BASE_URL}/api/auth/verify`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        currentUser = data.user;
-                        updateUIForLoggedInUser();
-                    } else {
-                        localStorage.removeItem('authToken');
-                    }
-                });
-            }
-        }
-
-        function updateUIForLoggedInUser() {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('userSection').classList.remove('hidden');
-            document.getElementById('userName').textContent = currentUser.name;
-            
-            // Pre-fill feedback form
-            document.getElementById('feedbackName').value = currentUser.name;
-            document.getElementById('feedbackEmail').value = currentUser.email;
-        }
-
-        function handleLogout() {
-            currentUser = null;
-            localStorage.removeItem('authToken');
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('userSection').classList.add('hidden');
-            showToast('Logged out successfully', 'success');
-        }
-
-        // Feedback functions
-        async function handleFeedbackSubmit(e) {
-            e.preventDefault();
-            
-            if (!currentUser) {
-                showToast('Please login to submit feedback', 'error');
-                return;
-            }
-
-            showLoading(true);
-            
-            const formData = new FormData();
-            formData.append('name', document.getElementById('feedbackName').value);
-            formData.append('email', document.getElementById('feedbackEmail').value);
-            formData.append('rating', document.querySelector('input[name="rating"]:checked')?.value || '');
-            formData.append('subject', document.getElementById('feedbackSubject').value);
-            formData.append('message', document.getElementById('feedbackMessage').value);
-            
-            const imageFile = document.getElementById('feedbackImage').files[0];
-            if (imageFile) {
-                formData.append('image', imageFile);
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/feedback`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Feedback submitted successfully!', 'success');
-                    document.getElementById('feedbackForm').reset();
-                    loadUserFeedbacks();
-                    loadRecentFeedbacks();
-                } else {
-                    showToast('Failed to submit feedback: ' + data.message, 'error');
-                }
-            } catch (error) {
-                console.error('Feedback submission error:', error);
-                showToast('Failed to submit feedback', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function loadUserFeedbacks() {
-            if (!currentUser) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/feedback/user`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayUserFeedbacks(data.feedbacks);
-                }
-            } catch (error) {
-                console.error('Error loading user feedbacks:', error);
-            }
-        }
-
-        async function loadRecentFeedbacks() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/feedback/recent`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayRecentFeedbacks(data.feedbacks);
-                }
-            } catch (error) {
-                console.error('Error loading recent feedbacks:', error);
-            }
-        }
-
-        function displayUserFeedbacks(feedbacks) {
-            const container = document.getElementById('userFeedbacksList');
-            
-            if (feedbacks.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">No feedbacks submitted yet.</p>';
-                return;
-            }
-
-            container.innerHTML = feedbacks.map(feedback => `
-                <div class="border rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h4 class="font-semibold">${feedback.subject}</h4>
-                        <div class="flex items-center">
-                            ${generateStars(feedback.rating)}
-                            <span class="ml-2 text-sm text-gray-500">${new Date(feedback.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 mb-2">${feedback.message}</p>
-                    ${feedback.imageUrl ? `<img src="${feedback.imageUrl}" alt="Feedback image" class="max-w-xs rounded-lg">` : ''}
-                    <div class="mt-2 flex space-x-2">
-                        <button onclick="editFeedback('${feedback._id}')" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-edit mr-1"></i>Edit
-                        </button>
-                        <button onclick="deleteFeedback('${feedback._id}')" class="text-red-600 hover:text-red-800">
-                            <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function displayRecentFeedbacks(feedbacks) {
-            const container = document.getElementById('recentFeedbacks');
-            
-            if (feedbacks.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">No feedbacks available.</p>';
-                return;
-            }
-
-            container.innerHTML = feedbacks.slice(0, 5).map(feedback => `
-                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-semibold">${feedback.subject}</h4>
-                            <p class="text-sm text-gray-600">by ${feedback.name}</p>
-                        </div>
-                        <div class="flex items-center">
-                            ${generateStars(feedback.rating)}
-                            <span class="ml-2 text-sm text-gray-500">${new Date(feedback.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 mt-2">${feedback.message.substring(0, 100)}${feedback.message.length > 100 ? '...' : ''}</p>
-                </div>
-            `).join('');
-        }
-
-        // Admin functions
-        async function handleAdminLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('adminUsername').value;
-            const password = document.getElementById('adminPassword').value;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    isAdminLoggedIn = true;
-                    localStorage.setItem('adminToken', data.token);
-                    document.getElementById('adminLogin').classList.add('hidden');
-                    document.getElementById('adminDashboard').classList.remove('hidden');
-                    loadAdminDashboard();
-                    showToast('Admin login successful!', 'success');
-                } else {
-                    showToast('Invalid admin credentials', 'error');
-                }
-            } catch (error) {
-                console.error('Admin login error:', error);
-                showToast('Admin login failed', 'error');
-            }
-        }
-
-        async function loadAdminDashboard() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateAdminStats(data.stats);
-                    displayAllFeedbacks(data.feedbacks);
-                }
-            } catch (error) {
-                console.error('Error loading admin dashboard:', error);
-            }
-        }
-
-        function updateAdminStats(stats) {
-            document.getElementById('totalFeedbacks').textContent = stats.totalFeedbacks || 0;
-            document.getElementById('averageRating').textContent = (stats.averageRating || 0).toFixed(1);
-            document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-            document.getElementById('monthlyFeedbacks').textContent = stats.monthlyFeedbacks || 0;
-        }
-
-        function displayAllFeedbacks(feedbacks) {
-            const container = document.getElementById('allFeedbacks');
-            
-            if (feedbacks.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">No feedbacks found.</p>';
-                return;
-            }
-
-            container.innerHTML = feedbacks.map(feedback => `
-                <div class="border rounded-lg p-4 mb-4 feedback-item" data-rating="${feedback.rating}">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="font-semibold">${feedback.subject}</h4>
-                            <p class="text-sm text-gray-600">by ${feedback.name} (${feedback.email})</p>
-                        </div>
-                        <div class="flex items-center">
-                            ${generateStars(feedback.rating)}
-                            <span class="ml-2 text-sm text-gray-500">${new Date(feedback.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 mb-2">${feedback.message}</p>
-                    ${feedback.imageUrl ? `<img src="${feedback.imageUrl}" alt="Feedback image" class="max-w-xs rounded-lg mb-2">` : ''}
-                    <div class="flex space-x-2">
-                        <button onclick="adminDeleteFeedback('${feedback._id}')" class="text-red-600 hover:text-red-800">
-                            <i class="fas fa-trash mr-1"></i>Delete
-                        </button>
-                        <button onclick="respondToFeedback('${feedback._id}', '${feedback.email}')" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-reply mr-1"></i>Respond
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterFeedbacks() {
-            const ratingFilter = document.getElementById('filterRating').value;
-            const searchQuery = document.getElementById('searchFeedbacks').value.toLowerCase();
-            const feedbackItems = document.querySelectorAll('.feedback-item');
-
-            feedbackItems.forEach(item => {
-                const rating = item.dataset.rating;
-                const text = item.textContent.toLowerCase();
-                
-                const matchesRating = !ratingFilter || rating === ratingFilter;
-                const matchesSearch = !searchQuery || text.includes(searchQuery);
-                
-                if (matchesRating && matchesSearch) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        // Utility functions
-        function generateStars(rating) {
-            const fullStars = Math.floor(rating);
-            const emptyStars = 5 - fullStars;
-            
-            return '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
-        }
-
-        function showLoading(show) {
-            const spinner = document.getElementById('loadingSpinner');
-            if (show) {
-                spinner.classList.remove('hidden');
-                spinner.classList.add('flex');
-            } else {
-                spinner.classList.add('hidden');
-                spinner.classList.remove('flex');
-            }
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            
-            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-            
-            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-2 fade-in`;
-            toast.textContent = message;
-            
-            container.appendChild(toast);
-            
+        
+        function switchModal(closeModalId, openModalId) {
+            closeModal(closeModalId);
             setTimeout(() => {
-                toast.remove();
+                openModal(openModalId);
+            }, 300);
+        }
+        
+        function logout() {
+            // Mock logout functionality
+            document.getElementById('navLoggedIn').classList.add('hidden');
+            document.getElementById('navLoggedOut').classList.remove('hidden');
+            document.getElementById('mobileMenuLoggedIn').classList.add('hidden');
+            document.getElementById('mobileMenuLoggedOut').classList.remove('hidden');
+            document.getElementById('newFeedbackBtn').classList.add('hidden');
+            document.getElementById('verificationAlert').classList.add('hidden');
+            
+            // Show success alert
+            showAlert('You have been successfully logged out.');
+        }
+        
+        function closeAlert(alertId) {
+            document.getElementById(alertId).classList.add('hidden');
+        }
+        
+        function showAlert(message) {
+            const alertElement = document.getElementById('generalAlert');
+            document.getElementById('alertMessage').textContent = message;
+            alertElement.classList.remove('hidden');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alertElement.classList.add('hidden');
             }, 5000);
         }
-
-        // Feedback management functions
-        async function deleteFeedback(feedbackId) {
-            if (!confirm('Are you sure you want to delete this feedback?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/feedback/${feedbackId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Feedback deleted successfully', 'success');
-                    loadUserFeedbacks();
-                    loadRecentFeedbacks();
-                } else {
-                    showToast('Failed to delete feedback', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting feedback:', error);
-                showToast('Failed to delete feedback', 'error');
+        
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeMenuBtn.addEventListener('click', () => {
+            closeMobileMenu();
+        });
+        
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Form submissions
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Mock login success
+            closeModal('loginModal');
+            document.getElementById('navLoggedOut').classList.add('hidden');
+            document.getElementById('navLoggedIn').classList.remove('hidden');
+            document.getElementById('mobileMenuLoggedOut').classList.add('hidden');
+            document.getElementById('mobileMenuLoggedIn').classList.remove('hidden');
+            document.getElementById('newFeedbackBtn').classList.remove('hidden');
+            document.getElementById('verificationAlert').classList.remove('hidden');
+            
+            // Update user name displays
+            document.getElementById('userNameDisplay').textContent = 'Logged User';
+            document.getElementById('mobileUserNameDisplay').textContent = 'Logged User';
+            
+            showAlert('You have successfully logged in!');
+        });
+        
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            closeModal('registerModal');
+            showAlert('Account created successfully! Please check your email to verify your account.');
+        });
+        
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showAlert('Password updated successfully!');
+            closeModal('profileModal');
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if the user is logged in (replace with your actual logic)
+            const isLoggedIn = false;
+            
+            if (isLoggedIn) {
+                document.getElementById('navLoggedOut').classList.add('hidden');
+                document.getElementById('navLoggedIn').classList.remove('hidden');
+                document.getElementById('mobileMenuLoggedOut').classList.add('hidden');
+                document.getElementById('mobileMenuLoggedIn').classList.remove('hidden');
+                document.getElementById('newFeedbackBtn').classList.remove('hidden');
+                document.getElementById('verificationAlert').classList.remove('hidden');
             }
-        }
-
-        async function adminDeleteFeedback(feedbackId) {
-            if (!confirm('Are you sure you want to delete this feedback?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/feedback/${feedbackId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Feedback deleted successfully', 'success');
-                    loadAdminDashboard();
-                } else {
-                    showToast('Failed to delete feedback', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting feedback:', error);
-                showToast('Failed to delete feedback', 'error');
-            }
-        }
-
-        function editFeedback(feedbackId) {
-            // Implementation for editing feedback
-            showToast('Edit functionality coming soon!', 'info');
-        }
-
-        function respondToFeedback(feedbackId, email) {
-            // Implementation for responding to feedback
-            const response = prompt(`Respond to feedback from ${email}:`);
-            if (response) {
-                // Send email response
-                showToast('Response sent successfully!', 'success');
-            }
-        }
+        });
     </script>
 </body>
 </html>
