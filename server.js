@@ -1787,4 +1787,3 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Nobita's server is running on port ${PORT}: http://localhost:${PORT}`);
 });
-
