@@ -126,7 +126,7 @@ const feedbackSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   googleIdSubmitter: { type: String, sparse: true }, // Legacy field, consider removing if all users are linked by userId
   isEdited: { type: Boolean, default: false },
-  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date }, // Stores original content if feedback is edited
+  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date, avatarUrl: String }, // Added avatarUrl to originalContent
   replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
@@ -762,7 +762,8 @@ app.put('/api/feedback/:id', authenticateToken, isEmailVerified, async (req, res
                     name: existingFeedback.name,
                     feedback: existingFeedback.feedback,
                     rating: existingFeedback.rating,
-                    timestamp: existingFeedback.timestamp
+                    timestamp: existingFeedback.timestamp,
+                    avatarUrl: existingFeedback.avatarUrl // Store original avatar URL
                 };
             }
             existingFeedback.name = currentNameFromDb; // Always update with current user's name
@@ -836,12 +837,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         --text-medium: #BDC3C7;
                         --accent-yellow: #FFD700;
                         --accent-purple: #6a0dad;
-                        --accent-green: #27AE60;
+                        --accent-green: #28a745; /* Changed to a standard green */
                         --accent-red: #E74C3C;
-                        --accent-blue: #3498DB;
+                        --accent-blue: #007bff; /* Changed to a standard blue */
                         --accent-orange: #fd7e14;
                         --border-color: #34495E;
                         --shadow-color: rgba(0,0,0,0.4);
+                        --unverified-red: #dc3545; /* Specific red for unverified */
+                        --verified-blue: #007bff; /* Specific blue for verified */
                     }
                     body {
                         font-family: 'Roboto', sans-serif;
@@ -929,7 +932,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         background-color: transparent;
                         border-radius: 15px;
                         perspective: 1000px;
-                        /* Removed min-height to allow dynamic height */
+                        /* min-height removed for dynamic height */
                     }
                     .feedback-card-inner {
                         position: relative;
@@ -957,7 +960,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         display: flex;
                         flex-direction: column;
                         justify-content: space-between;
-                        /* Removed overflow-y: auto; from here */
+                        max-height: 450px; /* Set a max height for the card content */
+                        overflow-y: auto; /* Add scroll if content exceeds max height */
                         border: 1px solid var(--border-color); /* Subtle border */
                     }
                     .feedback-card-back {
@@ -1020,8 +1024,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
                     .google-user-tag { background-color: #4285F4; color: white; }
                     .email-user-tag { background-color: #6c757d; color: white; }
-                    .verified-tag { background-color: var(--accent-green); color: white; }
-                    .unverified-tag { background-color: #ffc107; color: #333; }
+                    .verified-tag { background-color: var(--verified-blue); color: white; } /* Blue for verified */
+                    .unverified-tag { background-color: var(--unverified-red); color: white; } /* Red for unverified */
                     .edited-admin-tag { background-color: #5cb85c; color: white; }
 
                     .feedback-info .rating {
@@ -1144,7 +1148,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         border-radius: 10px;
                         padding: 15px;
                         border: 1px solid #2C3E50;
-                        /* Removed max-height to allow dynamic height */
+                        max-height: 180px; /* Keep max-height for replies section */
                         overflow-y: auto; /* Keep scroll for very long replies */
                         box-shadow: inset 0 1px 5px rgba(0,0,0,0.1);
                     }
@@ -1290,7 +1294,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             gap: 20px;
                         }
                         .feedback-card { min-height: auto; } /* Allow height to adjust */
-                        .feedback-card-front, .feedback-card-back { padding: 20px; }
+                        .feedback-card-front, .feedback-card-back { padding: 20px; max-height: none; } /* Remove max-height on small screens */
                         .feedback-avatar { width: 60px; height: 60px; }
                         .feedback-info h4 { font-size: 1.2em; }
                         .feedback-body { font-size: 1em; padding: 12px; }
@@ -1411,11 +1415,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <div class="feedback-card-back">
                                 <div class="feedback-header">
                                     <div class="feedback-avatar">
-                                        <img src="${(fb.originalContent.avatarUrl || fb.avatarUrl)}" alt="Original">
+                                        <img src="${(fb.originalContent.avatarUrl || getDiceBearAvatarUrl(fb.originalContent.name || 'Original User'))}" alt="Original">
                                     </div>
                                     <div class="feedback-info">
                                         <h4>ORIGINAL: ${fb.originalContent.name}</h4>
                                         <div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5 - fb.originalContent.rating)}</div>
+                                        <div class="user-ip">IP: ${fb.userIp || 'N/A'} | UserID: ${fb.userId ? (fb.userId._id ? fb.userId._id.toString() : fb.userId.toString()) : 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div class="feedback-body">
@@ -1423,6 +1428,26 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 </div>
                                 <div class="feedback-date">
                                     Originally Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="action-button delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
+                                    ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="action-button change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}
+                                </div>
+                                <div class="reply-section">
+                                    <textarea id="reply-text-original-${fb._id}" placeholder="Admin reply..."></textarea>
+                                    <button class="action-button reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-original-${fb._id}')">REPLY</button>
+                                    <div class="replies-display">
+                                        ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
+                                        ${fb.replies.map(reply => `
+                                            <div class="single-reply">
+                                                <img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm">
+                                                <div class="reply-content-wrapper">
+                                                    <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+                                                    <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
                                 </div>
                                 <div style="margin-top:auto;">
                                     <button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW EDITED</button>
