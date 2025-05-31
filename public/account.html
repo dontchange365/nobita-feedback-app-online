@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - 𝙉𝙊𝘽𝙄 𝘽𝙊𝙏</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+    <header>
+        <div class="logo">𝙉𝙊𝘽𝙄 𝘽𝙊𝙏</div>
+        <nav>
+            <button class="nav-toggle">☰</button>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/feedback.html">Feedback</a></li>
+                <li class="active" id="account-link"><a href="/account.html">Account</a></li>
+                <li id="login-signup-link" style="display: none;"><a href="/login.html">Login/Signup</a></li>
+                <li id="admin-link" style="display: none;"><a href="/admin.html">Admin Panel</a></li>
+                <li><a href="#" id="logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="account-container">
+        <h2>Account Information</h2>
+        <div id="profile-info">
+            </div>
+
+        <h2>Update Profile</h2>
+        <form id="update-profile-form">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email">
+            </div>
+            <button type="submit" class="submit-button">Update Profile</button>
+        </form>
+
+        <h2>Change Password</h2>
+        <form id="change-password-form">
+            <div class="form-group">
+                <label for="currentPassword">Current Password:</label>
+                <input type="password" id="currentPassword" name="currentPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">New Password:</label>
+                <input type="password" id="newPassword" name="newPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm New Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <p><a href="/forgot-password.html">Forgot current password?</a></p>
+            </div>
+            <button type="submit" class="submit-button">Change Password</button>
+        </form>
+
+        <h2>Edit Profile Picture</h2>
+        <form id="upload-avatar-form">
+            <div class="form-group">
+                <label for="profilePicture">Upload New Avatar:</label>
+                <input type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                <div id="avatar-preview"></div>
+            </div>
+            <button type="submit" class="submit-button">Upload Avatar</button>
+        </form>
+
+        <div class="logout-section">
+            <button id="logout-button" class="logout-button">Logout</button>
+            <div id="logout-confirm" style="display: none;">
+                <p>Are you sure you want to logout?</p>
+                <button id="confirm-logout">Yes</button>
+                <button id="cancel-logout">No</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Nobi Bot</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>
