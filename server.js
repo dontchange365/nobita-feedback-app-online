@@ -658,7 +658,7 @@ app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.s
         // Update avatar URL in all feedbacks submitted by this user
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
 
-        // Generate a new token with updated avatar URL
+        // Generate a new token with updated user information
         const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
 
@@ -1780,7 +1780,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                 <script>
                     const AUTH_HEADER = '${authHeaderValue}';
-                    const allFeedbacksData = ${JSON.stringify(feedbacks)}; // Store all feedback data for client-side filtering
+                    // Store all feedback data initially, will be filtered client-side
+                    const allFeedbacksData = ${JSON.stringify(feedbacks)}; 
 
                     // --- Utility Functions ---
                     function showToast(message, type = 'success') {
@@ -1885,7 +1886,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (res.ok) {
                                         showToast('Feedback deleted successfully!', 'success');
-                                        setTimeout(() => location.reload(), 1000);
+                                        // No longer reloading the entire page, just removing the card
+                                        document.getElementById(\`card-\${id}\`).remove();
+                                        // Re-apply filter to update counts/visibility if needed
+                                        applyFilter(currentFilter);
                                     } else {
                                         const err = await res.json();
                                         console.error("Delete failed response:", err);
@@ -1922,6 +1926,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (res.ok) {
                                         showToast('Reply posted successfully!', 'success');
+                                        // Instead of full reload, update the specific card's replies
+                                        const updatedFeedback = await res.json(); // Assuming API returns updated feedback or just the new reply
+                                        // For simplicity, let's reload to ensure all data is consistent after reply
+                                        // In a real app, you'd dynamically add the reply to the DOM
                                         setTimeout(() => location.reload(), 1000);
                                     } else {
                                         const err = await res.json();
@@ -1996,7 +2004,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                     });
                                     if (res.ok) {
                                         showToast(\`\\\${selectedFeedbackIds.length} feedback(s) deleted successfully.\`, 'success');
-                                        setTimeout(() => location.reload(), 1000);
+                                        // Remove deleted cards from DOM
+                                        selectedFeedbackIds.forEach(id => {
+                                            const card = document.getElementById(\`card-\${id}\`);
+                                            if (card) card.remove();
+                                        });
+                                        applyFilter(currentFilter); // Re-apply filter
                                     } else {
                                         const err = await res.json();
                                         console.error("Batch delete failed response:", err);
@@ -2079,8 +2092,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                         for (const row of data) {
                             const values = headers.map(header => {
-                                const escaped = ('' + row[header]).replace(/"/g, '""'); // Escape double quotes
-                                return `"\${escaped}"`; // Wrap in double quotes
+                                const value = row[header] !== null && row[header] !== undefined ? String(row[header]) : '';
+                                const escaped = value.replace(/"/g, '""'); // Escape double quotes
+                                return `\\"\${escaped}\\"`; // Wrap in double quotes
                             });
                             csvRows.push(values.join(','));
                         }
@@ -2179,17 +2193,17 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             const swipeThreshold = 50; // Minimum pixels for a swipe
                             const cardId = cardFront.closest('.feedback-card').id.replace('card-', '');
 
+                            // Ensure the card has a flip button (i.e., it's an edited feedback)
+                            const flipButton = cardFront.closest('.feedback-card').querySelector('.flip-btn');
+                            if (!flipButton) return;
+
                             if (touchendX < touchstartX - swipeThreshold) {
                                 // Swiped left
-                                if (cardFront.closest('.feedback-card').querySelector('.flip-btn')) { // Only flip if flip button exists
-                                    flipCard(cardId);
-                                }
+                                flipCard(cardId);
                             }
                             if (touchendX > touchstartX + swipeThreshold) {
                                 // Swiped right
-                                if (cardFront.closest('.feedback-card').querySelector('.flip-btn')) { // Only flip if flip button exists
-                                    flipCard(cardId);
-                                }
+                                flipCard(cardId);
                             }
                         }
                     });
