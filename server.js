@@ -933,21 +933,21 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                    if (fb.userId.isVerified) {
                        // Changed from span.verified-tag to img with blue tick for verified
-                       userTag += `<img src="https://i.ibb.co/Csg68D8/blue-tick-nobg.png" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       userTag += `<img src="https://ibb.co/N6TrbkHD" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
                        // Changed from span.unverified-tag to img with red tick for unverified
-                       userTag += `<img src="https://i.ibb.co/XjP6Y5G/red-tick-nobg.png" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       userTag += `<img src="https://ibb.co/HpLnr6jQ" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
                     userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                     // Assume legacy Google users were verified, using blue tick
-                    userTag += `<img src="https://i.ibb.co/Csg68D8/blue-tick-nobg.png" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    userTag += `<img src="https://ibb.co/N6TrbkHD" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
                     userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
                     // For legacy users without verification status, default to red tick as unverified
-                    userTag += `<img src="https://i.ibb.co/XjP6Y5G/red-tick-nobg.png" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    userTag += `<img src="https://ibb.co/HpLnr6jQ" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 }
 
                 html += `
