@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -35,9 +36,9 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET
 });
 
 // --- Debugging Environment Variables ---
@@ -82,12 +83,12 @@ if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 mongoose.connect(MONGODB_URI)
-    .then(() => console.log('MongoDB se connection safal!'))
-    .catch(err => {
-        console.error('MongoDB connection mein gadbad:', err);
-        console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
-        process.exit(1);
-    });
+  .then(() => console.log('MongoDB se connection safal!'))
+  .catch(err => {
+    console.error('MongoDB connection mein gadbad:', err);
+    console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
+    process.exit(1);
+});
 
 function getDiceBearAvatarUrl(name, randomSeed = '') {
     const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
@@ -96,30 +97,30 @@ function getDiceBearAvatarUrl(name, randomSeed = '') {
 }
 
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String },
-    googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
-    avatarUrl: { type: String },
-    loginMethod: { type: String, enum: ['email', 'google'], required: true },
-    createdAt: { type: Date, default: Date.now },
-    resetPasswordToken: { type: String, default: undefined },
-    resetPasswordExpires: { type: Date, default: undefined }
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String },
+  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
+  avatarUrl: { type: String },
+  loginMethod: { type: String, enum: ['email', 'google'], required: true },
+  createdAt: { type: Date, default: Date.now },
+  resetPasswordToken: { type: String, default: undefined },
+  resetPasswordExpires: { type: Date, default: undefined }
 });
 const User = mongoose.model('User', userSchema);
 
 const feedbackSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    feedback: { type: String, required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    timestamp: { type: Date, default: Date.now },
-    avatarUrl: { type: String },
-    userIp: { type: String },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    googleIdSubmitter: { type: String, sparse: true },
-    isEdited: { type: Boolean, default: false },
-    originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
-    replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
+  name: { type: String, required: true },
+  feedback: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  timestamp: { type: Date, default: Date.now },
+  avatarUrl: { type: String },
+  userIp: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  googleIdSubmitter: { type: String, sparse: true },
+  isEdited: { type: Boolean, default: false },
+  originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
+  replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }]
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 
@@ -539,49 +540,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 box-shadow: 0 0 10px rgba(255,215,0,0.5);
             }
 
-            /* NEW styles for bulk actions */
-            .bulk-actions-container {
-                width: 100%;
-                max-width: 1200px;
-                display: flex;
-                justify-content: flex-start;
-                gap: 15px;
-                margin-bottom: 20px;
-                padding: 0 10px;
-            }
-            .bulk-actions-btn {
-                background-color: #e74c3c;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                font-size: 1em;
-                font-weight: bold;
-                cursor: pointer;
-                transition: background-color .3s ease, transform .2s;
-                text-decoration: none;
-                display: inline-block;
-                text-transform: uppercase;
-            }
-            .bulk-actions-btn:hover {
-                background-color: #c0392b;
-                transform: translateY(-2px);
-            }
-            .select-all-container {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-left: 20px;
-                color: #E0E0E0;
-                font-size: 1em;
-            }
-            .select-all-container input[type="checkbox"] {
-                width: 20px;
-                height: 20px;
-                cursor: pointer;
-                accent-color: #FFD700; /* Yellow accent color for checkbox */
-            }
-
             /* Existing Feedback Card Styles */
             .feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}
             .feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}
@@ -632,18 +590,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             #adminModalConfirmButton:hover{background-color:#1e7e34}
             #adminModalCancelButton{background-color:#dc3545}
             #adminModalCancelButton:hover{background:none;color:#dc3545}
-            /* Checkbox within feedback card */
-            .feedback-select-checkbox {
-                position: absolute;
-                top: 15px;
-                right: 15px;
-                width: 25px;
-                height: 25px;
-                cursor: pointer;
-                z-index: 10;
-                accent-color: #FFD700; /* Yellow accent color for checkbox */
-            }
-            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center} .bulk-actions-container{flex-direction:column; align-items:flex-start;}}
+            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center}}
         </style></head><body>
         <div class="nobibot-icon">
             <img src="${nobitaAvatarUrl}" alt="NobiBot">
@@ -651,13 +598,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         <h1>NOBITA'S FEEDBACK COMMAND CENTER</h1>
         <div class="main-panel-btn-container">
             <a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a>
-        </div>
-        <div class="bulk-actions-container">
-            <button class="bulk-actions-btn" id="deleteSelectedBtn" style="display:none;">SELECTED DELETE</button>
-            <div class="select-all-container">
-                <input type="checkbox" id="selectAllCheckboxes">
-                <label for="selectAllCheckboxes">सभी चुनें</label>
-            </div>
         </div>
         <div class="search-container">
             <input type="text" id="searchFeedback" placeholder="Search by name or email...">
@@ -680,7 +620,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 html += `<div class="feedback-card" id="card-${fb._id}" data-name="${userDisplayName.toLowerCase()}" data-email="${userEmail.toLowerCase()}">
                     <div class="feedback-card-inner">
                         <div class="feedback-card-front">
-                            <input type="checkbox" class="feedback-select-checkbox" data-feedback-id="${fb._id}">
                             <div class="feedback-header">
                                 <div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0)}"></div>
                                 <div class="feedback-info">
@@ -731,160 +670,36 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
             async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
 
-            // New JavaScript for Search functionality and Bulk Actions
+            // New JavaScript for Search functionality
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchFeedback');
                 const feedbackCards = document.querySelectorAll('.feedback-card');
-                const selectAllCheckboxes = document.getElementById('selectAllCheckboxes');
-                const feedbackSelectCheckboxes = document.querySelectorAll('.feedback-select-checkbox');
-                const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
 
-                // Function to update the visibility and text of the "SELECTED DELETE" button
-                function updateDeleteSelectedButtonVisibility() {
-                    const checkedCount = document.querySelectorAll('.feedback-select-checkbox:checked').length;
-                    if (checkedCount > 0) {
-                        deleteSelectedBtn.style.display = 'inline-block';
-                        deleteSelectedBtn.textContent = `SELECTED DELETE (${checkedCount})`;
-                    } else {
-                        deleteSelectedBtn.style.display = 'none';
-                    }
-                }
-
-                // Event listener for "Select All" checkbox
-                selectAllCheckboxes.addEventListener('change', function() {
-                    feedbackSelectCheckboxes.forEach(checkbox => {
-                        // Only check/uncheck visible checkboxes
-                        if (checkbox.closest('.feedback-card').style.display !== 'none') {
-                            checkbox.checked = this.checked;
-                        }
-                    });
-                    updateDeleteSelectedButtonVisibility();
-                });
-
-                // Event listener for individual feedback checkboxes
-                feedbackSelectCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        const allVisibleCheckboxes = Array.from(feedbackSelectCheckboxes).filter(cb => cb.closest('.feedback-card').style.display !== 'none');
-                        const allVisibleChecked = allVisibleCheckboxes.every(cb => cb.checked);
-                        const anyVisibleChecked = allVisibleCheckboxes.some(cb => cb.checked);
-                        
-                        // "Select All" checkbox should be checked if all visible ones are checked,
-                        // and indeterminate if some but not all visible ones are checked.
-                        // For simplicity, we'll just check if all are checked or none are checked.
-                        selectAllCheckboxes.checked = allVisibleChecked && allVisibleCheckboxes.length > 0;
-                        selectAllCheckboxes.indeterminate = anyVisibleChecked && !allVisibleChecked;
-
-                        updateDeleteSelectedButtonVisibility();
-                    });
-                });
-
-                // Event listener for "Delete Selected" button
-                deleteSelectedBtn.addEventListener('click', async function() {
-                    const selectedFeedbackIds = [];
-                    feedbackSelectCheckboxes.forEach(checkbox => {
-                        if (checkbox.checked) {
-                            selectedFeedbackIds.push(checkbox.dataset.feedbackId);
-                        }
-                    });
-
-                    if (selectedFeedbackIds.length === 0) {
-                        showAdminModal('alert', 'Nothing Selected', 'कृपया डिलीट करने के लिए कम से कम एक फीडबैक चुनें।');
-                        return;
-                    }
-
-                    showAdminModal('confirm', 'Bulk Delete Feedbacks?', `क्या आप वाकई ${selectedFeedbackIds.length} फीडबैक डिलीट करना चाहते हैं?`, async confirmed => {
-                        if (confirmed) {
-                            try {
-                                const res = await fetch('/api/admin/feedbacks/bulk-delete', {
-                                    method: 'DELETE',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': AUTH_HEADER
-                                    },
-                                    body: JSON.stringify({ ids: selectedFeedbackIds })
-                                });
-
-                                if (res.ok) {
-                                    const data = await res.json();
-                                    showAdminModal('alert', 'Deleted!', `${data.deletedCount} फीडबैक सफलतापूर्वक डिलीट हो गए।`);
-                                    setTimeout(() => location.reload(), 1000);
-                                } else {
-                                    const err = await res.json();
-                                    console.error("Bulk delete failed response:", err);
-                                    showAdminModal('alert', 'Error!', `डिलीट करने में विफल: ${err.message || res.statusText}`);
-                                }
-                            } catch (e) {
-                                console.error("Bulk delete fetch error:", e);
-                                showAdminModal('alert', 'Fetch Error!', `डिलीट के दौरान एरर: ${e.message}`);
-                            }
-                        }
-                    });
-                });
-
-                // Search functionality
                 searchInput.addEventListener('keyup', function() {
                     const searchTerm = searchInput.value.toLowerCase();
 
                     feedbackCards.forEach(card => {
                         const name = card.dataset.name;
                         const email = card.dataset.email;
-                        const checkbox = card.querySelector('.feedback-select-checkbox');
 
+                        // Check if the search term is found in name or email
                         if (name.includes(searchTerm) || email.includes(searchTerm)) {
                             card.style.display = ''; // Show card
                         } else {
                             card.style.display = 'none'; // Hide card
-                            if (checkbox) {
-                                checkbox.checked = false; // Uncheck if hidden
-                            }
                         }
                     });
-                    // After filtering, update the select all checkbox and button state
-                    updateDeleteSelectedButtonVisibility();
-                    const allVisibleCheckboxes = Array.from(feedbackSelectCheckboxes).filter(cb => cb.closest('.feedback-card').style.display !== 'none');
-                    const allVisibleChecked = allVisibleCheckboxes.every(cb => cb.checked);
-                    const anyVisibleChecked = allVisibleCheckboxes.some(cb => cb.checked);
-                    selectAllCheckboxes.checked = allVisibleChecked && allVisibleCheckboxes.length > 0;
-                    selectAllCheckboxes.indeterminate = anyVisibleChecked && !allVisibleChecked;
                 });
-
-                // Initial call to set button state on load
-                updateDeleteSelectedButtonVisibility();
             });
         </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
 });
-
-// NEW ADMIN ROUTE: Bulk Delete Feedbacks
-app.delete('/api/admin/feedbacks/bulk-delete', authenticateAdmin, async (req, res) => {
-    const { ids } = req.body; // Expect an array of IDs
-    console.log(`ADMIN: Received BULK DELETE request for feedback IDs:`, ids);
-
-    if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ message: 'डिलीट करने के लिए कोई ID नहीं दी गई है।' });
-    }
-
-    try {
-        const result = await Feedback.deleteMany({ _id: { $in: ids } });
-        if (result.deletedCount === 0) {
-            console.log(`ADMIN: No feedbacks found for bulk deletion with IDs:`, ids);
-            return res.status(404).json({ message: 'डिलीट करने के लिए कोई फीडबैक नहीं मिला।' });
-        }
-        console.log(`ADMIN: Successfully deleted ${result.deletedCount} feedbacks.`);
-        res.status(200).json({ message: `${result.deletedCount} फीडबैक सफलतापूर्वक डिलीट हो गए।`, deletedCount: result.deletedCount });
-    } catch (error) {
-        console.error(`ADMIN: Error during bulk deletion of feedbacks:`, error);
-        res.status(500).json({ message: 'कई फीडबैक डिलीट नहीं हो पाए।', error: error.message });
-    }
-});
-
-
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
     try { const deletedFeedback = await Feedback.findByIdAndDelete(req.params.id); if (!deletedFeedback) { console.log(`ADMIN: Feedback ID ${req.params.id} not found for deletion.`); return res.status(404).json({ message: 'Feedback ID mila nahi.' });} console.log(`ADMIN: Feedback ID ${req.params.id} deleted successfully.`); res.status(200).json({ message: 'Feedback delete ho gaya.' });
     } catch (error) { console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error); res.status(500).json({ message: 'Feedback delete nahi ho paya.', error: error.message });}
-});
+ });
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => {
     const feedbackId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN: Received POST request to reply to feedback ID: ${feedbackId} with text: ${replyText}`);
     if (!replyText) { console.log(`ADMIN: Reply text missing for feedback ID: ${feedbackId}`); return res.status(400).json({ message: 'Reply text daalo.' });}
