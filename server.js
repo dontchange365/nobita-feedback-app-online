@@ -267,7 +267,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         user.password = await bcrypt.hash(password, 12); user.resetPasswordToken = undefined; user.resetPasswordExpires = undefined; await user.save();
         console.log(`Password safaltapoorvak reset hua user ke liye: ${user.email}`);
         const confirmationTextMessage = `Namaste ${user.name},\n\nAapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai.\n\nAgar yeh aapne nahi kiya tha, toh kripya turant support se contact karein.`;
-        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai.</p><p>Ab aap apne naye password ke saath login kar sakte hain.</p><p>Agar yeh aapne nahi kiya tha, toh kripya turant hamari support team se contact karein.</p><hr><p>Dhanyawad,<br/>Nobita Feedback App Team</p></div>`;
+        const confirmationHtmlMessage = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333"><p>Namaste ${user.name},</p><p>Aapka password Nobita Feedback App par safaltapoorvak reset ho gaya hai.</p><p>Ab aap apne naye password ke saath login kar sakte hain.</p><p>Agar yeh aapne nahi kiya tha, toh kripya turant hamari support team se contact karein.</p></div>`;
         try { await sendEmail({ email: user.email, subject: 'Aapka Password Safaltapoorvak Reset Ho Gaya Hai', message: confirmationTextMessage, html: confirmationHtmlMessage});
         } catch (emailError) { console.error("Password reset confirmation email bhejne mein error:", emailError); }
         res.status(200).json({ message: "Aapka password safaltapoorvak reset ho gaya hai. Ab aap naye password se login kar sakte hain." });
@@ -486,6 +486,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             .main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:flex-start;margin-bottom:20px;padding:0 10px}
             .main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}
             .main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}
+            .main-panel-btn.active-delete {
+                background-color: #C0392B; /* A bit darker red when active */
+            }
 
             /* NobiBot Icon */
             .nobibot-icon {
@@ -542,7 +545,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
             /* Existing Feedback Card Styles */
             .feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}
-            .feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}
+            .feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px; position:relative; /* Added for checkbox positioning */}
             .feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}
             .feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}
             .feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
@@ -598,6 +601,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         <h1>NOBITA'S FEEDBACK COMMAND CENTER</h1>
         <div class="main-panel-btn-container">
             <a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a>
+            <button id="deleteSelectedBtn" class="main-panel-btn" style="background-color:#E74C3C; margin-left: 15px; display: none;">DELETE SELECTED (<span id="selectedCount">0</span>)</button>
         </div>
         <div class="search-container">
             <input type="text" id="searchFeedback" placeholder="Search by name or email...">
@@ -618,6 +622,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
                 html += `<div class="feedback-card" id="card-${fb._id}" data-name="${userDisplayName.toLowerCase()}" data-email="${userEmail.toLowerCase()}">
+                    <input type="checkbox" class="feedback-checkbox" data-id="${fb._id}" style="position:absolute; top:15px; right:15px; width:25px; height:25px; accent-color:#FFD700; cursor:pointer;">
                     <div class="feedback-card-inner">
                         <div class="feedback-card-front">
                             <div class="feedback-header">
@@ -691,6 +696,70 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     });
                 });
             });
+
+            // New JavaScript for Multiple Select & Delete
+            document.addEventListener('DOMContentLoaded', function() {
+                const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                const selectedCountSpan = document.getElementById('selectedCount');
+                const feedbackCheckboxes = document.querySelectorAll('.feedback-checkbox');
+                let selectedFeedbackIds = new Set(); // Use a Set for efficient ID management
+
+                function updateSelectedCount() {
+                    selectedCountSpan.textContent = selectedFeedbackIds.size;
+                    if (selectedFeedbackIds.size > 0) {
+                        deleteSelectedBtn.style.display = 'inline-block';
+                    } else {
+                        deleteSelectedBtn.style.display = 'none';
+                    }
+                }
+
+                feedbackCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const feedbackId = this.dataset.id;
+                        if (this.checked) {
+                            selectedFeedbackIds.add(feedbackId);
+                        } else {
+                            selectedFeedbackIds.delete(feedbackId);
+                        }
+                        updateSelectedCount();
+                    });
+                });
+
+                deleteSelectedBtn.addEventListener('click', function() {
+                    if (selectedFeedbackIds.size === 0) {
+                        showAdminModal('alert', 'No Feedback Selected', 'Please select at least one feedback to delete.');
+                        return;
+                    }
+
+                    const count = selectedFeedbackIds.size;
+                    showAdminModal('confirm', `Delete ${count} Feedbacks?`, `Are you sure you want to delete ${count} selected feedbacks? This cannot be undone.`, async confirmed => {
+                        if (confirmed) {
+                            try {
+                                const res = await fetch('/api/admin/feedbacks/bulk', {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': AUTH_HEADER
+                                    },
+                                    body: JSON.stringify({ ids: Array.from(selectedFeedbackIds) }) // Send as array
+                                });
+
+                                if (res.ok) {
+                                    showAdminModal('alert', 'Deleted!', `${count} feedbacks deleted successfully.`);
+                                    setTimeout(() => location.reload(), 1000);
+                                } else {
+                                    const err = await res.json();
+                                    console.error("Bulk delete failed response:", err);
+                                    showAdminModal('alert', 'Error!', `Failed to delete selected: ${err.message || res.statusText}`);
+                                }
+                            } catch (e) {
+                                console.error("Bulk delete fetch error:", e);
+                                showAdminModal('alert', 'Fetch Error!', `Error during bulk delete: ${e.message}`);
+                            }
+                        }
+                    });
+                });
+            });
         </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
@@ -707,6 +776,33 @@ app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) =>
     feedback.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await feedback.save(); console.log(`ADMIN: Reply added successfully to feedback ID: ${feedbackId}`); res.status(200).json({ message: 'Reply post ho gaya.', reply: feedback.replies[feedback.replies.length - 1] });
     } catch (error) { console.error(`ADMIN: Error replying to feedback ID ${feedbackId}:`, error); res.status(500).json({ message: 'Reply save nahi ho paya.', error: error.message });}
 });
+
+// New API endpoint for bulk feedback deletion
+app.delete('/api/admin/feedbacks/bulk', authenticateAdmin, async (req, res) => {
+    const { ids } = req.body; // Expect an array of IDs
+    console.log(`ADMIN: Received BULK DELETE request for feedback IDs: ${ids}`);
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        console.log("ADMIN: No IDs provided for bulk deletion.");
+        return res.status(400).json({ message: 'No feedback IDs provided for deletion.' });
+    }
+
+    try {
+        const result = await Feedback.deleteMany({ _id: { $in: ids } });
+        console.log(`ADMIN: Deleted ${result.deletedCount} feedbacks.`);
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'No matching feedbacks found for deletion.' });
+        }
+
+        res.status(200).json({ message: `${result.deletedCount} feedbacks delete ho gaye.`, deletedCount: result.deletedCount });
+    } catch (error) {
+        console.error(`ADMIN: Error during bulk feedback deletion:`, error);
+        res.status(500).json({ message: 'Selected feedbacks delete nahi ho paye.', error: error.message });
+    }
+});
+
+
 app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, res) => {
     const userId = req.params.userId; console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
