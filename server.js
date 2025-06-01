@@ -82,7 +82,7 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('MongoDB se connection safal!'))
-  .catch(err => {
+  .catch(error => {
     console.error('MongoDB connection mein gadbad:', err);
     console.error('Ensure MONGODB_URI environment variable Render par sahi se set hai aur aapka IP whitelisted hai (agar zaroori ho).');
     process.exit(1);
@@ -438,7 +438,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     if (!req.user) return res.status(403).json({ message: "Feedback dene ke liye कृपया login karein." });
     if (!feedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback aur rating zaroori hai.' });
     let feedbackData = { name: req.user.name, avatarUrl: req.user.avatarUrl, userId: req.user.userId, feedback, rating: parseInt(rating), userIp, isEdited: false };
-    if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (err) { console.error("Error fetching user for googleIdSubmitter:", err); }}
+    if (req.user.loginMethod === 'google' && req.user.userId) { try { const loggedInUser = await User.findById(req.user.userId); if (loggedInUser && loggedInUser.googleId) feedbackData.googleIdSubmitter = loggedInUser.googleId; } catch (error) { console.error("Error fetching user for googleIdSubmitter:", err); }}
     try { const newFeedback = new Feedback(feedbackData); await newFeedback.save(); res.status(201).json({ message: 'Aapka feedback सफलतापूर्वक jama ho gaya!', feedback: newFeedback });
     } catch (error) { console.error("Feedback save error:", error); res.status(500).json({ message: 'Feedback save nahi ho paya.', error: error.message });}
 });
