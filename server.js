@@ -42,7 +42,6 @@ cloudinary.config({
 });
 
 // --- Debugging Environment Variables ---
-console.log("--- Environment Variable Check (server.js start) ---");
 console.log("PORT (from process.env):", process.env.PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
 console.log("JWT_SECRET (loaded):", JWT_SECRET ? "SET" : "NOT SET");
@@ -57,7 +56,6 @@ console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
 console.log("CLOUDINARY_CLOUD_NAME (loaded):", CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
 console.log("CLOUDINARY_API_KEY (loaded):", CLOUDINARY_API_KEY ? "SET" : "NOT SET");
 console.log("CLOUDINARY_API_SECRET (loaded):", CLOUDINARY_API_SECRET ? "SET (value hidden)" : "NOT SET");
-console.log("--- End Environment Variable Check ---");
 
 // Zaroori environment variables check karna
 if (!MONGODB_URI || !JWT_SECRET || !FRONTEND_URL) {
@@ -100,7 +98,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String },
-  googleId: { type: String, sparse: true, unique: true }, // <-- 'default: null' removed here
+  googleId: { type: String, sparse: true, unique: true },
   avatarUrl: { type: String },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
@@ -195,7 +193,7 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) return res.status(401).json({ message: "Email ya password galat hai." });
-        if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya tha. Kripya Google se login karein." });
+        if (user.loginMethod === 'google' && !user.password) return res.status(401).json({ message: "Aapne Google se sign up kiya था. Kripya Google se login karein." });
         if (!user.password) return res.status(401).json({ message: "Login credentials sahi nahi hain." });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: "Email ya password galat hai." });
@@ -247,7 +245,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         await sendEmail({ email: user.email, subject: 'Aapka Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Password reset link aapke email par bhej diya gaya hai (agar email valid hai aur email/password account se juda hai)." });
     } catch (error) {
-        console.error('Request password reset API mein error:', error); // Log full error
+        console.error('Request password reset API mein error:', error);
         if (error.message && (error.message.includes("Email service theek se configure nahi hai") || error.message.includes("Invalid login")) || (error.code && (error.code === 'EAUTH' || error.code === 'EENVELOPE' || error.errno === -3008))) {
              res.status(500).json({ message: "Email bhejne mein kuch takniki samasya aa gayi hai. Kripya administrator se contact karein ya .env mein email settings check karein." });
         } else {
@@ -429,9 +427,9 @@ app.post('/api/user/upload-avatar', authenticateToken, upload.single('avatar'), 
 // Static Files & Feedback Routes
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
-    try {
+    try { 
         // Populate userId to get loginMethod for distinguishing user types in frontend
-        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 });
+        const allFeedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod' }).sort({ timestamp: -1 }); 
         res.status(200).json(allFeedbacks);
     } catch (error) { res.status(500).json({ message: 'Feedbacks fetch nahi ho paye.', error: error.message });}
 });
@@ -637,14 +635,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div>
                             <div class="action-buttons">
                                 <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
-                                ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('<span class="math-inline">\{fb\.userId\.\_id\}', '</span>{userDisplayName}')">AVATAR</button>` : ''}
+                                ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}
                             </div>
                             <div class="reply-section">
                                 <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
                                 <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
                                 <div class="replies-display">
                                     ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
-                                    ${fb.replies.map(reply => `<div class="single-reply"><img src="<span class="math-inline">\{nobitaAvatarUrl\}" alt\="Admin" class\="admin\-reply\-avatar\-sm"\><div class\="reply\-content\-wrapper"\><span class\="reply\-admin\-name"\></span>{reply.adminName}:</span> <span class="math-inline">\{reply\.text\}<span class\="reply\-timestamp"\>\(</span>{new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
+                                    ${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
                                 </div>
                             </div>
                             ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}
@@ -766,7 +764,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             });
         </script></body></html>`;
         res.send(html);
-    } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
+    } catch (error) { // FIX: Changed 'err' to 'error' here
+        console.error('Admin panel generate karte waqt error:', error); // FIX: Used 'error'
+        res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`); // FIX: Used 'error.message'
+    }
 });
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
     console.log(`ADMIN: Received DELETE request for feedback ID: ${req.params.id}`);
