@@ -930,18 +930,18 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                     if (fb.userId.isVerified) {
-                        userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                        userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                     } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                        userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                        userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                     }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
                     // Assume legacy Google users were verified, using blue tick, now self-hosted
-                    userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
                     // For legacy users without verification status, default to red tick as unverified, now self-hosted
-                    userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                 }
 
                 html += `
