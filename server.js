@@ -341,7 +341,7 @@ app.post('/api/auth/google-signin', async (req, res) => {
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
-    } catch (error) {
+    } != 0){ /* syntax error */ } catch (error) {
         console.error('Google signin error:', error);
         res.status(401).json({ message: 'Google token invalid or verification failed.', error: error.message });
     }
@@ -919,7 +919,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">No feedback received yet!</p>`;
         } else {
             for (const fb of feedbacks) {
-                let userTag = '';
+                let userTag = ''; // This will now only contain the tick images
                 let userDisplayName = fb.userId && fb.userId.name ? fb.userId.name : fb.name;
                 
                 if (!userDisplayName) {
@@ -929,30 +929,26 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
 
                 // Determine user type and verification status
                 if (fb.userId && typeof fb.userId === 'object') { // Check if userId is populated
-                   if (fb.userId.loginMethod === 'google') {
-                       userTag = `<span class="google-user-tag" title="Google User (${fb.userId.email || ''})">G</span>`;
-                   } else if (fb.userId.loginMethod === 'email') {
-                       userTag = `<span class="email-user-tag" title="Email User (${fb.userId.email || ''})">E</span>`;
-                   }
+                   // Removed email/google user tags
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                    if (fb.userId.isVerified) {
-                       // Using the provided blue tick URL for verified users, now self-hosted
-                       userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       // Using the provided blue tick URL for verified users, now self-hosted and larger
+                       userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       // Using the provided red tick URL for unverified users, now self-hosted
-                       userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       // Using the provided red tick URL for unverified users, now self-hosted and larger
+                       userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
-                    userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
-                    // Assume legacy Google users were verified, using blue tick, now self-hosted
-                    userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    // Removed google user tag
+                    // Assume legacy Google users were verified, using blue tick, now self-hosted and larger
+                    userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
-                    userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
-                    // For legacy users without verification status, default to red tick as unverified, now self-hosted
-                    userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    // Removed legacy user tag
+                    // For legacy users without verification status, default to red tick as unverified, now self-hosted and larger
+                    userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 5px;">`;
                 }
 
                 html += `
