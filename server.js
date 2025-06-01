@@ -932,10 +932,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                    if (fb.userId.isVerified) {
-                       // Changed from span.verified-tag to img with blue tick for verified
+                       // Using the provided blue tick URL for verified users
                        userTag += `<img src="https://ibb.co/N6TrbkHD" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       // Changed from span.unverified-tag to img with red tick for unverified
+                       // Using the provided red tick URL for unverified users
                        userTag += `<img src="https://ibb.co/HpLnr6jQ" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    }
                 } else if (fb.googleIdSubmitter) {
