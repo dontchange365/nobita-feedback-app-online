@@ -732,7 +732,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     }
 
                     const count = selectedFeedbackIds.size;
-                    showAdminModal('confirm', `Delete ${count} Feedbacks?`, `Are you sure you want to delete ${count} selected feedbacks? This cannot be undone.`, async confirmed => {
+                    showAdminModal('confirm', \`Delete ${count} Feedbacks?\`, \`Are you sure you want to delete ${count} selected feedbacks? This cannot be undone.\`, async confirmed => {
                         if (confirmed) {
                             try {
                                 const res = await fetch('/api/admin/feedbacks/bulk', {
