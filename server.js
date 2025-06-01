@@ -847,8 +847,10 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}
                     .google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
                     .email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
+                    /* These are now unused but kept as per instruction */
                     .verified-tag{background-color:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
                     .unverified-tag{background-color:#ffc107;color:#333;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
+                    /* End unused CSS */
                     .feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}
                     .feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}
                     .feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}
@@ -930,17 +932,22 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                    if (fb.userId.isVerified) {
-                       userTag += `<span class="verified-tag" title="Email Verified">✔ Verified</span>`;
+                       // Changed from span.verified-tag to img with blue tick for verified
+                       userTag += `<img src="https://i.ibb.co/Csg68D8/blue-tick-nobg.png" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       userTag += `<span class="unverified-tag" title="Email Not Verified">✖ Unverified</span>`;
+                       // Changed from span.unverified-tag to img with red tick for unverified
+                       userTag += `<img src="https://i.ibb.co/XjP6Y5G/red-tick-nobg.png" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
                     userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
-                    userTag += `<span class="verified-tag" title="Email Verified">✔ Verified</span>`; // Assume legacy Google users were verified
+                    // Assume legacy Google users were verified, using blue tick
+                    userTag += `<img src="https://i.ibb.co/Csg68D8/blue-tick-nobg.png" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
                     userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
+                    // For legacy users without verification status, default to red tick as unverified
+                    userTag += `<img src="https://i.ibb.co/XjP6Y5G/red-tick-nobg.png" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 }
 
                 html += `
@@ -1342,4 +1349,3 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Nobita's server is running on port ${PORT}: http://localhost:${PORT}`);
 });
-
