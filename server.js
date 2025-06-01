@@ -333,10 +333,10 @@ app.post('/api/auth/google-signin', async (req, res) => {
             }
             await user.save();
         } else {
-             // Update avatar if Google provides a new one and user is a Google user
-             if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
-             // Ensure Google user is marked as verified
-             if (!user.isVerified) { user.isVerified = true; await user.save(); }
+              // Update avatar if Google provides a new one and user is a Google user
+              if (user.avatarUrl !== googleAvatar && googleAvatar) { user.avatarUrl = googleAvatar; await user.save(); }
+              // Ensure Google user is marked as verified
+              if (!user.isVerified) { user.isVerified = true; await user.save(); }
         }
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: 'google', isVerified: user.isVerified };
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
@@ -850,11 +850,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     .feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}
                     .feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}
                     .feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}
+                    /* These are now unused but kept as per instruction */
                     .google-user-tag{background-color:#4285F4;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
                     .email-user-tag{background-color:#6c757d;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    /* These are now unused but kept as per instruction */
-                    .verified-tag{background-color:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
-                    .unverified-tag{background-color:#ffc107;color:#333;padding:2px 6px;border-radius:4px;font-size:.7em;margin-left:8px;vertical-align:middle}
                     /* End unused CSS */
                     .feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}
                     .feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}
@@ -928,24 +926,20 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 let userEmailDisplay = '';
 
                 // Determine user type and verification status
-  
-                   userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
+                if (fb.userId && typeof fb.userId === 'object') { // Check if userId is populated
+                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
-                   if (fb.userId.isVerified) {
-                       // Using the provided blue tick URL for verified users, now self-hosted
-                       userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
-                   } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       // Using the provided red tick URL for unverified users, now self-hosted
-                       userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
-                   }
+                    if (fb.userId.isVerified) {
+                        userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
+                        userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
-                    
                     // Assume legacy Google users were verified, using blue tick, now self-hosted
                     userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
-                    
                     // For legacy users without verification status, default to red tick as unverified, now self-hosted
                     userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 }
@@ -1245,7 +1239,7 @@ app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => {
         console.error(`ADMIN: Error deleting feedback ID ${req.params.id}:`, error);
         res.status(500).json({ message: 'Failed to delete feedback.', error: error.message });
     }
- });
+});
 
 // Admin API to batch delete feedbacks
 app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => {
