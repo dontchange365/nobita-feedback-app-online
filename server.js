@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -732,7 +731,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
             async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
 
-            // New JavaScript for Search functionality
+            // New JavaScript for Search functionality and Bulk Actions
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchFeedback');
                 const feedbackCards = document.querySelectorAll('.feedback-card');
@@ -740,6 +739,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 const feedbackSelectCheckboxes = document.querySelectorAll('.feedback-select-checkbox');
                 const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
 
+                // Function to update the visibility and text of the "SELECTED DELETE" button
                 function updateDeleteSelectedButtonVisibility() {
                     const checkedCount = document.querySelectorAll('.feedback-select-checkbox:checked').length;
                     if (checkedCount > 0) {
@@ -753,7 +753,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 // Event listener for "Select All" checkbox
                 selectAllCheckboxes.addEventListener('change', function() {
                     feedbackSelectCheckboxes.forEach(checkbox => {
-                        // Only check visible checkboxes
+                        // Only check/uncheck visible checkboxes
                         if (checkbox.closest('.feedback-card').style.display !== 'none') {
                             checkbox.checked = this.checked;
                         }
