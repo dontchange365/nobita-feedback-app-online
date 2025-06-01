@@ -745,7 +745,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 });
 
                                 if (res.ok) {
-                                    showAdminModal('alert', 'Deleted!', `${count} feedbacks deleted successfully.`);
+                                    showAdminModal('alert', 'Deleted!', \`${count} feedbacks deleted successfully.\`);
                                     setTimeout(() => location.reload(), 1000);
                                 } else {
                                     const err = await res.json();
