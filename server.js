@@ -259,7 +259,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const { token, password, confirmPassword } = req.body; console.log(`Password reset attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
     if (!token) return res.status(400).json({ message: "Password reset token nahi mila." });
     if (!password || !confirmPassword) return res.status(400).json({ message: "Naya password aur confirmation password zaroori hai." });
-    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords match nahi ho رہے." });
+    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords match nahi ho rahe." });
     if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
     try {
         const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
@@ -759,13 +759,13 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             async function tryPostReply(fbId,txtId){const replyText=document.getElementById(txtId).value.trim();console.log("Attempting to post reply to feedback ID:",fbId,"Text:",replyText);if(!replyText){showAdminModal('alert','Empty Reply','Please write something to reply.');return}showAdminModal('confirm','Post Reply?',\`Confirm reply: "\${replyText.substring(0,50)}..."\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/feedback/\${fbId}/reply\`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({replyText,adminName:'👉𝙉𝙊𝘽𝙄𝙏𝘼🤟'})});if(res.ok){showAdminModal('alert','Replied!','Reply posted.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Reply failed response:",err);showAdminModal('alert','Error!',\`Failed to reply: \${err.message||res.statusText}\`)}}catch(e){console.error("Reply fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during reply: \${e.message}\`)}}})}
             async function tryChangeUserAvatar(userId,userName){console.log("Attempting to change avatar for user ID:",userId,"Name:",userName);showAdminModal('confirm','Change Avatar?',\`Change avatar for \${userName}? This will regenerate avatar for this email user.\`,async confirmed=>{if(confirmed){try{const res=await fetch(\`/api/admin/user/\${userId}/change-avatar\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER}});if(res.ok){showAdminModal('alert','Avatar Changed!','Avatar updated for '+userName+'.');setTimeout(()=>location.reload(),1000)}else{const err=await res.json();console.error("Change avatar failed response:",err);showAdminModal('alert','Error!',\`Failed to change avatar: \${err.message||res.statusText}\`)}}catch(e){console.error("Change avatar fetch error:",e);showAdminModal('alert','Fetch Error!',\`Error during avatar change: \${e.message}\`)}}})}
 
-            // New JavaScript for Search functionality
+            // --- IMPORTANT: The corrected DOMContentLoaded block ---
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchFeedback');
                 const feedbackCards = document.querySelectorAll('.feedback-card');
                 const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
                 const checkboxes = document.querySelectorAll('.select-checkbox');
-                let selectedFeedbackIds = new Set(); // Using a Set for efficient ID management
+                let selectedFeedbackIds = new Set(); // Correctly scoped variable
 
                 function updateDeleteButtonState() {
                     deleteSelectedBtn.disabled = selectedFeedbackIds.size === 0;
@@ -789,7 +789,6 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     feedbackCards.forEach(card => {
                         const name = card.dataset.name;
                         const email = card.dataset.email;
-                        const cardId = card.id; // e.g., 'card-65b70d500418c39e2175924d'
 
                         // Only hide if it doesn't match the search term
                         if (name.includes(searchTerm) || email.includes(searchTerm)) {
@@ -800,17 +799,18 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     });
                 });
 
+                // The tryDeleteSelectedFeedbacks function is now correctly defined here
                 window.tryDeleteSelectedFeedbacks = async function() {
                     if (selectedFeedbackIds.size === 0) {
                         showAdminModal('alert', 'No Selection', 'Kripya delete karne ke liye koi feedback select karein.');
                         return;
                     }
 
-                    const idsToDelete = Array.from(selectedFeedbackIds);
-                    showAdminModal('confirm', 'Confirm Deletion', \`Kya aap ${idsToDelete.length} selected feedbacks delete karna chahte hain? Yeh action undo nahi ho sakta.\`, async confirmed => {
+                    const idsToDelete = Array.from(selectedFeedbackIds); // Now correctly accessible
+                    showAdminModal('confirm', 'Confirm Deletion', `Kya aap ${idsToDelete.length} selected feedbacks delete karna chahte hain? Yeh action undo nahi ho sakta.`, async confirmed => {
                         if (confirmed) {
                             try {
-                                const res = await fetch('/api/admin/feedbacks', { // New API endpoint
+                                const res = await fetch('/api/admin/feedbacks', { // This is the new API endpoint for multiple deletes
                                     method: 'DELETE',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -820,16 +820,16 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 });
 
                                 if (res.ok) {
-                                    showAdminModal('alert', 'Deleted!', \`${idsToDelete.length} feedbacks successfully deleted.\`);
+                                    showAdminModal('alert', 'Deleted!', `${idsToDelete.length} feedbacks successfully deleted.`);
                                     setTimeout(() => location.reload(), 1000); // Reload page to reflect changes
                                 } else {
                                     const err = await res.json();
                                     console.error("Multiple delete failed response:", err);
-                                    showAdminModal('alert', 'Error!', \`Failed to delete feedbacks: \${err.message || res.statusText}\`);
+                                    showAdminModal('alert', 'Error!', `Failed to delete feedbacks: ${err.message || res.statusText}`);
                                 }
                             } catch (e) {
                                 console.error("Multiple delete fetch error:", e);
-                                showAdminModal('alert', 'Fetch Error!', \`Error during multiple delete: \${e.message}\`);
+                                showAdminModal('alert', 'Fetch Error!', `Error during multiple delete: ${e.message}`);
                             }
                         }
                     });
@@ -838,6 +838,7 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 // Initial state check for the delete button
                 updateDeleteButtonState();
             });
+            // --- End of the corrected DOMContentLoaded block ---
         </script></body></html>`;
         res.send(html);
     } catch (error) { console.error('Admin panel generate karte waqt error:', error); res.status(500).send(`Admin panel mein kuch gadbad hai! Error: ${error.message}`);}
@@ -858,6 +859,7 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     const userId = req.params.userId; console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
     if (userToUpdate.loginMethod === 'google') { console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`); return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });}
+    // FIX: Removed '手間が'
     const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });}
     const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
     await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } }); console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
