@@ -259,7 +259,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const { token, password, confirmPassword } = req.body; console.log(`Password reset attempt for token: ${token ? token.substring(0,10)+'...' : 'NO TOKEN'}`);
     if (!token) return res.status(400).json({ message: "Password reset token nahi mila." });
     if (!password || !confirmPassword) return res.status(400).json({ message: "Naya password aur confirmation password zaroori hai." });
-    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords match nahi ho rahe." });
+    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords match nahi ho رہے." });
     if (password.length < 6) return res.status(400).json({ message: "Password kam se kam 6 characters ka hona chahiye." });
     try {
         const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
@@ -470,6 +470,27 @@ const authenticateAdmin = (req, res, next) => {
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' });}
 };
+
+// Admin route to delete multiple feedbacks
+app.delete('/api/admin/feedbacks', authenticateAdmin, async (req, res) => {
+    const { ids } = req.body;
+    console.log(`ADMIN: Received DELETE request for multiple feedback IDs: ${ids}`);
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: 'IDs ka array zaroori hai.' });
+    }
+    try {
+        const result = await Feedback.deleteMany({ _id: { $in: ids } });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Koi feedback nahi mila delete karne ke liye.' });
+        }
+        console.log(`ADMIN: ${result.deletedCount} feedbacks deleted successfully.`);
+        res.status(200).json({ message: `${result.deletedCount} feedbacks delete ho gaye.`, deletedCount: result.deletedCount });
+    } catch (error) {
+        console.error(`ADMIN: Error deleting multiple feedbacks:`, error);
+        res.status(500).json({ message: 'Feedbacks delete nahi ho paye.', error: error.message });
+    }
+});
+
 app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
     console.log("Admin panel access attempt.");
     try {
@@ -483,7 +504,8 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             /* General Styles */
             body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
             h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}
-            .main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:flex-start;margin-bottom:20px;padding:0 10px}
+            .top-controls{width:100%;max-width:1200px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:0 10px;flex-wrap:wrap;gap:15px;}
+            .main-panel-btn-container{display:flex;gap:10px;}
             .main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}
             .main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}
 
@@ -512,14 +534,21 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 100% { box-shadow: 0 0 20px rgba(255,215,0,0.9), 0 0 30px rgba(255,215,0,0.6); }
             }
 
-            /* Search Bar */
-            .search-container {
+            /* Search Bar & Multiple Delete Button Container */
+            .search-and-delete-container {
                 width: 100%;
                 max-width: 1200px;
                 display: flex;
-                justify-content: center;
+                justify-content: space-between;
+                align-items: center;
                 margin-bottom: 30px;
                 padding: 0 10px;
+                flex-wrap: wrap; /* Allow wrapping on smaller screens */
+                gap: 15px; /* Spacing between items */
+            }
+            .search-bar-wrapper {
+                flex-grow: 1; /* Allows search bar to take available space */
+                min-width: 250px; /* Minimum width for search bar */
             }
             #searchFeedback {
                 width: 100%;
@@ -540,9 +569,74 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 box-shadow: 0 0 10px rgba(255,215,0,0.5);
             }
 
+            /* Delete Selected Button */
+            #deleteSelectedBtn {
+                background-color: #E74C3C;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 1em;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color .3s ease, transform .2s, opacity 0.3s;
+                text-transform: uppercase;
+                opacity: 0.5; /* Disabled state */
+                pointer-events: none; /* Disabled state */
+            }
+            #deleteSelectedBtn:hover:not(:disabled) {
+                background-color: #C0392B;
+                transform: translateY(-2px);
+            }
+            #deleteSelectedBtn:enabled {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Checkbox Styles */
+            .feedback-card {
+                position: relative; /* Needed for absolute positioning of checkbox */
+                padding-top: 40px; /* Make space for checkbox */
+            }
+            .select-checkbox-container {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                z-index: 10; /* Ensure checkbox is clickable */
+            }
+            .select-checkbox {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border: 2px solid #FFD700;
+                border-radius: 5px;
+                background-color: #1A1A2E;
+                appearance: none; /* Hide default checkbox */
+                -webkit-appearance: none;
+                position: relative;
+                transition: background-color 0.2s, border-color 0.2s;
+            }
+            .select-checkbox:checked {
+                background-color: #FFD700;
+                border-color: #FFD700;
+            }
+            .select-checkbox:checked::after {
+                content: '✓';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #1A1A2E;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .select-checkbox:hover {
+                border-color: #FFEA00;
+            }
+
+
             /* Existing Feedback Card Styles */
             .feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}
-            .feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}
             .feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}
             .feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}
             .feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
@@ -579,29 +673,21 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             .reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}
             .reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}
             .edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}
-            .admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}
-            .admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}
-            .admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}
-            .admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}
-            .admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}
-            .admin-modal-buttons button:hover{transform:translateY(-2px)}
-            #adminModalOkButton:hover{background-color:#0056b3}
-            #adminModalConfirmButton{background-color:#28a745}
-            #adminModalConfirmButton:hover{background-color:#1e7e34}
-            #adminModalCancelButton{background-color:#dc3545}
-            #adminModalCancelButton:hover{background:none;color:#dc3545}
-            @media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{justify-content:center}}
-        </style></head><body>
+            .admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545}@media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.top-controls{flex-direction:column;align-items:flex-start;}.search-and-delete-container{flex-direction:column;align-items:stretch;}}</style></head><body>
         <div class="nobibot-icon">
             <img src="${nobitaAvatarUrl}" alt="NobiBot">
         </div>
         <h1>NOBITA'S FEEDBACK COMMAND CENTER</h1>
-        <div class="main-panel-btn-container">
-            <a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a>
+        <div class="top-controls">
+            <div class="main-panel-btn-container">
+                <a href="/" class="main-panel-btn">&larr; MAIN FEEDBACK PANEL</a>
+            </div>
+            <div class="search-bar-wrapper">
+                <input type="text" id="searchFeedback" placeholder="Search by name or email...">
+            </div>
+            <button id="deleteSelectedBtn" disabled onclick="tryDeleteSelectedFeedbacks()">DELETE SELECTED</button>
         </div>
-        <div class="search-container">
-            <input type="text" id="searchFeedback" placeholder="Search by name or email...">
-        </div>
+
         <div class="feedback-grid">`;
         if (feedbacks.length === 0) {
             html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">Abhi tak koi feedback nahi aaya hai!</p>`;
@@ -618,6 +704,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                 } else if (fb.googleIdSubmitter) { userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
                 } else { userTag = `<span class="email-user-tag" title="User">U</span>`;}
                 html += `<div class="feedback-card" id="card-${fb._id}" data-name="${userDisplayName.toLowerCase()}" data-email="${userEmail.toLowerCase()}">
+                    <div class="select-checkbox-container">
+                        <input type="checkbox" class="select-checkbox" data-id="${fb._id}">
+                    </div>
                     <div class="feedback-card-inner">
                         <div class="feedback-card-front">
                             <div class="feedback-header">
@@ -674,6 +763,25 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchFeedback');
                 const feedbackCards = document.querySelectorAll('.feedback-card');
+                const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                const checkboxes = document.querySelectorAll('.select-checkbox');
+                let selectedFeedbackIds = new Set(); // Using a Set for efficient ID management
+
+                function updateDeleteButtonState() {
+                    deleteSelectedBtn.disabled = selectedFeedbackIds.size === 0;
+                }
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const feedbackId = this.dataset.id;
+                        if (this.checked) {
+                            selectedFeedbackIds.add(feedbackId);
+                        } else {
+                            selectedFeedbackIds.delete(feedbackId);
+                        }
+                        updateDeleteButtonState();
+                    });
+                });
 
                 searchInput.addEventListener('keyup', function() {
                     const searchTerm = searchInput.value.toLowerCase();
@@ -681,8 +789,9 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                     feedbackCards.forEach(card => {
                         const name = card.dataset.name;
                         const email = card.dataset.email;
+                        const cardId = card.id; // e.g., 'card-65b70d500418c39e2175924d'
 
-                        // Check if the search term is found in name or email
+                        // Only hide if it doesn't match the search term
                         if (name.includes(searchTerm) || email.includes(searchTerm)) {
                             card.style.display = ''; // Show card
                         } else {
@@ -690,6 +799,44 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                         }
                     });
                 });
+
+                window.tryDeleteSelectedFeedbacks = async function() {
+                    if (selectedFeedbackIds.size === 0) {
+                        showAdminModal('alert', 'No Selection', 'Kripya delete karne ke liye koi feedback select karein.');
+                        return;
+                    }
+
+                    const idsToDelete = Array.from(selectedFeedbackIds);
+                    showAdminModal('confirm', 'Confirm Deletion', \`Kya aap ${idsToDelete.length} selected feedbacks delete karna chahte hain? Yeh action undo nahi ho sakta.\`, async confirmed => {
+                        if (confirmed) {
+                            try {
+                                const res = await fetch('/api/admin/feedbacks', { // New API endpoint
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': AUTH_HEADER
+                                    },
+                                    body: JSON.stringify({ ids: idsToDelete })
+                                });
+
+                                if (res.ok) {
+                                    showAdminModal('alert', 'Deleted!', \`${idsToDelete.length} feedbacks successfully deleted.\`);
+                                    setTimeout(() => location.reload(), 1000); // Reload page to reflect changes
+                                } else {
+                                    const err = await res.json();
+                                    console.error("Multiple delete failed response:", err);
+                                    showAdminModal('alert', 'Error!', \`Failed to delete feedbacks: \${err.message || res.statusText}\`);
+                                }
+                            } catch (e) {
+                                console.error("Multiple delete fetch error:", e);
+                                showAdminModal('alert', 'Fetch Error!', \`Error during multiple delete: \${e.message}\`);
+                            }
+                        }
+                    });
+                };
+
+                // Initial state check for the delete button
+                updateDeleteButtonState();
             });
         </script></body></html>`;
         res.send(html);
@@ -711,7 +858,7 @@ app.put('/api/admin/user/:userId/change-avatar', authenticateAdmin, async (req, 
     const userId = req.params.userId; console.log(`ADMIN: Received PUT request to change avatar for user ID: ${userId}`);
     try { const userToUpdate = await User.findById(userId); if (!userToUpdate) { console.log(`ADMIN: User ID ${userId} not found for avatar change.`); return res.status(404).json({ message: 'User ID mila nahi.' });}
     if (userToUpdate.loginMethod === 'google') { console.log(`ADMIN: Attempt to change avatar for Google user ID: ${userId} denied.`); return res.status(400).json({ message: 'Google user ka avatar yahaan se change nahi kar sakte.' });}
-    const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.' });}
+    const userName = userToUpdate.name; if (!userName) { console.log(`ADMIN: User name missing for user ID: ${userId} for avatar generation.`); return res.status(400).json({ message: 'User ka naam nahi hai avatar generate karne ke liye.'手間が.` });}
     const newAvatarUrl = getDiceBearAvatarUrl(userName, Date.now().toString()); userToUpdate.avatarUrl = newAvatarUrl; await userToUpdate.save(); console.log(`ADMIN: Avatar changed for user ID: ${userId} to ${newAvatarUrl}`);
     await Feedback.updateMany({ userId: userToUpdate._id }, { $set: { avatarUrl: newAvatarUrl } }); console.log(`ADMIN: Updated avatar in feedbacks for user ID: ${userId}`);
     res.status(200).json({ message: 'Avatar सफलतापूर्वक change ho gaya!', newAvatarUrl });
