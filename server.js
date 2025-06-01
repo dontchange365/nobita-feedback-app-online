@@ -978,12 +978,19 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                         ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
                                         ${fb.replies.map(reply => `
                                             <div class="single-reply">
-                                                <img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm">
-                                                <div class="reply-content-wrapper">
-                                                    <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
-                                                    <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
-                                                </div>
-                                            </div>
+    <img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm">
+    <div class="reply-content-wrapper">
+        <span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}
+        <span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span>
+    </div>
+</div>
+<div class="single-reply" style="margin-top: 10px; border-top: 1px dashed #4A6070; padding-top: 10px;">
+    <img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName)}" alt="${userDisplayName.charAt(0) || 'U'}" class="admin-reply-avatar-sm">
+    <div class="reply-content-wrapper">
+        <span class="reply-admin-name">${userDisplayName}:</span> (Original Feedback)
+        <span class="reply-timestamp">(${new Date(fb.timestamp).toLocaleString()})</span>
+    </div>
+</div>
                                         `).join('')}
                                     </div>
                                 </div>
