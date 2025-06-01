@@ -637,14 +637,14 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                             <div class="feedback-date">${fb.isEdited ? 'Last Edited' : 'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited && fb.originalContent ? `<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>` : ''}</div>
                             <div class="action-buttons">
                                 <button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DELETE</button>
-                                ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('${fb.userId._id}', '${userDisplayName}')">AVATAR</button>` : ''}
+                                ${fb.userId && fb.userId.loginMethod === 'email' ? `<button class="change-avatar-btn" onclick="tryChangeUserAvatar('<span class="math-inline">\{fb\.userId\.\_id\}', '</span>{userDisplayName}')">AVATAR</button>` : ''}
                             </div>
                             <div class="reply-section">
                                 <textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea>
                                 <button class="reply-btn" onclick="tryPostReply('${fb._id}', 'reply-text-${fb._id}')">REPLY</button>
                                 <div class="replies-display">
                                     ${fb.replies && fb.replies.length > 0 ? '<h4>Replies:</h4>' : ''}
-                                    ${fb.replies.map(reply => `<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="Admin" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
+                                    ${fb.replies.map(reply => `<div class="single-reply"><img src="<span class="math-inline">\{nobitaAvatarUrl\}" alt\="Admin" class\="admin\-reply\-avatar\-sm"\><div class\="reply\-content\-wrapper"\><span class\="reply\-admin\-name"\></span>{reply.adminName}:</span> <span class="math-inline">\{reply\.text\}<span class\="reply\-timestamp"\>\(</span>{new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}
                                 </div>
                             </div>
                             ${fb.isEdited && fb.originalContent ? `<button class="flip-btn" onclick="flipCard('${fb._id}')">VIEW ORIGINAL</button>` : ''}
@@ -750,11 +750,11 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                                 } else {
                                     const err = await res.json();
                                     console.error("Bulk delete failed response:", err);
-                                    showAdminModal('alert', 'Error!', `Failed to delete selected: ${err.message || res.statusText}`);
+                                    showAdminModal('alert', 'Error!', \`Failed to delete selected: ${err.message || res.statusText}\`);
                                 }
                             } catch (e) {
                                 console.error("Bulk delete fetch error:", e);
-                                showAdminModal('alert', 'Fetch Error!', `Error during bulk delete: ${e.message}`);
+                                showAdminModal('alert', 'Fetch Error!', \`Error during bulk delete: ${e.message}\`);
                             }
                         }
                     });
