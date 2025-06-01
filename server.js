@@ -818,7 +818,12 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
         const authHeaderValue = `Basic ${encodedCredentials}`;
         console.log("Generated AUTH_HEADER for admin panel JS:", authHeaderValue ? "Present" : "MISSING/EMPTY");
         
-        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Static URL for admin avatar
+        // Using a static URL for admin avatar - consider self-hosting this too for consistency
+        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; 
+
+        // Define paths for your self-hosted tick images
+        const blueTickPath = '/images/blue-tick.png'; // Make sure this path matches where you save it
+        const redTickPath = '/images/red-tick.png';   // Make sure this path matches where you save it
 
         let html = `<!DOCTYPE html>
             <html lang="en">
@@ -932,22 +937,22 @@ app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
                    userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : '';
 
                    if (fb.userId.isVerified) {
-                       // Using the provided blue tick URL for verified users
-                       userTag += `<img src="https://ibb.co/N6TrbkHD" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       // Using the provided blue tick URL for verified users, now self-hosted
+                       userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    } else if (fb.userId.loginMethod === 'email') { // Only show unverified for email users
-                       // Using the provided red tick URL for unverified users
-                       userTag += `<img src="https://ibb.co/HpLnr6jQ" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                       // Using the provided red tick URL for unverified users, now self-hosted
+                       userTag += `<img src="${redTickPath}" alt="Unverified" title="Email Not Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                    }
                 } else if (fb.googleIdSubmitter) {
                     // Fallback for older feedbacks submitted directly with googleId before userId population
                     userTag = `<span class="google-user-tag" title="Google User (Legacy)">G</span>`;
-                    // Assume legacy Google users were verified, using blue tick
-                    userTag += `<img src="https://ibb.co/N6TrbkHD" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    // Assume legacy Google users were verified, using blue tick, now self-hosted
+                    userTag += `<img src="${blueTickPath}" alt="Verified" title="Email Verified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 } else {
                     // Fallback for feedbacks without linked user or googleIdSubmitter
                     userTag = `<span class="email-user-tag" title="Legacy User">U</span>`;
-                    // For legacy users without verification status, default to red tick as unverified
-                    userTag += `<img src="https://ibb.co/HpLnr6jQ" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
+                    // For legacy users without verification status, default to red tick as unverified, now self-hosted
+                    userTag += `<img src="${redTickPath}" alt="Unverified" title="Status Unknown / Unverified" style="width: 18px; height: 18px; vertical-align: middle; margin-left: 5px;">`;
                 }
 
                 html += `
