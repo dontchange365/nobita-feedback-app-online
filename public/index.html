@@ -2834,5 +2834,80 @@
         checkLoginStatus();
     });
 </script>
+<!-- NOBIBOT WIDGET START -->
+<style>
+  #nobiBotWidgetBtn {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 999999;
+    background: #612bcf;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 60px; height: 60px;
+    box-shadow: 0 2px 16px #612bcf88;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    transition: box-shadow .2s;
+  }
+  #nobiBotWidgetBtn:hover { box-shadow: 0 6px 24px #612bcfaa; }
+  #nobiBotWidgetFrame {
+    display: none;
+    position: fixed;
+    bottom: 0; right: 0;
+    width: 100vw; height: 100vh;
+    border: none; z-index: 9999999;
+    background: #fff;
+    box-shadow: 0 0 48px #612bcfaa;
+    transition: all .35s cubic-bezier(.6,.2,.1,1);
+  }
+  #nobiBotWidgetClose {
+    position: fixed;
+    top: 22px; right: 32px;
+    z-index: 10000001;
+    background: #612bcf;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+    transition: background .18s;
+  }
+  #nobiBotWidgetClose:hover { background: #45208e; }
+  @media (max-width: 500px) {
+    #nobiBotWidgetFrame { width: 100vw; height: 100vh; }
+    #nobiBotWidgetClose { right: 15px; top: 14px; }
+  }
+</style>
+<button id="nobiBotWidgetBtn" title="Open NOBIBOT">🤖</button>
+<button id="nobiBotWidgetClose">Minimize</button>
+<iframe id="nobiBotWidgetFrame" allow="camera; microphone" src=""></iframe>
+<script>
+  // TRY TO GET USER NAME FROM YOUR SITE, VARNA "Bakra"
+  let nobiUserName = (window.loggedUser && window.loggedUser.name) || "Bakra";
+  const botURL = `https://nobibot.onrender.com/?username=${encodeURIComponent(nobiUserName)}`;
+
+  const botBtn = document.getElementById("nobiBotWidgetBtn");
+  const botFrame = document.getElementById("nobiBotWidgetFrame");
+  const botClose = document.getElementById("nobiBotWidgetClose");
+
+  botBtn.onclick = function () {
+    botFrame.style.display = "block";
+    botFrame.src = botURL;
+    botClose.style.display = "block";
+    botBtn.style.display = "none";
+  };
+  botClose.onclick = function () {
+    botFrame.style.display = "none";
+    botFrame.src = "";
+    botClose.style.display = "none";
+    botBtn.style.display = "flex";
+  };
+</script>
+<!-- NOBIBOT WIDGET END -->
 </body>
 </html>
