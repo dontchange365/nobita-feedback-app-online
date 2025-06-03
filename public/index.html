@@ -45,7 +45,8 @@
 
     body {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+        background: linear-gradient(120deg, #1a1a2e 0%, #6a0dad 100%); /* Animated Gradient Background */
+        animation: bgmove 14s linear infinite alternate; /* Animated Gradient Background */
         color: var(--text-color-light);
         display: flex;
         flex-direction: column;
@@ -56,6 +57,11 @@
         padding: 0 15px 25px 15px; /* Add bottom padding */
         box-sizing: border-box;
         overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+    /* Animated Gradient Background */
+    @keyframes bgmove {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
     }
 
  .profile-password-btns-row .popup-button.primary {
@@ -325,10 +331,22 @@
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
         }
-
-        .auth-modal-form button:hover {
-            transform: translateY(-1px);
+        /* Buttons: Glass & Animated */
+        .popup-button, button, .hero-btn {
+            background: linear-gradient(45deg, #FFD700aa, #6a0dadcc);
+            color: #222;
+            border: none; border-radius: 19px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-weight: 600;
+            transition: all 0.22s;
         }
+        .popup-button:hover, button:hover, .hero-btn:hover {
+            background: linear-gradient(90deg, #6a0dad, #FFD700);
+            color: #fff;
+            transform: scale(1.04);
+            box-shadow: 0 4px 16px rgba(255,215,0,0.33);
+        }
+
 
         .auth-modal-form button:disabled {
             opacity: 0.7;
@@ -336,13 +354,13 @@
         }
 
         .auth-modal-form button[type=submit] {
-            background: var(--accent-color);
+            background: var(--accent-color); /* Override for standard submit buttons */
             color: #fff;
         }
-
         .auth-modal-form button[type=submit]:hover {
-            background: #3578e0;
+            background: #3578e0; /* Override for standard submit buttons */
         }
+
 
         .auth-modal-form .form-links {
             display: flex;
@@ -777,7 +795,7 @@
         /* --- Page Content Layout & Animations --- */
         .page-content-wrapper {
             width: 100%;
-            padding-top: 80px;
+            padding-top: 80px; /* Adjust if navbar height changes */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -803,8 +821,8 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            border: 3px solid var(--secondary-color);
-            box-shadow: 0 0 12px rgba(255,215,0,0.5);
+            border: 2px solid #FFD700; /* Avatar Glow */
+            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2); /* Avatar Glow */
             object-fit: cover;
         }
 
@@ -986,11 +1004,12 @@
 
         /* --- Feedback List Styles --- */
         #feedback-list-container {
-            background: rgba(255, 255, 255, 0.07);
+            /* background: rgba(255, 255, 255, 0.07); */ /* Original */
+            background: rgba(255,255,255,0.08); /* Feedback Cards: Grid + Card Style */
             backdrop-filter: blur(7px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
-            padding: 22px;
+            padding: 22px; /* Original */
             text-align: left;
             box-shadow: var(--shadow-deep);
             width: 90%;
@@ -998,6 +1017,13 @@
             opacity: 0;
             transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+
+            /* Feedback Cards: Grid + Card Style */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 26px;
+            border-radius: 22px;
+            padding: 30px 18px;
         }
 
         #feedback-list-container.animate-in {
@@ -1013,6 +1039,7 @@
             font-size: 1.8em;
             font-weight: 500;
             text-shadow: 0 0 9px rgba(255,215,0,0.25);
+            grid-column: 1 / -1; /* Make H2 span all columns in the grid */
         }
 
         /* Average Rating Display - Refined Professional Style */
@@ -1036,6 +1063,7 @@
             position: relative;
             z-index: 2;
             backdrop-filter: blur(8px);
+            grid-column: 1 / -1; /* Make average rating span all columns */
         }
 
         .average-rating-container.animate-in {
@@ -1083,23 +1111,33 @@
 
         /* Individual Feedback Item */
         .feedback-item {
-            background: rgba(255, 255, 255, 0.045);
+            /* background: rgba(255, 255, 255, 0.045); */ /* Original */
+            background: #23235aee; /* Feedback Cards: Grid + Card Style */
             border: 1px solid rgba(255, 255, 255, 0.09);
-            border-radius: 13px;
-            margin-bottom: 16px;
-            padding: 16px;
+            border-radius: 13px; /* Original */
+            margin-bottom: 16px; /* Original */
+            padding: 16px; /* Original */
             display: flex;
             align-items: flex-start;
             gap: 16px;
-            box-shadow: 0 3.5px 9px rgba(0,0,0,0.18);
+            box-shadow: 0 3.5px 9px rgba(0,0,0,0.18); /* Original */
             transition: transform 0.25s ease, box-shadow 0.25s ease;
             position: relative;
             overflow: hidden;
+
+            /* Feedback Cards: Grid + Card Style */
+            border-radius: 15px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+            padding: 18px 20px;
+            transition: transform 0.18s, box-shadow 0.18s;
+            flex-direction: column; /* Changed to column for better card stacking */
         }
 
         .feedback-item:hover {
-            transform: translateY(-4px) scale(1.005);
-            box-shadow: 0 7px 18px rgba(0,0,0,0.28);
+            /* transform: translateY(-4px) scale(1.005); */ /* Original */
+            transform: translateY(-5px) scale(1.01); /* Feedback Cards: Grid + Card Style */
+            /* box-shadow: 0 7px 18px rgba(0,0,0,0.28); */ /* Original */
+            box-shadow: 0 8px 22px rgba(255,215,0,0.2), 0 0 0 3px rgba(255,215,0,0.15); /* Feedback Cards: Grid + Card Style */
         }
 
         .avatar-img {
@@ -1110,6 +1148,9 @@
             border: 2.5px solid var(--accent-color);
             box-shadow: 0 0 9px rgba(59,130,246,0.45);
             object-fit: cover;
+            /* Avatar Glow */
+            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid #FFD700;
         }
 
         .feedback-details {
@@ -1346,6 +1387,106 @@
             cursor: not-allowed;
         }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px; background: #1a1a2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(120deg, #6a0dad 20%, #FFD700 90%);
+            border-radius: 8px;
+        }
+
+        /* Navbar / Topbar */
+        .navbar {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(44,62,80,0.80);
+            backdrop-filter: blur(7px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 26px;
+            min-height: 62px;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .nav-logo {
+            width: 42px; height: 42px; border-radius: 50%;
+            margin-right: 13px;
+            /* Avatar Glow */
+            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid #FFD700;
+        }
+        .nav-title {
+            color: #FFD700; font-weight: 700; font-size: 1.5em;
+            letter-spacing: 0.5px;
+        }
+        .nav-right {
+            /* Placeholder for login/profile, keep empty or position absolute if needed */
+            /* Corner Triggers will be repositioned by JS to fit here */
+            position: relative; /* Make it a positioning context for absolute triggers */
+            width: 60px; /* Give it some width for login/profile trigger */
+            height: 48px;
+        }
+        /* Reposition existing corner triggers to fit inside nav-right */
+        #login-icon-trigger, #user-profile-trigger {
+            position: absolute;
+            top: 50%;
+            right: 0; /* Align to the right of nav-right */
+            transform: translateY(-50%);
+            /* Remove existing top/right properties as they are now relative to nav-right */
+        }
+        #login-icon-trigger {
+            width: 48px; height: 48px; /* Maintain size */
+        }
+        #user-profile-trigger {
+            padding: 6px 12px;
+            height: auto; /* Allow content to dictate height */
+        }
+
+
+        /* Hero Section */
+        .hero-section {
+            width: 100%;
+            background: linear-gradient(100deg, #6a0dad 0%, #FFD700 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 330px;
+            border-radius: 0 0 28px 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 6px 24px rgba(106, 13, 173, 0.10);
+            padding-top: 62px; /* Offset for sticky navbar */
+            box-sizing: border-box; /* Include padding in total height */
+        }
+        .hero-content {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 13px; padding: 38px 16px 28px 16px;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.18);
+        }
+        .hero-logo {
+            width: 88px; height: 88px; border-radius: 50%;
+            border: 3px solid #fff; box-shadow: 0 2px 20px rgba(255,215,0,0.47);
+            margin-bottom: 4px;
+            /* Avatar Glow */
+            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid #FFD700;
+        }
+        .hero-content h1 {
+            font-size: 2.6em; font-weight: 700; margin: 0;
+            letter-spacing: 1px;
+        }
+        .hero-content p {
+            font-size: 1.12em; font-weight: 400; margin: 0;
+        }
+        .hero-btn {
+            margin-top: 18px;
+            padding: 12px 38px; border-radius: 28px;
+            background: linear-gradient(90deg, #FFD700, #6a0dad);
+            color: #222; font-weight: 600; font-size: 1.08em;
+            text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+            transition: all 0.25s;
+        }
+        .hero-btn:hover {
+            background: linear-gradient(90deg, #6a0dad, #FFD700);
+            color: #fff; transform: scale(1.06);
+        }
 
         /* --- Responsive Design --- */
         @media (max-width: 768px) {
@@ -1363,23 +1504,23 @@
             }
 
             /* Responsive adjustments for corner triggers */
-            #login-icon-trigger {
+            /* #login-icon-trigger {
                 width: 44px;
                 height: 44px;
                 top: 15px;
                 right: 15px;
-            }
+            } */ /* Handled by nav-right now */
             #login-icon-trigger .fas {
                 font-size: 2.1em;
             }
 
-            #user-profile-trigger {
+            /* #user-profile-trigger {
                 flex-direction: column;
                 gap: 4px;
                 padding: 8px 10px;
                 top: 15px;
                 right: 15px;
-            }
+            } */ /* Handled by nav-right now */
             #user-profile-name {
                 max-width: 80px;
             }
@@ -1397,6 +1538,30 @@
             .user-profile-menu{
                 width:220px;
                 top:65px;
+            }
+            .navbar {
+                padding: 8px 15px;
+                min-height: 55px;
+            }
+            .nav-logo {
+                width: 38px;
+                height: 38px;
+            }
+            .nav-title {
+                font-size: 1.3em;
+            }
+            .hero-section {
+                padding-top: 55px; /* Adjust offset for smaller navbar */
+            }
+            .hero-content h1 {
+                font-size: 2em;
+            }
+            .hero-logo {
+                width: 75px;
+                height: 75px;
+            }
+            .page-content-wrapper {
+                padding-top: 20px; /* Reduce top padding below hero section */
             }
         }
 
@@ -1431,10 +1596,84 @@
                 font-size: 0.85em;
                 padding: 7px 12px;
             }
+            /* Responsive Tweaks */
+            .hero-content h1 { font-size: 1.5em; }
+            .main-container, #feedback-list-container { padding: 10px; }
+            #feedback-list-container { gap: 10px; }
+            .hero-section {
+                min-height: 250px;
+                margin-bottom: 25px;
+            }
+            .hero-logo {
+                width: 65px;
+                height: 65px;
+            }
+            .hero-content p {
+                font-size: 1em;
+            }
+            .hero-btn {
+                padding: 10px 30px;
+                font-size: 1em;
+            }
+            .average-rating-container {
+                padding: 20px;
+            }
+            .average-number {
+                font-size: 3.5em;
+            }
+            .average-stars {
+                font-size: 2em;
+            }
+            .feedback-item {
+                padding: 15px;
+                gap: 10px;
+            }
+            .avatar-img {
+                width: 45px;
+                height: 45px;
+            }
+            .feedback-details strong {
+                font-size: 1em;
+            }
+            .feedback-stars {
+                font-size: 1.3em;
+            }
+            .feedback-details p {
+                font-size: 0.9em;
+            }
+            .admin-reply {
+                font-size: 0.8em;
+                padding: 7px 9px;
+            }
+            .edit-feedback-btn {
+                font-size: 1.1em;
+            }
+            .email-verification-prompt {
+                padding: 12px;
+                font-size: 0.9em;
+            }
         }
 </style>
  </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita">
+            <span class="nav-title">Nobita Feedback</span>
+        </div>
+        <div class="nav-right">
+            </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo">
+            <h1>Welcome to Nobita's Feedback Portal</h1>
+            <p>Your voice matters. Share your feedback & help us improve!</p>
+            <a href="#feedback-form-container" class="hero-btn">Give Feedback</a>
+        </div>
+    </section>
+
     <div id="login-icon-trigger" class="corner-trigger-base" title="Login / Sign Up">
         <i class="fas fa-user-circle"></i>
     </div>
@@ -1443,6 +1682,7 @@
         <span id="user-profile-name" class="username-display">User Name</span>
         <div class="profile-tooltip">View Profile / Logout</div>
     </div>
+
 
     <div id="loginModal" class="auth-modal-overlay">
       <div class="auth-modal-content">
