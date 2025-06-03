@@ -1295,6 +1295,37 @@
             box-shadow: 0 7px 18px rgba(59,130,246,0.55);
         }
 
+        /* Style for the new Enhance Feedback button */
+        #enhance-feedback-btn {
+            background: linear-gradient(45deg, #8B5CF6, #EC4899); /* A nice vibrant gradient */
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px; /* Spacing from textarea */
+            margin-bottom: 10px; /* Spacing to rating */
+        }
+
+        #enhance-feedback-btn:hover {
+            background: linear-gradient(45deg, #EC4899, #8B5CF6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
+        }
+
+        #enhance-feedback-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #6c757d;
+            box-shadow: none;
+        }
+
         /* --- Feedback List Styles --- */
         #feedback-list-container {
             background: rgba(255,255,255,0.08);
@@ -2136,7 +2167,6 @@
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" id="name" placeholder=" " required disabled>
-                    <!-- FIX: Removed redundant username span from label -->
                     <label for="name">Your Name:</label>
                 </div>
                 <div class="input-wrapper">
@@ -2144,6 +2174,8 @@
                     <textarea id="feedback" placeholder=" " required></textarea>
                     <label for="feedback">Your Feedback:</label>
                 </div>
+                <!-- New button for LLM-powered feedback enhancement -->
+                <button type="button" id="enhance-feedback-btn">✨ Enhance Feedback</button>
                 <div class="input-group">
                     <label>Rate Your Experience:</label>
                     <div class="stars" id="star-rating">
@@ -2246,7 +2278,6 @@
         const feedbackListContainer = document.getElementById('feedback-list-container');
         const averageRatingDisplayEl = document.getElementById('average-rating-display');
         const nameInputInFeedbackForm = document.getElementById('name');
-        const feedbackFormUsernameSpan = document.getElementById('feedback-form-username');
         const feedbackTextarea = document.getElementById('feedback');
         const ratingInput = document.getElementById('rating');
         const submitButton = document.getElementById('submit-feedback');
@@ -2254,6 +2285,7 @@
         const mainTitle = document.getElementById('main-title');
         const feedbackVerificationPrompt = document.getElementById('feedback-verification-prompt');
         const sendVerificationEmailBtnForm = document.getElementById('send-verification-email-btn-form');
+        const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn'); /* New LLM button */
 
 
         let currentUser = null;
@@ -2273,6 +2305,9 @@
         const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
         const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`;
         const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`;
+        // New LLM endpoint (simulated, would be handled by backend in a real app)
+        const API_ENHANCE_FEEDBACK_URL = `${BASE_API_URL}/api/llm/enhance-feedback`;
+
 
         // **********************************************
         // CLOUDINARY DIRECT UPLOAD CONFIGURATION
@@ -2310,6 +2345,7 @@
             console.log("[showStylishPopup] Called. Type:", type, "Title:", title);
             if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
                 console.error("Stylish popup core HTML elements not found!");
+                // Fallback to native alert if elements are missing
                 alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`);
                 return;
             }
@@ -2751,8 +2787,8 @@
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                // FIX: Removed username span from label, input now shows name
-                // if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
+                // The label for 'name' no longer includes the username span, so it will just be 'Your Name:'
+                // The input field itself will now display the user's name.
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
 
                 // Control visibility of verification prompts
@@ -2832,7 +2868,8 @@
                 nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
                 nameInputInFeedbackForm.disabled = false;
             }
-            // FIX: Removed username span from label, input now shows name
+            // The label for 'name' no longer includes the username span, so it will just be 'Your Name:'
+            // The input field itself will now display the user's name.
             // if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
 
             // Disable all actions for logged out users or guests
@@ -2936,7 +2973,10 @@
                     currentUser.name = data.user.name;
                     currentUser = { ...currentUser, ...data.user };
 
-                    if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                    // FIX: Set profile display avatar correctly
+                    if (profileDisplayAvatar) {
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                    }
 
                     updateUIAfterLogin();
                     showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated successfully!');
@@ -2978,7 +3018,8 @@
                 } else {
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
                     if (currentUser) {
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                        // FIX: Set profile display avatar correctly on cancel/no file
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                         profileEditForm.dispatchEvent(new Event('input'));
                     }
                 }
@@ -3164,6 +3205,73 @@
             });
         }
 
+        /* New LLM feature: Enhance Feedback */
+        if (enhanceFeedbackBtn) {
+            enhanceFeedbackBtn.addEventListener('click', async () => {
+                const originalFeedback = feedbackTextarea.value.trim();
+                if (!originalFeedback) {
+                    showStylishPopup('warning', 'Empty Feedback', 'Please write some feedback to enhance!');
+                    return;
+                }
+
+                enhanceFeedbackBtn.disabled = true;
+                const originalBtnText = enhanceFeedbackBtn.innerHTML;
+                enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...';
+
+                try {
+                    // Simulate LLM API call
+                    // In a real application, this would be a backend endpoint that calls the Gemini API
+                    // Example:
+                    // const response = await fetch(API_ENHANCE_FEEDBACK_URL, {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({ feedback: originalFeedback })
+                    // });
+                    // const data = await response.json();
+                    // const enhancedText = data.enhancedFeedback;
+
+                    // Mock LLM response for frontend demonstration
+                    const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while retaining the original sentiment. Keep it concise.
+Original feedback: "${originalFeedback}"`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Canvas will provide this in runtime
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    let enhancedText = originalFeedback; // Fallback to original
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        enhancedText = result.candidates[0].content.parts[0].text;
+                    } else {
+                        console.warn("Gemini API response did not contain expected text content.");
+                        showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance feedback. Please try again.');
+                    }
+
+                    feedbackTextarea.value = enhancedText;
+                    showStylishPopup('success', 'Feedback Enhanced!', 'Your feedback has been refined by AI.');
+
+                } catch (error) {
+                    console.error("Error enhancing feedback:", error);
+                    showStylishPopup('error', 'Enhancement Failed', 'There was an error enhancing your feedback. Please try again later.');
+                } finally {
+                    enhanceFeedbackBtn.disabled = false;
+                    enhanceFeedbackBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+
+
         if(submitButton) submitButton.addEventListener('click', async () => {
             if (!currentUser) {
                 showStylishPopup('warning', 'Login Required', 'Please login via the icon to submit feedback.');
@@ -3212,13 +3320,13 @@
         function resetFeedbackForm() {
             if (currentUser) {
                 nameInputInFeedbackForm.value = currentUser.name;
-                // FIX: Removed username span from label, input now shows name
-                // feedbackFormUsernameSpan.textContent = currentUser.name;
+                // The label for 'name' no longer includes the username span, so it will just be 'Your Name:'
+                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = true;
             } else {
                 nameInputInFeedbackForm.value = '';
-                // FIX: Removed username span from label, input now shows name
-                // feedbackFormUsernameSpan.textContent = 'Guest';
+                // The label for 'name' no longer includes the username span, so it will just be 'Your Name:'
+                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = false;
                 nameInputInFeedbackForm.placeholder = 'Your name here...';
             }
@@ -3408,8 +3516,8 @@
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 nameInputInFeedbackForm.value = fbData.name;
-                // FIX: Removed username span from label, input now shows name
-                // feedbackFormUsernameSpan.textContent = fbData.name;
+                // The label for 'name' no longer includes the username span, so it will just be 'Your Name:'
+                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = true;
 
                 feedbackTextarea.value = fbData.feedback;
