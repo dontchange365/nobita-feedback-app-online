@@ -152,12 +152,25 @@
             width: 60px;
             height: 48px;
         }
+        /* FIX: Ensure login/profile icon is always fixed top-right of viewport */
         #login-icon-trigger, #user-profile-trigger {
-            position: absolute;
-            top: 50%;
-            right: 0;
-            transform: translateY(-50%);
+            position: fixed; /* Changed to fixed */
+            top: 12px;
+            right: 12px;
+            transform: translateY(0); /* Reset transform from media query */
+            /* Remove existing top/right properties from media query if they exist */
         }
+        /* Remove specific media query overrides for login/profile triggers */
+        @media (max-width: 768px) {
+            #login-icon-trigger, #user-profile-trigger {
+                /* Ensure these are not overridden by absolute positioning within nav-right */
+                /* The global fixed positioning should apply */
+                top: 15px; /* Adjust slightly for mobile */
+                right: 15px; /* Adjust slightly for mobile */
+            }
+        }
+
+
         #login-icon-trigger {
             width: 48px; height: 48px;
             border-radius: 50%;
@@ -215,9 +228,10 @@
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            position: fixed;
-            top: 12px;
-            right: 12px;
+            /* These are now handled by the global fixed positioning */
+            /* position: fixed; */
+            /* top: 12px; */
+            /* right: 12px; */
             z-index: 1000;
             transition: all 0.3s ease-in-out;
         }
@@ -352,6 +366,7 @@
             font-size: 2.6em; font-weight: 700; margin: 0;
             letter-spacing: 1px;
             position: relative;
+            text-align: center; /* FIX: Center align hero heading */
         }
         .hero-content h1 .emoji {
             font-size: 0.8em;
@@ -359,12 +374,13 @@
             animation: bounce 1s infinite alternate;
             display: inline-block;
         }
+        .hero-content p {
+            font-size: 1.12em; font-weight: 400; margin: 0;
+            text-align: center; /* FIX: Center align hero tagline */
+        }
         @keyframes bounce {
             0% { transform: translateY(0); }
             100% { transform: translateY(-5px); }
-        }
-        .hero-content p {
-            font-size: 1.12em; font-weight: 400; margin: 0;
         }
         .hero-btn {
             margin-top: 18px;
@@ -384,6 +400,7 @@
             color: rgba(255,255,255,0.7);
             margin-top: 10px;
             animation: fadeIn 1.5s ease-out;
+            text-align: center; /* FIX: Center align micro text */
         }
 
         /* --- Auth Modals (Login/Signup/Profile) --- */
@@ -1234,6 +1251,8 @@
             color: var(--secondary-color);
             transform: scale(1.12) rotateY(8deg);
             text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.45);
+            /* FIX: Add more visible light effects for selected stars */
+            filter: brightness(1.2) drop-shadow(0 0 10px var(--secondary-color));
         }
         /* Star hover color wave effect */
         .star:hover ~ .star {
@@ -2098,7 +2117,8 @@
                 <button id="send-verification-email-btn">Verify Email Send Karein</button>
             </div>
             <div class="profile-avatar-section">
-                <img id="profile-display-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User Avatar">
+                <!-- FIX: Use a placeholder that ensures visibility and falls back to initial -->
+                <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar">
                 <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
                 <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
 
@@ -2152,7 +2172,7 @@
 
     <div class="page-content-wrapper">
         <div class="owner-info">
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita's Avatar" class="owner-avatar">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="owner-avatar" alt="Nobita's Avatar">
             <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
         </div>
 
@@ -2167,6 +2187,7 @@
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" id="name" placeholder=" " required disabled>
+                    <!-- FIX: Removed redundant username span from label -->
                     <label for="name">Your Name:</label>
                 </div>
                 <div class="input-wrapper">
@@ -2779,11 +2800,11 @@
                     userProfileTrigger.style.opacity = '1';
                     userProfileTrigger.style.pointerEvents = 'auto';
                     
-                    if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/40/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                    if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
                 }
 
-                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/70/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://via.placeholder.com/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
@@ -2975,7 +2996,7 @@
 
                     // FIX: Set profile display avatar correctly
                     if (profileDisplayAvatar) {
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                     }
 
                     updateUIAfterLogin();
@@ -3019,7 +3040,7 @@
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
                     if (currentUser) {
                         // FIX: Set profile display avatar correctly on cancel/no file
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
                         profileEditForm.dispatchEvent(new Event('input'));
                     }
                 }
@@ -3258,6 +3279,7 @@ Original feedback: "${originalFeedback}"`;
                         showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance feedback. Please try again.');
                     }
 
+                    // FIX: Replace the feedback in the textarea with the enhanced text
                     feedbackTextarea.value = enhancedText;
                     showStylishPopup('success', 'Feedback Enhanced!', 'Your feedback has been refined by AI.');
 
@@ -3430,10 +3452,10 @@ Original feedback: "${originalFeedback}"`;
             const avatarImg = document.createElement('img');
             avatarImg.className = 'avatar-img';
             const defaultAvatarChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
-            avatarImg.src = fbData.avatarUrl || `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
+            avatarImg.src = fbData.avatarUrl || `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             avatarImg.alt = fbData.name || 'User Avatar';
             avatarImg.onerror = function() {
-                this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
+                this.src = `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             };
             // Add verified-user class for animated border if verified
             if (fbData.userId && typeof fbData.userId === 'object' && fbData.userId.isVerified) {
