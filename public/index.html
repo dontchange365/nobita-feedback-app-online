@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
+<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,121 +10,183 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-    :root {
-        --primary-color: #6a0dad; /* Dark Purple */
-        --secondary-color: #FFD700; /* Gold */
-        --accent-color: #3B82F6; /* Bright Blue */
-        --text-color-light: #f4f4f9; /* Off-white */
-        --text-color-dark: #2c3e50; /* Dark Slate Blue */
-        --bg-gradient-start: #1a1a2e; /* Darker Purple Blue */
-        --bg-gradient-end: #16213e; /* Even Darker Purple Blue */
-        --card-bg-popup: #272c3a; /* Darker grey for popup */
-        --card-bg: rgba(44, 62, 80, 0.85); /* Darker blue, semi-transparent */
-        --card-border: rgba(255, 255, 255, 0.15);
-        --input-bg: rgba(255, 255, 255, 0.08);
-        --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
-        --success-color: #28a745; /* Green */
-        --error-color: #dc3545; /* Red */
-        --info-color: var(--accent-color); /* Blue */
-        --confirm-color: #fd7e14; /* Orange */
-        --warning-color: #ffc107; /* New: Warning Yellow */
+        :root {
+            --primary-color: #6a0dad; /* Dark Purple */
+            --secondary-color: #FFD700; /* Gold */
+            --accent-color: #3B82F6; /* Bright Blue */
+            --text-color-light: #f4f4f9; /* Off-white */
+            --text-color-dark: #2c3e50; /* Dark Slate Blue */
+            --bg-gradient-start: #1a1a2e; /* Darker Purple Blue */
+            --bg-gradient-end: #16213e; /* Even Darker Purple Blue */
+            --card-bg-popup: #272c3a; /* Darker grey for popup */
+            --card-bg: rgba(44, 62, 80, 0.85); /* Darker blue, semi-transparent */
+            --card-border: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --success-color: #28a745; /* Green */
+            --error-color: #dc3545; /* Red */
+            --info-color: var(--accent-color); /* Blue */
+            --confirm-color: #fd7e14; /* Orange */
+            --warning-color: #ffc107; /* New: Warning Yellow */
 
-        --google-blue: #4285F4;
-        --progress-bg: #4a4a60;
-        --progress-fill-color: #27ae60;
+            --google-blue: #4285F4;
+            --progress-bg: #4a4a60;
+            --progress-fill-color: #27ae60;
 
-        /* New gradient for borders/glows */
-        --border-gradient: linear-gradient(135deg, #8B5CF6, #EC4899);
-        --glow-color-start: rgba(139, 92, 246, 0.6); /* Purple */
-        --glow-color-end: rgba(236, 72, 153, 0.6); /* Pink */
-    }
+            /* New gradient for borders/glows */
+            --border-gradient: linear-gradient(135deg, #8B5CF6, #EC4899);
+            --glow-color-start: rgba(139, 92, 246, 0.6); /* Purple */
+            --glow-color-end: rgba(236, 72, 153, 0.6); /* Pink */
 
-    html {
-        scroll-behavior: smooth;
-    }
-
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(120deg, #1a1a2e 0%, #6a0dad 100%); /* Animated Gradient Background */
-        animation: bgmove 14s linear infinite alternate; /* Animated Gradient Background */
-        color: var(--text-color-light);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start; /* Align content to top */
-        min-height: 100vh;
-        margin: 0;
-        padding: 0 15px 25px 15px; /* Add bottom padding */
-        box-sizing: border-box;
-        overflow-x: hidden; /* Prevent horizontal scroll */
-    }
-    /* Animated Gradient Background */
-    @keyframes bgmove {
-        0% { background-position: 0% 50%; }
-        100% { background-position: 100% 50%; }
-    }
-
- .profile-password-btns-row .popup-button.primary {
-    background: linear-gradient(45deg, var(--accent-color), #2563EB);
-    color: #fff;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 15px;
-    font-size: 0.95em;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.profile-password-btns-row  .popup-button.primary:hover {
-    background: linear-gradient(45deg, #2563EB, var(--accent-color));
-    transform: translateY(-2px);
-}
-        /* --- Corner Triggers (Login Icon / User Avatar) --- */
-        /* Base styles for both login icon and profile badge */
-        .corner-trigger-base {
-            position: fixed;
-            top: 12px;
-            right: 12px;
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.3s ease-in-out;
-            display: flex; /* Use flex for centering content */
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            /* Custom colors for feedback card names based on rating */
+            --rating-5-color: #28a745; /* Green for 5 stars */
+            --rating-4-color: #17a2b8; /* Cyan for 4 stars */
+            --rating-3-color: #ffc107; /* Yellow for 3 stars */
+            --rating-2-color: #fd7e14; /* Orange for 2 stars */
+            --rating-1-color: #dc3545; /* Red for 1 star */
         }
 
-        /* Login Icon (Before Login) */
-        #login-icon-trigger {
-            width: 48px;
+        html {
+            scroll-behavior: smooth;
+            /* Custom Scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: linear-gradient(140deg, var(--secondary-color), var(--primary-color)) var(--bg-gradient-start);
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+            background: var(--bg-gradient-start);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(140deg, var(--secondary-color), var(--primary-color));
+            border-radius: 7px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color); /* Lighter on hover */
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Subtle shadow on hover */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Animated Gradient Background with subtle blobs */
+            background: linear-gradient(120deg, var(--bg-gradient-start) 0%, var(--primary-color) 100%);
+            background-size: 200% 200%;
+            animation: bgmove 14s linear infinite alternate;
+            color: var(--text-color-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0 15px 25px 15px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative; /* For light spot */
+        }
+        /* Animated Gradient Background */
+        @keyframes bgmove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Subtle moving light spot */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 30% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            animation: lightSpotMove 20s infinite alternate ease-in-out;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes lightSpotMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(10%, 10%); }
+        }
+
+        /* Micro-interaction: Button press pop-in/out */
+        button:active, .popup-button:active, .hero-btn:active, .corner-trigger-base:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Navbar / Topbar */
+        .navbar {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(44,62,80,0.80);
+            backdrop-filter: blur(7px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 26px;
+            min-height: 62px;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            width: 100%; /* Ensure it spans full width */
+            box-sizing: border-box;
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+        .nav-logo {
+            width: 42px; height: 42px; border-radius: 50%;
+            margin-right: 13px;
+            /* Avatar Glow */
+            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid var(--secondary-color);
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+        }
+        .nav-logo:hover {
+            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+        }
+        .nav-title {
+            color: var(--secondary-color); font-weight: 700; font-size: 1.5em;
+            letter-spacing: 0.5px;
+        }
+        .nav-right {
+            position: relative;
+            width: 60px;
             height: 48px;
-            border-radius: 50%; /* Perfect circle */
-            background: rgba(255, 255, 255, 0.1); /* Circular glass background */
-            backdrop-filter: blur(8px); /* Blur effect */
-            border: 2px solid transparent; /* For gradient border */
-            background-clip: padding-box; /* Ensures background doesn't cover border */
-            box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); /* Soft glowing shadow */
-            animation: pulse 2s infinite ease-in-out; /* Pulsing animation */
-            display: flex; /* Hidden by default, shown by JS */
+        }
+        #login-icon-trigger, #user-profile-trigger {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        #login-icon-trigger {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start);
+            animation: pulse 2s infinite ease-in-out;
+            display: flex;
         }
 
         #login-icon-trigger::before {
             content: '';
             position: absolute;
-            inset: -2px; /* Extend slightly beyond the element */
-            border-radius: inherit; /* Inherit border-radius from parent */
-            background: var(--border-gradient); /* Gradient border */
-            z-index: -1; /* Behind the main content */
+            inset: -2px;
+            border-radius: inherit;
+            background: var(--border-gradient);
+            z-index: -1;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
-            padding: 2px; /* Border thickness */
+            padding: 2px;
         }
 
         #login-icon-trigger .fas {
-            font-size: 2.2em; /* Feather-style user icon */
-            color: var(--secondary-color); /* Gold color for icon */
+            font-size: 2.2em;
+            color: var(--secondary-color);
             transition: transform 0.2s ease-out;
         }
 
@@ -134,7 +196,7 @@
         }
 
         #login-icon-trigger:active {
-            transform: scale(1.05); /* Tap effect */
+            transform: scale(1.05);
         }
 
         @keyframes pulse {
@@ -143,18 +205,17 @@
             100% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
         }
 
-        /* Mobile Version – Avatar + Name (After Login) */
         #user-profile-trigger {
-            flex-direction: row; /* Default horizontal layout */
+            flex-direction: row;
             align-items: center;
-            gap: 8px; /* Spacing between avatar and name */
-            padding: 6px 12px; /* Padding for the pill container */
-            border-radius: 50px; /* Rounded pill container */
-            background: rgba(255, 255, 255, 0.1); /* Glass effect with blur */
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            position: fixed; /* Fixed position */
+            position: fixed;
             top: 12px;
             right: 12px;
             z-index: 1000;
@@ -162,7 +223,7 @@
         }
 
         #user-profile-trigger:hover {
-            transform: scale(1.05); /* Hover animation */
+            transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
 
@@ -171,23 +232,22 @@
         }
 
         #user-profile-avatar {
-            width: 40px; /* 40x40px circle */
+            width: 40px;
             height: 40px;
-            border-radius: 50%; /* Perfect circle avatar */
+            border-radius: 50%;
             object-fit: cover;
-            border: 2px solid transparent; /* For gradient border */
+            border: 2px solid transparent;
             background-clip: padding-box;
-            box-shadow: 0 0 8px rgba(0,0,0,0.3), 0 0 15px var(--glow-color-start); /* Soft drop-shadow */
+            box-shadow: 0 0 8px rgba(0,0,0,0.3), 0 0 15px var(--glow-color-start);
             transition: all 0.3s ease-in-out;
         }
 
-        /* Gradient border for user-profile-avatar */
         #user-profile-avatar::before {
             content: '';
             position: absolute;
-            inset: -2px; /* Extend slightly beyond the image */
+            inset: -2px;
             border-radius: inherit;
-            background: var(--border-gradient); /* Thin gradient border */
+            background: var(--border-gradient);
             z-index: -1;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -196,30 +256,28 @@
             padding: 2px;
         }
 
-
         #user-profile-name {
-            font-size: clamp(12px, 2.5vw, 15px); /* Responsive font size */
-            font-weight: 600; /* Bold */
-            color: #F0F0F0; /* White-light */
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Subtle text-shadow */
-            white-space: nowrap; /* Prevent name from wrapping */
+            font-size: clamp(12px, 2.5vw, 15px);
+            font-weight: 600;
+            color: #F0F0F0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Add ellipsis if too long */
-            max-width: 100px; /* Limit width to prevent overflow */
+            text-overflow: ellipsis;
+            max-width: 100px;
         }
 
-        /* Custom Tooltip for Profile Badge */
         .profile-tooltip {
             position: absolute;
-            bottom: -35px; /* Position below the badge */
+            bottom: -35px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7); /* Translucent black */
-            backdrop-filter: blur(3px); /* Blur white */
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px);
             color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
-            font-size: 0.8em; /* Small, clean font */
+            font-size: 0.8em;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
@@ -228,30 +286,125 @@
 
         #user-profile-trigger:hover .profile-tooltip {
             opacity: 1;
-            transform: translateX(-50%) translateY(-5px); /* Slight lift on hover */
-            transition-delay: 0.2s; /* Delay for smooth appearance */
+            transform: translateX(-50%) translateY(-5px);
+            transition-delay: 0.2s;
         }
 
+        /* Hero Section */
+        .hero-section {
+            width: 100%;
+            background: linear-gradient(100deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 330px;
+            border-radius: 0 0 28px 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 6px 24px rgba(106, 13, 173, 0.10);
+            padding-top: 62px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden; /* For particles */
+        }
+        /* CSS-only particle/blob background for Hero Section */
+        .hero-section::before, .hero-section::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: blobMove 15s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+        .hero-section::before {
+            width: 150px; height: 150px;
+            top: 10%; left: 15%;
+            animation-delay: 0s;
+        }
+        .hero-section::after {
+            width: 200px; height: 200px;
+            bottom: 10%; right: 20%;
+            animation-delay: 2s;
+        }
+        @keyframes blobMove {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(20px, -20px) scale(1.1); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        .hero-content {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 13px; padding: 38px 16px 28px 16px;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            position: relative; /* Ensure content is above blobs */
+            z-index: 1;
+        }
+        .hero-logo {
+            width: 88px; height: 88px; border-radius: 50%;
+            border: 3px solid #fff; box-shadow: 0 2px 20px rgba(255,215,0,0.47);
+            margin-bottom: 4px;
+            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid var(--secondary-color);
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+        }
+        .hero-logo:hover {
+            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+        }
+        .hero-content h1 {
+            font-size: 2.6em; font-weight: 700; margin: 0;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        .hero-content h1 .emoji {
+            font-size: 0.8em;
+            margin-left: 10px;
+            animation: bounce 1s infinite alternate;
+            display: inline-block;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+        .hero-content p {
+            font-size: 1.12em; font-weight: 400; margin: 0;
+        }
+        .hero-btn {
+            margin-top: 18px;
+            padding: 12px 38px; border-radius: 28px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            color: #222; font-weight: 600; font-size: 1.08em;
+            text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+            transition: all 0.25s;
+        }
+        .hero-btn:hover {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: #fff; transform: scale(1.06);
+            box-shadow: 0 4px 16px rgba(255,215,0,0.33);
+        }
+        .hero-micro-text {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.7);
+            margin-top: 10px;
+            animation: fadeIn 1.5s ease-out;
+        }
 
         /* --- Auth Modals (Login/Signup/Profile) --- */
         .auth-modal-overlay {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
-            inset: 0; /* top, right, bottom, left */
-            background: rgba(0,0,0,0.75); /* Semi-transparent dark overlay */
-            backdrop-filter: blur(5px); /* Blurry background effect */
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
-            z-index: 1002; /* Higher than page content */
-            opacity: 0; /* Start invisible for transition */
-            pointer-events: none; /* Don't block clicks when invisible */
+            z-index: 1002;
+            opacity: 0;
+            pointer-events: none;
             transition: opacity 0.25s ease-out;
         }
 
         .auth-modal-overlay.active {
-            display: flex; /* Show when active */
+            display: flex;
             opacity: 1;
-            pointer-events: all; /* Enable clicks when visible */
+            pointer-events: all;
         }
 
         .auth-modal-content {
@@ -267,12 +420,19 @@
             transform: scale(0.95);
             opacity:0;
             transition: transform 0.25s ease-out, opacity 0.2s ease-out;
-            overflow-y: auto; /* Add vertical scroll */
-            max-height: 80vh; /* Limit modal height */
+            overflow-y: auto;
+            max-height: 80vh;
+            /* Pop-in animation */
+            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both;
         }
         .auth-modal-overlay.active .auth-modal-content {
-            transform: scale(1); /* Scale up to normal size */
+            transform: scale(1);
             opacity: 1;
+        }
+
+        @keyframes popfade {
+            0% { opacity:0; transform:scale(.7);}
+            100% {opacity:1; transform:scale(1);}
         }
 
         .auth-modal-content h2 {
@@ -294,31 +454,74 @@
             color: var(--text-color-light);
             line-height: 1;
             padding:5px;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s; /* Animated close button */
         }
 
         .auth-modal-content .close-modal-btn:hover {
             color: var(--secondary-color);
+            transform: rotate(90deg); /* Spin on hover */
         }
 
-        .auth-modal-form input[type="email"],
-        .auth-modal-form input[type="password"],
-        .auth-modal-form input[type="text"] {
+        /* Floating Labels for Inputs */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 22px;
+        }
+        .input-wrapper input, .input-wrapper textarea {
             width: 100%;
-            box-sizing: border-box; /* Include padding in width */
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            background: var(--input-bg);
+            padding: 16px 12px 12px 40px; /* Increased left padding for icon */
+            font-size: 1.1em;
+            border-radius: 11px;
+            border: 2px solid rgba(255, 215, 0, 0.5); /* Soft gold border */
+            background: rgba(255,255,255,0.08); /* More translucent background */
+            outline: none;
+            transition: border .22s, box-shadow .22s;
+            box-sizing: border-box;
             color: var(--text-color-light);
-            font-size: 0.95em;
+        }
+        .input-wrapper textarea {
+            padding-top: 16px; /* Adjust for textarea */
+            min-height: 85px;
+            max-height: 220px;
+            resize: vertical;
+        }
+        .input-wrapper label {
+            position: absolute;
+            left: 40px; /* Aligned with input text */
+            top: 18px;
+            color: rgba(255,255,255,0.7); /* Muted label color */
+            font-size: 1.09em;
+            pointer-events: none;
+            background: transparent; /* Initially transparent */
+            padding: 0 6px;
+            transition: 0.2s ease-out;
+            z-index: 3;
+        }
+        .input-wrapper input:focus + label,
+        .input-wrapper input:not(:placeholder-shown) + label,
+        .input-wrapper textarea:focus + label,
+        .input-wrapper textarea:not(:placeholder-shown) + label {
+            top: -12px;
+            left: 11px;
+            font-size: .92em;
+            color: var(--secondary-color); /* Gold color when active */
+            background: var(--bg-gradient-end); /* Background to cover input border */
+            padding: 0 6px;
+        }
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.1em;
+            z-index: 4;
+        }
+        .input-wrapper input:focus, .input-wrapper textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Glow on focus */
         }
 
-        .auth-modal-form input:focus {
-            border-color: var(--accent-color);
-            background: rgba(255,255,255,0.1);
-        }
 
         .auth-modal-form button {
             width: 100%;
@@ -333,7 +536,7 @@
         }
         /* Buttons: Glass & Animated */
         .popup-button, button, .hero-btn {
-            background: linear-gradient(45deg, #FFD700aa, #6a0dadcc);
+            background: linear-gradient(45deg, var(--secondary-color)aa, var(--primary-color)cc);
             color: #222;
             border: none; border-radius: 19px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -341,12 +544,11 @@
             transition: all 0.22s;
         }
         .popup-button:hover, button:hover, .hero-btn:hover {
-            background: linear-gradient(90deg, #6a0dad, #FFD700);
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
             color: #fff;
             transform: scale(1.04);
             box-shadow: 0 4px 16px rgba(255,215,0,0.33);
         }
-
 
         .auth-modal-form button:disabled {
             opacity: 0.7;
@@ -354,13 +556,12 @@
         }
 
         .auth-modal-form button[type=submit] {
-            background: var(--accent-color); /* Override for standard submit buttons */
+            background: var(--accent-color);
             color: #fff;
         }
         .auth-modal-form button[type=submit]:hover {
-            background: #3578e0; /* Override for standard submit buttons */
+            background: #3578e0;
         }
-
 
         .auth-modal-form .form-links {
             display: flex;
@@ -373,10 +574,21 @@
         .auth-modal-form .form-links a {
             color: var(--secondary-color);
             text-decoration: none;
+            position: relative; /* For animated underline */
+            transition: color 0.2s;
         }
-
-        .auth-modal-form .form-links a:hover {
-            text-decoration: underline;
+        .auth-modal-form .form-links a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary-color);
+            transition: width 0.3s ease-out;
+        }
+        .auth-modal-form .form-links a:hover::after {
+            width: 100%;
         }
 
         .auth-modal-form .google-auth-btn {
@@ -391,6 +603,8 @@
             color: #555;
             cursor: pointer;
             font-weight: 500;
+            border-radius: 6px; /* Added border-radius */
+            transition: all 0.2s ease;
         }
 
         .auth-modal-form .google-auth-btn img {
@@ -400,6 +614,8 @@
 
         .auth-modal-form .google-auth-btn:hover {
             background: #f8f8f8;
+            transform: translateY(-2px); /* Bounce effect */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         /* --- User Profile Modal Specific Styles --- */
@@ -424,6 +640,10 @@
             border: 4px solid var(--secondary-color);
             box-shadow: 0 0 15px rgba(255,215,0,0.5);
             margin-bottom: 15px;
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+        }
+        #profile-display-avatar:hover {
+            transform: translateY(-3px) scale(1.03); /* Slight bounce */
         }
 
         .upload-avatar-btn {
@@ -599,6 +819,10 @@
             margin-bottom: 10px;
             object-fit: cover;
             border: 2px solid var(--secondary-color);
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+        }
+        .user-profile-menu .menu-header img:hover {
+            transform: translateY(-3px) scale(1.03); /* Slight bounce */
         }
 
         .user-profile-menu .menu-header .username {
@@ -673,6 +897,8 @@
             transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important;
             position: relative;
             color: var(--text-color-light);
+            /* Pop-in animation */
+            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both;
         }
 
         .stylish-popup-overlay.active .stylish-popup-card {
@@ -783,19 +1009,20 @@
             font-size: 1.6em;
             cursor: pointer;
             color: #aaa;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s; /* Animated close button */
             padding: 5px;
             line-height: 1;
         }
 
         .stylish-popup-card .close-popup-btn-styled:hover {
             color: var(--secondary-color);
+            transform: rotate(90deg); /* Spin on hover */
         }
 
         /* --- Page Content Layout & Animations --- */
         .page-content-wrapper {
             width: 100%;
-            padding-top: 80px; /* Adjust if navbar height changes */
+            padding-top: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -821,9 +1048,13 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            border: 2px solid #FFD700; /* Avatar Glow */
-            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2); /* Avatar Glow */
+            border: 2px solid var(--secondary-color);
+            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
             object-fit: cover;
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+        }
+        .owner-avatar:hover {
+            transform: translateY(-3px) scale(1.05); /* Slight bounce */
         }
 
         .owner-text {
@@ -837,7 +1068,8 @@
         .main-container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
+            /* Double border effect */
+            border: 2px solid var(--secondary-color); /* Outer gradient border will be applied via pseudo-element */
             border-radius: 22px;
             box-shadow: var(--shadow-deep);
             padding: 35px;
@@ -847,6 +1079,21 @@
             opacity: 0;
             transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            position: relative; /* For pseudo-elements */
+        }
+        /* Gradient outer border for main-container */
+        .main-container::before {
+            content: '';
+            position: absolute;
+            inset: -3px; /* Extend slightly beyond the element */
+            border-radius: 25px; /* Slightly larger than parent's border-radius */
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 3px; /* Border thickness */
         }
 
         #feedback-form-container.main-container {
@@ -876,6 +1123,25 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            /* Section title animated underline */
+            position: relative;
+        }
+        #feedback-form-container h1::after {
+            content: "";
+            display: block;
+            width: 65px; height: 6px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            border-radius: 7px;
+            margin-top: 8px;
+            animation: underlineMove 1.8s infinite alternate;
+            position: absolute;
+            bottom: -10px; /* Adjust position */
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @keyframes underlineMove {
+            0% {width:45px;}
+            100%{width:90px;}
         }
 
         #typed-output {
@@ -891,13 +1157,8 @@
             overflow: hidden;
         }
 
-        .input-group {
-            margin-bottom: 18px;
-            text-align: left;
-            position: relative;
-        }
-
-        .input-group label {
+        /* Input group styles are now handled by .input-wrapper */
+        .input-group label { /* Keep this for feedback form specific label */
             display: block;
             margin-bottom: 7px;
             color: var(--text-color-light);
@@ -905,38 +1166,10 @@
             font-size: 0.95em;
         }
 
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 11px 16px;
-            border: 1px solid var(--card-border);
-            border-radius: 9px;
-            background: var(--input-bg);
-            color: var(--text-color-light);
-            font-size: 0.95em;
-            outline: none;
-            transition: all 0.25s ease;
-            box-sizing: border-box;
-            box-shadow: inset 1px 1px 4px rgba(0,0,0,0.15);
-        }
-
         .input-group input#name:disabled {
             background: rgba(255, 255, 255, 0.04);
             cursor: not-allowed;
             opacity: 0.65;
-        }
-
-        .input-group input:focus,
-        .input-group textarea:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3.5px rgba(59,130,246,0.25), inset 1px 1px 6px rgba(0,0,0,0.2);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .input-group textarea {
-            resize: vertical;
-            min-height: 85px;
-            max-height: 220px;
         }
 
         .stars {
@@ -951,6 +1184,17 @@
             color: rgba(255, 255, 255, 0.35);
             cursor: pointer;
             transition: color 0.25s ease, transform 0.15s ease, text-shadow 0.25s ease;
+            animation: starPopIn 0.5s ease-out backwards; /* Pop-in animation */
+        }
+        .star:nth-child(1) { animation-delay: 0.1s; }
+        .star:nth-child(2) { animation-delay: 0.2s; }
+        .star:nth-child(3) { animation-delay: 0.3s; }
+        .star:nth-child(4) { animation-delay: 0.4s; }
+        .star:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes starPopIn {
+            0% { opacity: 0; transform: scale(0.5) rotate(15deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
 
         .star.highlighted,
@@ -958,6 +1202,10 @@
             color: var(--secondary-color);
             transform: scale(1.12) rotateY(8deg);
             text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.45);
+        }
+        /* Star hover color wave effect */
+        .star:hover ~ .star {
+            color: rgba(255, 255, 255, 0.2); /* Dim stars after hovered one */
         }
 
         button#submit-feedback {
@@ -975,6 +1223,10 @@
             margin-top: 22px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         button#submit-feedback::before {
@@ -1004,12 +1256,11 @@
 
         /* --- Feedback List Styles --- */
         #feedback-list-container {
-            /* background: rgba(255, 255, 255, 0.07); */ /* Original */
-            background: rgba(255,255,255,0.08); /* Feedback Cards: Grid + Card Style */
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(7px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
-            padding: 22px; /* Original */
+            padding: 22px;
             text-align: left;
             box-shadow: var(--shadow-deep);
             width: 90%;
@@ -1018,7 +1269,6 @@
             transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 
-            /* Feedback Cards: Grid + Card Style */
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 26px;
@@ -1039,7 +1289,22 @@
             font-size: 1.8em;
             font-weight: 500;
             text-shadow: 0 0 9px rgba(255,215,0,0.25);
-            grid-column: 1 / -1; /* Make H2 span all columns in the grid */
+            grid-column: 1 / -1;
+            /* Section title animated underline */
+            position: relative;
+        }
+        #feedback-list-container h2::after {
+            content: "";
+            display: block;
+            width: 65px; height: 6px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            border-radius: 7px;
+            margin-top: 8px;
+            animation: underlineMove 1.8s infinite alternate;
+            position: absolute;
+            bottom: -10px; /* Adjust position */
+            left: 0;
+            transform: translateX(0);
         }
 
         /* Average Rating Display - Refined Professional Style */
@@ -1063,7 +1328,24 @@
             position: relative;
             z-index: 2;
             backdrop-filter: blur(8px);
-            grid-column: 1 / -1; /* Make average rating span all columns */
+            grid-column: 1 / -1;
+            /* Glowing border */
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3);
+        }
+        .average-rating-container::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 2px;
         }
 
         .average-rating-container.animate-in {
@@ -1091,6 +1373,11 @@
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
             line-height: 1;
             margin-bottom: 10px;
+            animation: pulseText 2s infinite alternate; /* Animated rating number */
+        }
+        @keyframes pulseText {
+            0% { transform: scale(1); text-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+            100% { transform: scale(1.05); text-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
         }
 
         .average-stars {
@@ -1108,50 +1395,63 @@
             padding-top: 8px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        /* Individual Feedback Item */
-        .feedback-item {
-            /* background: rgba(255, 255, 255, 0.045); */ /* Original */
-            background: #23235aee; /* Feedback Cards: Grid + Card Style */
-            border: 1px solid rgba(255, 255, 255, 0.09);
-            border-radius: 13px; /* Original */
-            margin-bottom: 16px; /* Original */
-            padding: 16px; /* Original */
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            box-shadow: 0 3.5px 9px rgba(0,0,0,0.18); /* Original */
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            position: relative;
-            overflow: hidden;
-
-            /* Feedback Cards: Grid + Card Style */
+        /* Mini badge for total feedbacks */
+        .badge-total {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: #fff;
+            padding: 4px 10px;
             border-radius: 15px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.3);
-            padding: 18px 20px;
-            transition: transform 0.18s, box-shadow 0.18s;
-            flex-direction: column; /* Changed to column for better card stacking */
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 8px;
+            vertical-align: middle;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
+        /* Individual Feedback Item (Card Style) */
+        .feedback-item {
+            background: #23235aee;
+            border: 2.5px solid var(--secondary-color); /* Colored border */
+            border-radius: 18px;
+            box-shadow: 0 6px 28px rgba(106, 13, 173, 0.13); /* Deep shadow */
+            padding: 24px 22px;
+            transition: box-shadow .19s, transform .15s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            /* Hover effect */
+            transition: transform 0.18s, box-shadow 0.18s, border-color 0.3s;
+        }
         .feedback-item:hover {
-            /* transform: translateY(-4px) scale(1.005); */ /* Original */
-            transform: translateY(-5px) scale(1.01); /* Feedback Cards: Grid + Card Style */
-            /* box-shadow: 0 7px 18px rgba(0,0,0,0.28); */ /* Original */
-            box-shadow: 0 8px 22px rgba(255,215,0,0.2), 0 0 0 3px rgba(255,215,0,0.15); /* Feedback Cards: Grid + Card Style */
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 12px 36px rgba(255,215,0,0.3), 0 0 0 3px rgba(255,215,0,0.15);
+            border-color: var(--primary-color); /* Border color animate */
         }
 
         .avatar-img {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             flex-shrink: 0;
-            border: 2.5px solid var(--accent-color);
-            box-shadow: 0 0 9px rgba(59,130,246,0.45);
+            border: 2px solid var(--secondary-color); /* Glowing ring border */
+            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2); /* Drop shadow */
             object-fit: cover;
-            /* Avatar Glow */
-            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
-            border: 2px solid #FFD700;
+            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
         }
+        .avatar-img:hover {
+            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+        }
+        /* Animated border for verified users (assuming JS adds .verified-user class) */
+        .avatar-img.verified-user {
+            animation: pulseBorder 1.5s infinite alternate;
+        }
+        @keyframes pulseBorder {
+            0% { border-color: var(--secondary-color); box-shadow: 0 0 18px var(--secondary-color); }
+            100% { border-color: var(--accent-color); box-shadow: 0 0 25px var(--accent-color); }
+        }
+
 
         .feedback-details {
             flex-grow: 1;
@@ -1160,16 +1460,22 @@
         }
 
         .feedback-details strong {
-            color: var(--secondary-color);
-            font-size: 1.1em;
-            display: inline; /* Changed to inline so the tick can sit next to it */
+            color: var(--secondary-color); /* Default color, JS would change based on rating */
+            font-size: 1.18em; /* Larger */
+            display: inline;
             margin-bottom: 4px;
             text-transform: capitalize;
+            font-weight: bold; /* Bold */
         }
+        /* Username color based on rating (CSS classes, assuming JS applies them) */
+        .feedback-details strong.rating-5 { color: var(--rating-5-color); }
+        .feedback-details strong.rating-4 { color: var(--rating-4-color); }
+        .feedback-details strong.rating-3 { color: var(--rating-3-color); }
+        .feedback-details strong.rating-2 { color: var(--rating-2-color); }
+        .feedback-details strong.rating-1 { color: var(--rating-1-color); }
+
 
         .user-type-indicator {
-            /* This class will now primarily affect the 'G' for Google users, if it's kept */
-            /* The 'E' is removed by not applying this class to email users in JS */
             font-size: 0.65em;
             color: white;
             padding: 1.5px 5.5px;
@@ -1181,27 +1487,27 @@
 
         /* Blue Tick (Instagram-like) */
         .verified-tag-feedback {
-            display: inline-flex; /* Icon and background together */
-            align-items: center; /* Vertical centering */
-            justify-content: center; /* Horizontal centering */
-            background-color: #007bff; /* Blue background */
-            color: #fff; /* Icon color (white) */
-            border-radius: 50%; /* Perfect circle */
-            width: 1.1em; /* Width of the circle, relative to parent's font-size (strong tag) */
-            height: 1.1em; /* Height of the circle */
-            font-size: 0.8em; /* Base font size for the icon itself, to make it fit within 1.1em circle */
-            margin-left: 5px; /* Spacing from name */
-            vertical-align: middle; /* Align with text middle */
-            flex-shrink: 0; /* Prevent it from shrinking */
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle shadow */
-            line-height: 1; /* To prevent extra space below the icon */
-            position: relative; /* For precise positioning if needed, or for children */
-            top: -0.05em; /* Fine-tune vertical alignment */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 50%;
+            width: 1.1em;
+            height: 1.1em;
+            font-size: 0.8em;
+            margin-left: 5px;
+            vertical-align: middle;
+            flex-shrink: 0;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            line-height: 1;
+            position: relative;
+            top: -0.05em;
         }
 
         .verified-tag-feedback .fas.fa-check-circle {
-            font-size: 0.7em; /* Make the icon smaller to fit within the 1.1em circle */
-            line-height: 1; /* Remove extra vertical space */
+            font-size: 0.7em;
+            line-height: 1;
         }
 
         .unverified-tag-feedback {
@@ -1214,10 +1520,7 @@
             vertical-align: middle;
         }
 
-
         .google-user-indicator { background-color: var(--google-blue); }
-        /* The email-user-indicator is effectively removed by not adding the .user-type-indicator class to email users in JS */
-
 
         .feedback-stars {
             color: var(--secondary-color);
@@ -1234,17 +1537,48 @@
             white-space: pre-wrap;
             color: var(--text-color-light);
             line-height: 1.55;
-            font-size: 0.95em;
+            font-size: 1.13em; /* Larger, more readable */
+            font-style: italic; /* Italic */
+            position: relative;
+            padding: 0 15px; /* Padding for quote marks */
         }
+        /* Colored quote marks */
+        .feedback-details p::before {
+            content: '“';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 2em;
+            color: var(--accent-color); /* Blue quote mark */
+            line-height: 1;
+        }
+        .feedback-details p::after {
+            content: '”';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            font-size: 2em;
+            color: var(--accent-color); /* Blue quote mark */
+            line-height: 1;
+        }
+
 
         .feedback-timestamp {
             font-size: 0.7em;
             color: rgba(255, 255, 255, 0.55);
             margin-top: 4px;
             text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+        .feedback-timestamp .far.fa-clock {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Admin Reply Styling */
+        /* Admin Reply Styling (Blockquote style) */
         .admin-reply {
             margin-top: 10px;
             padding: 9px 11px;
@@ -1255,6 +1589,17 @@
             display: flex;
             align-items: flex-start;
             gap: 7px;
+            position: relative; /* For blockquote */
+        }
+        .admin-reply::before {
+            content: '“'; /* Blockquote style */
+            position: absolute;
+            left: 5px;
+            top: 0;
+            font-size: 1.8em;
+            color: var(--secondary-color);
+            line-height: 1;
+            opacity: 0.7;
         }
 
         .admin-reply-avatar {
@@ -1319,33 +1664,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Confetti animation */
-        .confetti-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 9px;
-            height: 9px;
-            background-color: var(--confetti-color);
-            border-radius: 50%;
-            opacity: 0;
-            animation: confetti-fall 2.8s ease-out forwards;
-        }
-
-        @keyframes confetti-fall {
-            0% {transform: translateY(-90px) rotateZ(0deg); opacity: 1;}
-            100% {transform: translateY(100vh) rotateZ(720deg); opacity: 0;}
-        }
-
         /* New styles for email verification prompt */
         .email-verification-prompt {
             background-color: rgba(255, 193, 7, 0.2);
@@ -1387,108 +1705,17 @@
             cursor: not-allowed;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px; background: #1a1a2e;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(120deg, #6a0dad 20%, #FFD700 90%);
-            border-radius: 8px;
-        }
-
-        /* Navbar / Topbar */
-        .navbar {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(44,62,80,0.80);
-            backdrop-filter: blur(7px);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 26px;
-            min-height: 62px;
-            border-radius: 0 0 18px 18px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
-        .nav-logo {
-            width: 42px; height: 42px; border-radius: 50%;
-            margin-right: 13px;
-            /* Avatar Glow */
-            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
-            border: 2px solid #FFD700;
-        }
-        .nav-title {
-            color: #FFD700; font-weight: 700; font-size: 1.5em;
-            letter-spacing: 0.5px;
-        }
-        .nav-right {
-            /* Placeholder for login/profile, keep empty or position absolute if needed */
-            /* Corner Triggers will be repositioned by JS to fit here */
-            position: relative; /* Make it a positioning context for absolute triggers */
-            width: 60px; /* Give it some width for login/profile trigger */
-            height: 48px;
-        }
-        /* Reposition existing corner triggers to fit inside nav-right */
-        #login-icon-trigger, #user-profile-trigger {
-            position: absolute;
-            top: 50%;
-            right: 0; /* Align to the right of nav-right */
-            transform: translateY(-50%);
-            /* Remove existing top/right properties as they are now relative to nav-right */
-        }
-        #login-icon-trigger {
-            width: 48px; height: 48px; /* Maintain size */
-        }
-        #user-profile-trigger {
-            padding: 6px 12px;
-            height: auto; /* Allow content to dictate height */
-        }
-
-
-        /* Hero Section */
-        .hero-section {
+        /* Fancy Divider */
+        .fancy-divider {
+            height: 6px;
             width: 100%;
-            background: linear-gradient(100deg, #6a0dad 0%, #FFD700 100%);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 330px;
-            border-radius: 0 0 28px 28px;
-            margin-bottom: 32px;
-            box-shadow: 0 6px 24px rgba(106, 13, 173, 0.10);
-            padding-top: 62px; /* Offset for sticky navbar */
-            box-sizing: border-box; /* Include padding in total height */
-        }
-        .hero-content {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 13px; padding: 38px 16px 28px 16px;
-            color: #fff;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.18);
-        }
-        .hero-logo {
-            width: 88px; height: 88px; border-radius: 50%;
-            border: 3px solid #fff; box-shadow: 0 2px 20px rgba(255,215,0,0.47);
-            margin-bottom: 4px;
-            /* Avatar Glow */
-            box-shadow: 0 0 18px #FFD700, 0 0 5px rgba(255,255,255,0.2);
-            border: 2px solid #FFD700;
-        }
-        .hero-content h1 {
-            font-size: 2.6em; font-weight: 700; margin: 0;
-            letter-spacing: 1px;
-        }
-        .hero-content p {
-            font-size: 1.12em; font-weight: 400; margin: 0;
-        }
-        .hero-btn {
-            margin-top: 18px;
-            padding: 12px 38px; border-radius: 28px;
-            background: linear-gradient(90deg, #FFD700, #6a0dad);
-            color: #222; font-weight: 600; font-size: 1.08em;
-            text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-            transition: all 0.25s;
-        }
-        .hero-btn:hover {
-            background: linear-gradient(90deg, #6a0dad, #FFD700);
-            color: #fff; transform: scale(1.06);
+            background: repeating-linear-gradient(90deg, var(--secondary-color) 0 8px, var(--primary-color) 8px 16px);
+            border-radius: 9px;
+            margin: 30px 0 24px 0;
+            opacity: 0.55;
         }
 
-        /* --- Responsive Design --- */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .owner-avatar {
                 width: 60px;
@@ -1503,24 +1730,10 @@
                 font-size: 2.8em;
             }
 
-            /* Responsive adjustments for corner triggers */
-            /* #login-icon-trigger {
-                width: 44px;
-                height: 44px;
-                top: 15px;
-                right: 15px;
-            } */ /* Handled by nav-right now */
             #login-icon-trigger .fas {
                 font-size: 2.1em;
             }
 
-            /* #user-profile-trigger {
-                flex-direction: column;
-                gap: 4px;
-                padding: 8px 10px;
-                top: 15px;
-                right: 15px;
-            } */ /* Handled by nav-right now */
             #user-profile-name {
                 max-width: 80px;
             }
@@ -1551,7 +1764,7 @@
                 font-size: 1.3em;
             }
             .hero-section {
-                padding-top: 55px; /* Adjust offset for smaller navbar */
+                padding-top: 55px;
             }
             .hero-content h1 {
                 font-size: 2em;
@@ -1560,8 +1773,36 @@
                 width: 75px;
                 height: 75px;
             }
+            .hero-content p {
+                font-size: 1.12em;
+            }
+            .hero-btn {
+                padding: 10px 30px;
+                font-size: 1em;
+            }
             .page-content-wrapper {
-                padding-top: 20px; /* Reduce top padding below hero section */
+                padding-top: 20px;
+            }
+            /* Feedback cards stack on mobile */
+            #feedback-list-container {
+                grid-template-columns: 1fr; /* Single column */
+                gap: 20px;
+                padding: 20px 15px;
+            }
+            .feedback-item {
+                padding: 18px;
+            }
+            .feedback-details p {
+                font-size: 1em;
+            }
+            .average-rating-container {
+                padding: 20px;
+            }
+            .average-number {
+                font-size: 3.5em;
+            }
+            .average-stars {
+                font-size: 2em;
             }
         }
 
@@ -1596,7 +1837,6 @@
                 font-size: 0.85em;
                 padding: 7px 12px;
             }
-            /* Responsive Tweaks */
             .hero-content h1 { font-size: 1.5em; }
             .main-container, #feedback-list-container { padding: 10px; }
             #feedback-list-container { gap: 10px; }
@@ -1654,7 +1894,7 @@
             }
         }
 </style>
- </head>
+</head>
 <body>
     <nav class="navbar">
         <div class="nav-left">
@@ -1664,13 +1904,15 @@
         <div class="nav-right">
             </div>
     </nav>
+    <div class="fancy-divider"></div> <!-- Divider below navbar -->
 
     <section class="hero-section">
         <div class="hero-content">
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo">
-            <h1>Welcome to Nobita's Feedback Portal</h1>
+            <h1>Welcome to Nobita's Feedback Portal! <span class="emoji">✨</span></h1>
             <p>Your voice matters. Share your feedback & help us improve!</p>
             <a href="#feedback-form-container" class="hero-btn">Give Feedback</a>
+            <span class="hero-micro-text">Trusted by 1,000+ users</span>
         </div>
     </section>
 
@@ -1689,8 +1931,16 @@
         <span class="close-modal-btn" data-modal-close="loginModal">&times;</span>
         <h2>Login</h2>
         <form id="email-login-form" class="auth-modal-form">
-          <input type="email" id="modal-login-email" placeholder="Email" required>
-          <input type="password" id="modal-login-password" placeholder="Password" required>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="modal-login-email" placeholder=" " required>
+            <label for="modal-login-email">Email</label>
+          </div>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="modal-login-password" placeholder=" " required>
+            <label for="modal-login-password">Password</label>
+          </div>
           <button type="submit">Login</button>
           <div class="form-links">
             <a href="#" id="modal-forgot-password-link">Forgot Password?</a>
@@ -1709,10 +1959,26 @@
         <span class="close-modal-btn" data-modal-close="signupModal">&times;</span>
         <h2>Create New Account</h2>
         <form id="email-signup-form" class="auth-modal-form">
-          <input type="text" id="modal-signup-name" placeholder="Your Name" required>
-          <input type="email" id="modal-signup-email" placeholder="Email" required>
-          <input type="password" id="modal-signup-password" placeholder="Password (min. 6 characters)" required minlength="6">
-          <input type="password" id="modal-signup-confirm-password" placeholder="Confirm Password" required minlength="6">
+          <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="modal-signup-name" placeholder=" " required>
+            <label for="modal-signup-name">Your Name</label>
+          </div>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="modal-signup-email" placeholder=" " required>
+            <label for="modal-signup-email">Email</label>
+          </div>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="modal-signup-password" placeholder=" " required minlength="6">
+            <label for="modal-signup-password">Password (min. 6 characters)</label>
+          </div>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="modal-signup-confirm-password" placeholder=" " required minlength="6">
+            <label for="modal-signup-confirm-password">Confirm Password</label>
+          </div>
           <button type="submit">Sign Up</button>
           <div class="form-links" style="justify-content: center;">
             <a href="#" id="modal-already-account-link">Already have an account? Login</a>
@@ -1747,7 +2013,7 @@
           <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
               </div>
           <div class="popup-button-container" id="stylishPopupButtonContainer">
-            </div>
+              </div>
         </div>
     </div>
 
@@ -1774,30 +2040,35 @@
                 </div>
             </div>
             <form id="profile-edit-form" class="auth-modal-form">
-                <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="profile-name" placeholder=" " required>
                     <label for="profile-name">Name:</label>
-                    <input type="text" id="profile-name" placeholder="Your Name" required>
                 </div>
-                <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="profile-email" placeholder=" " disabled title="Email cannot be changed">
                     <label for="profile-email">Email:</label>
-                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
                 </div>
                 <button type="submit" id="save-profile-changes-btn">Save Changes</button>
            </form>
-<hr class="profile-divider">
+<div class="fancy-divider"></div> <!-- Fancy divider -->
 <h3>Change Password</h3>
 <form id="change-password-form" class="auth-modal-form">
-    <div class="input-group">
+    <div class="input-wrapper">
+        <i class="fas fa-lock input-icon"></i>
+        <input type="password" id="current-password" placeholder=" ">
         <label for="current-password">Current Password:</label>
-        <input type="password" id="current-password" placeholder="Current Password">
     </div>
-    <div class="input-group">
+    <div class="input-wrapper">
+        <i class="fas fa-key input-icon"></i>
+        <input type="password" id="new-password-profile" placeholder=" " minlength="6">
         <label for="new-password-profile">New Password (min. 6 characters):</label>
-        <input type="password" id="new-password-profile" placeholder="New Password" minlength="6">
     </div>
-    <div class="input-group">
+    <div class="input-wrapper">
+        <i class="fas fa-key input-icon"></i>
+        <input type="password" id="confirm-new-password-profile" placeholder=" " minlength="6">
         <label for="confirm-new-password-profile">Confirm New Password:</label>
-        <input type="password" id="confirm-new-password-profile" placeholder="Confirm New Password" minlength="6">
     </div>
     <div class="profile-password-btns-row">
         <button type="submit" class="popup-button primary" id="change-password-btn">Change Password</button>
@@ -1814,20 +2085,22 @@
         </div>
 
         <div id="feedback-form-container" class="main-container">
-            <h1 id="main-title"></h1>
+            <h1 id="main-title" class="section-title"></h1>
             <div id="typed-output"></div>
             <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
                 <p><i class="fas fa-exclamation-triangle"></i> Feedback edit karne, profile edit karne aur avatar upload karne ke liye kripya apna email verify karein.</p>
                 <button id="send-verification-email-btn-form">Verify Email Send Karein</button>
             </div>
             <form id="feedback-form">
-                <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="name" placeholder=" " required disabled>
                     <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
-                    <input type="text" id="name" placeholder="Your name here if not logged in..." required disabled>
                 </div>
-                <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-comment-alt input-icon"></i>
+                    <textarea id="feedback" placeholder=" " required></textarea>
                     <label for="feedback">Your Feedback:</label>
-                    <textarea id="feedback" placeholder="Share your valuable thoughts here..." required></textarea>
                 </div>
                 <div class="input-group">
                     <label>Rate Your Experience:</label>
@@ -1840,14 +2113,16 @@
                     </div>
                     <input type="hidden" id="rating" value="0">
                 </div>
-                <button type="button" id="submit-feedback">SUBMIT FEEDBACK</button>
+                <button type="button" id="submit-feedback"><i class="fas fa-paper-plane"></i> SUBMIT FEEDBACK</button>
             </form>
         </div>
 
+        <div class="fancy-divider"></div> <!-- Fancy divider -->
+
         <div id="feedback-list-container" class="main-container">
-             <div id="average-rating-display"></div>
-             <h2>Recent Feedbacks</h2>
-             </div>
+              <div id="average-rating-display"></div>
+              <h2 class="section-title">Recent Feedbacks</h2>
+              </div>
     </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
@@ -2139,7 +2414,6 @@
             else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
             else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
             else if(url.includes('/api/user/change-password')) submitBtn = changePasswordBtn;
-            else if(url.includes('/api/feedback') && method === 'PUT') submitBtn = submitButton; // Only for edit feedback
             else if(url.includes('/api/auth/request-email-verification')) {
                 if (sendVerificationEmailBtn) sendVerificationEmailBtn.disabled = true;
                 if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.disabled = true;
@@ -2289,7 +2563,7 @@
                             const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
                             if (!forgotEmailVal) {
                                 stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' +
-                                                                'Enter your registered email address. We will send you a link to reset your password.';
+                                                                 'Enter your registered email address. We will send you a link to reset your password.';
                                 document.getElementById('popup-forgot-email').focus();
                                 return;
                             }
@@ -2560,9 +2834,12 @@
                     if (data.token) {
                         localStorage.setItem('authToken', data.token);
                     }
-
+                    
                     currentUser.name = data.user.name;
                     currentUser = { ...currentUser, ...data.user };
+
+                    if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://via.placeholder.com/120/FFFFFF/6a0dad?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+
                     updateUIAfterLogin();
                     showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated successfully!');
 
@@ -2817,7 +3094,7 @@
 
 
             submitButton.disabled = true;
-            submitButton.textContent = isEditing ? "UPDATING..." : "SUBMITTING...";
+            submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? "UPDATING..." : "SUBMITTING..."}`;
 
             try {
                 const data = await apiRequest(url, method, feedbackPayload);
@@ -2830,7 +3107,7 @@
             }
             finally {
                 submitButton.disabled = false;
-                submitButton.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                submitButton.innerHTML = `<i class="fas fa-paper-plane"></i> ${isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK"}`;
             }
         });
 
@@ -2876,10 +3153,11 @@
                 if (!feedbackListContainer.contains(averageRatingDisplayEl)) {
                     feedbackListContainer.prepend(averageRatingDisplayEl);
                 }
-                let h2Title = feedbackListContainer.querySelector('h2');
+                let h2Title = feedbackListContainer.querySelector('h2.section-title'); // Select with class
                 if (!h2Title) {
                      h2Title = document.createElement('h2');
                      h2Title.textContent = 'Recent Feedbacks';
+                     h2Title.classList.add('section-title'); // Add the class
                      feedbackListContainer.insertBefore(h2Title, feedbackListContainer.querySelector('.feedback-item') || null);
                 }
 
@@ -2925,7 +3203,7 @@
             <h3>Overall Average Rating</h3>
             <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
             <div class="average-stars">${starsHtml}</div>
-            <div class="total-feedbacks-count">(${count} feedbacks)</div>
+            <div class="total-feedbacks-count">(${count} feedbacks) <span class="badge-total">+${count}</span></div>
         </div>
     `;
             setTimeout(() => {
@@ -2949,13 +3227,17 @@
             avatarImg.onerror = function() {
                 this.src = `https://via.placeholder.com/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             };
+            // Add verified-user class for animated border if verified
+            if (fbData.userId && typeof fbData.userId === 'object' && fbData.userId.isVerified) {
+                avatarImg.classList.add('verified-user');
+            }
 
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'feedback-details';
 
             const strongName = document.createElement('strong');
             let nameContent = fbData.name || 'Anonymous';
-            let userTypeTag = ''; // This will be empty for email users, only for Google 'G'
+            let userTypeTag = '';
             let verificationTag = '';
 
             if (fbData.userId && typeof fbData.userId === 'object') {
@@ -2972,17 +3254,22 @@
                 userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
                 verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
             } else {
-                userTypeTag = ''; // Removed 'U' tag too if it's not distinguishable now
+                userTypeTag = '';
                 verificationTag = `<span class="unverified-tag-feedback" title="Verification Status Unknown">?</span>`;
             }
 
             strongName.innerHTML = `${nameContent} ${userTypeTag} ${verificationTag}`;
 
+            // Add class for dynamic username color based on rating (CSS-only part)
+            if (fbData.rating) {
+                strongName.classList.add(`rating-${fbData.rating}`);
+            }
+
 
             if (fbData.isEdited) {
                 const editedTag = document.createElement('span');
                 editedTag.className = 'edited-tag';
-                editedTag.textContent = 'Edited';
+                editedTag.textContent = 'EDITED';
                 strongName.appendChild(editedTag);
             }
 
@@ -2996,9 +3283,9 @@
             const timestampDiv = document.createElement('div');
             timestampDiv.className = 'feedback-timestamp';
             try {
-                timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                timestampDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
             } catch(e) {
-                timestampDiv.textContent = `Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
+                timestampDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
             }
 
             detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
