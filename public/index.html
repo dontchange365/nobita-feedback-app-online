@@ -149,8 +149,7 @@
         }
         .nav-right {
             position: relative;
-            width: 60px;
-            height: 48px;
+            /* Adjusted to allow content to define size */
         }
 
         /* Fix: Ensure login/profile icons are always fixed to the top-right corner of the viewport */
@@ -173,7 +172,7 @@
             border: 2px solid transparent;
             background-clip: padding-box;
             box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start);
-            animation: pulse 2s infinite ease-in-out;
+            animation: pulseLoginIcon 2s infinite ease-in-out;
         }
 
         #login-icon-trigger::before {
@@ -205,7 +204,7 @@
             transform: scale(1.05);
         }
 
-        @keyframes pulse {
+        @keyframes pulseLoginIcon { /* Renamed to avoid conflict */
             0% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
             50% { box-shadow: 0 0 15px rgba(0,0,0,0.4), 0 0 35px var(--glow-color-end); }
             100% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
@@ -214,61 +213,71 @@
         #user-profile-trigger {
             flex-direction: row;
             align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            gap: 10px; /* Increased gap */
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 50px; /* Pill shape */
+            background: rgba(40, 40, 70, 0.5); /* Darker, more premium background */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.35);
             z-index: 1000;
             transition: all 0.3s ease-in-out;
-            /* Remove fixed width/height to allow content to define size */
         }
 
         #user-profile-trigger:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.45);
         }
 
         #user-profile-trigger.hidden {
             display: none;
         }
-
-        #user-profile-avatar {
-            width: 40px;
-            height: 40px;
+        
+        /* Container for avatar to apply gradient border and pulse */
+        #user-profile-avatar-container {
+            width: 42px; /* Slightly larger */
+            height: 42px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-            box-shadow: 0 0 8px rgba(0,0,0,0.3), 0 0 15px var(--glow-color-start);
-            transition: all 0.3s ease-in-out;
-        }
-        /* Ensure avatar also has the gradient border effect */
-        #user-profile-avatar-container { /* Wrapper for avatar if needed for complex positioning */
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         #user-profile-avatar-container::before {
             content: '';
             position: absolute;
-            inset: -2px; /* Adjust to control border thickness */
+            inset: -2.5px; /* Controls thickness of gradient border */
             border-radius: 50%;
             background: var(--border-gradient);
-            z-index: -1;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            padding: 2px;
+            z-index: 0; /* Behind the image */
+            animation: pulseAvatarBorder 2.5s infinite ease-in-out;
+            transition: opacity 0.3s;
+        }
+         @keyframes pulseAvatarBorder {
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.7; transform: scale(1); }
+        }
+
+
+        #user-profile-avatar {
+            width: 100%; /* Fill the container */
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color); /* Inner solid border */
+            position: relative; /* To sit on top of the pseudo-element */
+            z-index: 1;
+            box-shadow: 0 0 8px rgba(0,0,0,0.4); /* Inner shadow for depth */
         }
 
 
         #user-profile-name {
-            font-size: clamp(12px, 2.5vw, 15px);
+            font-size: clamp(13px, 2.5vw, 16px); /* Slightly larger */
             font-weight: 600;
-            color: #F0F0F0;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            color: var(--text-color-light);
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -277,19 +286,20 @@
 
         .profile-tooltip {
             position: absolute;
-            bottom: -35px;
+            bottom: -38px; /* Adjusted */
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(3px);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
+            background: rgba(10, 10, 20, 0.85); /* Darker */
+            backdrop-filter: blur(4px);
+            color: var(--secondary-color); /* Gold text */
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         #user-profile-trigger:hover .profile-tooltip {
@@ -306,6 +316,18 @@
             }
              #login-icon-trigger .fas {
                 font-size: 1.6em; /* Smaller on mobile */
+            }
+            #user-profile-avatar-container {
+                width: 38px;
+                height: 38px;
+            }
+            #user-profile-trigger {
+                padding: 6px 10px;
+                gap: 8px;
+            }
+            #user-profile-name {
+                font-size: 12px;
+                max-width: 70px;
             }
         }
 
@@ -432,22 +454,37 @@
 
         .auth-modal-content {
             background: var(--bg-gradient-end);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 25px;
-            width: 90%;
-            max-width: 400px;
+            /* border: 1px solid var(--card-border); */ /* Replaced by pseudo-element */
+            border-radius: 12px; /* User request */
+            padding: 28px; /* User request */
+            width: 90vw; /* User request */
+            max-width: 400px; /* User request */
             position: relative;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.38); /* User request */
             color: var(--text-color-light);
             transform: scale(0.95);
             opacity:0;
-            transition: transform 0.25s ease-out, opacity 0.2s ease-out;
+            /* transition: transform 0.25s ease-out, opacity 0.2s ease-out; */ /* Replaced by animation */
             overflow-y: auto;
             max-height: 80vh;
-            /* Pop-in animation */
-            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both;
+            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both; /* User request */
         }
+        /* Gradient border for auth modal */
+        .auth-modal-content::before {
+            content: '';
+            position: absolute;
+            inset: -2px; 
+            border-radius: 14px; /* Slightly larger than parent */
+            background: var(--border-gradient);
+            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 2px; 
+        }
+
+
         .auth-modal-overlay.active .auth-modal-content {
             transform: scale(1);
             opacity: 1;
@@ -474,25 +511,24 @@
             right: 10px;
             cursor: pointer;
             font-size: 26px;
-            /* Fix: Make close button visible and stylish */
-            color: var(--secondary-color); /* Bright gold color */
-            background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
-            border-radius: 50%; /* Circular shape */
-            width: 35px; /* Fixed width */
-            height: 35px; /* Fixed height */
-            display: flex; /* Flexbox for centering */
-            justify-content: center; /* Horizontally center */
-            align-items: center; /* Vertically center */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3); /* Subtle shadow */
+            color: var(--secondary-color); 
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 50%; 
+            width: 35px; 
+            height: 35px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); 
             line-height: 1;
             padding:5px;
-            transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s; /* Animated close button */
+            transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s; 
         }
 
         .auth-modal-content .close-modal-btn:hover {
-            color: var(--primary-color); /* Change color on hover */
-            background: var(--secondary-color); /* Change background on hover */
-            transform: rotate(90deg) scale(1.1); /* Spin and slightly enlarge on hover */
+            color: var(--primary-color); 
+            background: var(--secondary-color); 
+            transform: rotate(90deg) scale(1.1); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
@@ -519,29 +555,28 @@
             max-height: 220px;
             resize: vertical;
         }
-        .input-wrapper label {
+        .input-wrapper label { /* Floating label specific styling */
             position: absolute;
-            left: 40px; /* Align with input text */
+            left: 40px; 
             top: 18px;
-            color: rgba(255,255,255,0.7); /* Muted label color */
-            font-size: 1.09em;
+            color: var(--secondary-color); /* User request: Gold color */
+            font-size: 1.0em; /* Adjusted for better proportion */
             pointer-events: none;
-            background: transparent; /* Initially transparent */
+            background: transparent; 
             padding: 0 6px;
             transition: 0.2s ease-out;
             z-index: 3;
-            /* Fix: No background for label */
             background: none;
         }
         .input-wrapper input:focus + label,
         .input-wrapper input:not(:placeholder-shown) + label,
         .input-wrapper textarea:focus + label,
         .input-wrapper textarea:not(:placeholder-shown) + label {
-            top: -12px;
+            top: -10px; /* Adjusted for better placement */
             left: 11px;
-            font-size: .92em;
-            color: var(--secondary-color); /* Gold color when active */
-            background: var(--bg-gradient-end); /* Background to cover input border */
+            font-size: .85em; /* User request: Smaller font */
+            color: var(--secondary-color); 
+            background: var(--bg-gradient-end); 
             padding: 0 6px;
         }
         .input-icon {
@@ -571,32 +606,54 @@
             transition: background-color 0.2s, transform 0.1s;
         }
         /* Buttons: Glass & Animated */
-        .popup-button, button, .hero-btn {
-            background: linear-gradient(45deg, var(--secondary-color)aa, var(--primary-color)cc);
-            color: #222;
+        .popup-button, button, .hero-btn { /* General button styling */
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); /* Stronger gradient */
+            color: #111; /* Darker text for better contrast on gold */
             border: none; border-radius: 19px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25); /* Enhanced shadow */
             font-weight: 600;
             transition: all 0.22s;
+            position: relative;
+            overflow: hidden;
         }
+        .popup-button::before, button::before, .hero-btn::before { /* Ripple effect */
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease-out, height 0.3s ease-out;
+            opacity: 0;
+        }
+        .popup-button:hover::before, button:hover::before, .hero-btn:hover::before {
+            width: 200%;
+            height: 200%;
+            opacity: 1;
+        }
+
         .popup-button:hover, button:hover, .hero-btn:hover {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); /* Inverse gradient on hover */
             color: #fff;
-            transform: scale(1.04);
-            box-shadow: 0 4px 16px rgba(255,215,0,0.33);
+            transform: scale(1.04) translateY(-1px); /* Slightly more pop */
+            box-shadow: 0 5px 18px rgba(var(--primary-color),0.4); /* Shadow matches hover gradient */
         }
+
 
         .auth-modal-form button:disabled {
             opacity: 0.7;
             cursor: not-allowed;
         }
 
-        .auth-modal-form button[type=submit] {
-            background: var(--accent-color);
+        .auth-modal-form button[type=submit] { /* Specific submit button in auth form */
+            background: linear-gradient(45deg, var(--accent-color), #1e40af); /* Stronger blue gradient */
             color: #fff;
         }
         .auth-modal-form button[type=submit]:hover {
-            background: #3578e0;
+            background: linear-gradient(45deg, #1e40af, var(--accent-color));
         }
 
 
@@ -642,35 +699,36 @@
             width: 100%;
         }
 
-        .auth-modal-form .google-auth-btn {
+        .auth-modal-form .google-auth-btn { /* Prominent Google button */
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px; /* Adjusted padding */
             margin-top: 15px;
-            border: 1px solid var(--card-border);
+            border: 1px solid #ccc; /* Subtle border */
             background: #fff;
-            color: #555;
+            color: #444; /* Darker text */
             cursor: pointer;
             font-weight: 500;
-            border-radius: 6px; /* Added border-radius */
+            border-radius: 6px; 
             transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .auth-modal-form .google-auth-btn img {
-            height: 18px;
-            margin-right: 10px;
+            height: 20px; /* Slightly larger icon */
+            margin-right: 12px; /* More space */
         }
 
         .auth-modal-form .google-auth-btn:hover {
-            background: #f8f8f8;
-            transform: translateY(-2px); /* Bounce effect */
+            background: #f8f8f8; /* User request */
+            transform: translateY(-2px); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         /* User Profile Modal Specific Styles */
-        .profile-modal-content {
+        .profile-modal-content { /* Inherits .auth-modal-content styles */
             max-width: 500px;
             padding: 35px;
         }
@@ -691,17 +749,16 @@
             border: 4px solid var(--secondary-color);
             box-shadow: 0 0 15px rgba(255,215,0,0.5);
             margin-bottom: 15px;
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
-            /* Fix: Ensure avatar background is visible even if image fails */
-            background-color: var(--primary-color); /* Solid background color */
-            display: flex; /* To center any fallback text */
+            transition: transform 0.2s ease-out; 
+            background-color: var(--primary-color); 
+            display: flex; 
             justify-content: center;
             align-items: center;
-            font-size: 3em; /* For fallback text size */
-            color: var(--text-color-light); /* For fallback text color */
+            font-size: 3em; 
+            color: var(--text-color-light); 
         }
         #profile-display-avatar:hover {
-            transform: translateY(-3px) scale(1.03); /* Slight bounce */
+            transform: translateY(-3px) scale(1.03); 
         }
 
         .upload-avatar-btn {
@@ -837,7 +894,7 @@
         .user-profile-menu {
             display: none;
             position: fixed;
-            top: 70px;
+            top: 70px; /* Adjusted based on profile trigger size */
             right: 20px;
             width: 240px;
             background: var(--bg-gradient-end);
@@ -850,6 +907,21 @@
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
+         .user-profile-menu::before { /* Gradient border for dropdown */
+            content: '';
+            position: absolute;
+            inset: -1px; 
+            border-radius: 11px; 
+            background: var(--border-gradient);
+            opacity: 0.7;
+            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1px; 
+        }
+
 
         .user-profile-menu.active {
             display: block;
@@ -877,10 +949,10 @@
             margin-bottom: 10px;
             object-fit: cover;
             border: 2px solid var(--secondary-color);
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            transition: transform 0.2s ease-out; 
         }
         .user-profile-menu .menu-header img:hover {
-            transform: translateY(-3px) scale(1.03); /* Slight bounce */
+            transform: translateY(-3px) scale(1.03); 
         }
 
         .user-profile-menu .menu-header .username {
@@ -943,7 +1015,7 @@
 
         .stylish-popup-card {
             background: var(--card-bg-popup);
-            border: 1px solid var(--card-border);
+            /* border: 1px solid var(--card-border); */ /* Replaced by pseudo */
             border-radius: 12px;
             padding: 25px 30px;
             max-width: 400px;
@@ -955,9 +1027,22 @@
             transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important, opacity 0.25s ease-out !important;
             position: relative;
             color: var(--text-color-light);
-            /* Pop-in animation */
             animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both;
         }
+        .stylish-popup-card::before { /* Gradient border for stylish popup */
+            content: '';
+            position: absolute;
+            inset: -2px; 
+            border-radius: 14px; 
+            background: var(--border-gradient);
+            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 2px; 
+        }
+
 
         .stylish-popup-overlay.active .stylish-popup-card {
             transform: translateY(0) scale(1);
@@ -1108,10 +1193,10 @@
             border: 2px solid var(--secondary-color);
             box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
             object-fit: cover;
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            transition: transform 0.2s ease-out; 
         }
         .owner-avatar:hover {
-            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+            transform: translateY(-3px) scale(1.05); 
         }
 
         .owner-text {
@@ -1125,32 +1210,31 @@
         .main-container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
-            /* Double border effect */
-            border: 2px solid var(--secondary-color); /* Outer gradient border will be applied via pseudo-element */
+            /* border: 2px solid var(--secondary-color); */ /* Replaced by pseudo */
             border-radius: 22px;
             box-shadow: var(--shadow-deep);
             padding: 35px;
             text-align: center;
             width: 90%;
-            max-width: 750px;
+            max-width: 750px; /* Main container width */
             opacity: 0;
             transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-            position: relative; /* For pseudo-elements */
+            position: relative; 
         }
         /* Gradient outer border for main container */
         .main-container::before {
             content: '';
             position: absolute;
-            inset: -3px; /* Slightly outset from the element */
-            border-radius: 25px; /* Slightly larger than parent's border-radius */
+            inset: -3px; 
+            border-radius: 25px; 
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             z-index: -1;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
-            padding: 3px; /* Border thickness */
+            padding: 3px; 
         }
 
         #feedback-form-container.main-container {
@@ -1180,7 +1264,6 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            /* Section title animated underline */
             position: relative;
         }
         #feedback-form-container h1::after {
@@ -1192,7 +1275,7 @@
             margin-top: 8px;
             animation: underlineMove 1.8s infinite alternate;
             position: absolute;
-            bottom: -10px; /* Adjust position */
+            bottom: -10px; 
             left: 50%;
             transform: translateX(-50%);
         }
@@ -1214,8 +1297,7 @@
             overflow: hidden;
         }
 
-        /* Input group styles now handled by .input-wrapper */
-        .input-group label { /* Keep this for feedback form specific labels */
+        .input-group label { 
             display: block;
             margin-bottom: 7px;
             color: var(--text-color-light);
@@ -1241,7 +1323,7 @@
             color: rgba(255, 255, 255, 0.35);
             cursor: pointer;
             transition: color 0.25s ease, transform 0.15s ease, text-shadow 0.25s ease;
-            animation: starPopIn 0.5s ease-out backwards; /* Pop-in animation */
+            animation: starPopIn 0.5s ease-out backwards; 
         }
         .star:nth-child(1) { animation-delay: 0.1s; }
         .star:nth-child(2) { animation-delay: 0.2s; }
@@ -1259,21 +1341,25 @@
             color: var(--secondary-color);
             transform: scale(1.12) rotateY(8deg);
             text-shadow: 0 0 18px var(--secondary-color), 0 0 28px rgba(255,215,0,0.45);
-            /* Fix: Add more visible glow effect for selected stars */
             filter: brightness(1.2) drop-shadow(0 0 10px var(--secondary-color));
         }
-        /* Star hover color wave effect */
         .star:hover ~ .star {
-            color: rgba(255, 255, 255, 0.2); /* Dim stars after the hovered one */
+            color: rgba(255, 255, 255, 0.2); 
         }
 
-        /* Fix: Submit Feedback alignment */
-        #feedback-form {
+        #feedback-form { /* User request: center form elements */
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center all children horizontally */
-            width: 100%; /* Ensure form takes full width to center its content */
+            align-items: center; 
+            width: 100%; 
+            max-width: 420px; /* User request: narrower form */
+            margin: 0 auto; /* Center the form itself if its container is wider */
         }
+        /* Ensure input wrappers take full width within the form */
+        #feedback-form .input-wrapper {
+            width: 100%;
+        }
+
 
         button#submit-feedback {
             background: linear-gradient(45deg, var(--accent-color), #2563EB);
@@ -1294,7 +1380,6 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            /* width: auto; /* Allow button to size to content, then centered by parent flex */
         }
 
         button#submit-feedback::before {
@@ -1322,9 +1407,8 @@
             box-shadow: 0 7px 18px rgba(59,130,246,0.55);
         }
 
-        /* Style for new Enhance Feedback button */
         #enhance-feedback-btn {
-            background: linear-gradient(45deg, #8B5CF6, #EC4899); /* A nice vibrant gradient */
+            background: linear-gradient(45deg, #8B5CF6, #EC4899); 
             color: #fff;
             padding: 10px 20px;
             border-radius: 8px;
@@ -1336,8 +1420,8 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 15px; /* Spacing from textarea */
-            margin-bottom: 10px; /* Spacing to rating */
+            margin-top: 15px; 
+            margin-bottom: 10px; 
         }
 
         #enhance-feedback-btn:hover {
@@ -1357,7 +1441,7 @@
         #feedback-list-container {
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(7px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            /* border: 1px solid rgba(255, 255, 255, 0.12); */ /* Replaced by pseudo */
             border-radius: 16px;
             padding: 22px;
             text-align: left;
@@ -1374,6 +1458,8 @@
             border-radius: 22px;
             padding: 30px 18px;
         }
+        /* Inherits .main-container::before for gradient border */
+
 
         #feedback-list-container.animate-in {
             opacity: 1;
@@ -1389,7 +1475,6 @@
             font-weight: 500;
             text-shadow: 0 0 9px rgba(255,215,0,0.25);
             grid-column: 1 / -1;
-            /* Section title animated underline */
             position: relative;
         }
         #feedback-list-container h2::after {
@@ -1401,7 +1486,7 @@
             margin-top: 8px;
             animation: underlineMove 1.8s infinite alternate;
             position: absolute;
-            bottom: -10px; /* Adjust position */
+            bottom: -10px; 
             left: 0;
             transform: translateX(0);
         }
@@ -1409,7 +1494,7 @@
         /* Average Rating Display - Refined Professional Style */
         .average-rating-container {
             background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            /* border: 1px solid rgba(255, 255, 255, 0.15); */ /* Replaced by pseudo */
             border-radius: 12px;
             padding: 25px 30px;
             margin-bottom: 30px;
@@ -1428,12 +1513,11 @@
             z-index: 2;
             backdrop-filter: blur(8px);
             grid-column: 1 / -1;
-            /* Glowing border */
-            border: 2px solid transparent;
+            /* border: 2px solid transparent; */ /* Replaced by pseudo */
             background-clip: padding-box;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3);
+            /* box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3); */ /* Combined in pseudo */
         }
-        .average-rating-container::before {
+        .average-rating-container::before { /* Gradient border for average rating */
             content: '';
             position: absolute;
             inset: -2px;
@@ -1445,6 +1529,7 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             padding: 2px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3);
         }
 
         .average-rating-container.animate-in {
@@ -1472,7 +1557,7 @@
             text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
             line-height: 1;
             margin-bottom: 10px;
-            animation: pulseText 2s infinite alternate; /* Animated rating number */
+            animation: pulseText 2s infinite alternate; 
         }
         @keyframes pulseText {
             0% { transform: scale(1); text-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
@@ -1494,7 +1579,6 @@
             padding-top: 8px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Mini badge for total feedbacks */
         .badge-total {
             background: linear-gradient(45deg, #007bff, #0056b3);
             color: #fff;
@@ -1510,9 +1594,9 @@
         /* Individual Feedback Item (Card Style) */
         .feedback-item {
             background: #23235aee;
-            border: 2.5px solid var(--secondary-color); /* Colored border */
+            border: 2.5px solid var(--secondary-color); 
             border-radius: 18px;
-            box-shadow: 0 6px 28px rgba(106, 13, 173, 0.13); /* Deeper shadow */
+            box-shadow: 0 6px 28px rgba(106, 13, 173, 0.13); 
             padding: 24px 22px;
             transition: box-shadow .19s, transform .15s;
             display: flex;
@@ -1520,13 +1604,12 @@
             gap: 12px;
             position: relative;
             overflow: hidden;
-            /* Hover effect */
             transition: transform 0.18s, box-shadow 0.18s, border-color 0.3s;
         }
         .feedback-item:hover {
             transform: translateY(-5px) scale(1.01);
             box-shadow: 0 12px 36px rgba(255,215,0,0.3), 0 0 0 3px rgba(255,215,0,0.15);
-            border-color: var(--primary-color); /* Animate border color */
+            border-color: var(--primary-color); 
         }
 
         .avatar-img {
@@ -1534,15 +1617,14 @@
             height: 52px;
             border-radius: 50%;
             flex-shrink: 0;
-            border: 2px solid var(--secondary-color); /* Glowing ring border */
-            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2); /* Drop shadow */
+            border: 2px solid var(--secondary-color); 
+            box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2); 
             object-fit: cover;
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            transition: transform 0.2s ease-out; 
         }
         .avatar-img:hover {
-            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+            transform: translateY(-3px) scale(1.05); 
         }
-        /* Animated border for verified users (assuming JS adds .verified-user class) */
         .avatar-img.verified-user {
             animation: pulseBorder 1.5s infinite alternate;
         }
@@ -1559,14 +1641,13 @@
         }
 
         .feedback-details strong {
-            color: var(--secondary-color); /* Default color, JS will change based on rating */
-            font-size: 1.18em; /* Larger */
+            color: var(--secondary-color); 
+            font-size: 1.18em; 
             display: inline;
             margin-bottom: 4px;
             text-transform: capitalize;
-            font-weight: bold; /* Bold */
+            font-weight: bold; 
         }
-        /* User name color based on rating (CSS class, assuming JS applies them) */
         .feedback-details strong.rating-5 { color: var(--rating-5-color); }
         .feedback-details strong.rating-4 { color: var(--rating-4-color); }
         .feedback-details strong.rating-3 { color: var(--rating-3-color); }
@@ -1584,7 +1665,6 @@
             font-weight: normal;
         }
 
-        /* Blue tick (Instagram-like) */
         .verified-tag-feedback {
             display: inline-flex;
             align-items: center;
@@ -1636,19 +1716,18 @@
             white-space: pre-wrap;
             color: var(--text-color-light);
             line-height: 1.55;
-            font-size: 1.13em; /* Larger, more readable */
-            font-style: italic; /* Italic */
+            font-size: 1.13em; 
+            font-style: italic; 
             position: relative;
-            padding: 0 15px; /* Padding for quote marks */
+            padding: 0 15px; 
         }
-        /* Colored quote marks */
         .feedback-details p::before {
             content: '“';
             position: absolute;
             left: 0;
             top: 0;
             font-size: 2em;
-            color: var(--accent-color); /* Blue quote mark */
+            color: var(--accent-color); 
             line-height: 1;
         }
         .feedback-details p::after {
@@ -1657,7 +1736,7 @@
             right: 0;
             bottom: 0;
             font-size: 2em;
-            color: var(--accent-color); /* Blue quote mark */
+            color: var(--accent-color); 
             line-height: 1;
         }
 
@@ -1677,7 +1756,6 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Admin Reply Styling (Blockquote Style) */
         .admin-reply {
             margin-top: 10px;
             padding: 9px 11px;
@@ -1688,10 +1766,10 @@
             display: flex;
             align-items: flex-start;
             gap: 7px;
-            position: relative; /* For blockquote */
+            position: relative; 
         }
         .admin-reply::before {
-            content: '“'; /* Blockquote style */
+            content: '“'; 
             position: absolute;
             left: 5px;
             top: 0;
@@ -1763,7 +1841,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* New Styles for Email Verification Prompt */
         .email-verification-prompt {
             background-color: rgba(255, 193, 7, 0.2);
             border: 1px solid var(--warning-color);
@@ -1830,7 +1907,7 @@
             }
 
             #login-icon-trigger .fas {
-                font-size: 2.1em;
+                font-size: 1.6em; /* Adjusted */
             }
 
             #user-profile-name {
@@ -1839,6 +1916,7 @@
 
             .auth-modal-content{
                 padding: 20px;
+                 max-width: 360px; /* Adjust for smaller screens */
             }
             .auth-modal-content h2{
                 font-size:1.5em;
@@ -1882,11 +1960,13 @@
             .page-content-wrapper {
                 padding-top: 20px;
             }
-            /* Stack feedback cards on mobile */
             #feedback-list-container {
-                grid-template-columns: 1fr; /* Single column */
+                grid-template-columns: 1fr; 
                 gap: 20px;
                 padding: 20px 15px;
+            }
+             #feedback-form { /* Ensure form width is also responsive */
+                max-width: 90%;
             }
             .feedback-item {
                 padding: 18px;
@@ -1921,6 +2001,7 @@
             .auth-modal-content{
                 width:95%;
                 padding:20px;
+                max-width: 300px; /* Further adjust for very small screens */
             }
 
             .profile-modal-content {
@@ -2201,14 +2282,14 @@
                     <input type="text" id="name" placeholder=" " required disabled>
                     
 
-<label for="name">Your Name:</label>
+<label for="name">Your Name</label>
                 </div>
                 <div class="input-wrapper">
                     <i class="fas fa-comment-alt input-icon"></i>
                     <textarea id="feedback" placeholder=" " required></textarea>
                     
 
-<label for="feedback">Your Feedback:</label>
+<label for="feedback">Your Feedback</label>
                 </div>
                 
 
@@ -2588,7 +2669,7 @@
                     }
 
                     // Specific error handling for 403 email verification
-                    if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) { // Changed "Email verify nahi kiya gaya hai" to "Email not verified"
+                    if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) { 
                         showStylishPopup('warning', 'Email Verification Required!', data.message);
                         throw new Error(data.message); // Re-throw to stop further processing
                     } else {
@@ -2606,13 +2687,13 @@
                     userFriendlyMessage = "The server sent invalid or unreadable data. This might be a temporary issue or a problem with the API response format.";
                 } else if (error.message.includes("Failed to fetch")) {
                     userFriendlyMessage = "Network error: Could not connect to the server. Please check your internet connection.";
-                } else if (!error.message.includes("Email not verified")) { // Changed "Email verify nahi kiya gaya hai" to "Email not verified"
+                } else if (!error.message.includes("Email not verified")) { 
                     // Use original error message only if it's not the specific email verification error already shown
                     userFriendlyMessage = error.message;
                 }
 
                 // Show popup only if it's not the specific email verification error already shown
-                if (!error.message.includes("Email not verified")) { // Changed "Email verify nahi kiya gaya hai" to "Email not verified"
+                if (!error.message.includes("Email not verified")) { 
                     showStylishPopup('error', 'Request Failed', userFriendlyMessage);
                 }
                 throw error; // Always re-throw original error for further handling/logging
@@ -2816,23 +2897,20 @@
                     userProfileTrigger.style.opacity = '1';
                     userProfileTrigger.style.pointerEvents = 'auto';
                     
-                    if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                    if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
                     if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
                 }
 
-                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                // Label for "Name" no longer includes username span, so it'll just be "Your Name:"
-                // The input field itself will now display the user's name.
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
 
                 // Control visibility of verification prompts
                 if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
                     if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
-                    // Disable actions requiring verification
                     if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
                     if(changePasswordBtn) changePasswordBtn.disabled = true;
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = true;
@@ -2840,16 +2918,11 @@
                 } else {
                     if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
                     if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-                    // Enable actions if verified or Google user
                     if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = false;
                     if(changePasswordBtn) changePasswordBtn.disabled = false;
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = false;
                     if(avatarUploadInput) avatarUploadInput.disabled = false;
                 }
-
-                // Feedback submission is now allowed even if unverified (handled by submitButton.disabled below)
-                // Feedback editing still requires verification (handled by editButton.disabled in addFeedbackToDOM)
-
 
                 if (currentUser.loginMethod === 'google') {
                     if(profileNameInput) {
@@ -2858,9 +2931,9 @@
                     }
                     if(profileEditForm) saveProfileChangesBtn.disabled = true;
                     if(changePasswordForm) changePasswordForm.style.display = 'none';
-                    if(submitButton) submitButton.disabled = false; // Google users can always submit
+                    if(submitButton) submitButton.disabled = false; 
                     if(avatarUploadInput) avatarUploadInput.disabled = false;
-                } else { // Email user
+                } else { 
                     if(profileNameInput) {
                         profileNameInput.disabled = false;
                         profileNameInput.title = "";
@@ -2877,11 +2950,14 @@
                 }
                 if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
 
-                // Enable/disable submit feedback button based on login status (always enabled if logged in)
-                // Verification is not required for submission, only for editing.
                 if (submitButton) {
                     submitButton.disabled = false; 
                 }
+                 // Update profile modal fields
+                if(profileNameInput) profileNameInput.value = currentUser.name;
+                if(profileEmailInput) profileEmailInput.value = currentUser.email;
+                if(profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
+
             }
         }
 
@@ -2902,14 +2978,10 @@
             if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
             if(nameInputInFeedbackForm) {
                 nameInputInFeedbackForm.value = '';
-                nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
+                nameInputInFeedbackForm.placeholder = ' '; // For floating label
                 nameInputInFeedbackForm.disabled = false;
             }
-            // Label for "Name" no longer includes username span, so it'll just be "Your Name:"
-            // The input field itself will now display the user's name.
-            // if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
-
-            // Disable all actions for logged out users or guests
+            
             if(submitButton) submitButton.disabled = true;
             if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
             if(changePasswordBtn) changePasswordBtn.disabled = true;
@@ -2944,7 +3016,7 @@
                 e.preventDefault();
                 if(userMenu) userMenu.classList.remove('active');
                 if(userProfileModal) userProfileModal.classList.add('active');
-                updateUIAfterLogin(); // Ensure profile modal reflects current user state
+                updateUIAfterLogin(); 
             });
         }
 
@@ -3010,9 +3082,8 @@
                     currentUser.name = data.user.name;
                     currentUser = { ...currentUser, ...data.user };
 
-                    // Fix: Set profile display avatar correctly
                     if (profileDisplayAvatar) {
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
                     }
 
                     updateUIAfterLogin();
@@ -3055,8 +3126,7 @@
                 } else {
                     if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
                     if (currentUser) {
-                        // Fix: Set profile display avatar correctly on cancel/no file
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0))}`;
+                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
                         profileEditForm.dispatchEvent(new Event('input'));
                     }
                 }
@@ -3256,18 +3326,6 @@
                 enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...';
 
                 try {
-                    // Simulate LLM API call
-                    // In a real application, this would be a backend endpoint calling the Gemini API
-                    // Example:
-                    // const response = await fetch(API_ENHANCE_FEEDBACK_URL, {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify({ feedback: originalFeedback })
-                    // });
-                    // const data = await response.json();
-                    // const enhancedText = data.enhancedFeedback;
-
-                    // Mock LLM response for frontend demonstration
                     const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise.
 Original Feedback: "${originalFeedback}"`;
 
@@ -3295,7 +3353,6 @@ Original Feedback: "${originalFeedback}"`;
                         showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance feedback. Please try again.');
                     }
 
-                    // Fix: Replace feedback in textarea with enhanced text
                     feedbackTextarea.value = enhancedText;
                     showStylishPopup('success', 'Feedback Enhanced!', 'Your feedback has been refined by AI.');
 
@@ -3315,9 +3372,7 @@ Original Feedback: "${originalFeedback}"`;
                 showStylishPopup('warning', 'Login Required', 'Please log in via the icon to submit feedback.');
                 return;
             }
-            // Feedback submission no longer requires email verification
-            // Backend /api/feedback route no longer has isEmailVerified middleware
-
+            
             const feedbackContent = feedbackTextarea.value.trim();
             const ratingValue = ratingInput.value;
             let nameValue = nameInputInFeedbackForm.value.trim();
@@ -3330,7 +3385,6 @@ Original Feedback: "${originalFeedback}"`;
             const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
             const method = isEditing ? 'PUT' : 'POST';
 
-            // If editing, check verification. If submitting, verification not needed.
             if (isEditing && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                 showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit feedback.');
                 return;
@@ -3358,29 +3412,24 @@ Original Feedback: "${originalFeedback}"`;
         function resetFeedbackForm() {
             if (currentUser) {
                 nameInputInFeedbackForm.value = currentUser.name;
-                // Label for "Name" no longer includes username span, so it'll just be "Your Name:"
-                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = true;
             } else {
                 nameInputInFeedbackForm.value = '';
-                // Label for "Name" no longer includes username span, so it'll just be "Your Name:"
-                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = false;
-                nameInputInFeedbackForm.placeholder = 'Your name here...';
+                nameInputInFeedbackForm.placeholder = ' '; // For floating label
             }
             feedbackTextarea.value = '';
             ratingInput.value = '0';
             currentSelectedRating = 0;
             updateStarVisuals(0);
-            submitButton.textContent = 'Submit Feedback';
+            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback'; // Reset innerHTML
             isEditing = false;
             currentEditFeedbackId = null;
 
-            // Submit button is always enabled based on login status (verification not required for submission)
             if (currentUser) {
                 submitButton.disabled = false;
             } else {
-                submitButton.disabled = true; // Disabled if logged out
+                submitButton.disabled = true; 
             }
         }
 
@@ -3399,11 +3448,11 @@ Original Feedback: "${originalFeedback}"`;
                 if (!feedbackListContainer.contains(averageRatingDisplayEl)) {
                     feedbackListContainer.prepend(averageRatingDisplayEl);
                 }
-                let h2Title = feedbackListContainer.querySelector('h2.section-title'); // Select with class
+                let h2Title = feedbackListContainer.querySelector('h2.section-title'); 
                 if (!h2Title) {
                      h2Title = document.createElement('h2');
                      h2Title.textContent = 'Recent Feedbacks';
-                     h2Title.classList.add('section-title'); // Add class
+                     h2Title.classList.add('section-title'); 
                      feedbackListContainer.insertBefore(h2Title, feedbackListContainer.querySelector('.feedback-item') || null);
                 }
 
@@ -3473,7 +3522,6 @@ Original Feedback: "${originalFeedback}"`;
             avatarImg.onerror = function() {
                 this.src = `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
             };
-            // Add verified-user class for animated border for verified users
             if (fbData.userId && typeof fbData.userId === 'object' && fbData.userId.isVerified) {
                 avatarImg.classList.add('verified-user');
             }
@@ -3506,7 +3554,6 @@ Original Feedback: "${originalFeedback}"`;
 
             strongName.innerHTML = `${nameContent} ${userTypeTag} ${verificationTag}`;
 
-            // Add class for dynamic username color based on rating (CSS-only part)
             if (fbData.rating) {
                 strongName.classList.add(`rating-${fbData.rating}`);
             }
@@ -3540,7 +3587,6 @@ Original Feedback: "${originalFeedback}"`;
             editButton.className = 'edit-feedback-btn';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.title = 'Edit this feedback';
-            // Edit button is disabled if not current user's feedback OR if current user is not verified (for email users)
             editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id && (currentUser.loginMethod === 'google' || currentUser.isVerified));
             
             editButton.addEventListener('click', (event) => {
@@ -3548,14 +3594,11 @@ Original Feedback: "${originalFeedback}"`;
                 if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
                     return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
                 }
-                // Explicitly check verification for editing, even if button is enabled
                 if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                     return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit feedback.');
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 nameInputInFeedbackForm.value = fbData.name;
-                // Label for "Name" no longer includes username span, so it'll just be "Your Name:"
-                // The input field itself will now display the user's name.
                 nameInputInFeedbackForm.disabled = true;
 
                 feedbackTextarea.value = fbData.feedback;
@@ -3563,7 +3606,7 @@ Original Feedback: "${originalFeedback}"`;
                 ratingInput.value = fbData.rating;
                 updateStarVisuals(fbData.rating);
 
-                submitButton.textContent = 'Update Feedback';
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback'; // Update innerHTML
                 isEditing = true;
                 currentEditFeedbackId = fbData._id;
 
