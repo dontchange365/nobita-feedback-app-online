@@ -2834,6 +2834,7 @@
         checkLoginStatus();
     });
 </script>
+
 <!-- ========== NOBIBOT WIDGET START ========== -->
 <style>
   #nobiBotWidgetBtn {
@@ -2888,12 +2889,13 @@
 <iframe id="nobiBotWidgetFrame" allow="camera; microphone" src=""></iframe>
 <script>
 function getNobitaUserName() {
-    // Yeh line NOBITA user ka naam dhoond lega (agar logged in hai)
+    // Apne user ka naam yahan detect kar
     const profile = document.getElementById('user-profile-name');
     if (profile && profile.innerText.trim()) {
         return profile.innerText.trim();
     }
-    return "Bakra"; // Agar user login nahi hai toh
+    // Yahan agar koi aur tarika hai to use kar (e.g. window.loggedInUserName)
+    return "Bakra"; // Default fallback
 }
 const nobiBotWidgetBtn = document.getElementById("nobiBotWidgetBtn");
 const nobiBotWidgetFrame = document.getElementById("nobiBotWidgetFrame");
@@ -2901,7 +2903,9 @@ const nobiBotWidgetClose = document.getElementById("nobiBotWidgetClose");
 
 nobiBotWidgetBtn.onclick = function () {
     const nobiUserName = getNobitaUserName();
-    const botURL = `https://nobibot.onrender.com/?username=${encodeURIComponent(nobiUserName)}`;
+    let seenWelcome = localStorage.getItem('nobi_seen_welcome');
+    let botURL = `https://nobibot.onrender.com/?username=${encodeURIComponent(nobiUserName)}`;
+    if (seenWelcome) botURL += '&seenWelcome=true';
     nobiBotWidgetFrame.src = botURL;
     nobiBotWidgetFrame.style.display = "block";
     nobiBotWidgetClose.style.display = "block";
@@ -2913,7 +2917,18 @@ nobiBotWidgetClose.onclick = function () {
     nobiBotWidgetClose.style.display = "none";
     nobiBotWidgetBtn.style.display = "flex";
 };
+
+// MESSAGE FROM IFRAME (bot ne welcome dikhaya — tabhi localStorage set kar)
+window.addEventListener("message", function(event) {
+    if (
+      event.origin === "https://nobibot.onrender.com" &&
+      event.data === "nobi-welcome-seen"
+    ) {
+        localStorage.setItem('nobi_seen_welcome', 'yes');
+    }
+});
 </script>
 <!-- ========== NOBIBOT WIDGET END ========== -->
+
 </body>
 </html>
