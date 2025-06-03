@@ -451,15 +451,26 @@
             right: 10px;
             cursor: pointer;
             font-size: 26px;
-            color: var(--text-color-light);
+            /* FIX: Make close button visible and stylish */
+            color: var(--secondary-color); /* Bright gold color */
+            background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+            border-radius: 50%; /* Circular shape */
+            width: 35px; /* Fixed width */
+            height: 35px; /* Fixed height */
+            display: flex; /* Flexbox for centering */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); /* Subtle shadow */
             line-height: 1;
             padding:5px;
-            transition: color 0.2s, transform 0.2s; /* Animated close button */
+            transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s; /* Animated close button */
         }
 
         .auth-modal-content .close-modal-btn:hover {
-            color: var(--secondary-color);
-            transform: rotate(90deg); /* Spin on hover */
+            color: var(--primary-color); /* Change color on hover */
+            background: var(--secondary-color); /* Change background on hover */
+            transform: rotate(90deg) scale(1.1); /* Spin and slightly enlarge on hover */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         /* Floating Labels for Inputs */
@@ -563,6 +574,21 @@
             background: #3578e0;
         }
 
+
+        /* FIX: Make the secondary button for "Close" in profile modal stylish */
+        .popup-button.secondary {
+            background: linear-gradient(45deg, #6c757d, #495057); /* Darker gradient */
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2); /* Subtle border */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .popup-button.secondary:hover {
+            background: linear-gradient(45deg, #495057, #6c757d);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+
         .auth-modal-form .form-links {
             display: flex;
             justify-content: space-between;
@@ -641,6 +667,13 @@
             box-shadow: 0 0 15px rgba(255,215,0,0.5);
             margin-bottom: 15px;
             transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            /* FIX: Ensure avatar background is visible even if image fails */
+            background-color: var(--primary-color); /* Solid background color */
+            display: flex; /* For centering fallback text if any */
+            justify-content: center;
+            align-items: center;
+            font-size: 3em; /* For fallback text size */
+            color: var(--text-color-light); /* For fallback text color */
         }
         #profile-display-avatar:hover {
             transform: translateY(-3px) scale(1.03); /* Slight bounce */
@@ -1009,14 +1042,13 @@
             font-size: 1.6em;
             cursor: pointer;
             color: #aaa;
-            transition: color 0.2s, transform 0.2s; /* Animated close button */
+            transition: color 0.2s;
             padding: 5px;
             line-height: 1;
         }
 
         .stylish-popup-card .close-popup-btn-styled:hover {
             color: var(--secondary-color);
-            transform: rotate(90deg); /* Spin on hover */
         }
 
         /* --- Page Content Layout & Animations --- */
@@ -1208,6 +1240,14 @@
             color: rgba(255, 255, 255, 0.2); /* Dim stars after hovered one */
         }
 
+        /* FIX: Submit Feedback Alignment */
+        #feedback-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center all children horizontally */
+            width: 100%; /* Ensure form takes full width to center its content */
+        }
+
         button#submit-feedback {
             background: linear-gradient(45deg, var(--accent-color), #2563EB);
             color: #fff;
@@ -1227,6 +1267,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            /* width: auto; /* Allow button to size to content, then centered by parent flex */
         }
 
         button#submit-feedback::before {
@@ -2095,7 +2136,8 @@
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" id="name" placeholder=" " required disabled>
-                    <label for="name">Your Name: (<span id="feedback-form-username">User</span>)</label>
+                    <!-- FIX: Removed redundant username span from label -->
+                    <label for="name">Your Name:</label>
                 </div>
                 <div class="input-wrapper">
                     <i class="fas fa-comment-alt input-icon"></i>
@@ -2709,7 +2751,8 @@
                 if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
 
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
+                // FIX: Removed username span from label, input now shows name
+                // if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = currentUser.name;
                 if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
 
                 // Control visibility of verification prompts
@@ -2789,7 +2832,8 @@
                 nameInputInFeedbackForm.placeholder = 'Your name here if not logged in...';
                 nameInputInFeedbackForm.disabled = false;
             }
-            if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
+            // FIX: Removed username span from label, input now shows name
+            // if(feedbackFormUsernameSpan) feedbackFormUsernameSpan.textContent = 'Guest';
 
             // Disable all actions for logged out users or guests
             if(submitButton) submitButton.disabled = true;
@@ -3168,11 +3212,13 @@
         function resetFeedbackForm() {
             if (currentUser) {
                 nameInputInFeedbackForm.value = currentUser.name;
-                feedbackFormUsernameSpan.textContent = currentUser.name;
+                // FIX: Removed username span from label, input now shows name
+                // feedbackFormUsernameSpan.textContent = currentUser.name;
                 nameInputInFeedbackForm.disabled = true;
             } else {
                 nameInputInFeedbackForm.value = '';
-                feedbackFormUsernameSpan.textContent = 'Guest';
+                // FIX: Removed username span from label, input now shows name
+                // feedbackFormUsernameSpan.textContent = 'Guest';
                 nameInputInFeedbackForm.disabled = false;
                 nameInputInFeedbackForm.placeholder = 'Your name here...';
             }
@@ -3362,7 +3408,8 @@
                 }
                 showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
                 nameInputInFeedbackForm.value = fbData.name;
-                feedbackFormUsernameSpan.textContent = fbData.name;
+                // FIX: Removed username span from label, input now shows name
+                // feedbackFormUsernameSpan.textContent = fbData.name;
                 nameInputInFeedbackForm.disabled = true;
 
                 feedbackTextarea.value = fbData.feedback;
