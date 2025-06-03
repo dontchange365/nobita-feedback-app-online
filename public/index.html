@@ -2432,21 +2432,75 @@
                 }
             }
 
+            let data;
+            let rawResponseText;
+
             try {
                 const response = await fetch(url, { method, headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) });
-                const data = await response.json();
-                if (!response.ok) {
-                    if (response.status === 403 && data.message && data.message.includes("Email verify nahi kiya gaya hai")) {
-                        showStylishPopup('warning', 'Email Verification Required!', data.message);
+
+                // First, check if the response is successful (2xx status)
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
                     } else {
-                        showStylishPopup('error', 'Error', data.message || `Server error (${response.status})`);
+                        // If 2xx but not JSON (e.g., 204 No Content, or plain text success)
+                        rawResponseText = await response.text();
+                        if (response.status === 204 || !rawResponseText.trim()) {
+                            data = {}; // Treat as empty success
+                        } else {
+                            // Successful but unexpected content type
+                            console.warn(`API response for ${url} was 2xx but not JSON. Content-Type: ${contentType || 'N/A'}. Response text:`, rawResponseText);
+                            data = { message: rawResponseText }; // Return text as a message
+                        }
                     }
-                    throw new Error(data.message || `Server error (${response.status})`);
+                } else {
+                    // If response is not OK (e.g., 4xx, 5xx)
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        try {
+                            data = await response.json();
+                        } catch (jsonError) {
+                            rawResponseText = await response.text();
+                            console.error(`JSON parsing failed for non-OK response from ${url}. Raw response:`, rawResponseText, jsonError);
+                            throw new Error(`Server error (${response.status}): Invalid JSON response. Raw: ${rawResponseText}`);
+                        }
+                    } else {
+                        // Non-OK and not JSON, read as text
+                        rawResponseText = await response.text();
+                        console.error(`Non-OK API response for ${url} was not JSON. Content-Type: ${contentType || 'N/A'}. Response text:`, rawResponseText);
+                        throw new Error(rawResponseText || `Server error (${response.status})`);
+                    }
+
+                    // Specific error handling for 403 email verification
+                    if (response.status === 403 && data && data.message && data.message.includes("Email verify nahi kiya gaya hai")) {
+                        showStylishPopup('warning', 'Email Verification Required!', data.message);
+                        throw new Error(data.message); // Re-throw to stop further processing
+                    } else {
+                        // General error for non-2xx JSON responses
+                        throw new Error(data.message || `Server error (${response.status})`);
+                    }
                 }
-                return data;
+                return data; // Return parsed data for successful responses
+
             } catch (error) {
                 console.error(`API request error to ${url}:`, error);
-                throw error;
+                let userFriendlyMessage = "An unexpected error occurred. Please try again.";
+
+                if (error.message.includes("JSON parsing error") || error.message.includes("Invalid JSON response")) {
+                    userFriendlyMessage = "The server sent invalid or unparseable data. This might be a temporary issue or a problem with the API response format.";
+                } else if (error.message.includes("Failed to fetch")) {
+                    userFriendlyMessage = "Network error: Could not connect to the server. Please check your internet connection.";
+                } else if (!error.message.includes("Email verify nahi kiya gaya hai")) {
+                    // Only use the original error message if it's not the specific email verification one
+                    userFriendlyMessage = error.message;
+                }
+
+                // Only show popup if it's not the specific email verification error that was already shown
+                if (!error.message.includes("Email verify nahi kiya gaya hai")) {
+                    showStylishPopup('error', 'Request Failed', userFriendlyMessage);
+                }
+                throw error; // Always re-throw the original error for further handling/logging
             } finally {
                 if(submitBtn) {
                     submitBtn.disabled = false;
@@ -2454,7 +2508,7 @@
                     else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
                     else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
                     else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                    else if(url.includes('/api/feedback') && method === 'PUT') submitBtn.textContent = isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK";
+                    else if(url.includes('/api/feedback') && method === 'PUT') submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${isEditing ? "UPDATE FEEDBACK" : "SUBMIT FEEDBACK"}`;
                 }
                 if (sendVerificationEmailBtn) {
                     sendVerificationEmailBtn.disabled = false;
