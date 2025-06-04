@@ -2169,7 +2169,8 @@
         const sendVerificationEmailBtn = document.getElementById('send-verification-email-btn');
         const profileDisplayAvatar = document.getElementById('profile-display-avatar');
         const avatarUploadInput = document.getElementById('avatar-upload-input');
-        const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
+        const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn').addEventListener('click',function(e) {
+            e.preventDefault();
         const uploadProgressBar = document.getElementById('upload-progress-bar');
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
