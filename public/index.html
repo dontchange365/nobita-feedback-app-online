@@ -3036,26 +3036,10 @@
         updateUIAfterLogout(); // Set initial state assuming logged out
         checkLoginStatus(); // Then check actual login status and update UI + fetch data
     });
-    // Yeh sirf avatar upload ke time name required hata dega
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Avatar upload button dhundo
-    var avatarBtn = document.getElementById('upload-avatar-now-btn');
-    if (!avatarBtn) return; // Safety
-
-    avatarBtn.addEventListener('click', function(e) {
-        // 2. Name input dhundo (profile edit form me)
-        var nameInput = document.querySelector('#profile-edit-form input[name="name"]');
-        if (nameInput) {
-            // 3. Required hatao
-            nameInput.removeAttribute('required');
-        }
-        // Ab avatar upload process continue ho jayega bina name ke error ke
-
-        // (Optional) Agar tu chahta hai ke baad me wapas required lag jaye,
-        // toh upload complete ya popup close hone par isko wapas laga sakta hai.
-        // Example:
-        // nameInput.setAttribute('required', 'required');
-    });
+ document.getElementById('upload-avatar-now-btn').addEventListener('click', function() {
+  // Name input required hatado, sirf avatar upload pe
+  var nameInput = document.querySelector('#profile-name');
+  if(nameInput) nameInput.removeAttribute('required');
 });
 </script>
 </body>
