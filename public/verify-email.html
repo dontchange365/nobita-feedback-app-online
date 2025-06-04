@@ -4,43 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Verify Karein - Nobita Feedback</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #6a0dad; --secondary-color: #FFD700; --accent-color: #3B82F6;
-            --text-color-light: #f4f4f9; --bg-gradient-start: #1a1a2e; --bg-gradient-end: #16213e;
-            --card-bg: rgba(255, 255, 255, 0.1); --card-border: rgba(255, 255, 255, 0.2);
-            --input-bg: rgba(255, 255, 255, 0.08); --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.4);
-            --success-color: #28a745; --error-color: #dc3545;
+            --primary: #7c3aed;
+            --secondary: #FFD700;
+            --accent: #22d3ee;
+            --danger: #f43f5e;
+            --success: #16e285;
+            --text-light: #f9fafb;
+            --glass: rgba(36,22,60,0.97);
+            --card-border: #b097f7;
+            --shadow-main: 0 6px 36px #24072da9, 0 1.5px 8px #0008;
+        }
+        html, body {
+            min-height: 100dvh;
+            height: 100dvh;
+            margin: 0; padding: 0; box-sizing: border-box;
+            background: linear-gradient(124deg, #1d163b 0%, #5e32ac 100%);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-light);
         }
         body {
-            font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            color: var(--text-color-light); display: flex; flex-direction: column; align-items: center;
-            justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+            min-height: 100dvh;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .verify-email-container { /* Renamed from reset-password-container */
-            background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border);
-            border-radius: 20px; box-shadow: var(--shadow-deep); padding: 30px 25px;
-            width: 90%; max-width: 450px; text-align: center;
+        .verify-email-outer {
+            height: 100dvh; width: 100vw;
+            display: flex; align-items: center; justify-content: center;
         }
-        .verify-email-container h2 { /* Renamed from reset-password-container h2 */
-            color: var(--secondary-color); font-family: 'Luckiest Guy', cursive; font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
-        .action-button { /* Retained as action-button */
-            background: linear-gradient(45deg, var(--accent-color), #2563EB); color: #fff; border: none; width: 100%; padding: 11px 20px; border-radius: 8px; font-size: 1em; font-weight: 500; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 3px 10px rgba(59,130,246,0.3); margin-top: 10px; }
-        .action-button:hover { background: linear-gradient(45deg, #2563EB, var(--accent-color)); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59,130,246,0.45); }
-        .action-button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
-        .message-area { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; word-wrap: break-word; font-size: 0.9em; }
-        .message-area.success { background-color: rgba(40, 167, 69, 0.2); border: 1px solid var(--success-color); color: var(--success-color); }
-        .message-area.error { background-color: rgba(220, 53, 69, 0.2); border: 1px solid var(--error-color); color: var(--error-color); }
-        .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid var(--secondary-color); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .home-link { display: none; margin-top: 20px; color: var(--secondary-color); text-decoration: none; font-size: 0.9em;}
-        .home-link:hover { text-decoration: underline; }
+        .verify-email-container {
+            position: relative;
+            background: var(--glass);
+            border-radius: 2.3em;
+            box-shadow: var(--shadow-main);
+            padding: 25px 8px 21px 8px;
+            width: 97vw;
+            max-width: 410px;
+            border: 2.5px solid transparent;
+            overflow: hidden;
+            box-sizing: border-box;
+            text-align: center;
+            z-index: 3;
+            animation: cardDropIn .9s cubic-bezier(.28,1.62,.44,1) .12s backwards;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @keyframes cardDropIn {
+            0% { opacity: 0; transform: translateY(-40px) scale(.86);}
+            60% { opacity:.82; transform:translateY(12px) scale(1.05);}
+            100% { opacity: 1; transform:translateY(0) scale(1);}
+        }
+        .verify-email-container h2 {
+            color: var(--secondary);
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 2.1em;
+            margin-bottom: 17px;
+            text-shadow: 0 0 12px #ffd70050, 0 1px 10px #fff2;
+            animation: titlePop .73s cubic-bezier(.28,1.62,.44,1) .17s backwards;
+        }
+        @keyframes titlePop {
+            0% { opacity:0; transform:scale(.8);}
+            70% { opacity:1; transform:scale(1.13);}
+            100% { opacity:1; transform:scale(1);}
+        }
+        #initial-message p {
+            font-size: 1.1em;
+            color: #fff5c9;
+            margin-bottom: 13px;
+            text-shadow: 0 2px 8px #fff1;
+            letter-spacing: .01em;
+        }
+        .spinner {
+            border: 6px solid rgba(255,255,255,0.19);
+            border-radius: 50%;
+            border-top: 6px solid var(--secondary);
+            width: 36px; height: 36px;
+            margin: 18px auto 10px auto;
+            animation: spin 0.7s linear infinite;
+            box-shadow: 0 2px 10px #ffd70040;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+        .message-area {
+            margin-top: 15px;
+            padding: 14px 13px;
+            border-radius: 13px;
+            display: none;
+            font-size: 1.01em;
+            box-shadow: 0 1.5px 8px #00000020;
+            font-weight: 600;
+            animation: fadeUp .65s cubic-bezier(.51,1.3,.36,1) backwards;
+            line-height: 1.65;
+            width: 100%;
+            max-width: 350px;
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @keyframes fadeUp {
+            0% {opacity: 0; transform: translateY(20px);}
+            100% {opacity: 1; transform: translateY(0);}
+        }
+        .message-area.success {
+            background: linear-gradient(95deg,#eaffee,#b9ffdc 80%);
+            color: var(--success); border: 2px solid var(--success);
+            animation: popGlow 0.45s cubic-bezier(.22,2,.41,1.01) backwards;
+            box-shadow: 0 3px 18px #16e28535;
+        }
+        .message-area.error {
+            background: linear-gradient(100deg,#fff0f6 50%,#ffdbe9 100%);
+            color: var(--danger); border: 2px solid var(--danger);
+            animation: shakeX .48s cubic-bezier(.65,1.8,.45,1.11) backwards;
+            box-shadow: 0 3px 18px #f43f5e44;
+        }
+        @keyframes popGlow {
+            0% { opacity: 0; transform: scale(.9);}
+            80% { opacity: 1; transform: scale(1.07);}
+            100% { opacity: 1; transform: scale(1);}
+        }
+        @keyframes shakeX {
+            0% { transform: translateX(0);}
+            14% { transform: translateX(-11px);}
+            32% { transform: translateX(9px);}
+            55% { transform: translateX(-7px);}
+            75% { transform: translateX(5px);}
+            100% { transform: translateX(0);}
+        }
+        .home-link {
+            display: none;
+            margin-top: 17px;
+            color: var(--secondary);
+            font-size: 1.03em;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: .03em;
+            transition: color .17s;
+            animation: fadeUp .9s 1.1s both;
+        }
+        .home-link:hover { color: var(--primary); text-decoration: underline;}
+        .verify-email-container:before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 2.5em;
+            z-index: 1;
+            pointer-events: none;
+            background: linear-gradient(93deg,#FFD700 10%,#22d3ee 60%,#7c3aed 100%);
+            opacity: .16;
+            filter: blur(16px);
+            transition: opacity .26s;
+            animation: edgePulse 2.6s infinite alternate;
+        }
+        @keyframes edgePulse {
+            0% { opacity: .13;}
+            100% { opacity: .26;}
+        }
+        @media (max-width: 430px) {
+            .verify-email-container {padding: 6vw 3vw 7vw 3vw; border-radius: 1.7em; max-width: 99vw;}
+            .message-area {max-width:98vw;}
+        }
+        @media (max-width: 340px) {
+            .verify-email-container {padding: 3vw 1vw;}
+        }
     </style>
 </head>
 <body>
-    <div class="verify-email-container"> <h2>Email Verify Karein</h2>
+<div class="verify-email-outer">
+    <div class="verify-email-container">
+        <h2>Email Verify Karein</h2>
         <div id="initial-message">
             <p>Aapka email verify kiya ja raha hai. Kripya thoda intezaar karein.</p>
             <div class="spinner" id="loading-spinner"></div>
@@ -48,71 +187,73 @@
         <div id="response-message" class="message-area"></div>
         <a href="/" class="home-link" id="login-page-link">Login Page Par Wapas Jaayein</a>
     </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const responseMessageDiv = document.getElementById('response-message');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const initialMessageDiv = document.getElementById('initial-message');
+    const loginPageLink = document.getElementById('login-page-link');
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const responseMessageDiv = document.getElementById('response-message');
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const initialMessageDiv = document.getElementById('initial-message');
-            const loginPageLink = document.getElementById('login-page-link');
+    if (!token) {
+        showMessage('error', 'Email verification link anuchit hai ya token nahi mila. Kripya sahi link ka istemal karein ya naya verification email request karein.');
+        initialMessageDiv.style.display = 'none';
+        loginPageLink.style.display = 'inline-block';
+        return;
+    }
 
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('token');
+    loadingSpinner.style.display = 'block';
+    initialMessageDiv.style.display = 'block';
+    responseMessageDiv.style.display = 'none';
 
-            if (!token) {
-                showMessage('error', 'Email verification link anuchit hai ya token nahi mila. Kripya sahi link ka istemal karein ya naya verification email request karein.');
-                initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
-                loginPageLink.style.display = 'inline-block';
-                return;
-            }
-
-            // Immediately attempt to verify email using the token
-            loadingSpinner.style.display = 'block';
-            initialMessageDiv.style.display = 'block';
-            responseMessageDiv.style.display = 'none';
-
-            try {
-                // API URL wahi base URL hoga jo aapka main app use kar raha hai
-                const response = await fetch(`/api/auth/verify-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: token })
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('success', data.message + " Aapko ab login page par redirect kiya jayega...");
-                    initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
-                    loginPageLink.style.display = 'inline-block'; // Show login link
-                    
-                    // Store the new token (which contains the updated isVerified status)
-                    if (data.token) {
-                        localStorage.setItem('authToken', data.token);
-                    }
-
-                    setTimeout(() => {
-                        window.location.href = '/'; // Redirect to home/login page
-                    }, 4000);
-                } else {
-                    showMessage('error', data.message || 'Email verify karne mein samasya aa gayi.');
-                    initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
-                    loginPageLink.style.display = 'inline-block';
-                }
-            } catch (error) {
-                console.error('Verify email request error:', error);
-                showMessage('error', 'Network ya server error. Kripya baad mein try karein.');
-                initialMessageDiv.style.display = 'none'; // Hide spinner and initial text
-                loginPageLink.style.display = 'inline-block';
-            } finally {
-                loadingSpinner.style.display = 'none';
-            }
-
-            function showMessage(type, message) {
-                responseMessageDiv.textContent = message;
-                responseMessageDiv.className = `message-area ${type}`;
-                responseMessageDiv.style.display = 'block';
-            }
+    try {
+        const response = await fetch(`/api/auth/verify-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token })
         });
-    </script>
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage('success', data.message + " <br>Aapko ab login page par redirect kiya jayega...");
+            initialMessageDiv.style.display = 'none';
+            loginPageLink.style.display = 'inline-block';
+
+            if (data.token) {
+                localStorage.setItem('authToken', data.token);
+            }
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 4000);
+        } else {
+            showMessage('error', data.message || 'Email verify karne mein samasya aa gayi.');
+            initialMessageDiv.style.display = 'none';
+            loginPageLink.style.display = 'inline-block';
+        }
+    } catch (error) {
+        console.error('Verify email request error:', error);
+        showMessage('error', 'Network ya server error. Kripya baad mein try karein.');
+        initialMessageDiv.style.display = 'none';
+        loginPageLink.style.display = 'inline-block';
+    } finally {
+        loadingSpinner.style.display = 'none';
+    }
+
+    function showMessage(type, message) {
+        responseMessageDiv.innerHTML = message;
+        responseMessageDiv.className = `message-area ${type}`;
+        responseMessageDiv.style.display = 'block';
+        setTimeout(() => {
+            responseMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 130);
+        if (window.navigator && window.navigator.vibrate) {
+            if (type === 'error') window.navigator.vibrate([100, 50, 90]);
+            else window.navigator.vibrate(45);
+        }
+    }
+});
+</script>
 </body>
 </html>
