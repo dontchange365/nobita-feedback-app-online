@@ -110,33 +110,36 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* NAVBAR CHANGES START */
+        /* NAVBAR CHANGES START - Applying user's requested flexbox and responsive solution */
         .navbar {
-            position: sticky; /* Changed from fixed to sticky for better flow, but relative is key for children */
+            position: sticky;
             top: 0;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            min-height: 62px; /* Base minimum height */
+            padding: 8px 26px; /* Base padding */
             background: rgba(44,62,80,0.80);
             backdrop-filter: blur(7px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 26px; /* Original padding */
-            min-height: 62px;
             border-radius: 0 0 18px 18px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-            width: 100%;
             box-sizing: border-box;
-            position: relative; /* Yeh bohot zaroori hai! */
+            /* position: relative; /* Removed as per user's sample, though it was in original. If dropdowns break, this might be needed. */
         }
 
         .nav-left {
             display: flex;
             align-items: center;
+            gap: 13px; /* User-specified gap */
+            flex-shrink: 0; /* Prevent nav-left from shrinking excessively */
         }
 
         .nav-logo {
-            width: 42px; height: 42px; border-radius: 50%;
-            margin-right: 13px;
+            width: 42px; /* Base size from original, overridden by media queries */
+            height: 42px;
+            border-radius: 50%;
             box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
             border: 2px solid var(--secondary-color);
             transition: transform 0.2s ease-out;
@@ -144,49 +147,57 @@
         .nav-logo:hover {
             transform: translateY(-3px) scale(1.05);
         }
+
         .nav-title {
-            color: var(--secondary-color); font-weight: 700; font-size: 1.5em;
+            color: var(--secondary-color);
+            font-weight: 700;
+            font-size: clamp(1.1em, 2vw, 1.5em); /* User-specified responsive font */
             letter-spacing: 0.5px;
+            white-space: nowrap; /* User-specified: Prevents text from wrapping */
         }
 
         .nav-right {
-            position: relative;  /* Yeh bhi zaroori */
             display: flex;
             align-items: center;
-            height: 100%; /* Ensures vertical centering context for absolute children */
-            gap: 15px; /* Space between icons if both are visible, adjust as needed */
+            position: relative; /* Important for the profile-tooltip if it's absolutely positioned within nav-right */
+            gap: 8px; /* User-specified gap */
+            flex-shrink: 0; /* Prevent nav-right from shrinking excessively */
         }
 
-        #login-icon-trigger, #user-profile-trigger {
-            position: absolute;   /* “fixed” hata, “absolute” daal */
-            top: 50%;             /* Vertically center kar header ke andar */
-            right: 20px;          /* Right se 20px andar (adjust as needed, considering navbar padding) */
-            transform: translateY(-50%);
-            z-index: 1001;         /* Nav ke andar dikhe, par nav se bahar na nikle, above other nav content */
-            display: flex;
+        /* Login Icon and User Profile Trigger - NOW STATIC within flex flow */
+        #login-icon-trigger,
+        #user-profile-trigger {
+            position: static !important; /* CRITICAL CHANGE: For flexbox layout */
+            z-index: 100; /* User-specified */
+            display: flex; /* Retain flex for internal alignment of icon/avatar+name */
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease-in-out;
-            /* Removed fixed positioning properties like top & right that were relative to viewport */
+            width: 44px; /* Base width from user's sample */
+            height: 44px; /* Base height from user's sample */
+            margin-left: 0; /* User-specified */
+            margin-right: 0; /* User-specified */
+            transition: all 0.3s ease-in-out; /* From original styles */
+            cursor: pointer; /* Ensure it's clickable */
         }
-        /* Specific styling for login icon if needed when absolute */
+
+        /* Specific styling for login icon (visuals retained, positioning changed) */
         #login-icon-trigger {
-            width: 48px; height: 48px; /* Maintain size */
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(8px);
-            border: 2px solid transparent;
+            border: 2px solid transparent; /* For pseudo-element border */
             background-clip: padding-box;
             box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start);
             animation: pulseLoginIcon 2s infinite ease-in-out;
+            position: relative; /* For its ::before pseudo-element to be positioned correctly */
         }
-         #login-icon-trigger::before { /* Keep border effect */
+        #login-icon-trigger::before { /* Border effect */
             content: '';
             position: absolute;
             inset: -2px;
             border-radius: inherit;
             background: var(--border-gradient);
-            z-index: -1;
+            z-index: -1; /* Behind the icon's content */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
@@ -194,65 +205,62 @@
             padding: 2px;
         }
         #login-icon-trigger .fas {
-            font-size: 1.8em;
+            font-size: 1.8em; /* Base size from original */
             color: var(--secondary-color);
             transition: transform 0.2s ease-out;
         }
         #login-icon-trigger:hover {
-            transform: translateY(-50%) scale(1.08); /* Adjusted transform for hover */
+            transform: scale(1.08);
             box-shadow: 0 0 15px rgba(0,0,0,0.4), 0 0 30px var(--glow-color-end);
         }
-        @keyframes pulseLoginIcon {
+        @keyframes pulseLoginIcon { /* From original */
             0% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
             50% { box-shadow: 0 0 15px rgba(0,0,0,0.4), 0 0 35px var(--glow-color-end); }
             100% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
         }
 
-
-        /* Specific styling for user profile trigger if needed when absolute */
+        /* Specific styling for user profile trigger (visuals retained, positioning changed) */
         #user-profile-trigger {
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px;
-            border-radius: 15px;
+            flex-direction: column; /* For avatar above name */
+            padding: 5px; /* Slightly adjusted base padding to fit content in 44x44 */
+            border-radius: 10px; /* Adjusted from 15px */
             background: rgba(40, 40, 70, 0.5);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 5px 20px rgba(0,0,0,0.35);
-             /* Ensure right positioning is relative to nav-right */
-            /* right: 10px; /* Example: if login icon is also present, this might need adjustment or be the only icon */
+            gap: 2px; /* Reduced gap for smaller container */
         }
-         #user-profile-trigger:hover {
-            transform: translateY(-50%) scale(1.05); /* Adjusted transform for hover */
+        #user-profile-trigger:hover {
+            transform: scale(1.05);
             box-shadow: 0 8px 25px rgba(0,0,0,0.45);
         }
         #user-profile-trigger.hidden {
-            display: none !important; /* Ensure hidden class works */
+            display: none !important;
         }
 
         #user-profile-avatar-container {
-            width: 42px;
-            height: 42px;
+            width: 26px; /* Adjusted to fit within 44x44 trigger with padding & name */
+            height: 26px;
             border-radius: 50%;
-            position: relative;
+            position: relative; /* For its ::before */
             display: flex;
             align-items: center;
             justify-content: center;
+            /* margin-bottom: 2px; /* Space before name, handled by gap on parent */
         }
-        #user-profile-avatar-container::before {
+        #user-profile-avatar-container::before { /* Animated border */
             content: '';
             position: absolute;
-            inset: -2.5px;
+            inset: -2px; /* Adjusted for smaller avatar */
             border-radius: 50%;
             background: var(--border-gradient);
             z-index: 0;
             animation: pulseAvatarBorder 2.5s infinite ease-in-out;
             transition: opacity 0.3s;
         }
-         @keyframes pulseAvatarBorder {
+        @keyframes pulseAvatarBorder { /* From original */
             0% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
+            50% { opacity: 1; transform: scale(1.03); }
             100% { opacity: 0.7; transform: scale(1); }
         }
         #user-profile-avatar {
@@ -260,28 +268,28 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--primary-color);
+            border: 1.5px solid var(--primary-color); /* Thinner border for smaller avatar */
             position: relative;
             z-index: 1;
-            box-shadow: 0 0 8px rgba(0,0,0,0.4);
+            box-shadow: 0 0 6px rgba(0,0,0,0.3); /* Reduced shadow */
         }
         #user-profile-name {
-            font-size: clamp(12px, 2vw, 14px);
+            font-size: 8px; /* Adjusted for small space in 44x44 trigger */
             font-weight: 500;
             color: var(--text-color-light);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Reduced shadow */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 70px;
+            max-width: 38px; /* Max width within the trigger */
             text-align: center;
-            margin-top: 2px;
+            line-height: 1.1; /* Ensure it doesn't take too much vertical space */
         }
         .profile-tooltip {
-            position: absolute;
-            bottom: -38px; /* Keep tooltip positioning relative to the trigger */
-            left: 50%;
-            transform: translateX(-50%);
+            position: absolute; /* Relative to .nav-right */
+            bottom: calc(100% + 5px); /* Position above the trigger */
+            right: 0; /* Align to the right of .nav-right, might need adjustment */
+            transform: translateX(0); /* Reset transform if not centering */
             background: rgba(10, 10, 20, 0.85);
             backdrop-filter: blur(4px);
             color: var(--secondary-color);
@@ -293,45 +301,69 @@
             pointer-events: none;
             transition: opacity 0.2s ease, transform 0.2s ease;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 10; /* Ensure tooltip is above other elements in nav-right */
+            z-index: 1001; /* Above navbar content but below modals */
         }
         #user-profile-trigger:hover .profile-tooltip {
             opacity: 1;
-            transform: translateX(-50%) translateY(-5px); /* Keep tooltip behavior */
+            transform: translateY(-5px) translateX(0);
             transition-delay: 0.2s;
         }
 
+        /* RESPONSIVE ADJUSTMENTS as per user's Section D */
         @media (max-width: 768px) {
             .navbar {
-                padding: 8px 15px; /* Mobile padding */
-                min-height: 55px;
+                padding: 8px 10px; /* User-specified */
+                min-height: 55px; /* User-specified */
+            }
+            .nav-title {
+                font-size: clamp(1em, 5vw, 1.2em); /* User-specified */
+            }
+            .nav-logo {
+                width: 32px; /* User-specified */
+                height: 32px; /* User-specified */
             }
             #login-icon-trigger, #user-profile-trigger {
-                right: 15px; /* Adjusted for mobile, ensure it's relative to nav-right */
-                /* top: 50% and transform: translateY(-50%) are inherited */
+                width: 36px; /* User-specified */
+                height: 36px; /* User-specified */
             }
-             #login-icon-trigger .fas {
-                font-size: 1.6em;
+            #login-icon-trigger .fas {
+                font-size: 1.6em; /* From original responsive */
             }
-            #user-profile-avatar-container {
-                width: 38px;
-                height: 38px;
-            }
-            #user-profile-trigger {
-                padding: 6px;
-            }
-            #user-profile-name {
-                font-size: 11px;
-                max-width: 60px;
-            }
+            /* Adjust user profile trigger internals for 36x36px size */
+            #user-profile-trigger { padding: 4px; gap: 1px; border-radius: 8px;}
+            #user-profile-avatar-container { width: 20px; height: 20px;}
+            #user-profile-avatar-container::before { inset: -1.5px; }
+            #user-profile-avatar { border-width: 1px; }
+            #user-profile-name { font-size: 7px; max-width: 30px; }
         }
-         @media (max-width: 480px) {
-            #login-icon-trigger, #user-profile-trigger {
-                right: 10px; /* Further adjustment for very small screens */
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 6px 4px; /* User-specified */
+                min-height: auto; /* Allow height to shrink with content */
             }
-            #login-icon-trigger .fas { font-size: 1.5em; }
-            #user-profile-avatar-container { width: 36px; height: 36px; }
-            #user-profile-name { font-size: 10px; max-width: 50px; }
+            .nav-left { gap: 5px; }
+            .nav-right { gap: 3px; }
+            .nav-title {
+                font-size: clamp(0.9em, 7vw, 1em); /* User-specified */
+            }
+            .nav-logo {
+                width: 26px; /* User-specified */
+                height: 26px; /* User-specified */
+            }
+            #login-icon-trigger, #user-profile-trigger {
+                width: 28px; /* User-specified */
+                height: 28px; /* User-specified */
+            }
+            #login-icon-trigger .fas {
+                font-size: 1.3em; /* Adjusted for smaller trigger */
+            }
+            /* Adjust user profile trigger internals for 28x28px size */
+            #user-profile-trigger { padding: 2px; border-radius: 6px; gap: 1px;}
+            #user-profile-avatar-container { width: 16px; height: 16px;}
+            #user-profile-avatar-container::before { inset: -1px; }
+            #user-profile-name { font-size: 6px; max-width: 24px; }
+            .profile-tooltip { display: none; } /* Hide tooltip on very small screens */
         }
         /* NAVBAR CHANGES END */
 
@@ -641,14 +673,14 @@
             font-size: 0.95em;
             width: auto; /* Allow flex to determine width */
         }
-         /* Disabled state for profile inputs */
+        /* Disabled state for profile inputs */
         .input-row-profile input:disabled {
             color: rgba(255,255,255,0.5);
             cursor: not-allowed;
         }
         .input-row-profile input:disabled + .profile-label, /* Style label when input is disabled */
         .input-row-profile input:disabled ~ .input-icon {
-             opacity: 0.6;
+            opacity: 0.6;
         }
 
 
@@ -662,15 +694,17 @@
             font-weight: 500;
             cursor: pointer;
         }
-        .popup-button, button, .hero-btn {
+        .popup-button, button, .hero-btn { /* Combined for consistent styling */
             background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
-            color: #111;
-            border: none; border-radius: 19px;
+            color: #111; /* Dark text for light gradient */
+            border: none;
+            border-radius: 19px; /* Consistent rounded corners */
             box-shadow: 0 3px 12px rgba(0,0,0,0.25);
             font-weight: 600;
             transition: all 0.22s;
-            position: relative;
-            overflow: hidden;
+            position: relative; /* For ::before pseudo-element */
+            overflow: hidden; /* To contain ::before */
+            padding: 10px 20px; /* Default padding, can be overridden */
         }
         .popup-button::before, button::before, .hero-btn::before {
             content: '';
@@ -679,31 +713,31 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.2); /* Ripple effect color */
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: width 0.3s ease-out, height 0.3s ease-out, opacity 0.3s ease-out;
             opacity: 0;
         }
         .popup-button:hover::before, button:hover::before, .hero-btn:hover::before {
-            width: 200%;
+            width: 200%; /* Expand to cover button */
             height: 200%;
             opacity: 1;
         }
-         .popup-button:active::before, button:active::before, .hero-btn:active::before {
-            background: rgba(255,255,255,0.3);
+        .popup-button:active::before, button:active::before, .hero-btn:active::before {
+            background: rgba(255,255,255,0.3); /* Slightly more visible on active */
             opacity: 1;
             width: 220%;
             height: 220%;
-            transition: width 0.1s ease-out, height 0.1s ease-out, opacity 0.1s ease-out;
+            transition: width 0.1s ease-out, height 0.1s ease-out, opacity 0.1s ease-out; /* Faster active ripple */
         }
 
 
         .popup-button:hover, button:hover, .hero-btn:hover {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: #fff;
-            transform: scale(1.04) translateY(-1px);
-            box-shadow: 0 5px 18px rgba(106, 13, 173,0.4);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); /* Inverted gradient on hover */
+            color: #fff; /* Light text for dark gradient */
+            transform: scale(1.04) translateY(-1px); /* Hover effect */
+            box-shadow: 0 5px 18px rgba(106, 13, 173,0.4); /* Stronger shadow on hover */
         }
 
 
@@ -871,27 +905,28 @@
             text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
 
-        #upload-avatar-now-btn {
-            background: linear-gradient(45deg, var(--success-color), #218838);
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
+        #upload-avatar-now-btn { /* This is a button, apply general button styles */
+            /* background: linear-gradient(45deg, var(--success-color), #218838); */
+            /* color: #fff; */
+            /* padding: 10px 20px; */
+            /* border: none; */
+            /* border-radius: 8px; */
             font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            /* font-weight: 500; */
+            /* cursor: pointer; */
+            /* transition: all 0.2s ease; */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
-
-        #upload-avatar-now-btn:hover {
+        /* Hover for this specific button can be added if different from general */
+        /* #upload-avatar-now-btn:hover {
             background: linear-gradient(45deg, #218838, var(--success-color));
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(40,167,69,0.3);
-        }
+        } */
+
 
         #profile-edit-form, #change-password-form {
             width: 100%;
@@ -907,19 +942,19 @@
         .user-profile-menu {
             display: none;
             position: fixed; /* This menu still needs to be fixed relative to viewport */
-            top: 85px; /* Adjusted to be below the new icon position */
-            right: 20px;
+            top: 70px; /* Adjusted to be below the navbar, might need tweaking based on final navbar height */
+            right: 20px; /* Align with right side of viewport */
             width: 240px;
             background: var(--bg-gradient-end);
             border-radius: 10px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            z-index: 1000; /* Below modal overlay, but above page content */
+            z-index: 999; /* Below navbar icons if they have higher z-index, but above page content */
             opacity: 0;
             pointer-events:none;
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
-         .user-profile-menu::before {
+        .user-profile-menu::before {
             content: '';
             position: absolute;
             inset: -1px;
@@ -1096,12 +1131,12 @@
         }
         /* Ensure input-wrapper inside stylish popup also works with floating labels if used */
         .stylish-popup-card .input-wrapper input {
-             padding: 16px 12px 12px 44px !important; /* Override if needed */
+            padding: 16px 12px 12px 44px !important; /* Override if needed */
         }
-         .stylish-popup-card .input-wrapper label {
-             left: 44px !important;
-             top: 14px !important;
-         }
+        .stylish-popup-card .input-wrapper label {
+            left: 44px !important;
+            top: 14px !important;
+        }
         .stylish-popup-card .input-wrapper input:focus + label,
         .stylish-popup-card .input-wrapper input:not(:placeholder-shown) + label {
             top: -10px !important;
@@ -1117,40 +1152,41 @@
             flex-wrap: wrap;
         }
 
-        .stylish-popup-card .popup-button {
-            padding: 10px 22px;
-            border: none;
-            border-radius: 6px;
+        .stylish-popup-card .popup-button { /* These buttons are inside stylish popup, use general popup-button styles */
+            /* padding: 10px 22px; */ /* Handled by general .popup-button */
+            /* border: none; */
+            /* border-radius: 6px; */ /* General .popup-button has 19px, this is more specific */
+            border-radius: 8px; /* More specific for stylish popup buttons */
             font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            /* font-weight: 500; */
+            /* cursor: pointer; */
+            /* transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s; */
             min-width: 90px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            /* box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
         }
 
-        .stylish-popup-card .popup-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
+        /* .stylish-popup-card .popup-button:hover { */ /* Handled by general .popup-button:hover */
+            /* transform: translateY(-2px); */
+            /* box-shadow: 0 4px 8px rgba(0,0,0,0.15); */
+        /* } */
 
-        .stylish-popup-card .popup-button.primary {
+        .stylish-popup-card .popup-button.primary { /* Specific background for primary in stylish popup */
             background: var(--accent-color);
             color: #fff;
         }
 
         .stylish-popup-card .popup-button.primary:hover {
-            background-color: #3578e0;
+            background-color: #3578e0; /* Specific hover for primary in stylish popup */
         }
 
-        .stylish-popup-card .popup-button.secondary {
-            background: #5a6268;
-            color: #fff;
-        }
+        /* .stylish-popup-card .popup-button.secondary { */ /* Handled by general .popup-button.secondary */
+            /* background: #5a6268; */
+            /* color: #fff; */
+        /* } */
 
-        .stylish-popup-card .popup-button.secondary:hover {
-            background-color: #495057;
-        }
+        /* .stylish-popup-card .popup-button.secondary:hover { */ /* Handled by general .popup-button.secondary:hover */
+            /* background-color: #495057; */
+        /* } */
 
         .stylish-popup-card .close-popup-btn-styled {
             position: absolute;
@@ -1304,7 +1340,7 @@
 
         /* This .input-group is for the star rating label, not for text inputs */
         .input-group {
-             margin-bottom: 15px; /* Add some spacing */
+            margin-bottom: 15px; /* Add some spacing */
         }
         .input-group > label { /* Label for star rating */
             display: block;
@@ -1365,36 +1401,41 @@
         }
 
 
-        button#submit-feedback {
-            background: linear-gradient(45deg, var(--accent-color), #2563EB);
-            color: #fff;
-            border: none;
-            padding: 11px 28px;
-            border-radius: 9px;
+        button#submit-feedback { /* This is a button, apply general button styles */
+            /* background: linear-gradient(45deg, var(--accent-color), #2563EB); */
+            /* color: #fff; */
+            /* border: none; */
+            /* padding: 11px 28px; */
+            /* border-radius: 9px; */
             font-size: 1.05em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+            /* font-weight: 500; */
+            /* cursor: pointer; */
+            /* transition: all 0.25s ease; */
+            /* box-shadow: 0 4px 12px rgba(59,130,246,0.35); */
             letter-spacing: 0.7px;
             margin-top: 22px;
-            position: relative;
-            overflow: hidden;
+            /* position: relative; */ /* Handled by general button */
+            /* overflow: hidden; */ /* Handled by general button */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
+        /* Specific hover for submit-feedback if different from general */
+        button#submit-feedback:hover {
+             background: linear-gradient(45deg, #2563EB, var(--accent-color)); /* Example specific hover */
+        }
 
-        #enhance-feedback-btn {
-            background: linear-gradient(45deg, #8B5CF6, #EC4899);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
+
+        #enhance-feedback-btn { /* This is a button, apply general button styles */
+            /* background: linear-gradient(45deg, #8B5CF6, #EC4899); */
+            /* color: #fff; */
+            /* padding: 10px 20px; */
+            /* border-radius: 8px; */
             font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            /* font-weight: 500; */
+            /* cursor: pointer; */
+            /* transition: all 0.2s ease; */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1404,16 +1445,17 @@
         }
 
         #enhance-feedback-btn:hover {
-            background: linear-gradient(45deg, #EC4899, #8B5CF6);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
+            background: linear-gradient(45deg, #EC4899, #8B5CF6); /* Specific hover */
+            /* transform: translateY(-2px); */ /* Handled by general button */
+            /* box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); */ /* Handled by general button */
         }
 
         #enhance-feedback-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            background: #6c757d;
+            background: #6c757d; /* Specific disabled style */
             box-shadow: none;
+            transform: none; /* Reset hover transform */
         }
 
         #feedback-list-container {
@@ -1449,8 +1491,9 @@
             font-size: 1.8em;
             font-weight: 500;
             text-shadow: 0 0 9px rgba(255,215,0,0.25);
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Make title span all columns */
             position: relative;
+            text-align: center; /* Center the title */
         }
         #feedback-list-container h2::after {
             content: "";
@@ -1461,9 +1504,9 @@
             margin-top: 8px;
             animation: underlineMove 1.8s infinite alternate;
             position: absolute;
-            bottom: -10px;
-            left: 0;
-            transform: translateX(0);
+            bottom: -10px; /* Adjust if needed based on padding-bottom */
+            left: 50%; /* Center the underline */
+            transform: translateX(-50%); /* Center the underline */
         }
 
         .average-rating-container {
@@ -1485,7 +1528,7 @@
             position: relative;
             z-index: 2;
             backdrop-filter: blur(8px);
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Make average rating span all columns */
             background-clip: padding-box;
         }
         .average-rating-container::before {
@@ -1570,8 +1613,8 @@
             padding: 24px 22px;
             transition: box-shadow .19s, transform .15s;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex-direction: column; /* Stack avatar+details, then reply */
+            gap: 12px; /* Gap between avatar+details and reply */
             position: relative;
             overflow: hidden;
             transition: transform 0.18s, box-shadow 0.18s, border-color 0.3s;
@@ -1581,6 +1624,12 @@
             box-shadow: 0 12px 36px rgba(255,215,0,0.3), 0 0 0 3px rgba(255,215,0,0.15);
             border-color: var(--primary-color);
         }
+        .feedback-header { /* New wrapper for avatar and details */
+            display: flex;
+            gap: 12px; /* Gap between avatar and details */
+            align-items: flex-start; /* Align avatar and details top */
+        }
+
 
         .avatar-img {
             width: 52px;
@@ -1613,7 +1662,7 @@
         .feedback-details strong {
             color: var(--secondary-color);
             font-size: 1.18em;
-            display: inline;
+            display: inline; /* Keep inline for tags to follow */
             margin-bottom: 4px;
             text-transform: capitalize;
             font-weight: bold;
@@ -1644,7 +1693,7 @@
             border-radius: 50%;
             width: 1.1em;
             height: 1.1em;
-            font-size: 0.8em;
+            font-size: 0.8em; /* Relative to parent strong tag */
             margin-left: 5px;
             vertical-align: middle;
             flex-shrink: 0;
@@ -1655,7 +1704,7 @@
         }
 
         .verified-tag-feedback .fas.fa-check-circle {
-            font-size: 0.7em;
+            font-size: 0.7em; /* Relative to its own container */
             line-height: 1;
         }
 
@@ -1664,7 +1713,7 @@
             color: #333;
             padding: 1.5px 5.5px;
             border-radius: 3.5px;
-            font-size: 0.6em;
+            font-size: 0.6em; /* Relative to parent strong tag */
             margin-left: 5px;
             vertical-align: middle;
         }
@@ -1689,7 +1738,7 @@
             font-size: 1.13em;
             font-style: italic;
             position: relative;
-            padding: 0 15px;
+            padding: 0 15px; /* Space for quotes */
         }
         .feedback-details p::before {
             content: '“';
@@ -1704,7 +1753,7 @@
             content: '”';
             position: absolute;
             right: 0;
-            bottom: 0;
+            bottom: -0.2em; /* Adjust to align with text bottom */
             font-size: 2em;
             color: var(--accent-color);
             line-height: 1;
@@ -1714,12 +1763,13 @@
         .feedback-timestamp {
             font-size: 0.7em;
             color: rgba(255, 255, 255, 0.55);
-            margin-top: 4px;
+            margin-top: auto; /* Push to bottom of details */
             text-align: right;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 5px;
+            padding-top: 5px; /* Space above timestamp */
         }
         .feedback-timestamp .far.fa-clock {
             font-size: 1em;
@@ -1738,16 +1788,20 @@
             gap: 7px;
             position: relative;
         }
-        .admin-reply::before {
+        .admin-reply::before { /* Quote for admin reply */
             content: '“';
             position: absolute;
-            left: 5px;
+            left: 5px; /* Inside padding */
             top: 0;
             font-size: 1.8em;
             color: var(--secondary-color);
             line-height: 1;
             opacity: 0.7;
         }
+        .admin-reply-content {
+            padding-left: 10px; /* Space after quote */
+        }
+
 
         .admin-reply-avatar {
             width: 32px;
@@ -1799,7 +1853,7 @@
             color: white;
             padding: 2.5px 7px;
             border-radius: 4.5px;
-            font-size: 0.65em;
+            font-size: 0.65em; /* Relative to parent strong tag */
             font-weight: bold;
             margin-left: 7px;
             vertical-align: middle;
@@ -1820,7 +1874,7 @@
             margin-bottom: 20px;
             font-size: 0.95em;
             text-align: center;
-            display: none;
+            display: none; /* Initially hidden */
             flex-direction: column;
             gap: 10px;
             align-items: center;
@@ -1829,22 +1883,22 @@
         .email-verification-prompt p {
             margin: 0;
             line-height: 1.5;
-            color: var(--text-color-light);
+            color: var(--text-color-light); /* Make text readable */
         }
 
-        .email-verification-prompt button {
+        .email-verification-prompt button { /* This is a button, apply general button styles */
             background-color: var(--warning-color);
-            color: #333;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
+            color: #333; /* Dark text for light button */
+            /* border: none; */
+            /* padding: 8px 15px; */
+            /* border-radius: 6px; */
             font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            /* cursor: pointer; */
+            /* transition: background-color 0.2s, transform 0.1s; */
         }
         .email-verification-prompt button:hover {
-            background-color: #e0a800;
-            transform: translateY(-1px);
+            background-color: #e0a800; /* Specific hover */
+            /* transform: translateY(-1px); */ /* Handled by general button */
         }
         .email-verification-prompt button:disabled {
             opacity: 0.6;
@@ -1860,7 +1914,7 @@
             opacity: 0.55;
         }
 
-        /* Responsive Design Adjustments for Navbar Icons */
+        /* Responsive Design Adjustments for Navbar Icons (already handled in NAVBAR CHANGES section) */
         @media (max-width: 768px) {
             /* .navbar padding and min-height already adjusted in NAVBAR CHANGES section */
             /* .nav-logo and .nav-title already adjusted */
@@ -1870,7 +1924,7 @@
             .auth-modal-content{ padding: 20px; max-width: 360px; }
             .auth-modal-content h2{ font-size:1.5em; }
             .profile-scroll-content { max-height: 65vh; }
-            .user-profile-menu{ width:220px; top:70px; /* Ensure menu is below new icon position */ }
+            .user-profile-menu{ width:220px; top:65px; /* Ensure menu is below navbar */ }
 
             .hero-section { padding-top: 70px; /* Adjusted for sticky navbar */ }
             .hero-content h1 { font-size: 2em; }
@@ -1896,7 +1950,7 @@
             .owner-info { margin-bottom: 15px; }
             .auth-modal-content{ width:95%; padding:15px; max-width: calc(100vw - 30px); }
             .profile-scroll-content { max-height: 60vh; padding: 5px 10px 10px 10px; }
-            .user-profile-menu{ width:calc(100vw - 40px); right:10px; top: 65px; /* Ensure menu is below new icon position */ }
+            .user-profile-menu{ width:calc(100vw - 40px); right:10px; top:60px; /* Ensure menu is below navbar */ }
             .upload-avatar-btn { font-size: 0.85em; padding: 7px 12px; }
             .hero-content h1 { font-size: 1.5em; }
             .main-container, #feedback-list-container { padding: 10px; }
@@ -1924,13 +1978,13 @@
             <span class="nav-title">Nobita Feedback</span>
         </div>
         <div class="nav-right">
-            <!-- Icons are now children of nav-right -->
+            <!-- Icons are now children of nav-right and will flow with flexbox -->
             <div id="login-icon-trigger" class="corner-trigger-base" title="Login / Sign Up">
                 <i class="fas fa-user-circle"></i>
             </div>
             <div id="user-profile-trigger" class="corner-trigger-base hidden" title="Profile Menu">
                 <div id="user-profile-avatar-container">
-                     <img id="user-profile-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
+                    <img id="user-profile-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
                 </div>
                 <span id="user-profile-name" class="username-display">User Name</span>
                 <div class="profile-tooltip">View Profile / Logout</div>
@@ -2009,7 +2063,7 @@
           <div class="form-links" style="justify-content: center;">
             <a href="#" id="modal-already-account-link">Already have an account? Login</a>
           </div>
-           <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
+            <button type="button" id="modal-google-signup-btn" class="google-auth-btn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
             Sign Up with Google
           </button>
@@ -2017,7 +2071,7 @@
       </div>
     </div>
 
-    <div id="userMenu" class="user-profile-menu"> <!-- This menu's positioning (top, right) might need slight adjustment based on new icon positions -->
+    <div id="userMenu" class="user-profile-menu">
       <div class="menu-content">
         <div class="menu-header">
           <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP">
@@ -2037,9 +2091,9 @@
           <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
           <p class="popup-message" id="stylishPopupMessage">Default message.</p>
           <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;">
-              </div>
+            </div>
           <div class="popup-button-container" id="stylishPopupButtonContainer">
-              </div>
+            </div>
         </div>
     </div>
 
@@ -2050,7 +2104,7 @@
             <div class="profile-scroll-content">
                 <div id="email-verification-prompt" class="email-verification-prompt">
                     <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
-                    <button id="send-verification-email-btn">Send Verification Email</button>
+                    <button id="send-verification-email-btn" class="popup-button">Send Verification Email</button>
                 </div>
                 <div class="profile-avatar-section">
                     <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar">
@@ -2075,8 +2129,8 @@
                         <label class="profile-label" for="profile-email">Email:</label>
                         <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
                     </div>
-                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
-               </form>
+                    <button type="submit" id="save-profile-changes-btn" class="popup-button" style="width:100%; margin-top:10px;">Save Changes</button>
+                </form>
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
@@ -2115,7 +2169,7 @@
             <div id="typed-output"></div>
             <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
                 <p><i class="fas fa-exclamation-triangle"></i> Please verify your email to edit feedback, edit profile, and upload avatar.</p>
-                <button id="send-verification-email-btn-form">Send Verification Email</button>
+                <button id="send-verification-email-btn-form" class="popup-button">Send Verification Email</button>
             </div>
             <form id="feedback-form">
                 <div class="input-wrapper">
@@ -2128,7 +2182,7 @@
                     <textarea id="feedback" name="feedback" placeholder=" " required></textarea>
                     <label for="feedback">Your Feedback</label>
                 </div>
-                <button type="button" id="enhance-feedback-btn">✨ Enhance Feedback</button>
+                <button type="button" id="enhance-feedback-btn" class="popup-button">✨ Enhance Feedback</button>
                 <div class="input-group">
                     <label>Rate Your Experience:</label>
                     <div class="stars" id="star-rating">
@@ -2140,15 +2194,16 @@
                     </div>
                     <input type="hidden" id="rating" value="0">
                 </div>
-                <button type="button" id="submit-feedback"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
+                <button type="button" id="submit-feedback" class="popup-button"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
             </form>
         </div>
 
         <div class="fancy-divider"></div>
 
         <div id="feedback-list-container" class="main-container">
-              <div id="average-rating-display"></div>
-              <h2 class="section-title">Recent Feedbacks</h2>
+                <div id="average-rating-display"></div> <!-- This will be populated by JS -->
+                <h2 class="section-title">Recent Feedbacks</h2>
+                <!-- Feedback items will be dynamically added here by JavaScript -->
         </div>
     </div>
 
@@ -2231,7 +2286,10 @@
         let isEditing = false;
         let currentEditFeedbackId = null;
 
-        const BASE_API_URL = window.location.origin;
+        // IMPORTANT: Replace with your actual backend API base URL in a real deployment
+        const BASE_API_URL = window.location.origin; // For local testing if backend is on same origin
+        // const BASE_API_URL = 'YOUR_DEPLOYED_BACKEND_URL'; // For production
+
         const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
         const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
         const API_GOOGLE_SIGNIN_URL = `${BASE_API_URL}/api/auth/google-signin`;
@@ -2244,8 +2302,9 @@
         const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`;
         const API_ENHANCE_FEEDBACK_URL = `${BASE_API_URL}/api/llm/enhance-feedback`;
 
-        const CLOUDINARY_CLOUD_NAME = 'dyv7xav3e';
-        const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned';
+
+        const CLOUDINARY_CLOUD_NAME = 'dyv7xav3e'; // Replace with your Cloudinary cloud name
+        const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned'; // Replace with your unsigned upload preset
         const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
         if (mainTitle) {
@@ -2263,20 +2322,23 @@
 
         function showStylishPopup(type, title, message, options = {}) {
             if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
+                // Fallback for critical systems where stylish popup might not be defined
                 alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`); return;
             }
             stylishPopupIcon.className = 'popup-icon-area'; stylishPopupIcon.innerHTML = '';
             const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'verify_email': '<i class="fas fa-envelope"></i>'};
             if(iconsFA[type]) { stylishPopupIcon.innerHTML = iconsFA[type]; stylishPopupIcon.classList.add(type); }
-            stylishPopupTitle.textContent = title; stylishPopupMessage.innerHTML = `<p>${message}</p>`;
+            stylishPopupTitle.textContent = title; stylishPopupMessage.innerHTML = `<p>${message}</p>`; // Ensure message is wrapped in <p> for consistent styling
             stylishPopupFormArea.innerHTML = options.formHTML || ''; stylishPopupFormArea.style.display = options.formHTML ? 'block' : 'none';
-            stylishPopupButtonContainer.innerHTML = '';
+            stylishPopupButtonContainer.innerHTML = ''; // Clear previous buttons
+
             if (options.isConfirm) {
                 const cancelBtn = document.createElement('button'); cancelBtn.textContent = options.cancelText || 'Cancel'; cancelBtn.className = 'popup-button secondary';
                 cancelBtn.onclick = () => { stylishPopupOverlay.classList.remove('active'); if (options.onCancel) options.onCancel(); };
                 stylishPopupButtonContainer.appendChild(cancelBtn);
-                const confirmBtn = document.createElement('button'); confirmBtn.textContent = options.confirmText || 'OK'; confirmBtn.className = 'popup-button primary'; confirmBtn.id = 'stylishPopupPrimaryActionBtn';
-                confirmBtn.onclick = () => { if (options.onConfirm) options.onConfirm(); else stylishPopupOverlay.classList.remove('active'); };
+
+                const confirmBtn = document.createElement('button'); confirmBtn.textContent = options.confirmText || 'OK'; confirmBtn.className = 'popup-button primary'; confirmBtn.id = 'stylishPopupPrimaryActionBtn'; // For specific targeting if needed
+                confirmBtn.onclick = () => { if (options.onConfirm) options.onConfirm(); else stylishPopupOverlay.classList.remove('active'); }; // Default action closes popup
                 stylishPopupButtonContainer.appendChild(confirmBtn);
             } else {
                 const okBtn = document.createElement('button'); okBtn.textContent = options.confirmText || 'OK'; okBtn.className = 'popup-button primary';
@@ -2289,93 +2351,172 @@
         if(closeStylishPopupBtn) closeStylishPopupBtn.addEventListener('click', () => { if(stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); });
         if(stylishPopupOverlay) stylishPopupOverlay.addEventListener('click', e => { if (e.target === stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); });
 
+        // Navbar icon interactions
         if (loginIconTrigger) loginIconTrigger.addEventListener('click', e => { e.stopPropagation(); if (loginModal) loginModal.classList.add('active'); if (userMenu) userMenu.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); });
         if (userProfileTrigger) userProfileTrigger.addEventListener('click', e => { e.stopPropagation(); if (userMenu) userMenu.classList.toggle('active'); if (loginModal) loginModal.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); });
         document.addEventListener('click', e => { if (userMenu && userMenu.classList.contains('active') && userProfileTrigger && !userProfileTrigger.contains(e.target) && !userMenu.contains(e.target)) userMenu.classList.remove('active'); });
 
+        // Generic modal close logic
         [loginModal, signupModal, userProfileModal].forEach(modal => {
             if (modal) {
                 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
-                modal.querySelectorAll('[data-modal-close]').forEach(trigger => trigger.addEventListener('click', () => { const targetModal = document.getElementById(trigger.getAttribute('data-modal-close')); if (targetModal) targetModal.classList.remove('active'); }));
+                modal.querySelectorAll('[data-modal-close]').forEach(trigger => {
+                    const targetModalId = trigger.getAttribute('data-modal-close');
+                    const targetModal = document.getElementById(targetModalId);
+                    if (targetModal) {
+                        trigger.addEventListener('click', () => targetModal.classList.remove('active'));
+                    }
+                });
             }
         });
 
         async function apiRequest(url, method, body = null, isFormData = false) {
             const headers = {}; if (!isFormData) headers['Content-Type'] = 'application/json';
             const token = localStorage.getItem('authToken'); if (token) headers['Authorization'] = `Bearer ${token}`;
-            let currentSubmitBtn, originalButtonText;
-            if (document.activeElement && document.activeElement.type === 'submit' && (emailLoginForm.contains(document.activeElement) || emailSignupForm.contains(document.activeElement))) currentSubmitBtn = document.activeElement;
-            else if (document.activeElement === saveProfileChangesBtn) currentSubmitBtn = saveProfileChangesBtn;
-            else if (document.activeElement === changePasswordBtn) currentSubmitBtn = changePasswordBtn;
-            else if (url.includes('/api/auth/request-email-verification')) { if (sendVerificationEmailBtn && !sendVerificationEmailBtn.disabled) currentSubmitBtn = sendVerificationEmailBtn; else if (sendVerificationEmailBtnForm && !sendVerificationEmailBtnForm.disabled) currentSubmitBtn = sendVerificationEmailBtnForm;}
+
+            let currentSubmitBtn = null;
+            let originalButtonText = '';
+
+            // Identify the active button for loading state
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.tagName === 'BUTTON') {
+                if ( (emailLoginForm && emailLoginForm.contains(activeElement)) ||
+                     (emailSignupForm && emailSignupForm.contains(activeElement)) ||
+                     activeElement === saveProfileChangesBtn ||
+                     activeElement === changePasswordBtn ||
+                     activeElement === submitButton || // Added main feedback submit button
+                     activeElement === enhanceFeedbackBtn || // Added enhance feedback button
+                     activeElement === uploadAvatarNowBtn || // Added avatar upload button
+                     activeElement === sendVerificationEmailBtn ||
+                     activeElement === sendVerificationEmailBtnForm
+                   ) {
+                    currentSubmitBtn = activeElement;
+                }
+            }
+
 
             if(currentSubmitBtn) { originalButtonText = currentSubmitBtn.innerHTML; currentSubmitBtn.disabled = true; currentSubmitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`; }
+
             try {
                 const response = await fetch(url, { method, headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) });
                 let data; const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) data = await response.json();
                 else { const text = await response.text(); if (response.ok) data = text ? { message: text } : {}; else throw new Error(text || `Server Error (${response.status})`);}
-                if (!response.ok) { if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) showStylishPopup('warning', 'Email Verification Required!', data.message); throw new Error(data.message || `Server Error (${response.status})`);}
+
+                if (!response.ok) {
+                    if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) {
+                        // Do not show popup here, let calling function handle it or show prompt
+                    }
+                    throw new Error(data.message || `Server Error (${response.status})`);
+                }
                 return data;
             } catch (error) {
                 console.error(`API request error at ${url}:`, error);
                 let msg = "An unexpected error occurred. Please try again.";
-                if (error.message.includes("Failed to fetch")) msg = "Network error. Check connection.";
-                else if (!error.message.includes("Email not verified")) msg = error.message;
-                if (!error.message.includes("Email not verified")) showStylishPopup('error', 'Request Failed', msg);
-                throw error;
+                if (error.message.includes("Failed to fetch")) msg = "Network error. Check connection or if the server is running.";
+                else if (!error.message.includes("Email not verified")) msg = error.message; // Don't show popup for this specific error here
+
+                if (!error.message.includes("Email not verified")) { // Only show generic error popup if not an email verification issue
+                    showStylishPopup('error', 'Request Failed', msg);
+                }
+                throw error; // Re-throw to be caught by calling function
             } finally { if(currentSubmitBtn) { currentSubmitBtn.disabled = false; currentSubmitBtn.innerHTML = originalButtonText; }}
         }
 
-        async function handleAuthResponse(data) {
-            if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.remove('active');
-            localStorage.setItem('authToken', data.token); currentUser = data.user; updateUIAfterLogin();
-            let msg = currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!'; let type = 'success';
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { msg = `Account created, ${currentUser.name}! Please verify your email.`; type = 'warning'; if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';}
-            else { if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';}
-            showStylishPopup(type, `Welcome, ${currentUser.name}!`, msg); await fetchFeedbacks();
+
+        async function handleAuthResponse(data, isGoogleSignIn = false) {
+            if (loginModal) loginModal.classList.remove('active');
+            if (signupModal) signupModal.classList.remove('active');
+
+            localStorage.setItem('authToken', data.token);
+            currentUser = data.user;
+            updateUIAfterLogin();
+
+            let msg = isGoogleSignIn ? 'Successfully logged in with Google!' : (data.isNewUser ? `Account created, ${currentUser.name}!` : 'Successfully logged in!');
+            let type = 'success';
+
+            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+                msg = data.isNewUser ? `Account created, ${currentUser.name}! Please verify your email.` : `Welcome back, ${currentUser.name}! Please verify your email.`;
+                type = 'warning';
+                if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
+                if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
+            } else {
+                if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
+                if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
+            }
+            showStylishPopup(type, `Welcome, ${currentUser.name}!`, msg);
+            await fetchFeedbacks(); // Refresh feedbacks after login
         }
 
-        if (emailLoginForm) emailLoginForm.addEventListener('submit', async e => { e.preventDefault(); const email = modalLoginEmailInput.value.trim(), password = modalLoginPasswordInput.value; if (!email || !password) return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.'); try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }); handleAuthResponse(data); } catch (error) {} });
-        if (emailSignupForm) emailSignupForm.addEventListener('submit', async e => { e.preventDefault(); const name = modalSignupNameInput.value.trim(), email = modalSignupEmailInput.value.trim(), password = modalSignupPasswordInput.value, confirmPassword = modalSignupConfirmPasswordInput.value; if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill in all fields.'); if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.'); if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters long.'); try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }); handleAuthResponse(data); } catch (error) {} });
+
+        if (emailLoginForm) emailLoginForm.addEventListener('submit', async e => { e.preventDefault(); const email = modalLoginEmailInput.value.trim(), password = modalLoginPasswordInput.value; if (!email || !password) return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.'); try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }); handleAuthResponse(data); } catch (error) { /* Error already shown by apiRequest */ } });
+        if (emailSignupForm) emailSignupForm.addEventListener('submit', async e => { e.preventDefault(); const name = modalSignupNameInput.value.trim(), email = modalSignupEmailInput.value.trim(), password = modalSignupPasswordInput.value, confirmPassword = modalSignupConfirmPasswordInput.value; if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill in all fields.'); if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.'); if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters long.'); try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }); handleAuthResponse({...data, isNewUser: true}); } catch (error) { /* Error already shown by apiRequest */ } });
+
         if (modalCreateAccountLink) modalCreateAccountLink.addEventListener('click', e => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.add('active'); });
         if (modalAlreadyAccountLink) modalAlreadyAccountLink.addEventListener('click', e => { e.preventDefault(); if (signupModal) signupModal.classList.remove('active'); if (loginModal) loginModal.classList.add('active'); });
-        if (modalForgotPasswordLink) modalForgotPasswordLink.addEventListener('click', e => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); showStylishPopup('forgot_password', 'Forgot Password?', 'Enter your registered email address. We will send you a link to reset your password.', { formHTML: `<div class="input-wrapper" style="margin-bottom:10px;"><i class="fas fa-envelope input-icon"></i><input type="email" id="popup-forgot-email" placeholder=" " required><label for="popup-forgot-email">Email Address</label></div>`, isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel', onConfirm: async () => { const email = document.getElementById('popup-forgot-email').value.trim(); if (!email) { stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' + 'Enter your registered email address.'; document.getElementById('popup-forgot-email').focus(); return; } try { const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email }); stylishPopupOverlay.classList.remove('active'); showStylishPopup('success', 'Link Sent!', data.message); } catch (error) {} }});});
+        if (modalForgotPasswordLink) modalForgotPasswordLink.addEventListener('click', e => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); showStylishPopup('forgot_password', 'Forgot Password?', 'Enter your registered email address. We will send you a link to reset your password.', { formHTML: `<div class="input-wrapper" style="margin-bottom:10px;"><i class="fas fa-envelope input-icon"></i><input type="email" id="popup-forgot-email" placeholder=" " required><label for="popup-forgot-email">Email Address</label></div>`, isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel', onConfirm: async () => { const emailInput = document.getElementById('popup-forgot-email'); const email = emailInput ? emailInput.value.trim() : ''; if (!email) { stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' + 'Enter your registered email address.'; if(emailInput) emailInput.focus(); return; } try { const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email }); stylishPopupOverlay.classList.remove('active'); showStylishPopup('success', 'Link Sent!', data.message); } catch (error) { /* Error already shown by apiRequest */ } }});});
 
-        const triggerGoogleSignIn = () => { if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); google.accounts.id.prompt(n => { if (n.isNotDisplayed() || n.isSkippedMoment()) console.warn('Google Sign-In prompt not displayed/skipped.'); }); };
+        const triggerGoogleSignIn = () => { if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); if (typeof google !== 'undefined' && google.accounts && google.accounts.id) { google.accounts.id.prompt(n => { if (n.isNotDisplayed() || n.isSkippedMoment()) console.warn('Google Sign-In prompt not displayed/skipped.'); }); } else { console.error("Google Identity Services not ready for prompt."); showStylishPopup('error', 'Google Sign-In Error', 'Google Sign-In is not available at the moment. Please try again later or use email login.'); }};
         if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn; if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
 
-        window.onload = () => { if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse }); else console.error("Google Identity Services script not loaded."); checkLoginStatus(); if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200); if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300); if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400); };
-        async function handleGoogleCredentialResponse(response) { try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) {} }
+        window.onload = () => {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse });
+            } else {
+                console.error("Google Identity Services script not loaded or initialized.");
+            }
+            checkLoginStatus(); // Check login status and fetch initial feedbacks
+            if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
+            if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
+            if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
+        };
+        async function handleGoogleCredentialResponse(response) { try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data, true); } catch (error) { /* Error already shown by apiRequest */ } }
 
         async function checkLoginStatus() {
             const token = localStorage.getItem('authToken');
             if (token) { try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); } catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); }}
             else updateUIAfterLogout();
-            await fetchFeedbacks();
+            await fetchFeedbacks(); // Always fetch feedbacks after checking status
         }
 
         function updateUIAfterLogin() {
             if (currentUser) {
                 if(loginIconTrigger) loginIconTrigger.style.display = 'none';
-                if(userProfileTrigger) { userProfileTrigger.style.display = 'flex'; userProfileTrigger.classList.remove('hidden'); userProfileTrigger.style.opacity = '1'; userProfileTrigger.style.pointerEvents = 'auto'; if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name; }
-                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
-                if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = currentUser.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
+                if(userProfileTrigger) { userProfileTrigger.style.display = 'flex'; userProfileTrigger.classList.remove('hidden'); if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40x40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name; }
+                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70x70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
+                if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = currentUser.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));} // Trigger input event for floating label
 
                 const isEmailUserUnverified = currentUser.loginMethod === 'email' && !currentUser.isVerified;
                 if (emailVerificationPrompt) emailVerificationPrompt.style.display = isEmailUserUnverified ? 'flex' : 'none';
                 if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = isEmailUserUnverified ? 'flex' : 'none';
 
-                [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = isEmailUserUnverified; });
-                if (profileNameInput) profileNameInput.disabled = (currentUser.loginMethod === 'google' || isEmailUserUnverified);
-                if (profileNameInput) profileNameInput.title = currentUser.loginMethod === 'google' ? "Managed by Google" : (isEmailUserUnverified ? "Verify email to edit" : "");
+                // Enable/disable profile editing features based on verification
+                [saveProfileChangesBtn, changePasswordBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = isEmailUserUnverified; });
+                if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; // Hide initially, show on file select
+                if (profileNameInput) {
+                    profileNameInput.disabled = (currentUser.loginMethod === 'google' || isEmailUserUnverified);
+                    profileNameInput.title = currentUser.loginMethod === 'google' ? "Name is managed by Google and cannot be changed here." : (isEmailUserUnverified ? "Please verify your email to edit your name." : "");
+                }
 
-                if(changePasswordForm && currentUser.loginMethod === 'google') changePasswordForm.style.display = 'none'; else if (changePasswordForm) changePasswordForm.style.display = 'block';
+                if(changePasswordForm && currentUser.loginMethod === 'google') {
+                    changePasswordForm.style.display = 'none'; // Hide change password form for Google users
+                    // Clear password fields if they were somehow filled
+                    [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(input => { if(input) input.value = ''; });
+                } else if (changePasswordForm) {
+                    changePasswordForm.style.display = 'block';
+                }
 
-                if(saveProfileChangesBtn && profileEditForm) { saveProfileChangesBtn.disabled = true; if(currentUser.loginMethod === 'email' && currentUser.isVerified) saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name); }
-                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-                if (submitButton) submitButton.disabled = false;
 
+                if(saveProfileChangesBtn && profileEditForm) {
+                    saveProfileChangesBtn.disabled = true; // Disable by default
+                    if(currentUser.loginMethod === 'email' && currentUser.isVerified) {
+                       // Enable only if name is different or avatar is pending upload
+                       saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name && !avatarUploadInput.files.length);
+                    }
+                }
+                if (submitButton) submitButton.disabled = false; // Enable feedback submission
+
+                // Populate profile modal fields
                 if(profileNameInput) profileNameInput.value = currentUser.name;
                 if(profileEmailInput) profileEmailInput.value = currentUser.email;
                 if(profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
@@ -2384,90 +2525,516 @@
 
         function updateUIAfterLogout() {
             if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
-            if(userProfileTrigger) { userProfileTrigger.classList.add('hidden'); if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; userProfileTrigger.style.opacity = '0'; userProfileTrigger.style.pointerEvents = 'none';}
+            if(userProfileTrigger) { userProfileTrigger.classList.add('hidden'); if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; }
             if(userMenu) userMenu.classList.remove('active'); if(userProfileModal) userProfileModal.classList.remove('active');
-            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
-            if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = ''; nameInputInFeedbackForm.placeholder = ' '; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
-            [submitButton, saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = true; });
+            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
+            if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
+
+            if(feedbackFormContainer) feedbackFormContainer.style.display = 'block'; // Ensure form is visible
+            if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = ''; nameInputInFeedbackForm.placeholder = ' '; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.dispatchEvent(new Event('input')); } // Enable and clear name for guests
+            if (submitButton) submitButton.disabled = true; // Disable feedback submission for guests
+            [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = true; });
+            resetFeedbackForm(); // Also resets stars and feedback text area
         }
 
         if(menuLogoutLink) menuLogoutLink.addEventListener('click', e => { e.preventDefault(); if(userMenu) userMenu.classList.remove('active'); showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', { isConfirm: true, confirmText: 'Logout', cancelText: 'Cancel', onConfirm: () => { localStorage.removeItem('authToken'); currentUser = null; if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); updateUIAfterLogout(); showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.'); fetchFeedbacks(); }});});
-        if(menuViewProfileLink) menuViewProfileLink.addEventListener('click', e => { e.preventDefault(); if(userMenu) userMenu.classList.remove('active'); if(userProfileModal) userProfileModal.classList.add('active'); updateUIAfterLogin(); });
-        if (sendVerificationEmailBtn) sendVerificationEmailBtn.addEventListener('click', async () => { if (!currentUser || currentUser.isVerified) return; try { const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {}); showStylishPopup('success', 'Verification Link Sent!', data.message); } catch (error) {} });
-        if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.addEventListener('click', async () => { if (!currentUser || currentUser.isVerified) return; try { const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {}); showStylishPopup('success', 'Verification Link Sent!', data.message); } catch (error) {} });
+        if(menuViewProfileLink) menuViewProfileLink.addEventListener('click', e => { e.preventDefault(); if(userMenu) userMenu.classList.remove('active'); if(userProfileModal) userProfileModal.classList.add('active'); updateUIAfterLogin(); /* Refresh profile modal content */ });
+
+        async function handleSendVerificationEmail() {
+            if (!currentUser || (currentUser.loginMethod === 'email' && currentUser.isVerified)) return;
+            try {
+                const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {});
+                showStylishPopup('success', 'Verification Link Sent!', data.message);
+            } catch (error) { /* Error already shown by apiRequest */ }
+        }
+        if (sendVerificationEmailBtn) sendVerificationEmailBtn.addEventListener('click', handleSendVerificationEmail);
+        if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.addEventListener('click', handleSendVerificationEmail);
+
 
         if(profileEditForm) {
-            profileEditForm.addEventListener('input', () => { if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name); else saveProfileChangesBtn.disabled = true; });
-            profileEditForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email.'); const newName = profileNameInput.value.trim(); if (!newName) return showStylishPopup('error', 'Name Required', 'Name cannot be empty.'); if (currentUser.loginMethod === 'google' && newName !== currentUser.name) return showStylishPopup('warning', 'Google User', 'Name managed by Google.'); try { const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName }); if (data.token) localStorage.setItem('authToken', data.token); currentUser.name = data.user.name; currentUser = { ...currentUser, ...data.user }; if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; updateUIAfterLogin(); showStylishPopup('success', 'Profile Updated!', data.message || 'Profile name updated!'); } catch (error) {} });
+            profileEditForm.addEventListener('input', () => {
+                if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) {
+                    saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name && !avatarUploadInput.files.length);
+                } else {
+                    saveProfileChangesBtn.disabled = true;
+                }
+            });
+            profileEditForm.addEventListener('submit', async e => {
+                e.preventDefault();
+                if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to save profile changes.');
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to save changes.');
+
+                const newName = profileNameInput.value.trim();
+                if (!newName) return showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
+                if (currentUser.loginMethod === 'google' && newName !== currentUser.name) return showStylishPopup('warning', 'Google User', 'Your name is managed by Google and cannot be changed here.');
+
+                try {
+                    const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
+                    if (data.token) localStorage.setItem('authToken', data.token); // Update token if backend sends a new one
+                    currentUser.name = data.user.name; // Update local currentUser object
+                    currentUser = { ...currentUser, ...data.user }; // Merge any other updated fields
+                    if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
+                    updateUIAfterLogin(); // Refresh UI elements
+                    showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been updated!');
+                } catch (error) { /* Error already shown by apiRequest */ }
+            });
         }
 
-        if (avatarUploadInput) avatarUploadInput.addEventListener('change', () => { if (avatarUploadInput.files.length > 0) { if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) { showStylishPopup('warning', 'Email Verification Required!', 'Verify email to upload avatar.'); avatarUploadInput.value = ''; return; } const reader = new FileReader(); reader.onload = e => profileDisplayAvatar.src = e.target.result; reader.readAsDataURL(avatarUploadInput.files[0]); if(uploadAvatarNowBtn) { uploadAvatarNowBtn.style.display = 'block'; uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar'; } if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true; } else { if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; if (currentUser) { profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(profileEditForm) profileEditForm.dispatchEvent(new Event('input'));}}});
-        if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async () => { if (!currentUser) return showStylishPopup('error', 'Error', 'Must be logged in.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email.'); if (avatarUploadInput.files.length === 0) return showStylishPopup('warning', 'No File Selected', 'Select an image.'); const file = avatarUploadInput.files[0], formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); const originalBtnHTML = uploadAvatarNowBtn.innerHTML; uploadAvatarNowBtn.disabled = true; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; uploadProgressBar.style.display = 'block'; progressFill.style.width = '0%'; progressText.textContent = '0%'; try { const xhr = new XMLHttpRequest(); xhr.open('POST', CLOUDINARY_UPLOAD_URL, true); xhr.upload.onprogress = e => { if (e.lengthComputable) { const percent = (e.loaded / e.total) * 100; progressFill.style.width = percent + '%'; progressText.textContent = Math.round(percent) + '%'; }}; await new Promise((resolve, reject) => { xhr.onload = async () => { if (xhr.status >= 200 && xhr.status < 300) { const cloudRes = JSON.parse(xhr.responseText), imgUrl = cloudRes.secure_url; try { const beRes = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: currentUser.name, avatarUrl: imgUrl }); if (beRes.token) localStorage.setItem('authToken', beRes.token); currentUser.avatarUrl = beRes.user.avatarUrl; currentUser = { ...currentUser, ...beRes.user }; if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; updateUIAfterLogin(); await fetchFeedbacks(); avatarUploadInput.value = ''; if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; showStylishPopup('success', 'Avatar Updated!', 'Profile updated.'); resolve(); } catch (beError) { reject(beError); }} else { const errRes = JSON.parse(xhr.responseText); reject(new Error(errRes.error.message || 'Cloudinary upload failed.'));}}; xhr.onerror = () => reject(new Error('Network error during upload.')); xhr.send(formData);});} catch (error) { showStylishPopup('error', 'Upload Error!', error.message || 'Avatar upload failed.');} finally { uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = originalBtnHTML; uploadProgressBar.style.display = 'none';}});
+        if (avatarUploadInput) avatarUploadInput.addEventListener('change', () => {
+            if (avatarUploadInput.files.length > 0) {
+                if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+                    showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to upload an avatar.');
+                    avatarUploadInput.value = ''; // Clear the file input
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => profileDisplayAvatar.src = e.target.result;
+                reader.readAsDataURL(avatarUploadInput.files[0]);
+                if(uploadAvatarNowBtn) { uploadAvatarNowBtn.style.display = 'inline-flex'; uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar'; }
+                if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true; // Disable save name btn if avatar is pending
+            } else {
+                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                if (currentUser) {
+                    profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
+                    if(profileEditForm) profileEditForm.dispatchEvent(new Event('input')); // Re-check save button state
+                }
+            }
+        });
+        if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async () => {
+            if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to upload an avatar.');
+            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to upload an avatar.');
+            if (avatarUploadInput.files.length === 0) return showStylishPopup('warning', 'No File Selected', 'Please select an image file to upload.');
 
-        if(changePasswordForm) changePasswordForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup('error', 'Error', 'Must be logged in.'); if (currentUser.loginMethod === 'google') return showStylishPopup('error', 'Google User', 'Cannot change password here.'); if (!currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email.'); const curPw = currentPasswordInput.value, newPw = newPasswordProfileInput.value, confNewPw = confirmNewPasswordProfileInput.value; if (!curPw || !newPw || !confNewPw) return showStylishPopup('error', 'Empty Fields!', 'All fields required.'); if (newPw !== confNewPw) return showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.'); if (newPw.length < 6) return showStylishPopup('error', 'Weak Password!', 'Min 6 characters.'); if (curPw === newPw) return showStylishPopup('warning', 'Same Password!', 'New password same as current.'); try { const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword: curPw, newPassword: newPw }); showStylishPopup('success', 'Password Changed!', data.message); [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => { inp.value = ''; inp.dispatchEvent(new Event('input')); });} catch (error) {}});
+            const file = avatarUploadInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-        starsElements.forEach(star => { star.addEventListener('click', () => { if (submitButton.disabled) return; const value = parseInt(star.dataset.value); currentSelectedRating = value; ratingInput.value = value; updateStarVisuals(value); }); star.addEventListener('mouseover', () => { if (submitButton.disabled) return; const value = parseInt(star.dataset.value); updateStarVisuals(value, true); }); star.addEventListener('mouseout', () => { if (submitButton.disabled) return; updateStarVisuals(currentSelectedRating); }); });
-        function updateStarVisuals(val, isHover = false) { starsElements.forEach(s => { const sVal = parseInt(s.dataset.value); if (isHover) { if (sVal <= val) s.classList.add('highlighted'); else s.classList.remove('highlighted'); s.classList.remove('selected'); } else { if (sVal <= val) s.classList.add('selected'); else s.classList.remove('selected'); s.classList.remove('highlighted'); }});}
+            const originalBtnHTML = uploadAvatarNowBtn.innerHTML;
+            uploadAvatarNowBtn.disabled = true;
+            uploadAvatarNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            uploadProgressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
 
-        if (enhanceFeedbackBtn) enhanceFeedbackBtn.addEventListener('click', async () => { const originalFeedback = feedbackTextarea.value.trim(); if (!originalFeedback) return showStylishPopup('warning', 'Empty Feedback', 'Write feedback to enhance!'); const originalBtnText = enhanceFeedbackBtn.innerHTML; enhanceFeedbackBtn.disabled = true; enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...'; try { const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`; const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); let enhancedText = originalFeedback; if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) enhancedText = result.candidates[0].content.parts[0].text; else { console.warn("Gemini API response issue:", result); showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance. Try again.');} feedbackTextarea.value = enhancedText; feedbackTextarea.dispatchEvent(new Event('input')); showStylishPopup('success', 'Feedback Enhanced!', 'AI refined your feedback.'); } catch (error) { console.error("Error enhancing feedback:", error); showStylishPopup('error', 'Enhancement Failed', 'Error enhancing. Try later.'); } finally { enhanceFeedbackBtn.disabled = false; enhanceFeedbackBtn.innerHTML = originalBtnText; }});
-        else console.error("Enhance feedback button not found!");
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
+                xhr.upload.onprogress = e => { if (e.lengthComputable) { const percent = (e.loaded / e.total) * 100; progressFill.style.width = percent + '%'; progressText.textContent = Math.round(percent) + '%'; }};
 
-        if(submitButton) submitButton.addEventListener('click', async () => { if (!currentUser) return showStylishPopup('warning', 'Login Required', 'Log in to submit.'); const feedbackContent = feedbackTextarea.value.trim(), ratingValue = ratingInput.value; if (!feedbackContent || ratingValue === '0') return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating required!'); let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) }; const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL, method = isEditing ? 'PUT' : 'POST'; if (isEditing && currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email to edit.'); const originalSubmitBtnHTML = submitButton.innerHTML; submitButton.disabled = true; submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? "Updating..." : "Submitting..."}`; try { const data = await apiRequest(url, method, feedbackPayload); showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } catch (error) {} finally { submitButton.disabled = false; submitButton.innerHTML = isEditing ? '<i class="fas fa-paper-plane"></i> Update Feedback' : '<i class="fas fa-paper-plane"></i> Submit Feedback';}});
+                await new Promise((resolve, reject) => {
+                    xhr.onload = async () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            const cloudRes = JSON.parse(xhr.responseText);
+                            const imgUrl = cloudRes.secure_url;
+                            try {
+                                const beRes = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { avatarUrl: imgUrl }); // Only send avatarUrl
+                                if (beRes.token) localStorage.setItem('authToken', beRes.token);
+                                currentUser.avatarUrl = beRes.user.avatarUrl;
+                                currentUser = { ...currentUser, ...beRes.user };
+                                if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl;
+                                updateUIAfterLogin(); // Update all UI elements reflecting user state
+                                await fetchFeedbacks(); // Refresh feedbacks to show new avatar
+                                avatarUploadInput.value = ''; // Clear file input
+                                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                                showStylishPopup('success', 'Avatar Updated!', 'Your profile avatar has been updated!');
+                                resolve();
+                            } catch (beError) { reject(beError); }
+                        } else {
+                            let errorMsg = 'Cloudinary upload failed.';
+                            try { const errRes = JSON.parse(xhr.responseText); if(errRes.error && errRes.error.message) errorMsg = errRes.error.message; } catch(e) {}
+                            reject(new Error(errorMsg));
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('Network error during upload. Please check your connection.'));
+                    xhr.send(formData);
+                });
+            } catch (error) {
+                showStylishPopup('error', 'Upload Error!', error.message || 'Avatar upload failed. Please try again.');
+            } finally {
+                uploadAvatarNowBtn.disabled = false;
+                uploadAvatarNowBtn.innerHTML = originalBtnHTML;
+                uploadProgressBar.style.display = 'none';
+                if(profileEditForm) profileEditForm.dispatchEvent(new Event('input')); // Re-check save button state
+            }
+        });
+
+
+        if(changePasswordForm) changePasswordForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to change your password.');
+            if (currentUser.loginMethod === 'google') return showStylishPopup('error', 'Google User', 'Password cannot be changed for Google accounts through this form.');
+            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to change your password.');
+
+            const curPw = currentPasswordInput.value, newPw = newPasswordProfileInput.value, confNewPw = confirmNewPasswordProfileInput.value;
+            if (!curPw || !newPw || !confNewPw) return showStylishPopup('error', 'Empty Fields!', 'All password fields are required.');
+            if (newPw !== confNewPw) return showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.');
+            if (newPw.length < 6) return showStylishPopup('error', 'Weak Password!', 'New password must be at least 6 characters long.');
+            if (curPw === newPw) return showStylishPopup('warning', 'Same Password!', 'New password cannot be the same as the current password.');
+
+            try {
+                const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword: curPw, newPassword: newPw });
+                showStylishPopup('success', 'Password Changed!', data.message);
+                [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => { if(inp) { inp.value = ''; inp.dispatchEvent(new Event('input')); }}); // Clear fields
+            } catch (error) { /* Error already shown by apiRequest */ }
+        });
+
+
+        starsElements.forEach(star => {
+            star.addEventListener('click', () => {
+                if (submitButton.disabled && !isEditing) return; // Allow star change during edit even if submit is momentarily disabled
+                const value = parseInt(star.dataset.value);
+                currentSelectedRating = value;
+                ratingInput.value = value;
+                updateStarVisuals(value);
+            });
+            star.addEventListener('mouseover', () => {
+                if (submitButton.disabled && !isEditing) return;
+                const value = parseInt(star.dataset.value);
+                updateStarVisuals(value, true); // Highlight on hover
+            });
+            star.addEventListener('mouseout', () => {
+                if (submitButton.disabled && !isEditing) return;
+                updateStarVisuals(currentSelectedRating); // Revert to selected rating
+            });
+        });
+        function updateStarVisuals(val, isHover = false) {
+            starsElements.forEach(s => {
+                const sVal = parseInt(s.dataset.value);
+                if (isHover) {
+                    if (sVal <= val) s.classList.add('highlighted'); else s.classList.remove('highlighted');
+                    s.classList.remove('selected'); // Remove selected class during hover preview
+                } else {
+                    if (sVal <= val) s.classList.add('selected'); else s.classList.remove('selected');
+                    s.classList.remove('highlighted'); // Remove hover highlight
+                }
+            });
+        }
+
+        if (enhanceFeedbackBtn) enhanceFeedbackBtn.addEventListener('click', async () => {
+            const originalFeedback = feedbackTextarea.value.trim();
+            if (!originalFeedback) return showStylishPopup('warning', 'Empty Feedback', 'Please write some feedback before trying to enhance it!');
+
+            const originalBtnText = enhanceFeedbackBtn.innerHTML;
+            enhanceFeedbackBtn.disabled = true;
+            enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...';
+
+            try {
+                // Using the Gemini API call structure
+                const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`;
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // API key will be injected by Canvas if needed for models other than gemini-2.0-flash
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                let enhancedText = originalFeedback; // Default to original if API fails
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    enhancedText = result.candidates[0].content.parts[0].text;
+                } else {
+                    console.warn("Gemini API response issue:", result);
+                    showStylishPopup('warning', 'Enhancement Partially Failed', 'Could not fully enhance the feedback. Please review.');
+                }
+                feedbackTextarea.value = enhancedText;
+                feedbackTextarea.dispatchEvent(new Event('input')); // For floating label
+                showStylishPopup('success', 'Feedback Enhanced!', 'Your feedback has been refined by AI.');
+            } catch (error) {
+                console.error("Error enhancing feedback:", error);
+                showStylishPopup('error', 'Enhancement Failed', 'An error occurred while enhancing feedback. Please try again later.');
+            } finally {
+                enhanceFeedbackBtn.disabled = false;
+                enhanceFeedbackBtn.innerHTML = originalBtnText;
+            }
+        });
+
+
+        if(submitButton) submitButton.addEventListener('click', async () => {
+            if (!currentUser && !nameInputInFeedbackForm.value.trim()) return showStylishPopup('warning', 'Name Required', 'Please enter your name or log in to submit feedback.');
+            if (!currentUser && nameInputInFeedbackForm.value.trim()) {
+                // Guest submission, ensure name is captured if not logged in
+            } else if (!currentUser) { // Should not happen if name check passes, but as a fallback
+                 return showStylishPopup('warning', 'Login Required', 'Please log in to submit feedback.');
+            }
+
+
+            const feedbackContent = feedbackTextarea.value.trim();
+            const ratingValue = ratingInput.value;
+
+            if (!feedbackContent || ratingValue === '0') return showStylishPopup('error', 'Empty Fields!', 'Feedback message and a star rating are required!');
+
+            let feedbackPayload = {
+                feedback: feedbackContent,
+                rating: parseInt(ratingValue)
+            };
+            // If the user is not logged in but provided a name
+            if (!currentUser && nameInputInFeedbackForm.value.trim()) {
+                feedbackPayload.name = nameInputInFeedbackForm.value.trim();
+            }
+
+
+            const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            if (isEditing && currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+                return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit your feedback.');
+            }
+
+            const originalSubmitBtnHTML = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? "Updating..." : "Submitting..."}`;
+
+            try {
+                const data = await apiRequest(url, method, feedbackPayload);
+                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message || (isEditing ? 'Your feedback has been updated.' : 'Thank you for your feedback!'));
+                resetFeedbackForm();
+                await fetchFeedbacks();
+            } catch (error) {
+                // Error already shown by apiRequest or specific handling if needed
+            } finally {
+                submitButton.disabled = false; // Re-enable after process
+                 // Re-check disabled state based on login status
+                if (!currentUser) submitButton.disabled = true;
+                else if (isEditing) submitButton.disabled = (currentUser.loginMethod === 'email' && !currentUser.isVerified);
+
+
+                submitButton.innerHTML = isEditing ? '<i class="fas fa-paper-plane"></i> Update Feedback' : '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                 // If form was reset, and user is not logged in, disable submit button again.
+                if (!currentUser) {
+                    submitButton.disabled = true;
+                }
+            }
+        });
+
 
         function resetFeedbackForm() {
-            if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; nameInputInFeedbackForm.disabled = true;}
-            else { nameInputInFeedbackForm.value = ''; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = ' '; }
-            if (nameInputInFeedbackForm) nameInputInFeedbackForm.dispatchEvent(new Event('input'));
-            feedbackTextarea.value = ''; if(feedbackTextarea) feedbackTextarea.dispatchEvent(new Event('input'));
-            ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0);
-            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback'; isEditing = false; currentEditFeedbackId = null;
-            if (currentUser) submitButton.disabled = false; else submitButton.disabled = true;
+            if (currentUser) {
+                nameInputInFeedbackForm.value = currentUser.name;
+                nameInputInFeedbackForm.disabled = true;
+            } else {
+                nameInputInFeedbackForm.value = '';
+                nameInputInFeedbackForm.disabled = false; // Enable for guest
+                nameInputInFeedbackForm.placeholder = ' '; // For floating label
+            }
+            if (nameInputInFeedbackForm) nameInputInFeedbackForm.dispatchEvent(new Event('input')); // Trigger for floating label
+
+            feedbackTextarea.value = '';
+            if(feedbackTextarea) feedbackTextarea.dispatchEvent(new Event('input')); // Trigger for floating label
+
+            ratingInput.value = '0';
+            currentSelectedRating = 0;
+            updateStarVisuals(0);
+
+            if(submitButton) {
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                submitButton.disabled = !currentUser; // Disable if not logged in
+            }
+            isEditing = false;
+            currentEditFeedbackId = null;
         }
 
+
         async function fetchFeedbacks() {
-             try {
+            try {
                 const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET');
-                const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2');
+
+                // Clear only feedback items, keep average rating and title structure
+                const childrenToRemove = Array.from(feedbackListContainer.children).filter(child =>
+                    child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2' && !child.classList.contains('average-rating-container')
+                );
                 childrenToRemove.forEach(child => child.remove());
-                if (!feedbackListContainer.querySelector('#average-rating-display')) feedbackListContainer.prepend(averageRatingDisplayEl);
+
+
+                // Ensure average rating display and title are present and in order
+                let avgRatingEl = feedbackListContainer.querySelector('#average-rating-display');
+                if (!avgRatingEl) {
+                    avgRatingEl = document.createElement('div');
+                    avgRatingEl.id = 'average-rating-display';
+                    feedbackListContainer.prepend(avgRatingEl);
+                }
+
                 let h2Title = feedbackListContainer.querySelector('h2.section-title');
-                if (!h2Title) { h2Title = document.createElement('h2'); h2Title.textContent = 'Recent Feedbacks'; h2Title.classList.add('section-title'); const firstFb = feedbackListContainer.querySelector('.feedback-item'); feedbackListContainer.insertBefore(h2Title, firstFb || averageRatingDisplayEl.nextSibling || null); }
-                if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedbacks yet. Be the first!'; msgP.style.cssText='text-align:center; padding:20px; color:rgba(255,255,255,0.7)'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0); }
-                else { const totalRatings = data.reduce((sum, fb) => sum + (parseInt(fb.rating) || 0), 0); updateAverageRating(totalRatings / data.length, data.length); data.forEach(addFeedbackToDOM); }
-            } catch (err) { console.error("Error fetching feedbacks:", err); }
+                if (!h2Title) {
+                    h2Title = document.createElement('h2');
+                    h2Title.textContent = 'Recent Feedbacks';
+                    h2Title.classList.add('section-title');
+                    // Insert after average rating display
+                    if (avgRatingEl.nextSibling) {
+                        feedbackListContainer.insertBefore(h2Title, avgRatingEl.nextSibling);
+                    } else {
+                        feedbackListContainer.appendChild(h2Title);
+                    }
+                }
+
+
+                if (data.length === 0) {
+                    const msgP = document.createElement('p');
+                    msgP.textContent = 'No feedbacks yet. Be the first to share your thoughts!';
+                    msgP.style.cssText='text-align:center; padding:20px; color:rgba(255,255,255,0.7); grid-column: 1 / -1;'; // Span all columns
+                    feedbackListContainer.appendChild(msgP);
+                    updateAverageRating(0, 0);
+                } else {
+                    const totalRatings = data.reduce((sum, fb) => sum + (parseInt(fb.rating) || 0), 0);
+                    updateAverageRating(totalRatings / data.length, data.length);
+                    data.forEach(addFeedbackToDOM);
+                }
+            } catch (err) {
+                console.error("Error fetching feedbacks:", err);
+                // Optionally display an error message in the feedback list area
+                feedbackListContainer.innerHTML = '<p style="color:var(--error-color); text-align:center;">Could not load feedbacks. Please try again later.</p>';
+            }
         }
 
         function updateAverageRating(avg, count) {
-            const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆';
-            if (!isNaN(avgNum) && avgNum > 0) { const full = Math.floor(avgNum), half = (avgNum % 1) >= 0.5 ? '★' : ''; starsHtml = '★'.repeat(full) + half + '☆'.repeat(Math.max(0, 5 - full - (half ? 1 : 0)));}
-            averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} Feedbacks) <span class="badge-total">+${count}</span></div></div>`;
-            setTimeout(() => { const el = averageRatingDisplayEl.querySelector('.average-rating-container'); if (el) el.classList.add('animate-in'); }, 50);
+            const avgNum = parseFloat(avg);
+            let starsHtml = '☆☆☆☆☆'; // Default to empty stars
+
+            if (!isNaN(avgNum) && avgNum > 0) {
+                const fullStars = Math.floor(avgNum);
+                const halfStar = (avgNum % 1) >= 0.5 ? '★' : ''; // Using actual star for half for simplicity, could use fa-star-half-alt
+                const emptyStars = Math.max(0, 5 - fullStars - (halfStar ? 1 : 0));
+                starsHtml = '★'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
+            }
+            // Ensure averageRatingDisplayEl is the direct container for .average-rating-container
+            averageRatingDisplayEl.innerHTML = `
+                <div class="average-rating-container">
+                    <h3>Overall Average Rating</h3>
+                    <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
+                    <div class="average-stars">${starsHtml}</div>
+                    <div class="total-feedbacks-count">(${count} Feedback${count === 1 ? '' : 's'}) <span class="badge-total">+${count}</span></div>
+                </div>`;
+            setTimeout(() => { // Animation for the container
+                const el = averageRatingDisplayEl.querySelector('.average-rating-container');
+                if (el) el.classList.add('animate-in');
+            }, 50);
         }
+
 
         function addFeedbackToDOM(fbData) {
-            const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
-            const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; const char = (fbData.name?.[0]?.toUpperCase() || 'X'); avatarImg.src = fbData.avatarUrl || `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; avatarImg.alt = fbData.name || 'User Avatar'; avatarImg.onerror = function() { this.src = `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; }; if (fbData.userId?.isVerified) avatarImg.classList.add('verified-user');
-            const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
-            const strongName = document.createElement('strong'); let name = fbData.name || 'Anonymous', typeTag = '', verTag = '';
-            if (fbData.userId) { if (fbData.userId.loginMethod === 'google') typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`; if (fbData.userId.isVerified) verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`; else if (fbData.userId.loginMethod === 'email') verTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;}
-            else if (fbData.googleIdSubmitter) { typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`; verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;}
-            else verTag = `<span class="unverified-tag-feedback" title="Verification Unknown">?</span>`;
-            strongName.innerHTML = `${name} ${typeTag} ${verTag}`; if (fbData.rating) strongName.classList.add(`rating-${fbData.rating}`);
+            const item = document.createElement('div');
+            item.className = 'feedback-item';
+            item.dataset.feedbackId = fbData._id;
+
+            const feedbackHeader = document.createElement('div'); // Wrapper for avatar and details
+            feedbackHeader.className = 'feedback-header';
+
+            const avatarImg = document.createElement('img');
+            avatarImg.className = 'avatar-img';
+            const char = (fbData.name?.[0]?.toUpperCase() || (fbData.userId?.name?.[0]?.toUpperCase()) || 'X');
+            avatarImg.src = fbData.avatarUrl || (fbData.userId?.avatarUrl) || `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`;
+            avatarImg.alt = (fbData.name || fbData.userId?.name) || 'User Avatar';
+            avatarImg.onerror = function() { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; };
+            if (fbData.userId?.isVerified) avatarImg.classList.add('verified-user');
+
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'feedback-details';
+
+            const strongName = document.createElement('strong');
+            let nameToDisplay = fbData.name || fbData.userId?.name || 'Anonymous';
+            let typeTag = '', verTag = '';
+
+            if (fbData.userId) { // User object from backend
+                if (fbData.userId.loginMethod === 'google') typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                if (fbData.userId.isVerified) verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
+                else if (fbData.userId.loginMethod === 'email') verTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
+            } else if (fbData.googleIdSubmitter) { // Legacy field for older Google submissions
+                typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
+                verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
+            } else { // Guest user or unknown
+                 verTag = `<span class="unverified-tag-feedback" title="Guest User">?</span>`;
+            }
+
+            strongName.innerHTML = `${nameToDisplay} ${typeTag} ${verTag}`;
+            if (fbData.rating) strongName.classList.add(`rating-${fbData.rating}`);
             if (fbData.isEdited) { const edited = document.createElement('span'); edited.className = 'edited-tag'; edited.textContent = 'Edited'; strongName.appendChild(edited);}
-            const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars'; starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
-            const pFb = document.createElement('p'); pFb.textContent = fbData.feedback;
-            const tsDiv = document.createElement('div'); tsDiv.className = 'feedback-timestamp'; try { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;} catch(e) { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; }
+
+            const starsDiv = document.createElement('div');
+            starsDiv.className = 'feedback-stars';
+            starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
+
+            const pFb = document.createElement('p');
+            pFb.textContent = fbData.feedback;
+
+            const tsDiv = document.createElement('div');
+            tsDiv.className = 'feedback-timestamp';
+            try { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;}
+            catch(e) { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; } // Fallback
+
             detailsDiv.append(strongName, starsDiv, pFb, tsDiv);
-            const editBtn = document.createElement('button'); editBtn.className = 'edit-feedback-btn'; editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editBtn.title = 'Edit feedback';
-            editBtn.disabled = !(currentUser && fbData.userId?._id === currentUser.userId && (currentUser.loginMethod === 'google' || currentUser.isVerified));
-            editBtn.onclick = e => { e.stopPropagation(); if (!currentUser || fbData.userId?._id !== currentUser.userId) return showStylishPopup('error', 'Permission Denied!', 'Can only edit own feedback.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email to edit.'); showStylishPopup('info', 'Edit Feedback', 'Edit feedback in form below.'); nameInputInFeedbackForm.value = fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input')); feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating); submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback'; isEditing = true; currentEditFeedbackId = fbData._id; if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-            item.appendChild(editBtn);
-            if (fbData.replies?.length > 0) { const reply = fbData.replies[fbData.replies.length - 1]; if (reply?.text) { const replyDiv = document.createElement('div'); replyDiv.className = 'admin-reply'; const adminAva = document.createElement('img'); adminAva.className = 'admin-reply-avatar'; adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAva.alt = 'Admin'; const replyContent = document.createElement('div'); replyContent.className = 'admin-reply-content'; let replyTs = ''; try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })}`;} catch(e){ replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')}`;} replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`; replyDiv.append(adminAva, replyContent); detailsDiv.appendChild(replyDiv);}}
-            item.append(avatarImg, detailsDiv); feedbackListContainer.appendChild(item);
+            feedbackHeader.append(avatarImg, detailsDiv); // Append avatar and details to header
+
+            item.appendChild(feedbackHeader); // Append header to item
+
+            // Edit button (conditionally shown)
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-feedback-btn';
+            editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            editBtn.title = 'Edit feedback';
+            editBtn.disabled = !(currentUser && fbData.userId?._id === currentUser.userId && (currentUser.loginMethod === 'google' || (currentUser.loginMethod === 'email' && currentUser.isVerified)));
+            if (editBtn.disabled) editBtn.style.display = 'none'; // Hide if disabled
+
+            editBtn.onclick = e => {
+                e.stopPropagation();
+                if (!currentUser || fbData.userId?._id !== currentUser.userId) return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit your feedback.');
+
+                showStylishPopup('info', 'Edit Feedback', 'You can now edit your feedback in the form below. Scroll down if needed.');
+                if (nameInputInFeedbackForm) {
+                    nameInputInFeedbackForm.value = nameToDisplay; // Use the displayed name
+                    nameInputInFeedbackForm.disabled = true; // Keep name disabled during edit
+                    nameInputInFeedbackForm.dispatchEvent(new Event('input'));
+                }
+                feedbackTextarea.value = fbData.feedback;
+                feedbackTextarea.dispatchEvent(new Event('input'));
+                currentSelectedRating = fbData.rating;
+                ratingInput.value = fbData.rating;
+                updateStarVisuals(fbData.rating);
+                if(submitButton) {
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
+                    submitButton.disabled = false; // Enable update button
+                }
+                isEditing = true;
+                currentEditFeedbackId = fbData._id;
+                if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+            item.appendChild(editBtn); // Append edit button to item
+
+            // Admin replies
+            if (fbData.replies?.length > 0) {
+                const reply = fbData.replies[fbData.replies.length - 1]; // Show latest reply
+                if (reply?.text) {
+                    const replyDiv = document.createElement('div');
+                    replyDiv.className = 'admin-reply';
+                    const adminAva = document.createElement('img');
+                    adminAva.className = 'admin-reply-avatar';
+                    adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Static admin avatar
+                    adminAva.alt = 'Admin';
+
+                    const replyContentDiv = document.createElement('div');
+                    replyContentDiv.className = 'admin-reply-content';
+                    let replyTs = '';
+                    try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })})`;}
+                    catch(e){ replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`;} // Fallback
+                    replyContentDiv.innerHTML = `<strong>${(reply.adminName || 'Admin')}:</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`;
+
+                    replyDiv.append(adminAva, replyContentDiv);
+                    item.appendChild(replyDiv); // Append reply to item
+                }
+            }
+            feedbackListContainer.appendChild(item);
         }
 
-        updateUIAfterLogout(); checkLoginStatus();
+        // Initial setup
+        updateUIAfterLogout(); // Set initial state assuming logged out
+        checkLoginStatus(); // Then check actual login status and update UI + fetch data
     });
 </script>
 </body>
