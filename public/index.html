@@ -20,35 +20,34 @@
             --bg-gradient-end: #16213e; /* Even Darker Purple-Blue */
             --card-bg-popup: #272c3a; /* Dark Gray for Popups */
             --card-bg: rgba(44, 62, 80, 0.85); /* Dark Blue, Semi-Transparent */
-            --card-border: rgba(255, 255, 255, 0.15);
+            --card-border-color: rgba(255, 255, 255, 0.15); /* Subtle border color */
             --input-bg: rgba(255, 255, 255, 0.08);
+            --input-row-profile-bg: rgba(255, 255, 255, 0.05); /* Slightly different for profile rows */
             --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.5);
             --success-color: #28a745; /* Green */
             --error-color: #dc3545; /* Red */
             --info-color: var(--accent-color); /* Blue */
             --confirm-color: #fd7e14; /* Orange */
-            --warning-color: #ffc107; /* New: Warning Yellow */
+            --warning-color: #ffc107; 
+            --label-inactive-color: #c1b8f8; 
 
             --google-blue: #4285F4;
             --progress-bg: #4a4a60;
             --progress-fill-color: #27ae60;
 
-            /* New gradient for borders/glow */
             --border-gradient: linear-gradient(135deg, #8B5CF6, #EC4899);
-            --glow-color-start: rgba(139, 92, 246, 0.6); /* Purple */
-            --glow-color-end: rgba(236, 72, 153, 0.6); /* Pink */
+            --glow-color-start: rgba(139, 92, 246, 0.6); 
+            --glow-color-end: rgba(236, 72, 153, 0.6); 
 
-            /* Custom colors for feedback card names based on rating */
-            --rating-5-color: #28a745; /* Green for 5 stars */
-            --rating-4-color: #17a2b8; /* Cyan for 4 stars */
-            --rating-3-color: #ffc107; /* Yellow for 3 stars */
-            --rating-2-color: #fd7e14; /* Orange for 2 stars */
-            --rating-1-color: #dc3545; /* Red for 1 star */
+            --rating-5-color: #28a745; 
+            --rating-4-color: #17a2b8; 
+            --rating-3-color: #ffc107; 
+            --rating-2-color: #fd7e14; 
+            --rating-1-color: #dc3545; 
         }
 
         html {
             scroll-behavior: smooth;
-            /* Custom scrollbar */
             scrollbar-width: thin;
             scrollbar-color: linear-gradient(140deg, var(--secondary-color), var(--primary-color)) var(--bg-gradient-start);
         }
@@ -61,13 +60,12 @@
             border-radius: 7px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-color); /* Lighter on hover */
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Subtle shadow on hover */
+            background: var(--secondary-color); 
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); 
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            /* Animated gradient background with subtle blobs */
             background: linear-gradient(120deg, var(--bg-gradient-start) 0%, var(--primary-color) 100%);
             background-size: 200% 200%;
             animation: bgmove 14s linear infinite alternate;
@@ -81,15 +79,13 @@
             padding: 0 15px 25px 15px;
             box-sizing: border-box;
             overflow-x: hidden;
-            position: relative; /* For light spot */
+            position: relative; 
         }
-        /* Animated gradient background */
         @keyframes bgmove {
             0% { background-position: 0% 50%; }
             100% { background-position: 100% 50%; }
         }
 
-        /* Subtle moving light spot */
         body::before {
             content: '';
             position: fixed;
@@ -109,15 +105,13 @@
             100% { transform: translate(10%, 10%); }
         }
 
-        /* Micro-interactions: Button press pop-in/out */
         button:active, .popup-button:active, .hero-btn:active, .corner-trigger-base:active {
             transform: scale(0.98);
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* Navigation Bar / Topbar */
         .navbar {
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000; 
             background: rgba(44,62,80,0.80);
             backdrop-filter: blur(7px);
             display: flex; justify-content: space-between; align-items: center;
@@ -125,7 +119,7 @@
             min-height: 62px;
             border-radius: 0 0 18px 18px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-            width: 100%; /* Ensure it spans full width */
+            width: 100%; 
             box-sizing: border-box;
         }
         .nav-left {
@@ -135,33 +129,28 @@
         .nav-logo {
             width: 42px; height: 42px; border-radius: 50%;
             margin-right: 13px;
-            /* Avatar glow */
             box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
             border: 2px solid var(--secondary-color);
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            transition: transform 0.2s ease-out; 
         }
         .nav-logo:hover {
-            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+            transform: translateY(-3px) scale(1.05); 
         }
         .nav-title {
             color: var(--secondary-color); font-weight: 700; font-size: 1.5em;
             letter-spacing: 0.5px;
         }
-        .nav-right {
-            position: relative;
-            /* Adjusted to allow content to define size */
-        }
-
-        /* Fix: Ensure login/profile icons are always fixed to the top-right corner of the viewport */
+        
+        /* Point 1: Login/Profile Icon Position Update */
         #login-icon-trigger, #user-profile-trigger {
-            position: fixed; /* Changed to fixed */
-            top: 12px;
-            right: 12px;
-            transform: translateY(0); /* Reset transform from media query */
-            z-index: 1000; /* Ensure it's on top */
-            display: flex; /* Added for centering icon */
-            align-items: center; /* Added for centering icon */
-            justify-content: center; /* Added for centering icon */
+            position: fixed; 
+            top: 8px;   /* Was 12px */
+            right: 20px; /* Was 12px */
+            z-index: 2000; /* Higher than navbar */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.3s ease-in-out;
         }
 
         #login-icon-trigger {
@@ -190,7 +179,7 @@
         }
 
         #login-icon-trigger .fas {
-            font-size: 1.8em; /* Adjusted for better fit */
+            font-size: 1.8em; 
             color: var(--secondary-color);
             transition: transform 0.2s ease-out;
         }
@@ -199,29 +188,22 @@
             transform: scale(1.08);
             box-shadow: 0 0 15px rgba(0,0,0,0.4), 0 0 30px var(--glow-color-end);
         }
-
-        #login-icon-trigger:active {
-            transform: scale(1.05);
-        }
-
-        @keyframes pulseLoginIcon { /* Renamed to avoid conflict */
+        @keyframes pulseLoginIcon { 
             0% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
             50% { box-shadow: 0 0 15px rgba(0,0,0,0.4), 0 0 35px var(--glow-color-end); }
             100% { box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 0 20px var(--glow-color-start); }
         }
 
-        #user-profile-trigger {
-            flex-direction: row;
+        #user-profile-trigger { 
+            flex-direction: column; 
             align-items: center;
-            gap: 10px; /* Increased gap */
-            padding: 8px 15px; /* Increased padding */
-            border-radius: 50px; /* Pill shape */
-            background: rgba(40, 40, 70, 0.5); /* Darker, more premium background */
+            gap: 4px; 
+            padding: 8px; 
+            border-radius: 15px; 
+            background: rgba(40, 40, 70, 0.5); 
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 5px 20px rgba(0,0,0,0.35);
-            z-index: 1000;
-            transition: all 0.3s ease-in-out;
         }
 
         #user-profile-trigger:hover {
@@ -233,9 +215,8 @@
             display: none;
         }
         
-        /* Container for avatar to apply gradient border and pulse */
         #user-profile-avatar-container {
-            width: 42px; /* Slightly larger */
+            width: 42px; 
             height: 42px;
             border-radius: 50%;
             position: relative;
@@ -247,10 +228,10 @@
         #user-profile-avatar-container::before {
             content: '';
             position: absolute;
-            inset: -2.5px; /* Controls thickness of gradient border */
+            inset: -2.5px; 
             border-radius: 50%;
             background: var(--border-gradient);
-            z-index: 0; /* Behind the image */
+            z-index: 0; 
             animation: pulseAvatarBorder 2.5s infinite ease-in-out;
             transition: opacity 0.3s;
         }
@@ -260,38 +241,38 @@
             100% { opacity: 0.7; transform: scale(1); }
         }
 
-
         #user-profile-avatar {
-            width: 100%; /* Fill the container */
+            width: 100%; 
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--primary-color); /* Inner solid border */
-            position: relative; /* To sit on top of the pseudo-element */
+            border: 2px solid var(--primary-color); 
+            position: relative; 
             z-index: 1;
-            box-shadow: 0 0 8px rgba(0,0,0,0.4); /* Inner shadow for depth */
+            box-shadow: 0 0 8px rgba(0,0,0,0.4); 
         }
 
-
-        #user-profile-name {
-            font-size: clamp(13px, 2.5vw, 16px); /* Slightly larger */
-            font-weight: 600;
+        #user-profile-name { 
+            font-size: clamp(12px, 2vw, 14px); 
+            font-weight: 500;
             color: var(--text-color-light);
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100px;
+            max-width: 70px; 
+            text-align: center; 
+            margin-top: 2px; 
         }
 
         .profile-tooltip {
             position: absolute;
-            bottom: -38px; /* Adjusted */
+            bottom: -38px; 
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(10, 10, 20, 0.85); /* Darker */
+            background: rgba(10, 10, 20, 0.85); 
             backdrop-filter: blur(4px);
-            color: var(--secondary-color); /* Gold text */
+            color: var(--secondary-color); 
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 0.85em;
@@ -308,31 +289,27 @@
             transition-delay: 0.2s;
         }
 
-        /* Media query overrides for fixed icon positioning */
         @media (max-width: 768px) {
             #login-icon-trigger, #user-profile-trigger {
-                top: 15px; /* Slightly adjust for mobile */
-                right: 15px; /* Slightly adjust for mobile */
+                top: 10px; /* Adjusted for mobile */
+                right: 15px; 
             }
              #login-icon-trigger .fas {
-                font-size: 1.6em; /* Smaller on mobile */
+                font-size: 1.6em; 
             }
             #user-profile-avatar-container {
                 width: 38px;
                 height: 38px;
             }
-            #user-profile-trigger {
-                padding: 6px 10px;
-                gap: 8px;
+            #user-profile-trigger { 
+                padding: 6px; 
             }
             #user-profile-name {
-                font-size: 12px;
-                max-width: 70px;
+                font-size: 11px;
+                max-width: 60px;
             }
         }
 
-
-        /* Hero Section */
         .hero-section {
             width: 100%;
             background: linear-gradient(100deg, var(--primary-color) 0%, var(--secondary-color) 100%);
@@ -344,9 +321,8 @@
             padding-top: 62px;
             box-sizing: border-box;
             position: relative;
-            overflow: hidden; /* For particles */
+            overflow: hidden; 
         }
-        /* CSS-only particle/blob background for hero section */
         .hero-section::before, .hero-section::after {
             content: '';
             position: absolute;
@@ -376,7 +352,7 @@
             gap: 13px; padding: 38px 16px 28px 16px;
             color: #fff;
             text-shadow: 0 2px 12px rgba(0,0,0,0.18);
-            position: relative; /* Ensure content is above blobs */
+            position: relative; 
             z-index: 1;
         }
         .hero-logo {
@@ -385,16 +361,16 @@
             margin-bottom: 4px;
             box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
             border: 2px solid var(--secondary-color);
-            transition: transform 0.2s ease-out; /* Avatar bounce on hover */
+            transition: transform 0.2s ease-out; 
         }
         .hero-logo:hover {
-            transform: translateY(-3px) scale(1.05); /* Slight bounce */
+            transform: translateY(-3px) scale(1.05); 
         }
         .hero-content h1 {
             font-size: 2.6em; font-weight: 700; margin: 0;
             letter-spacing: 1px;
             position: relative;
-            text-align: center; /* Fix: Align hero heading to center */
+            text-align: center; 
         }
         .hero-content h1 .emoji {
             font-size: 0.8em;
@@ -404,7 +380,7 @@
         }
         .hero-content p {
             font-size: 1.12em; font-weight: 400; margin: 0;
-            text-align: center; /* Fix: Align hero tagline to center */
+            text-align: center; 
         }
         @keyframes bounce {
             0% { transform: translateY(0); }
@@ -428,10 +404,9 @@
             color: rgba(255,255,255,0.7);
             margin-top: 10px;
             animation: fadeIn 1.5s ease-out;
-            text-align: center; /* Fix: Align micro text to center */
+            text-align: center; 
         }
 
-        /* Authentication Modals (Login/Signup/Profile) */
         .auth-modal-overlay {
             display: none;
             position: fixed;
@@ -454,27 +429,21 @@
 
         .auth-modal-content {
             background: var(--bg-gradient-end);
-            /* border: 1px solid var(--card-border); */ /* Replaced by pseudo-element */
-            border-radius: 12px; /* User request */
-            padding: 28px; /* User request */
-            width: 90vw; /* User request */
-            max-width: 400px; /* User request */
+            border-radius: 12px; 
+            padding: 28px; 
+            width: 90vw; 
+            max-width: 400px; 
             position: relative;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.38); /* User request */
+            box-shadow: 0 8px 24px rgba(0,0,0,0.38); 
             color: var(--text-color-light);
-            transform: scale(0.95);
-            opacity:0;
-            /* transition: transform 0.25s ease-out, opacity 0.2s ease-out; */ /* Replaced by animation */
-            overflow-y: auto;
-            max-height: 80vh;
-            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both; /* User request */
+            animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both; 
+            overflow: visible !important; 
         }
-        /* Gradient border for auth modal */
         .auth-modal-content::before {
             content: '';
             position: absolute;
             inset: -2px; 
-            border-radius: 14px; /* Slightly larger than parent */
+            border-radius: 14px; 
             background: var(--border-gradient);
             z-index: -1;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -484,11 +453,25 @@
             padding: 2px; 
         }
 
-
-        .auth-modal-overlay.active .auth-modal-content {
-            transform: scale(1);
-            opacity: 1;
+        .profile-scroll-content {
+            max-height: 70vh; 
+            overflow-y: auto;
+            padding: 5px 15px 15px 15px; 
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary-color) rgba(0,0,0,0.2);
         }
+        .profile-scroll-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .profile-scroll-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 3px;
+        }
+        .profile-scroll-content::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+
 
         @keyframes popfade {
             0% { opacity:0; transform:scale(.7);}
@@ -532,65 +515,114 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        /* Floating labels for inputs */
+        /* Floating labels for inputs (Login, Signup, Feedback forms) */
         .input-wrapper {
             position: relative;
-            margin-bottom: 22px;
+            margin-bottom: 22px; 
         }
-        .input-wrapper input, .input-wrapper textarea {
+        .input-wrapper input, .input-wrapper textarea { /* General inputs with floating labels */
             width: 100%;
-            padding: 16px 12px 12px 40px; /* Increased left padding for icon */
+            padding: 16px 12px 12px 44px; 
             font-size: 1.1em;
             border-radius: 11px;
-            border: 2px solid rgba(255, 215, 0, 0.5); /* Softer gold border */
-            background: rgba(255,255,255,0.08); /* More translucent background */
+            border: 2px solid rgba(255, 215, 0, 0.5); 
+            background: rgba(255,255,255,0.08); 
             outline: none;
             transition: border .22s, box-shadow .22s;
             box-sizing: border-box;
             color: var(--text-color-light);
         }
         .input-wrapper textarea {
-            padding-top: 16px; /* Adjust for textarea */
+            padding-top: 16px; 
             min-height: 85px;
             max-height: 220px;
             resize: vertical;
         }
-        .input-wrapper label { /* Floating label specific styling */
+        .input-wrapper .input-icon { /* Icon for floating label inputs */
             position: absolute;
-            left: 40px; 
-            top: 18px;
-            color: var(--secondary-color); /* User request: Gold color */
-            font-size: 1.0em; /* Adjusted for better proportion */
+            left: 14px; 
+            top: 50%; 
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.12em;
+            z-index: 2; 
+        }
+        .input-wrapper label { /* Floating label */
+            position: absolute; 
+            left: 44px; 
+            top: 14px; 
             pointer-events: none;
-            background: transparent; 
-            padding: 0 6px;
-            transition: 0.2s ease-out;
-            z-index: 3;
-            background: none;
+            font-size: 1.02em;
+            color: var(--label-inactive-color); 
+            transition: all 0.22s;
+            background: none; 
+            padding: 0 4px; 
         }
         .input-wrapper input:focus + label,
         .input-wrapper input:not(:placeholder-shown) + label,
         .input-wrapper textarea:focus + label,
-        .input-wrapper textarea:not(:placeholder-shown) + label {
-            top: -10px; /* Adjusted for better placement */
-            left: 11px;
-            font-size: .85em; /* User request: Smaller font */
-            color: var(--secondary-color); 
+        .input-wrapper textarea:not(:placeholder-shown) + label { 
+            top: -10px;
+            left: 10px;
+            font-size: .91em;
+            color: var(--secondary-color);
             background: var(--bg-gradient-end); 
             padding: 0 6px;
-        }
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--secondary-color);
-            font-size: 1.1em;
-            z-index: 4;
+            z-index: 3; 
         }
         .input-wrapper input:focus, .input-wrapper textarea:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Glow on focus */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); 
+        }
+
+        /* Point 2: New styles for Profile Modal inputs (non-floating label) */
+        .input-row-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px; /* Spacing between rows */
+            background: var(--input-row-profile-bg); /* Slightly different background */
+            border-radius: 8px;
+            padding: 8px 12px; /* Padding for the whole row */
+            border: 1px solid var(--card-border-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-row-profile:focus-within { /* Highlight row when input inside is focused */
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        .input-row-profile .input-icon { /* Icon specific to this row layout */
+            position: static; /* Not absolute */
+            transform: none; /* Reset transform */
+            margin-right: 10px; /* Space after icon */
+            color: var(--secondary-color);
+            font-size: 1.1em; 
+            flex-shrink: 0; /* Prevent icon from shrinking */
+        }
+        .input-row-profile .profile-label { /* Static label */
+            margin-right: 8px; /* Space after label */
+            color: var(--text-color-light);
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent label from wrapping */
+            flex-shrink: 0;
+        }
+        .input-row-profile input { /* Input field within the row */
+            flex-grow: 1; /* Take remaining space */
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-color-light);
+            padding: 8px 0; /* Vertical padding, horizontal handled by row */
+            font-size: 0.95em;
+            width: auto; /* Allow flex to determine width */
+        }
+         /* Disabled state for profile inputs */
+        .input-row-profile input:disabled {
+            color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
+        }
+        .input-row-profile input:disabled + .profile-label, /* Style label when input is disabled */
+        .input-row-profile input:disabled ~ .input-icon {
+             opacity: 0.6;
         }
 
 
@@ -603,20 +635,18 @@
             font-size: 1em;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
         }
-        /* Buttons: Glass & Animated */
-        .popup-button, button, .hero-btn { /* General button styling */
-            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); /* Stronger gradient */
-            color: #111; /* Darker text for better contrast on gold */
+        .popup-button, button, .hero-btn { 
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); 
+            color: #111; 
             border: none; border-radius: 19px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.25); /* Enhanced shadow */
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25); 
             font-weight: 600;
             transition: all 0.22s;
             position: relative;
             overflow: hidden;
         }
-        .popup-button::before, button::before, .hero-btn::before { /* Ripple effect */
+        .popup-button::before, button::before, .hero-btn::before { 
             content: '';
             position: absolute;
             top: 50%;
@@ -626,7 +656,7 @@
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            transition: width 0.3s ease-out, height 0.3s ease-out;
+            transition: width 0.3s ease-out, height 0.3s ease-out, opacity 0.3s ease-out; 
             opacity: 0;
         }
         .popup-button:hover::before, button:hover::before, .hero-btn:hover::before {
@@ -634,12 +664,20 @@
             height: 200%;
             opacity: 1;
         }
+         .popup-button:active::before, button:active::before, .hero-btn:active::before { 
+            background: rgba(255,255,255,0.3);
+            opacity: 1;
+            width: 220%; 
+            height: 220%;
+            transition: width 0.1s ease-out, height 0.1s ease-out, opacity 0.1s ease-out;
+        }
+
 
         .popup-button:hover, button:hover, .hero-btn:hover {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); /* Inverse gradient on hover */
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); 
             color: #fff;
-            transform: scale(1.04) translateY(-1px); /* Slightly more pop */
-            box-shadow: 0 5px 18px rgba(var(--primary-color),0.4); /* Shadow matches hover gradient */
+            transform: scale(1.04) translateY(-1px); 
+            box-shadow: 0 5px 18px rgba(106, 13, 173,0.4); 
         }
 
 
@@ -648,20 +686,18 @@
             cursor: not-allowed;
         }
 
-        .auth-modal-form button[type=submit] { /* Specific submit button in auth form */
-            background: linear-gradient(45deg, var(--accent-color), #1e40af); /* Stronger blue gradient */
+        .auth-modal-form button[type=submit] { 
+            background: linear-gradient(45deg, var(--accent-color), #1e40af); 
             color: #fff;
         }
         .auth-modal-form button[type=submit]:hover {
             background: linear-gradient(45deg, #1e40af, var(--accent-color));
         }
 
-
-        /* Fix: Style secondary button for "Close" in profile modal */
         .popup-button.secondary {
-            background: linear-gradient(45deg, #6c757d, #495057); /* Darker gradient */
+            background: linear-gradient(45deg, #6c757d, #495057); 
             color: #fff;
-            border: 1px solid rgba(255,255,255,0.2); /* Subtle border */
+            border: 1px solid rgba(255,255,255,0.2); 
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .popup-button.secondary:hover {
@@ -682,7 +718,7 @@
         .auth-modal-form .form-links a {
             color: var(--secondary-color);
             text-decoration: none;
-            position: relative; /* For animated underline */
+            position: relative; 
             transition: color 0.2s;
         }
         .auth-modal-form .form-links a::after {
@@ -699,16 +735,16 @@
             width: 100%;
         }
 
-        .auth-modal-form .google-auth-btn { /* Prominent Google button */
+        .auth-modal-form .google-auth-btn { 
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            padding: 10px 12px; /* Adjusted padding */
+            padding: 10px 12px; 
             margin-top: 15px;
-            border: 1px solid #ccc; /* Subtle border */
+            border: 1px solid #ccc; 
             background: #fff;
-            color: #444; /* Darker text */
+            color: #444; 
             cursor: pointer;
             font-weight: 500;
             border-radius: 6px; 
@@ -717,22 +753,16 @@
         }
 
         .auth-modal-form .google-auth-btn img {
-            height: 20px; /* Slightly larger icon */
-            margin-right: 12px; /* More space */
+            height: 20px; 
+            margin-right: 12px; 
         }
 
         .auth-modal-form .google-auth-btn:hover {
-            background: #f8f8f8; /* User request */
+            background: #f8f8f8; 
             transform: translateY(-2px); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
-        /* User Profile Modal Specific Styles */
-        .profile-modal-content { /* Inherits .auth-modal-content styles */
-            max-width: 500px;
-            padding: 35px;
-        }
-
+        
         .profile-avatar-section {
             display: flex;
             flex-direction: column;
@@ -836,51 +866,9 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(40,167,69,0.3);
         }
-
-        #profile-edit-form .input-group,
-        #change-password-form .input-group {
-            margin-bottom: 15px;
-        }
-
-        #profile-edit-form label,
-        #change-password-form label {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            color: var(--text-color-light);
-        }
-
-        #profile-name, #profile-email,
-        #current-password, #new-password-profile, #confirm-new-password-profile {
+        
+        #profile-edit-form, #change-password-form { 
             width: 100%;
-            box-sizing: border-box;
-            padding: 10px 12px;
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            background: var(--input-bg);
-            color: var(--text-color-light);
-            font-size: 0.9em;
-        }
-
-        #profile-email:disabled {
-            background: rgba(255, 255, 255, 0.04);
-            cursor: not-allowed;
-            opacity: 0.65;
-        }
-
-        #save-profile-changes-btn, #change-password-btn {
-            background: linear-gradient(45deg, var(--accent-color), #2563EB);
-            color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.95em;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        #save-profile-changes-btn:hover, #change-password-btn:hover {
-            background: linear-gradient(45deg, #2563EB, var(--accent-color));
-            transform: translateY(-2px);
         }
 
         .profile-divider {
@@ -890,24 +878,22 @@
             margin: 25px 0;
         }
 
-        /* User Menu (Dropdown) */
         .user-profile-menu {
             display: none;
             position: fixed;
-            top: 70px; /* Adjusted based on profile trigger size */
+            top: 75px; 
             right: 20px;
             width: 240px;
             background: var(--bg-gradient-end);
-            border: 1px solid var(--card-border);
             border-radius: 10px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            z-index: 1000;
+            z-index: 1000; 
             opacity: 0;
             pointer-events:none;
             transform: translateY(-10px) scale(0.95);
             transition: opacity 0.25s ease-out, transform 0.25s ease-out;
         }
-         .user-profile-menu::before { /* Gradient border for dropdown */
+         .user-profile-menu::before { 
             content: '';
             position: absolute;
             inset: -1px; 
@@ -939,7 +925,7 @@
             flex-direction: column;
             align-items: center;
             padding: 20px 15px;
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border-color);
         }
 
         .user-profile-menu .menu-header img {
@@ -989,7 +975,6 @@
             text-align: center;
         }
 
-        /* Stylish Universal Popup */
         .stylish-popup-overlay {
             position: fixed;
             top: 0;
@@ -1015,7 +1000,6 @@
 
         .stylish-popup-card {
             background: var(--card-bg-popup);
-            /* border: 1px solid var(--card-border); */ /* Replaced by pseudo */
             border-radius: 12px;
             padding: 25px 30px;
             max-width: 400px;
@@ -1029,7 +1013,7 @@
             color: var(--text-color-light);
             animation: popfade .5s cubic-bezier(.34,1.56,.64,1) both;
         }
-        .stylish-popup-card::before { /* Gradient border for stylish popup */
+        .stylish-popup-card::before { 
             content: '';
             position: absolute;
             inset: -2px; 
@@ -1084,22 +1068,21 @@
             margin-bottom: 20px;
             text-align:left;
         }
-
-        .stylish-popup-card .popup-form-input-group input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px 12px;
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            background: var(--input-bg);
-            color: var(--text-color-light);
-            font-size: 0.95em;
+        /* Ensure input-wrapper inside stylish popup also works with floating labels if used */
+        .stylish-popup-card .input-wrapper input {
+             padding: 16px 12px 12px 44px !important; /* Override if needed */
+        }
+         .stylish-popup-card .input-wrapper label {
+             left: 44px !important;
+             top: 14px !important;
+         }
+        .stylish-popup-card .input-wrapper input:focus + label,
+        .stylish-popup-card .input-wrapper input:not(:placeholder-shown) + label {
+            top: -10px !important;
+            left: 10px !important;
+            background: var(--card-bg-popup) !important; /* Match popup background */
         }
 
-        .stylish-popup-card .popup-form-input-group input:focus {
-            border-color: var(--accent-color);
-            background: rgba(255,255,255,0.1);
-        }
 
         .stylish-popup-card .popup-button-container {
             display: flex;
@@ -1161,7 +1144,6 @@
             color: var(--secondary-color);
         }
 
-        /* Page Content Layout & Animations */
         .page-content-wrapper {
             width: 100%;
             padding-top: 80px;
@@ -1210,19 +1192,17 @@
         .main-container {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
-            /* border: 2px solid var(--secondary-color); */ /* Replaced by pseudo */
             border-radius: 22px;
             box-shadow: var(--shadow-deep);
             padding: 35px;
             text-align: center;
             width: 90%;
-            max-width: 750px; /* Main container width */
+            max-width: 750px; 
             opacity: 0;
             transform: translateY(40px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
             position: relative; 
         }
-        /* Gradient outer border for main container */
         .main-container::before {
             content: '';
             position: absolute;
@@ -1250,7 +1230,6 @@
             transform: translateY(0);
         }
 
-        /* Feedback Form Styles */
         #feedback-form-container h1 {
             color: var(--secondary-color);
             margin-bottom: 10px;
@@ -1297,19 +1276,19 @@
             overflow: hidden;
         }
 
-        .input-group label { 
+        /* This .input-group is for the star rating label, not for text inputs */
+        .input-group { 
+             margin-bottom: 15px; /* Add some spacing */
+        }
+        .input-group > label { /* Label for star rating */
             display: block;
             margin-bottom: 7px;
             color: var(--text-color-light);
             font-weight: 500;
             font-size: 0.95em;
+            text-align: center; /* Center the "Rate Your Experience" label */
         }
 
-        .input-group input#name:disabled {
-            background: rgba(255, 255, 255, 0.04);
-            cursor: not-allowed;
-            opacity: 0.65;
-        }
 
         .stars {
             margin-top: 10px;
@@ -1347,16 +1326,15 @@
             color: rgba(255, 255, 255, 0.2); 
         }
 
-        #feedback-form { /* User request: center form elements */
+        #feedback-form { 
             display: flex;
             flex-direction: column;
             align-items: center; 
             width: 100%; 
-            max-width: 420px; /* User request: narrower form */
-            margin: 0 auto; /* Center the form itself if its container is wider */
+            max-width: 420px; 
+            margin: 0 auto; 
         }
-        /* Ensure input wrappers take full width within the form */
-        #feedback-form .input-wrapper {
+        #feedback-form .input-wrapper { /* Ensure floating label inputs take full width */
             width: 100%;
         }
 
@@ -1381,32 +1359,7 @@
             justify-content: center;
             gap: 8px;
         }
-
-        button#submit-feedback::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            background: rgba(255,255,255,0.12);
-            border-radius: 50%;
-            transition: all 0.5s ease-out;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-        }
-
-        button#submit-feedback:hover::before {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-        }
-
-        button#submit-feedback:hover {
-            background: linear-gradient(45deg, #2563EB, var(--accent-color));
-            transform: translateY(-2.5px) scale(1.015);
-            box-shadow: 0 7px 18px rgba(59,130,246,0.55);
-        }
-
+        
         #enhance-feedback-btn {
             background: linear-gradient(45deg, #8B5CF6, #EC4899); 
             color: #fff;
@@ -1437,11 +1390,9 @@
             box-shadow: none;
         }
 
-        /* Feedback List Styles */
         #feedback-list-container {
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(7px);
-            /* border: 1px solid rgba(255, 255, 255, 0.12); */ /* Replaced by pseudo */
             border-radius: 16px;
             padding: 22px;
             text-align: left;
@@ -1458,9 +1409,7 @@
             border-radius: 22px;
             padding: 30px 18px;
         }
-        /* Inherits .main-container::before for gradient border */
-
-
+        
         #feedback-list-container.animate-in {
             opacity: 1;
             transform: translateY(0);
@@ -1491,10 +1440,8 @@
             transform: translateX(0);
         }
 
-        /* Average Rating Display - Refined Professional Style */
         .average-rating-container {
             background: rgba(255, 255, 255, 0.08);
-            /* border: 1px solid rgba(255, 255, 255, 0.15); */ /* Replaced by pseudo */
             border-radius: 12px;
             padding: 25px 30px;
             margin-bottom: 30px;
@@ -1513,11 +1460,9 @@
             z-index: 2;
             backdrop-filter: blur(8px);
             grid-column: 1 / -1;
-            /* border: 2px solid transparent; */ /* Replaced by pseudo */
             background-clip: padding-box;
-            /* box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3); */ /* Combined in pseudo */
         }
-        .average-rating-container::before { /* Gradient border for average rating */
+        .average-rating-container::before { 
             content: '';
             position: absolute;
             inset: -2px;
@@ -1591,7 +1536,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Individual Feedback Item (Card Style) */
         .feedback-item {
             background: #23235aee;
             border: 2.5px solid var(--secondary-color); 
@@ -1881,7 +1825,6 @@
             cursor: not-allowed;
         }
 
-        /* Fancy Divider */
         .fancy-divider {
             height: 6px;
             width: 100%;
@@ -1893,185 +1836,63 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .owner-avatar {
-                width: 60px;
-                height: 60px;
-            }
-
-            #feedback-form-container h1 {
-                font-size: 2em;
-            }
-
-            .star {
-                font-size: 2.8em;
-            }
-
-            #login-icon-trigger .fas {
-                font-size: 1.6em; /* Adjusted */
-            }
-
-            #user-profile-name {
-                max-width: 80px;
-            }
-
-            .auth-modal-content{
-                padding: 20px;
-                 max-width: 360px; /* Adjust for smaller screens */
-            }
-            .auth-modal-content h2{
-                font-size:1.5em;
-            }
-            .profile-modal-content {
-                padding: 25px;
-            }
-
-            .user-profile-menu{
-                width:220px;
-                top:65px;
-            }
-            .navbar {
-                padding: 8px 15px;
-                min-height: 55px;
-            }
-            .nav-logo {
-                width: 38px;
-                height: 38px;
-            }
-            .nav-title {
-                font-size: 1.3em;
-            }
-            .hero-section {
-                padding-top: 55px;
-            }
-            .hero-content h1 {
-                font-size: 2em;
-            }
-            .hero-logo {
-                width: 75px;
-                height: 75px;
-            }
-            .hero-content p {
-                font-size: 1.12em;
-            }
-            .hero-btn {
-                padding: 10px 30px;
-                font-size: 1em;
-            }
-            .page-content-wrapper {
-                padding-top: 20px;
-            }
-            #feedback-list-container {
-                grid-template-columns: 1fr; 
-                gap: 20px;
-                padding: 20px 15px;
-            }
-             #feedback-form { /* Ensure form width is also responsive */
-                max-width: 90%;
-            }
-            .feedback-item {
-                padding: 18px;
-            }
-            .feedback-details p {
-                font-size: 1em;
-            }
-            .average-rating-container {
-                padding: 20px;
-            }
-            .average-number {
-                font-size: 3.5em;
-            }
-            .average-stars {
-                font-size: 2em;
-            }
+            .owner-avatar { width: 60px; height: 60px; }
+            #feedback-form-container h1 { font-size: 2em; }
+            .star { font-size: 2.8em; }
+            #user-profile-name { max-width: 60px; }
+            .auth-modal-content{ padding: 20px; max-width: 360px; }
+            .auth-modal-content h2{ font-size:1.5em; }
+            .profile-scroll-content { max-height: 65vh; }
+            .user-profile-menu{ width:220px; top:70px; }
+            .navbar { padding: 8px 15px; min-height: 55px; }
+            .nav-logo { width: 38px; height: 38px; }
+            .nav-title { font-size: 1.3em; }
+            .hero-section { padding-top: 55px; }
+            .hero-content h1 { font-size: 2em; }
+            .hero-logo { width: 75px; height: 75px; }
+            .hero-content p { font-size: 1.12em; }
+            .hero-btn { padding: 10px 30px; font-size: 1em; }
+            .page-content-wrapper { padding-top: 20px; }
+            #feedback-list-container { grid-template-columns: 1fr; gap: 20px; padding: 20px 15px; }
+            #feedback-form { max-width: 90%; }
+            .feedback-item { padding: 18px; }
+            .feedback-details p { font-size: 1em; }
+            .average-rating-container { padding: 20px; }
+            .average-number { font-size: 3.5em; }
+            .average-stars { font-size: 2em; }
         }
 
         @media (max-width: 480px) {
-            #feedback-form-container h1 {
-                font-size: 1.7em;
-            }
+            #login-icon-trigger, #user-profile-trigger { top: 10px; right: 10px; }
+            #login-icon-trigger .fas { font-size: 1.5em; }
+            #user-profile-avatar-container { width: 36px; height: 36px; }
+            #user-profile-name { font-size: 10px; max-width: 50px; }
 
-            .star {
-                font-size: 2.3em;
-            }
-
-            .owner-info {
-                margin-bottom: 15px;
-            }
-
-            .auth-modal-content{
-                width:95%;
-                padding:20px;
-                max-width: 300px; /* Further adjust for very small screens */
-            }
-
-            .profile-modal-content {
-                padding: 20px;
-            }
-
-            .user-profile-menu{
-                width:calc(100vw - 40px);
-                right:10px;
-            }
-
-            .upload-avatar-btn {
-                font-size: 0.85em;
-                padding: 7px 12px;
-            }
+            #feedback-form-container h1 { font-size: 1.7em; }
+            .star { font-size: 2.3em; }
+            .owner-info { margin-bottom: 15px; }
+            .auth-modal-content{ width:95%; padding:15px; max-width: calc(100vw - 30px); }
+            .profile-scroll-content { max-height: 60vh; padding: 5px 10px 10px 10px; }
+            .user-profile-menu{ width:calc(100vw - 40px); right:10px; }
+            .upload-avatar-btn { font-size: 0.85em; padding: 7px 12px; }
             .hero-content h1 { font-size: 1.5em; }
             .main-container, #feedback-list-container { padding: 10px; }
             #feedback-list-container { gap: 10px; }
-            .hero-section {
-                min-height: 250px;
-                margin-bottom: 25px;
-            }
-            .hero-logo {
-                width: 65px;
-                height: 65px;
-            }
-            .hero-content p {
-                font-size: 1em;
-            }
-            .hero-btn {
-                padding: 10px 30px;
-                font-size: 1em;
-            }
-            .average-rating-container {
-                padding: 20px;
-            }
-            .average-number {
-                font-size: 3.5em;
-            }
-            .average-stars {
-                font-size: 2em;
-            }
-            .feedback-item {
-                padding: 15px;
-                gap: 10px;
-            }
-            .avatar-img {
-                width: 45px;
-                height: 45px;
-            }
-            .feedback-details strong {
-                font-size: 1em;
-            }
-            .feedback-stars {
-                font-size: 1.3em;
-            }
-            .feedback-details p {
-                font-size: 0.9em;
-            }
-            .admin-reply {
-                font-size: 0.8em;
-                padding: 7px 9px;
-            }
-            .edit-feedback-btn {
-                font-size: 1.1em;
-            }
-            .email-verification-prompt {
-                padding: 12px;
-                font-size: 0.9em;
-            }
+            .hero-section { min-height: 250px; margin-bottom: 25px; }
+            .hero-logo { width: 65px; height: 65px; }
+            .hero-content p { font-size: 1em; }
+            .hero-btn { padding: 10px 30px; font-size: 1em; }
+            .average-rating-container { padding: 20px; }
+            .average-number { font-size: 3.5em; }
+            .average-stars { font-size: 2em; }
+            .feedback-item { padding: 15px; gap: 10px; }
+            .avatar-img { width: 45px; height: 45px; }
+            .feedback-details strong { font-size: 1em; }
+            .feedback-stars { font-size: 1.3em; }
+            .feedback-details p { font-size: 0.9em; }
+            .admin-reply { font-size: 0.8em; padding: 7px 9px; }
+            .edit-feedback-btn { font-size: 1.1em; }
+            .email-verification-prompt { padding: 12px; font-size: 0.9em; }
         }
 </style>
 </head>
@@ -2081,8 +1902,7 @@
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita">
             <span class="nav-title">Nobita Feedback</span>
         </div>
-        <div class="nav-right">
-            </div>
+        <!-- nav-right is intentionally empty as icons are fixed -->
     </nav>
     <div class="fancy-divider"></div> 
 
@@ -2200,66 +2020,63 @@
     </div>
 
     <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content profile-modal-content">
+        <div class="auth-modal-content"> 
             <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
-            <h2>My Profile</h2>
-            <div id="email-verification-prompt" class="email-verification-prompt">
-                <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
-                <button id="send-verification-email-btn">Send Verification Email</button>
-            </div>
-            <div class="profile-avatar-section">
-                
-
-<img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar">
-                <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
-
-                <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
-                    <i class="fas fa-upload"></i> Upload Avatar
-                </button>
-
-                <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <span class="progress-text" id="progress-text">0%</span>
+            <h2 style="margin-bottom: 10px;">My Profile</h2> <!-- Reduced margin for h2 -->
+            <div class="profile-scroll-content"> 
+                <div id="email-verification-prompt" class="email-verification-prompt">
+                    <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
+                    <button id="send-verification-email-btn">Send Verification Email</button>
                 </div>
-            </div>
-            <form id="profile-edit-form" class="auth-modal-form">
-                <div class="input-wrapper">
-                    <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="profile-name" placeholder=" " required>
-                    <label for="profile-name">Name:</label>
+                <div class="profile-avatar-section">
+                    <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar">
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                    <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
+                    <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
+                        <i class="fas fa-upload"></i> Upload Avatar
+                    </button>
+                    <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
                 </div>
-                <div class="input-wrapper">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="profile-email" placeholder=" " disabled title="Email cannot be changed">
-                    <label for="profile-email">Email:</label>
-                </div>
-                <button type="submit" id="save-profile-changes-btn">Save Changes</button>
-           </form>
-<div class="fancy-divider"></div> 
-
-<h3>Change Password</h3>
-<form id="change-password-form" class="auth-modal-form">
-    <div class="input-wrapper">
-        <i class="fas fa-lock input-icon"></i>
-        <input type="password" id="current-password" placeholder=" ">
-        <label for="current-password">Current Password:</label>
-    </div>
-    <div class="input-wrapper">
-        <i class="fas fa-key input-icon"></i>
-        <input type="password" id="new-password-profile" placeholder=" " minlength="6">
-        <label for="new-password-profile">New Password (min. 6 characters):</label>
-    </div>
-    <div class="input-wrapper">
-        <i class="fas fa-key input-icon"></i>
-        <input type="password" id="confirm-new-password-profile" placeholder=" " minlength="6">
-        <label for="confirm-new-password-profile">Confirm New Password:</label>
-    </div>
-    <div class="profile-password-btns-row">
-        <button type="submit" class="popup-button primary" id="change-password-btn">Change Password</button>
-        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal">Close</button>
-    </div>
-</form>
+                <form id="profile-edit-form"> 
+                    <div class="input-row-profile"> 
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <label class="profile-label" for="profile-name">Name:</label>
+                        <input type="text" id="profile-name" name="profile-name" required>
+                    </div>
+                    <div class="input-row-profile"> 
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <label class="profile-label" for="profile-email">Email:</label>
+                        <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
+                    </div>
+                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
+               </form>
+                <div class="fancy-divider"></div> 
+                <h3 style="margin-bottom: 15px;">Change Password</h3>
+                <form id="change-password-form">
+                    <div class="input-row-profile"> 
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <label class="profile-label" for="current-password">Current&nbsp;Pw:</label> <!-- Added nbsp for consistent spacing -->
+                        <input type="password" id="current-password" name="current-password">
+                    </div>
+                    <div class="input-row-profile"> 
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="new-password-profile">New&nbsp;Pw:</label>
+                        <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
+                    </div>
+                    <div class="input-row-profile"> 
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
+                        <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
+                        <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
+                        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
+                    </div>
+                </form>
+            </div> 
         </div>
     </div>
 
@@ -2279,22 +2096,16 @@
             <form id="feedback-form">
                 <div class="input-wrapper">
                     <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="name" placeholder=" " required disabled>
-                    
-
-<label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" placeholder=" " required disabled>
+                    <label for="name">Your Name</label>
                 </div>
                 <div class="input-wrapper">
                     <i class="fas fa-comment-alt input-icon"></i>
-                    <textarea id="feedback" placeholder=" " required></textarea>
-                    
-
-<label for="feedback">Your Feedback</label>
+                    <textarea id="feedback" name="feedback" placeholder=" " required></textarea>
+                    <label for="feedback">Your Feedback</label>
                 </div>
-                
-
-<button type="button" id="enhance-feedback-btn">✨ Enhance Feedback</button>
-                <div class="input-group">
+                <button type="button" id="enhance-feedback-btn">✨ Enhance Feedback</button>
+                <div class="input-group"> 
                     <label>Rate Your Experience:</label>
                     <div class="stars" id="star-rating">
                         <span class="star" data-value="1">★</span>
@@ -2311,41 +2122,32 @@
 
         <div class="fancy-divider"></div> 
 
-<div id="feedback-list-container" class="main-container">
+        <div id="feedback-list-container" class="main-container">
               <div id="average-rating-display"></div>
               <h2 class="section-title">Recent Feedbacks</h2>
-              </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         console.log("DOM fully loaded and parsed");
-
-        // Assume GOOGLE_CLIENT_ID is hardcoded here or loaded from a meta tag
         const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
 
-        // Corner Triggers
         const loginIconTrigger = document.getElementById('login-icon-trigger');
         const userProfileTrigger = document.getElementById('user-profile-trigger');
         const userProfileAvatarImg = document.getElementById('user-profile-avatar');
         const userProfileNameSpan = document.getElementById('user-profile-name');
-
-        // Authentication Modals & Menu
         const loginModal = document.getElementById('loginModal');
         const signupModal = document.getElementById('signupModal');
         const userMenu = document.getElementById('userMenu');
         const userProfileModal = document.getElementById('userProfileModal');
-
-        // Login Modal Elements
         const emailLoginForm = document.getElementById('email-login-form');
         const modalLoginEmailInput = document.getElementById('modal-login-email');
         const modalLoginPasswordInput = document.getElementById('modal-login-password');
         const modalForgotPasswordLink = document.getElementById('modal-forgot-password-link');
         const modalCreateAccountLink = document.getElementById('modal-create-account-link');
         const modalGoogleLoginBtn = document.getElementById('modal-google-login-btn');
-
-        // Signup Modal Elements
         const emailSignupForm = document.getElementById('email-signup-form');
         const modalSignupNameInput = document.getElementById('modal-signup-name');
         const modalSignupEmailInput = document.getElementById('modal-signup-email');
@@ -2353,14 +2155,10 @@
         const modalSignupConfirmPasswordInput = document.getElementById('modal-signup-confirm-password');
         const modalAlreadyAccountLink = document.getElementById('modal-already-account-link');
         const modalGoogleSignupBtn = document.getElementById('modal-google-signup-btn');
-
-        // User Menu Content Elements
         const menuAvatarImg = document.getElementById('menu-avatar');
         const menuUsernameSpan = document.getElementById('menu-username');
         const menuViewProfileLink = document.getElementById('menu-view-profile');
         const menuLogoutLink = document.getElementById('menu-logout');
-
-        // Universal Stylish Popup Elements
         const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
         const stylishPopupCard = document.getElementById('stylishPopupCard');
         const closeStylishPopupBtn = document.getElementById('closeStylishPopupBtn');
@@ -2369,11 +2167,8 @@
         const stylishPopupMessage = document.getElementById('stylishPopupMessage');
         const stylishPopupFormArea = document.getElementById('stylishPopupFormArea');
         const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
-
-        // User Profile Modal Elements
         const emailVerificationPrompt = document.getElementById('email-verification-prompt');
         const sendVerificationEmailBtn = document.getElementById('send-verification-email-btn');
-
         const profileDisplayAvatar = document.getElementById('profile-display-avatar');
         const avatarUploadInput = document.getElementById('avatar-upload-input');
         const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
@@ -2389,8 +2184,6 @@
         const newPasswordProfileInput = document.getElementById('new-password-profile');
         const confirmNewPasswordProfileInput = document.getElementById('confirm-new-password-profile');
         const changePasswordBtn = document.getElementById('change-password-btn');
-
-        // Page Content Elements
         const ownerInfoEl = document.querySelector('.owner-info');
         const feedbackFormContainer = document.getElementById('feedback-form-container');
         const feedbackListContainer = document.getElementById('feedback-list-container');
@@ -2403,15 +2196,13 @@
         const mainTitle = document.getElementById('main-title');
         const feedbackVerificationPrompt = document.getElementById('feedback-verification-prompt');
         const sendVerificationEmailBtnForm = document.getElementById('send-verification-email-btn-form');
-        const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn'); /* New LLM Button */
-
+        const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn'); 
 
         let currentUser = null;
         let currentSelectedRating = 0;
         let isEditing = false;
         let currentEditFeedbackId = null;
 
-        // API Endpoints
         const BASE_API_URL = window.location.origin;
         const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
         const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
@@ -2423,1232 +2214,232 @@
         const API_FETCH_FEEDBACKS_URL = `${BASE_API_URL}/api/feedbacks`;
         const API_UPDATE_PROFILE_URL = `${BASE_API_URL}/api/user/profile`;
         const API_CHANGE_PASSWORD_URL = `${BASE_API_URL}/api/user/change-password`;
-        // New LLM Endpoint (simulated, would be handled by backend in a real app)
         const API_ENHANCE_FEEDBACK_URL = `${BASE_API_URL}/api/llm/enhance-feedback`;
 
-
-        // **********************************************
-        // Cloudinary Direct Upload Configuration
-        // **********************************************
         const CLOUDINARY_CLOUD_NAME = 'dyv7xav3e';
         const CLOUDINARY_UPLOAD_PRESET = 'nobita_avatar_unsigned';
-
-        // This URL is for direct upload to Cloudinary's API
         const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-        // Initialize Typed.js for main title and typed output
         if (mainTitle) {
             new Typed('#main-title', {
                 strings: ["✨ Welcome to Nobita's Feedback Portal! ✨"],
-                typeSpeed: 50,
-                showCursor: false,
-                onComplete: (self) => {
+                typeSpeed: 50, showCursor: false,
+                onComplete: () => {
                     new Typed('#typed-output', {
-                        strings: [
-                            "Share your thoughts and help us improve!",
-                            "Your valuable feedback makes a difference."
-                        ],
-                        typeSpeed: 40,
-                        backSpeed: 20,
-                        loop: true,
-                        showCursor: true,
-                        cursorChar: '|',
+                        strings: ["Share your thoughts and help us improve!", "Your valuable feedback makes a difference."],
+                        typeSpeed: 40, backSpeed: 20, loop: true, showCursor: true, cursorChar: '|',
                     });
                 }
             });
         }
 
-        // --- Stylish Popup Functionality ---
         function showStylishPopup(type, title, message, options = {}) {
-            console.log("[showStylishPopup] called. Type:", type, "Title:", title);
             if(!stylishPopupOverlay || !stylishPopupTitle || !stylishPopupMessage || !stylishPopupIcon || !stylishPopupButtonContainer) {
-                console.error("Stylish Popup core HTML elements not found!");
-                // Fallback to native alert if elements are missing
-                alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`);
-                return;
+                alert(`${title}: ${message.replace(/<p>|<\/p>/gi, "\n")}`); return;
             }
-
-            stylishPopupIcon.className = 'popup-icon-area';
-            stylishPopupIcon.innerHTML = '';
-            const iconsFA = {
-                'success': '<i class="fas fa-check-circle"></i>',
-                'error': '<i class="fas fa-times-circle"></i>',
-                'info': '<i class="fas fa-info-circle"></i>',
-                'warning':'<i class="fas fa-exclamation-triangle"></i>',
-                'confirm': '<i class="fas fa-question-circle"></i>',
-                'forgot_password': '<i class="fas fa-key"></i>',
-                'verify_email': '<i class="fas fa-envelope"></i>'
-            };
-            if(iconsFA[type]) {
-                stylishPopupIcon.innerHTML = iconsFA[type];
-                stylishPopupIcon.classList.add(type);
-            }
-
-            stylishPopupTitle.textContent = title;
-            stylishPopupMessage.innerHTML = `<p>${message}</p>`;
-
-            if (options.formHTML) {
-                stylishPopupFormArea.innerHTML = options.formHTML;
-                stylishPopupFormArea.style.display = 'block';
-            } else {
-                stylishPopupFormArea.innerHTML = '';
-                stylishPopupFormArea.style.display = 'none';
-            }
-
+            stylishPopupIcon.className = 'popup-icon-area'; stylishPopupIcon.innerHTML = '';
+            const iconsFA = {'success': '<i class="fas fa-check-circle"></i>', 'error': '<i class="fas fa-times-circle"></i>', 'info': '<i class="fas fa-info-circle"></i>', 'warning':'<i class="fas fa-exclamation-triangle"></i>', 'confirm': '<i class="fas fa-question-circle"></i>', 'forgot_password': '<i class="fas fa-key"></i>', 'verify_email': '<i class="fas fa-envelope"></i>'};
+            if(iconsFA[type]) { stylishPopupIcon.innerHTML = iconsFA[type]; stylishPopupIcon.classList.add(type); }
+            stylishPopupTitle.textContent = title; stylishPopupMessage.innerHTML = `<p>${message}</p>`;
+            stylishPopupFormArea.innerHTML = options.formHTML || ''; stylishPopupFormArea.style.display = options.formHTML ? 'block' : 'none';
             stylishPopupButtonContainer.innerHTML = '';
             if (options.isConfirm) {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = options.cancelText || 'Cancel';
-                cancelBtn.className = 'popup-button secondary';
-                cancelBtn.onclick = () => {
-                    stylishPopupOverlay.classList.remove('active');
-                    if (options.onCancel) options.onCancel();
-                };
+                const cancelBtn = document.createElement('button'); cancelBtn.textContent = options.cancelText || 'Cancel'; cancelBtn.className = 'popup-button secondary';
+                cancelBtn.onclick = () => { stylishPopupOverlay.classList.remove('active'); if (options.onCancel) options.onCancel(); };
                 stylishPopupButtonContainer.appendChild(cancelBtn);
-
-                const confirmBtn = document.createElement('button');
-                confirmBtn.textContent = options.confirmText || 'OK';
-                confirmBtn.className = 'popup-button primary';
-                confirmBtn.id = 'stylishPopupPrimaryActionBtn';
-                confirmBtn.onclick = () => {
-                    if (options.onConfirm) {
-                        options.onConfirm();
-                    } else {
-                       stylishPopupOverlay.classList.remove('active');
-                    }
-                };
+                const confirmBtn = document.createElement('button'); confirmBtn.textContent = options.confirmText || 'OK'; confirmBtn.className = 'popup-button primary'; confirmBtn.id = 'stylishPopupPrimaryActionBtn';
+                confirmBtn.onclick = () => { if (options.onConfirm) options.onConfirm(); else stylishPopupOverlay.classList.remove('active'); };
                 stylishPopupButtonContainer.appendChild(confirmBtn);
             } else {
-                const okBtn = document.createElement('button');
-                okBtn.textContent = options.confirmText || 'OK';
-                okBtn.className = 'popup-button primary';
-                okBtn.onclick = () => {
-                    stylishPopupOverlay.classList.remove('active');
-                    if (options.onConfirm) options.onConfirm();
-                };
+                const okBtn = document.createElement('button'); okBtn.textContent = options.confirmText || 'OK'; okBtn.className = 'popup-button primary';
+                okBtn.onclick = () => { stylishPopupOverlay.classList.remove('active'); if (options.onConfirm) options.onConfirm(); };
                 stylishPopupButtonContainer.appendChild(okBtn);
             }
-
             stylishPopupOverlay.classList.add('active');
-            console.log("[showStyledPopup] 'active' class added. Overlay display:", getComputedStyle(stylishPopupOverlay).display);
         }
 
-        // Close popup on close button click
-        if(closeStylishPopupBtn) {
-            closeStylishPopupBtn.addEventListener('click', () => {
-                if(stylishPopupOverlay) stylishPopupOverlay.classList.remove('active');
-            });
-        }
-        // Close popup on overlay click (if not clicking on the card)
-        if(stylishPopupOverlay) {
-            stylishPopupOverlay.addEventListener('click', e => {
-                if (e.target === stylishPopupOverlay) {
-                    stylishPopupOverlay.classList.remove('active');
-                }
-            });
-        }
+        if(closeStylishPopupBtn) closeStylishPopupBtn.addEventListener('click', () => { if(stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); });
+        if(stylishPopupOverlay) stylishPopupOverlay.addEventListener('click', e => { if (e.target === stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); });
 
-        // --- New UI Trigger Logic & Modal Control ---
-        // Show login modal on login icon click
-        if (loginIconTrigger) {
-            loginIconTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (loginModal) { loginModal.classList.add('active'); console.log("Login modal activated"); }
-                if (userMenu) userMenu.classList.remove('active');
-                if (userProfileModal) userProfileModal.classList.remove('active');
-            });
-        }
-        // Show/hide user menu on user avatar click
-        if (userProfileTrigger) {
-            userProfileTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (userMenu) { userMenu.classList.toggle('active'); console.log("User menu toggled"); }
-                if (loginModal) loginModal.classList.remove('active');
-                if (userProfileModal) userProfileModal.classList.remove('active');
-            });
-        }
-        // Close user menu on click anywhere else on document
-        document.addEventListener('click', (e) => {
-            if (userMenu && userMenu.classList.contains('active') && userProfileTrigger && !userProfileTrigger.contains(e.target) && !userMenu.contains(e.target)) {
-                userMenu.classList.remove('active');
-            }
-        });
+        if (loginIconTrigger) loginIconTrigger.addEventListener('click', e => { e.stopPropagation(); if (loginModal) loginModal.classList.add('active'); if (userMenu) userMenu.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); });
+        if (userProfileTrigger) userProfileTrigger.addEventListener('click', e => { e.stopPropagation(); if (userMenu) userMenu.classList.toggle('active'); if (loginModal) loginModal.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); });
+        document.addEventListener('click', e => { if (userMenu && userMenu.classList.contains('active') && userProfileTrigger && !userProfileTrigger.contains(e.target) && !userMenu.contains(e.target)) userMenu.classList.remove('active'); });
 
-        // Modal close logic: Corrected to handle all [data-modal-close] buttons
         [loginModal, signupModal, userProfileModal].forEach(modal => {
             if (modal) {
-                modal.addEventListener('click', e => {
-                    if (e.target === modal) modal.classList.remove('active');
-                });
-
-                const closeTriggers = modal.querySelectorAll('[data-modal-close]');
-                closeTriggers.forEach(trigger => {
-                    trigger.addEventListener('click', () => {
-                        const targetModalId = trigger.getAttribute('data-modal-close');
-                        const targetModal = document.getElementById(targetModalId);
-                        if (targetModal) {
-                            targetModal.classList.remove('active');
-                        }
-                    });
-                });
+                modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+                modal.querySelectorAll('[data-modal-close]').forEach(trigger => trigger.addEventListener('click', () => { const targetModal = document.getElementById(trigger.getAttribute('data-modal-close')); if (targetModal) targetModal.classList.remove('active'); }));
             }
         });
 
-
-        // Helper for API requests
         async function apiRequest(url, method, body = null, isFormData = false) {
-            const headers = {};
-            if (!isFormData) {
-                headers['Content-Type'] = 'application/json';
-            }
-
-            const token = localStorage.getItem('authToken');
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            let submitBtn;
-            if(url.includes('/api/auth/login')) submitBtn = emailLoginForm.querySelector('button[type="submit"]');
-            else if(url.includes('/api/auth/signup')) submitBtn = emailSignupForm.querySelector('button[type="submit"]');
-            else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn = saveProfileChangesBtn;
-            else if(url.includes('/api/user/change-password')) submitBtn = changePasswordBtn;
-            else if(url.includes('/api/auth/request-email-verification')) {
-                if (sendVerificationEmailBtn) sendVerificationEmailBtn.disabled = true;
-                if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.disabled = true;
-                if (sendVerificationEmailBtn) sendVerificationEmailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-                if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            }
-            // For feedback submission, the submit button is handled separately to allow unverified users
-            // So, `submitButton` is not disabled here for POST /api/feedback
-
-            if(submitBtn) {
-                submitBtn.disabled = true;
-                if (!submitBtn.innerHTML.includes('<i class="fas fa-spinner fa-spin"></i>')) {
-                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${submitBtn.textContent}...`;
-                } else {
-                    submitBtn.innerHTML = submitBtn.innerHTML.replace('...', '...');
-                }
-            }
-
-            let data;
-            let rawResponseText;
-
+            const headers = {}; if (!isFormData) headers['Content-Type'] = 'application/json';
+            const token = localStorage.getItem('authToken'); if (token) headers['Authorization'] = `Bearer ${token}`;
+            let currentSubmitBtn, originalButtonText;
+            if (document.activeElement && document.activeElement.type === 'submit' && (emailLoginForm.contains(document.activeElement) || emailSignupForm.contains(document.activeElement))) currentSubmitBtn = document.activeElement;
+            else if (document.activeElement === saveProfileChangesBtn) currentSubmitBtn = saveProfileChangesBtn;
+            else if (document.activeElement === changePasswordBtn) currentSubmitBtn = changePasswordBtn;
+            else if (url.includes('/api/auth/request-email-verification')) { if (sendVerificationEmailBtn && !sendVerificationEmailBtn.disabled) currentSubmitBtn = sendVerificationEmailBtn; else if (sendVerificationEmailBtnForm && !sendVerificationEmailBtnForm.disabled) currentSubmitBtn = sendVerificationEmailBtnForm;}
+            
+            if(currentSubmitBtn) { originalButtonText = currentSubmitBtn.innerHTML; currentSubmitBtn.disabled = true; currentSubmitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`; }
             try {
                 const response = await fetch(url, { method, headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) });
-
-                // First, check if the response is successful (2xx status)
-                if (response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        data = await response.json();
-                    } else {
-                        // If 2xx but not JSON (e.g., 204 No Content, or plain text success)
-                        rawResponseText = await response.text();
-                        if (response.status === 204 || !rawResponseText.trim()) {
-                            data = {}; // Treat as empty success
-                        } else {
-                            // Successful but unexpected content type
-                            console.warn(`API response from ${url} was 2xx but not JSON. Content-Type: ${contentType || 'N/A'}. Response text:`, rawResponseText);
-                            data = { message: rawResponseText }; // Return text as message
-                        }
-                    }
-                } else {
-                    // If response is not OK (e.g., 4xx, 5xx)
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        try {
-                            data = await response.json();
-                        } catch (jsonError) {
-                            rawResponseText = await response.text();
-                            console.error(`JSON parsing failed for non-OK response from ${url}. Raw response:`, rawResponseText, jsonError);
-                            throw new Error(`Server Error (${response.status}): Invalid JSON response. Raw: ${rawResponseText}`);
-                        }
-                    } else {
-                        // Non-OK and not JSON, read as text
-                        rawResponseText = await response.text();
-                        console.error(`Non-OK API response for ${url} was not JSON. Content-Type: ${contentType || 'N/A'}. Response text:`, rawResponseText);
-                        throw new Error(rawResponseText || `Server Error (${response.status})`);
-                    }
-
-                    // Specific error handling for 403 email verification
-                    if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) { 
-                        showStylishPopup('warning', 'Email Verification Required!', data.message);
-                        throw new Error(data.message); // Re-throw to stop further processing
-                    } else {
-                        // General error for non-2xx JSON responses
-                        throw new Error(data.message || `Server Error (${response.status})`);
-                    }
-                }
-                return data; // Return parsed data for successful responses
-
+                let data; const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) data = await response.json();
+                else { const text = await response.text(); if (response.ok) data = text ? { message: text } : {}; else throw new Error(text || `Server Error (${response.status})`);}
+                if (!response.ok) { if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) showStylishPopup('warning', 'Email Verification Required!', data.message); throw new Error(data.message || `Server Error (${response.status})`);}
+                return data;
             } catch (error) {
                 console.error(`API request error at ${url}:`, error);
-                let userFriendlyMessage = "An unexpected error occurred. Please try again.";
-
-                if (error.message.includes("JSON parsing error") || error.message.includes("Invalid JSON response")) {
-                    userFriendlyMessage = "The server sent invalid or unreadable data. This might be a temporary issue or a problem with the API response format.";
-                } else if (error.message.includes("Failed to fetch")) {
-                    userFriendlyMessage = "Network error: Could not connect to the server. Please check your internet connection.";
-                } else if (!error.message.includes("Email not verified")) { 
-                    // Use original error message only if it's not the specific email verification error already shown
-                    userFriendlyMessage = error.message;
-                }
-
-                // Show popup only if it's not the specific email verification error already shown
-                if (!error.message.includes("Email not verified")) { 
-                    showStylishPopup('error', 'Request Failed', userFriendlyMessage);
-                }
-                throw error; // Always re-throw original error for further handling/logging
-            } finally {
-                if(submitBtn) {
-                    submitBtn.disabled = false;
-                    if(url.includes('login')) submitBtn.textContent = "Login";
-                    else if(url.includes('signup')) submitBtn.textContent = "Sign Up";
-                    else if(url.includes('/api/user/profile') && method === 'PUT') submitBtn.textContent = "Save Changes";
-                    else if(url.includes('/api/user/change-password')) submitBtn.textContent = "Change Password";
-                    else if(url.includes('/api/feedback') && method === 'PUT') submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${isEditing ? "Update Feedback" : "Submit Feedback"}`;
-                }
-                if (sendVerificationEmailBtn) {
-                    sendVerificationEmailBtn.disabled = false;
-                    sendVerificationEmailBtn.innerHTML = 'Send Verification Email';
-                }
-                if (sendVerificationEmailBtnForm) {
-                    sendVerificationEmailBtnForm.disabled = false;
-                    sendVerificationEmailBtnForm.innerHTML = 'Send Verification Email';
-                }
-            }
+                let msg = "An unexpected error occurred. Please try again.";
+                if (error.message.includes("Failed to fetch")) msg = "Network error. Check connection.";
+                else if (!error.message.includes("Email not verified")) msg = error.message;
+                if (!error.message.includes("Email not verified")) showStylishPopup('error', 'Request Failed', msg);
+                throw error; 
+            } finally { if(currentSubmitBtn) { currentSubmitBtn.disabled = false; currentSubmitBtn.innerHTML = originalButtonText; }}
         }
 
         async function handleAuthResponse(data) {
-            if (loginModal) loginModal.classList.remove('active');
-            if (signupModal) signupModal.classList.remove('active');
-            localStorage.setItem('authToken', data.token);
-            currentUser = data.user;
-            updateUIAfterLogin();
-            
-            let popupMessage = currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!';
-            let popupType = 'success';
-
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                popupMessage = `Account created, ${currentUser.name}! Please verify your email.`;
-                popupType = 'warning';
-                if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
-                if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
-            } else {
-                if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
-                if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-            }
-
-            showStylishPopup(popupType, `Welcome, ${currentUser.name}!`, popupMessage);
-            await fetchFeedbacks();
+            if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.remove('active');
+            localStorage.setItem('authToken', data.token); currentUser = data.user; updateUIAfterLogin();
+            let msg = currentUser.loginMethod === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!'; let type = 'success';
+            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { msg = `Account created, ${currentUser.name}! Please verify your email.`; type = 'warning'; if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';}
+            else { if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';}
+            showStylishPopup(type, `Welcome, ${currentUser.name}!`, msg); await fetchFeedbacks();
         }
 
-        if (emailLoginForm) {
-            emailLoginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = modalLoginEmailInput.value.trim();
-                const password = modalLoginPasswordInput.value;
-                if (!email || !password) {
-                    return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.');
-                }
-                try {
-                    const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password });
-                    handleAuthResponse(data);
-                } catch (error) {
-                    // Handled by apiRequest
-                }
-            });
-        }
+        if (emailLoginForm) emailLoginForm.addEventListener('submit', async e => { e.preventDefault(); const email = modalLoginEmailInput.value.trim(), password = modalLoginPasswordInput.value; if (!email || !password) return showStylishPopup('error', 'Empty Fields!', 'Please enter both email and password.'); try { const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }); handleAuthResponse(data); } catch (error) {} });
+        if (emailSignupForm) emailSignupForm.addEventListener('submit', async e => { e.preventDefault(); const name = modalSignupNameInput.value.trim(), email = modalSignupEmailInput.value.trim(), password = modalSignupPasswordInput.value, confirmPassword = modalSignupConfirmPasswordInput.value; if (!name || !email || !password || !confirmPassword) return showStylishPopup('error', 'Empty Fields!', 'Please fill in all fields.'); if (password !== confirmPassword) return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.'); if (password.length < 6) return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters long.'); try { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }); handleAuthResponse(data); } catch (error) {} });
+        if (modalCreateAccountLink) modalCreateAccountLink.addEventListener('click', e => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.add('active'); });
+        if (modalAlreadyAccountLink) modalAlreadyAccountLink.addEventListener('click', e => { e.preventDefault(); if (signupModal) signupModal.classList.remove('active'); if (loginModal) loginModal.classList.add('active'); });
+        if (modalForgotPasswordLink) modalForgotPasswordLink.addEventListener('click', e => { e.preventDefault(); if (loginModal) loginModal.classList.remove('active'); showStylishPopup('forgot_password', 'Forgot Password?', 'Enter your registered email address. We will send you a link to reset your password.', { formHTML: `<div class="input-wrapper" style="margin-bottom:10px;"><i class="fas fa-envelope input-icon"></i><input type="email" id="popup-forgot-email" placeholder=" " required><label for="popup-forgot-email">Email Address</label></div>`, isConfirm: true, confirmText: 'Send Reset Link', cancelText: 'Cancel', onConfirm: async () => { const email = document.getElementById('popup-forgot-email').value.trim(); if (!email) { stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' + 'Enter your registered email address.'; document.getElementById('popup-forgot-email').focus(); return; } try { const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email }); stylishPopupOverlay.classList.remove('active'); showStylishPopup('success', 'Link Sent!', data.message); } catch (error) {} }});});
+        
+        const triggerGoogleSignIn = () => { if (loginModal) loginModal.classList.remove('active'); if (signupModal) signupModal.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active'); google.accounts.id.prompt(n => { if (n.isNotDisplayed() || n.isSkippedMoment()) console.warn('Google Sign-In prompt not displayed/skipped.'); }); };
+        if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn; if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
 
-        if (emailSignupForm) {
-            emailSignupForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = modalSignupNameInput.value.trim();
-                const email = modalSignupEmailInput.value.trim();
-                const password = modalSignupPasswordInput.value;
-                const confirmPassword = modalSignupConfirmPasswordInput.value;
-                if (!name || !email || !password || !confirmPassword) {
-                    return showStylishPopup('error', 'Empty Fields!', 'Please fill in all fields.');
-                }
-                if (password !== confirmPassword) {
-                    return showStylishPopup('error', 'Password Mismatch!', 'Passwords do not match.');
-                }
-                if (password.length < 6) {
-                    return showStylishPopup('error', 'Weak Password!', 'Password must be at least 6 characters long.');
-                }
-                try {
-                    const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password });
-                    handleAuthResponse(data);
-                } catch (error) {
-                    // Handled
-                }
-            });
-        }
-
-        if (modalCreateAccountLink) {
-            modalCreateAccountLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (loginModal) loginModal.classList.remove('active');
-                if (signupModal) signupModal.classList.add('active');
-            });
-        }
-        if (modalAlreadyAccountLink) {
-            modalAlreadyAccountLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (signupModal) signupModal.classList.remove('active');
-                if (loginModal) loginModal.classList.add('active');
-            });
-        }
-
-        if (modalForgotPasswordLink) {
-            modalForgotPasswordLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (loginModal) loginModal.classList.remove('active');
-                showStylishPopup('forgot_password', 'Forgot Password?',
-                    'Enter your registered email address. We will send you a link to reset your password.',
-                    {
-                        formHTML: `<div class="popup-form-input-group"><label for="popup-forgot-email">Email Address:</label><input type="email" id="popup-forgot-email" placeholder="email@example.com" required></div>`,
-                        isConfirm: true,
-                        confirmText: 'Send Reset Link',
-                        cancelText: 'Cancel',
-                        onConfirm: async () => {
-                            const forgotEmailVal = document.getElementById('popup-forgot-email').value.trim();
-                            if (!forgotEmailVal) {
-                                stylishPopupMessage.innerHTML = '<p style="color:var(--error-color); margin-bottom:10px;">Email address is required.</p>' +
-                                                                 'Enter your registered email address. We will send you a link to reset your password.';
-                                document.getElementById('popup-forgot-email').focus();
-                                return;
-                            }
-                            const primaryBtn = stylishPopupCard.querySelector('#stylishPopupPrimaryActionBtn');
-                            if(primaryBtn) {primaryBtn.disabled = true; primaryBtn.textContent = "Sending...";}
-                            try {
-                                const data = await apiRequest(API_REQUEST_RESET_URL, 'POST', { email: forgotEmailVal });
-                                stylishPopupOverlay.classList.remove('active');
-                                showStylishPopup('success', 'Link Sent!', data.message);
-                            } catch (error) {
-                                if(primaryBtn) {primaryBtn.disabled = false; primaryBtn.textContent = "Send Reset Link";}
-                            }
-                        }
-                    }
-                );
-            });
-        }
-
-        const triggerGoogleSignIn = () => {
-            if (loginModal) loginModal.classList.remove('active');
-            if (signupModal) signupModal.classList.remove('active');
-            if (userProfileModal) userProfileModal.classList.remove('active');
-            google.accounts.id.prompt((notification) => {
-                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                    console.warn('Google Sign-In prompt was not displayed/skipped.');
-                }
-            });
-        };
-        if (modalGoogleLoginBtn) modalGoogleLoginBtn.onclick = triggerGoogleSignIn;
-        if (modalGoogleSignupBtn) modalGoogleSignupBtn.onclick = triggerGoogleSignIn;
-
-        window.onload = function () {
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleCredentialResponse
-                });
-            } else {
-                console.error("Google Identity Services script not loaded yet.");
-            }
-            checkLoginStatus();
-            if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
-            if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
-            if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
-        };
-
-        async function handleGoogleCredentialResponse(response) {
-            try {
-                const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential });
-                handleAuthResponse(data);
-            } catch (error) {
-                // Handled by apiRequest
-            }
-        }
+        window.onload = () => { if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredentialResponse }); else console.error("Google Identity Services script not loaded."); checkLoginStatus(); if(ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200); if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300); if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400); };
+        async function handleGoogleCredentialResponse(response) { try { const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }); handleAuthResponse(data); } catch (error) {} }
 
         async function checkLoginStatus() {
             const token = localStorage.getItem('authToken');
-            if (token) {
-                try {
-                    const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET');
-                    currentUser = userData;
-                    updateUIAfterLogin();
-                } catch (error) {
-                    localStorage.removeItem('authToken');
-                    currentUser = null;
-                    updateUIAfterLogout();
-                }
-            } else {
-                updateUIAfterLogout();
-            }
+            if (token) { try { const userData = await apiRequest(API_VALIDATE_TOKEN_URL, 'GET'); currentUser = userData; updateUIAfterLogin(); } catch (error) { localStorage.removeItem('authToken'); currentUser = null; updateUIAfterLogout(); }}
+            else updateUIAfterLogout();
             await fetchFeedbacks();
         }
 
         function updateUIAfterLogin() {
             if (currentUser) {
                 if(loginIconTrigger) loginIconTrigger.style.display = 'none';
-
-                if(userProfileTrigger) {
-                    userProfileTrigger.style.display = 'flex';
-                    userProfileTrigger.classList.remove('hidden');
-                    userProfileTrigger.style.opacity = '1';
-                    userProfileTrigger.style.pointerEvents = 'auto';
-                    
-                    if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                    if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name;
-                }
-
-                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
-
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.value = currentUser.name;
-                if(nameInputInFeedbackForm) nameInputInFeedbackForm.disabled = true;
-
-                // Control visibility of verification prompts
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
-                    if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
-                    if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
-                    if(changePasswordBtn) changePasswordBtn.disabled = true;
-                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = true;
-                    if(avatarUploadInput) avatarUploadInput.disabled = true;
-                } else {
-                    if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
-                    if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-                    if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = false;
-                    if(changePasswordBtn) changePasswordBtn.disabled = false;
-                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = false;
-                    if(avatarUploadInput) avatarUploadInput.disabled = false;
-                }
-
-                if (currentUser.loginMethod === 'google') {
-                    if(profileNameInput) {
-                        profileNameInput.disabled = true;
-                        profileNameInput.title = "Name is managed by your Google account.";
-                    }
-                    if(profileEditForm) saveProfileChangesBtn.disabled = true;
-                    if(changePasswordForm) changePasswordForm.style.display = 'none';
-                    if(submitButton) submitButton.disabled = false; 
-                    if(avatarUploadInput) avatarUploadInput.disabled = false;
-                } else { 
-                    if(profileNameInput) {
-                        profileNameInput.disabled = false;
-                        profileNameInput.title = "";
-                    }
-                    if(changePasswordForm) changePasswordForm.style.display = 'block';
-                    profileEditForm.dispatchEvent(new Event('input')); 
-                }
+                if(userProfileTrigger) { userProfileTrigger.style.display = 'flex'; userProfileTrigger.classList.remove('hidden'); userProfileTrigger.style.opacity = '1'; userProfileTrigger.style.pointerEvents = 'auto'; if(userProfileAvatarImg) userProfileAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/40/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(userProfileNameSpan) userProfileNameSpan.textContent = currentUser.name; }
+                if(menuAvatarImg) menuAvatarImg.src = currentUser.avatarUrl || `https://placehold.co/70/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(menuUsernameSpan) menuUsernameSpan.textContent = currentUser.name;
+                if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = currentUser.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
                 
-                if(profileEditForm) {
-                    saveProfileChangesBtn.disabled = true;
-                    if(currentUser.loginMethod === 'email' && currentUser.isVerified) {
-                        profileEditForm.dispatchEvent(new Event('input'));
-                    }
-                }
-                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                const isEmailUserUnverified = currentUser.loginMethod === 'email' && !currentUser.isVerified;
+                if (emailVerificationPrompt) emailVerificationPrompt.style.display = isEmailUserUnverified ? 'flex' : 'none';
+                if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = isEmailUserUnverified ? 'flex' : 'none';
+                
+                [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = isEmailUserUnverified; });
+                if (profileNameInput) profileNameInput.disabled = (currentUser.loginMethod === 'google' || isEmailUserUnverified);
+                if (profileNameInput) profileNameInput.title = currentUser.loginMethod === 'google' ? "Managed by Google" : (isEmailUserUnverified ? "Verify email to edit" : "");
 
-                if (submitButton) {
-                    submitButton.disabled = false; 
-                }
-                 // Update profile modal fields
+                if(changePasswordForm && currentUser.loginMethod === 'google') changePasswordForm.style.display = 'none'; else if (changePasswordForm) changePasswordForm.style.display = 'block';
+                
+                if(saveProfileChangesBtn && profileEditForm) { saveProfileChangesBtn.disabled = true; if(currentUser.loginMethod === 'email' && currentUser.isVerified) saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name); }
+                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
+                if (submitButton) submitButton.disabled = false; 
+
                 if(profileNameInput) profileNameInput.value = currentUser.name;
                 if(profileEmailInput) profileEmailInput.value = currentUser.email;
                 if(profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-
             }
         }
 
         function updateUIAfterLogout() {
             if(loginIconTrigger) loginIconTrigger.style.display = 'flex';
-            if(userProfileTrigger) {
-                userProfileTrigger.classList.add('hidden');
-                if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                userProfileTrigger.style.opacity = '0';
-                userProfileTrigger.style.pointerEvents = 'none';
-            }
-            if(userMenu) userMenu.classList.remove('active');
-            if(userProfileModal) userProfileModal.classList.remove('active');
-
-            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
-            if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
-
+            if(userProfileTrigger) { userProfileTrigger.classList.add('hidden'); if(userProfileAvatarImg) userProfileAvatarImg.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; userProfileTrigger.style.opacity = '0'; userProfileTrigger.style.pointerEvents = 'none';}
+            if(userMenu) userMenu.classList.remove('active'); if(userProfileModal) userProfileModal.classList.remove('active');
+            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none'; if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
             if(feedbackFormContainer) feedbackFormContainer.style.display = 'block';
-            if(nameInputInFeedbackForm) {
-                nameInputInFeedbackForm.value = '';
-                nameInputInFeedbackForm.placeholder = ' '; // For floating label
-                nameInputInFeedbackForm.disabled = false;
-            }
-            
-            if(submitButton) submitButton.disabled = true;
-            if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
-            if(changePasswordBtn) changePasswordBtn.disabled = true;
-            if(uploadAvatarNowBtn) uploadAvatarNowBtn.disabled = true;
-            if(avatarUploadInput) avatarUploadInput.disabled = true;
+            if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = ''; nameInputInFeedbackForm.placeholder = ' '; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
+            [submitButton, saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if(el) el.disabled = true; });
         }
 
-        if(menuLogoutLink) {
-            menuLogoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if(userMenu) userMenu.classList.remove('active');
-                showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', {
-                    isConfirm: true,
-                    confirmText: 'Logout',
-                    cancelText: 'Cancel',
-                    onConfirm: () => {
-                        localStorage.removeItem('authToken');
-                        currentUser = null;
-                        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                            google.accounts.id.disableAutoSelect();
-                        }
-                        updateUIAfterLogout();
-                        showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.');
-                        fetchFeedbacks();
-                    }
-                });
-            });
-        }
-
-        if(menuViewProfileLink) {
-            menuViewProfileLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if(userMenu) userMenu.classList.remove('active');
-                if(userProfileModal) userProfileModal.classList.add('active');
-                updateUIAfterLogin(); 
-            });
-        }
-
-        if (sendVerificationEmailBtn) {
-            sendVerificationEmailBtn.addEventListener('click', async () => {
-                if (!currentUser || currentUser.isVerified) return;
-                try {
-                    const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {});
-                    showStylishPopup('success', 'Verification Link Sent!', data.message);
-                } catch (error) {
-                    // Handled by apiRequest
-                }
-            });
-        }
-
-        if (sendVerificationEmailBtnForm) {
-            sendVerificationEmailBtnForm.addEventListener('click', async () => {
-                if (!currentUser || currentUser.isVerified) return;
-                try {
-                    const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {});
-                    showStylishPopup('success', 'Verification Link Sent!', data.message);
-                } catch (error) {
-                    // Handled by apiRequest
-                }
-            });
-        }
+        if(menuLogoutLink) menuLogoutLink.addEventListener('click', e => { e.preventDefault(); if(userMenu) userMenu.classList.remove('active'); showStylishPopup('confirm', 'Logout Confirmation', 'Are you sure you want to logout?', { isConfirm: true, confirmText: 'Logout', cancelText: 'Cancel', onConfirm: () => { localStorage.removeItem('authToken'); currentUser = null; if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); updateUIAfterLogout(); showStylishPopup('info', 'Logged Out', 'You have been successfully logged out.'); fetchFeedbacks(); }});});
+        if(menuViewProfileLink) menuViewProfileLink.addEventListener('click', e => { e.preventDefault(); if(userMenu) userMenu.classList.remove('active'); if(userProfileModal) userProfileModal.classList.add('active'); updateUIAfterLogin(); });
+        if (sendVerificationEmailBtn) sendVerificationEmailBtn.addEventListener('click', async () => { if (!currentUser || currentUser.isVerified) return; try { const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {}); showStylishPopup('success', 'Verification Link Sent!', data.message); } catch (error) {} });
+        if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.addEventListener('click', async () => { if (!currentUser || currentUser.isVerified) return; try { const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {}); showStylishPopup('success', 'Verification Link Sent!', data.message); } catch (error) {} });
 
         if(profileEditForm) {
-            profileEditForm.addEventListener('input', () => {
-                if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) {
-                    const nameChanged = profileNameInput.value.trim() !== currentUser.name;
-                    saveProfileChangesBtn.disabled = !nameChanged;
-                } else if (currentUser && currentUser.loginMethod === 'google') {
-                    saveProfileChangesBtn.disabled = true;
-                }
-            });
-
-            profileEditForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to update profile.');
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to update profile.');
-                }
-
-                const newName = profileNameInput.value.trim();
-                if (!newName) {
-                    return showStylishPopup('error', 'Name Required', 'Name cannot be empty.');
-                }
-                if (currentUser.loginMethod === 'google' && newName !== currentUser.name) {
-                    return showStylishPopup('warning', 'Google User', 'Google users cannot change their name directly here. It is managed by your Google account.');
-                }
-
-                saveProfileChangesBtn.disabled = true;
-                saveProfileChangesBtn.textContent = "Saving...";
-
-                try {
-                    const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName });
-
-                    if (data.token) {
-                        localStorage.setItem('authToken', data.token);
-                    }
-                    
-                    currentUser.name = data.user.name;
-                    currentUser = { ...currentUser, ...data.user };
-
-                    if (profileDisplayAvatar) {
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                    }
-
-                    updateUIAfterLogin();
-                    showStylishPopup('success', 'Profile Updated!', data.message || 'Your profile name has been successfully updated!');
-
-                } catch (error) {
-                    // Handled by apiRequest
-                } finally {
-                    if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) {
-                        saveProfileChangesBtn.disabled = profileNameInput.value.trim() === currentUser.name;
-                    } else {
-                        saveProfileChangesBtn.disabled = true;
-                    }
-                    saveProfileChangesBtn.textContent = "Save Changes";
-                }
-            });
+            profileEditForm.addEventListener('input', () => { if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name); else saveProfileChangesBtn.disabled = true; });
+            profileEditForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email.'); const newName = profileNameInput.value.trim(); if (!newName) return showStylishPopup('error', 'Name Required', 'Name cannot be empty.'); if (currentUser.loginMethod === 'google' && newName !== currentUser.name) return showStylishPopup('warning', 'Google User', 'Name managed by Google.'); try { const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName }); if (data.token) localStorage.setItem('authToken', data.token); currentUser.name = data.user.name; currentUser = { ...currentUser, ...data.user }; if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; updateUIAfterLogin(); showStylishPopup('success', 'Profile Updated!', data.message || 'Profile name updated!'); } catch (error) {} });
         }
 
-        if (avatarUploadInput) {
-            avatarUploadInput.addEventListener('change', () => {
-                if (avatarUploadInput.files.length > 0) {
-                    if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                        showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to upload an avatar.');
-                        avatarUploadInput.value = '';
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        profileDisplayAvatar.src = e.target.result;
-                    };
-                    reader.readAsDataURL(avatarUploadInput.files[0]);
+        if (avatarUploadInput) avatarUploadInput.addEventListener('change', () => { if (avatarUploadInput.files.length > 0) { if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) { showStylishPopup('warning', 'Email Verification Required!', 'Verify email to upload avatar.'); avatarUploadInput.value = ''; return; } const reader = new FileReader(); reader.onload = e => profileDisplayAvatar.src = e.target.result; reader.readAsDataURL(avatarUploadInput.files[0]); if(uploadAvatarNowBtn) { uploadAvatarNowBtn.style.display = 'block'; uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar'; } if(saveProfileChangesBtn) saveProfileChangesBtn.disabled = true; } else { if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; if (currentUser) { profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if(profileEditForm) profileEditForm.dispatchEvent(new Event('input'));}}});
+        if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async () => { if (!currentUser) return showStylishPopup('error', 'Error', 'Must be logged in.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email.'); if (avatarUploadInput.files.length === 0) return showStylishPopup('warning', 'No File Selected', 'Select an image.'); const file = avatarUploadInput.files[0], formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); const originalBtnHTML = uploadAvatarNowBtn.innerHTML; uploadAvatarNowBtn.disabled = true; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; uploadProgressBar.style.display = 'block'; progressFill.style.width = '0%'; progressText.textContent = '0%'; try { const xhr = new XMLHttpRequest(); xhr.open('POST', CLOUDINARY_UPLOAD_URL, true); xhr.upload.onprogress = e => { if (e.lengthComputable) { const percent = (e.loaded / e.total) * 100; progressFill.style.width = percent + '%'; progressText.textContent = Math.round(percent) + '%'; }}; await new Promise((resolve, reject) => { xhr.onload = async () => { if (xhr.status >= 200 && xhr.status < 300) { const cloudRes = JSON.parse(xhr.responseText), imgUrl = cloudRes.secure_url; try { const beRes = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: currentUser.name, avatarUrl: imgUrl }); if (beRes.token) localStorage.setItem('authToken', beRes.token); currentUser.avatarUrl = beRes.user.avatarUrl; currentUser = { ...currentUser, ...beRes.user }; if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; updateUIAfterLogin(); await fetchFeedbacks(); avatarUploadInput.value = ''; if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; showStylishPopup('success', 'Avatar Updated!', 'Profile updated.'); resolve(); } catch (beError) { reject(beError); }} else { const errRes = JSON.parse(xhr.responseText); reject(new Error(errRes.error.message || 'Cloudinary upload failed.'));}}; xhr.onerror = () => reject(new Error('Network error during upload.')); xhr.send(formData);});} catch (error) { showStylishPopup('error', 'Upload Error!', error.message || 'Avatar upload failed.');} finally { uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = originalBtnHTML; uploadProgressBar.style.display = 'none';}});
+        
+        if(changePasswordForm) changePasswordForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup('error', 'Error', 'Must be logged in.'); if (currentUser.loginMethod === 'google') return showStylishPopup('error', 'Google User', 'Cannot change password here.'); if (!currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email.'); const curPw = currentPasswordInput.value, newPw = newPasswordProfileInput.value, confNewPw = confirmNewPasswordProfileInput.value; if (!curPw || !newPw || !confNewPw) return showStylishPopup('error', 'Empty Fields!', 'All fields required.'); if (newPw !== confNewPw) return showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.'); if (newPw.length < 6) return showStylishPopup('error', 'Weak Password!', 'Min 6 characters.'); if (curPw === newPw) return showStylishPopup('warning', 'Same Password!', 'New password same as current.'); try { const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword: curPw, newPassword: newPw }); showStylishPopup('success', 'Password Changed!', data.message); [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => { inp.value = ''; inp.dispatchEvent(new Event('input')); });} catch (error) {}});
+        
+        starsElements.forEach(star => { star.addEventListener('click', () => { if (submitButton.disabled) return; const value = parseInt(star.dataset.value); currentSelectedRating = value; ratingInput.value = value; updateStarVisuals(value); }); star.addEventListener('mouseover', () => { if (submitButton.disabled) return; const value = parseInt(star.dataset.value); updateStarVisuals(value, true); }); star.addEventListener('mouseout', () => { if (submitButton.disabled) return; updateStarVisuals(currentSelectedRating); }); });
+        function updateStarVisuals(val, isHover = false) { starsElements.forEach(s => { const sVal = parseInt(s.dataset.value); if (isHover) { if (sVal <= val) s.classList.add('highlighted'); else s.classList.remove('highlighted'); s.classList.remove('selected'); } else { if (sVal <= val) s.classList.add('selected'); else s.classList.remove('selected'); s.classList.remove('highlighted'); }});}
 
-                    if(uploadAvatarNowBtn) {
-                        uploadAvatarNowBtn.style.display = 'block';
-                        uploadAvatarNowBtn.disabled = false;
-                        uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar';
-                    }
-                    saveProfileChangesBtn.disabled = true;
+        if (enhanceFeedbackBtn) enhanceFeedbackBtn.addEventListener('click', async () => { const originalFeedback = feedbackTextarea.value.trim(); if (!originalFeedback) return showStylishPopup('warning', 'Empty Feedback', 'Write feedback to enhance!'); const originalBtnText = enhanceFeedbackBtn.innerHTML; enhanceFeedbackBtn.disabled = true; enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...'; try { const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`; const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); let enhancedText = originalFeedback; if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) enhancedText = result.candidates[0].content.parts[0].text; else { console.warn("Gemini API response issue:", result); showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance. Try again.');} feedbackTextarea.value = enhancedText; feedbackTextarea.dispatchEvent(new Event('input')); showStylishPopup('success', 'Feedback Enhanced!', 'AI refined your feedback.'); } catch (error) { console.error("Error enhancing feedback:", error); showStylishPopup('error', 'Enhancement Failed', 'Error enhancing. Try later.'); } finally { enhanceFeedbackBtn.disabled = false; enhanceFeedbackBtn.innerHTML = originalBtnText; }});
+        else console.error("Enhance feedback button not found!");
 
-                } else {
-                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-                    if (currentUser) {
-                        profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                        profileEditForm.dispatchEvent(new Event('input'));
-                    }
-                }
-            });
-        }
-
-        if (uploadAvatarNowBtn) {
-            uploadAvatarNowBtn.addEventListener('click', async () => {
-                if (!currentUser) {
-                    return showStylishPopup('error', 'Error', 'You must be logged in to upload an avatar.');
-                }
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to upload an avatar.');
-                }
-                if (avatarUploadInput.files.length === 0) {
-                    return showStylishPopup('warning', 'No File Selected', 'Please select an image file to upload first.');
-                }
-
-                const file = avatarUploadInput.files[0];
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-                uploadAvatarNowBtn.disabled = true;
-                uploadAvatarNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Cloudinary...';
-
-                try {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
-
-                    xhr.upload.addEventListener('progress', (event) => {
-                        if (event.lengthComputable) {
-                            const percent = (event.loaded / event.total) * 100;
-                            uploadProgressBar.style.display = 'block';
-                            progressFill.style.width = percent + '%';
-                            progressText.textContent = Math.round(percent) + '%';
-                        }
-                    });
-
-                    await new Promise((resolve, reject) => {
-                        xhr.onload = async () => {
-                            uploadProgressBar.style.display = 'none';
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                const cloudinaryResponse = JSON.parse(xhr.responseText);
-                                const imageUrl = cloudinaryResponse.secure_url;
-
-                                try {
-                                    const backendUpdateResponse = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', {
-                                        name: currentUser.name,
-                                        avatarUrl: imageUrl
-                                    });
-
-                                    if (backendUpdateResponse.token) {
-                                        localStorage.setItem('authToken', backendUpdateResponse.token);
-                                    }
-                                    
-                                    currentUser.avatarUrl = backendUpdateResponse.user.avatarUrl;
-                                    currentUser = { ...currentUser, ...backendUpdateResponse.user };
-
-                                    if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl;
-
-                                    updateUIAfterLogin();
-                                    await fetchFeedbacks();
-                                    avatarUploadInput.value = '';
-                                    if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-
-                                    showStylishPopup('success', 'Avatar Updated!', 'Your new avatar has been uploaded and profile updated successfully.');
-                                    resolve();
-                                } catch (backendError) {
-                                    showStylishPopup('error', 'Profile Update Error!', backendError.message || 'Failed to update profile with new avatar URL.');
-                                    reject(backendError);
-                                }
-                            } else {
-                                const errorResponse = JSON.parse(xhr.responseText);
-                                showStylishPopup('error', 'Cloudinary Upload Error!', errorResponse.error.message || 'Avatar upload failed.');
-                                reject(new Error(errorResponse.error.message));
-                            }
-                        };
-                        xhr.onerror = () => {
-                            uploadProgressBar.style.display = 'none';
-                            showStylishPopup('error', 'Network Error!', 'Avatar upload failed due to network issues.');
-                            reject(new Error('Network error during avatar upload.'));
-                        };
-                        xhr.send(formData);
-                    });
-
-                } catch (error) {
-                    console.error("Overall avatar upload process failed:", error);
-                } finally {
-                    uploadAvatarNowBtn.disabled = false;
-                    uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar';
-                }
-            });
-        }
-
-        if(changePasswordForm) {
-            changePasswordForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to change password.');
-                if (currentUser.loginMethod === 'google') {
-                    return showStylishPopup('error', 'Google User', 'Google users cannot change password from here.');
-                }
-                if (!currentUser.isVerified) {
-                    return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to change password.');
-                }
-
-                const currentPassword = currentPasswordInput.value;
-                const newPassword = newPasswordProfileInput.value;
-                const confirmNewPassword = confirmNewPasswordProfileInput.value;
-
-                if (!currentPassword || !newPassword || !confirmNewPassword) {
-                    return showStylishPopup('error', 'Empty Fields!', 'All password fields are required.');
-                }
-                if (newPassword !== confirmNewPassword) {
-                    return showStylishPopup('error', 'Password Mismatch!', 'New passwords do not match.');
-                }
-                if (newPassword.length < 6) {
-                    return showStylishPopup('error', 'Weak Password!', 'New password must be at least 6 characters long.');
-                }
-                if (currentPassword === newPassword) {
-                    return showStylishPopup('warning', 'Same Password!', 'New password cannot be the same as the current password.');
-                }
-
-                changePasswordBtn.disabled = true;
-                changePasswordBtn.textContent = "Changing...";
-
-                try {
-                    const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword, newPassword });
-                    showStylishPopup('success', 'Password Changed!', data.message);
-                    currentPasswordInput.value = '';
-                    newPasswordProfileInput.value = '';
-                    newPasswordProfileInput.classList.remove('is-valid', 'is-invalid');
-                    confirmNewPasswordProfileInput.value = '';
-                    confirmNewPasswordProfileInput.classList.remove('is-valid', 'is-invalid');
-                } catch (error) {
-                    // Handled by apiRequest
-                } finally {
-                    changePasswordBtn.disabled = false;
-                    changePasswordBtn.textContent = "Change Password";
-                }
-            });
-        }
-
-        starsElements.forEach(star => {
-            star.addEventListener('click', () => {
-                if (submitButton.disabled) return;
-                const value = parseInt(star.dataset.value);
-                currentSelectedRating = value;
-                ratingInput.value = value;
-                updateStarVisuals(value);
-            });
-
-            star.addEventListener('mouseover', () => {
-                if (submitButton.disabled) return;
-                const value = parseInt(star.dataset.value);
-                updateStarVisuals(value, true);
-            });
-
-            star.addEventListener('mouseout', () => {
-                if (submitButton.disabled) return;
-                updateStarVisuals(currentSelectedRating);
-            });
-        });
-
-        function updateStarVisuals(highlightValue, isHover = false) {
-            starsElements.forEach(star => {
-                const starValue = parseInt(star.dataset.value);
-                if (isHover) {
-                    if (starValue <= highlightValue) {
-                        star.classList.add('highlighted');
-                    } else {
-                        star.classList.remove('highlighted');
-                    }
-                    star.classList.remove('selected');
-                } else {
-                    if (starValue <= highlightValue) {
-                        star.classList.add('selected');
-                    } else {
-                        star.classList.remove('selected');
-                    }
-                    star.classList.remove('highlighted');
-                }
-            });
-        }
-
-        /* New LLM Feature: Enhance Feedback */
-        if (enhanceFeedbackBtn) {
-            enhanceFeedbackBtn.addEventListener('click', async () => {
-                const originalFeedback = feedbackTextarea.value.trim();
-                if (!originalFeedback) {
-                    showStylishPopup('warning', 'Empty Feedback', 'Please write some feedback to enhance!');
-                    return;
-                }
-
-                enhanceFeedbackBtn.disabled = true;
-                const originalBtnText = enhanceFeedbackBtn.innerHTML;
-                enhanceFeedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enhancing...';
-
-                try {
-                    const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise.
-Original Feedback: "${originalFeedback}"`;
-
-                    let chatHistory = [];
-                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                    const payload = { contents: chatHistory };
-                    const apiKey = ""; // Canvas will provide this at runtime
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-                    let enhancedText = originalFeedback; // Fallback to original
-
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        enhancedText = result.candidates[0].content.parts[0].text;
-                    } else {
-                        console.warn("Gemini API response did not contain expected text content.");
-                        showStylishPopup('warning', 'Enhancement Failed', 'Could not enhance feedback. Please try again.');
-                    }
-
-                    feedbackTextarea.value = enhancedText;
-                    showStylishPopup('success', 'Feedback Enhanced!', 'Your feedback has been refined by AI.');
-
-                } catch (error) {
-                    console.error("Error enhancing feedback:", error);
-                    showStylishPopup('error', 'Enhancement Failed', 'There was an error enhancing your feedback. Please try again later.');
-                } finally {
-                    enhanceFeedbackBtn.disabled = false;
-                    enhanceFeedbackBtn.innerHTML = originalBtnText;
-                }
-            });
-        }
-
-
-        if(submitButton) submitButton.addEventListener('click', async () => {
-            if (!currentUser) {
-                showStylishPopup('warning', 'Login Required', 'Please log in via the icon to submit feedback.');
-                return;
-            }
-            
-            const feedbackContent = feedbackTextarea.value.trim();
-            const ratingValue = ratingInput.value;
-            let nameValue = nameInputInFeedbackForm.value.trim();
-
-            if (!feedbackContent || ratingValue === '0') {
-                return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating are required!');
-            }
-            
-            let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) };
-            const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
-            const method = isEditing ? 'PUT' : 'POST';
-
-            if (isEditing && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit feedback.');
-                return;
-            }
-
-
-            submitButton.disabled = true;
-            submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? "Updating..." : "Submitting..."}`;
-
-            try {
-                const data = await apiRequest(url, method, feedbackPayload);
-                showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message);
-                resetFeedbackForm();
-                await fetchFeedbacks();
-            }
-            catch (error) {
-                // Handled by apiRequest
-            }
-            finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = `<i class="fas fa-paper-plane"></i> ${isEditing ? "Update Feedback" : "Submit Feedback"}`;
-            }
-        });
-
+        if(submitButton) submitButton.addEventListener('click', async () => { if (!currentUser) return showStylishPopup('warning', 'Login Required', 'Log in to submit.'); const feedbackContent = feedbackTextarea.value.trim(), ratingValue = ratingInput.value; if (!feedbackContent || ratingValue === '0') return showStylishPopup('error', 'Empty Fields!', 'Feedback and rating required!'); let feedbackPayload = { feedback: feedbackContent, rating: parseInt(ratingValue) }; const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL, method = isEditing ? 'PUT' : 'POST'; if (isEditing && currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email to edit.'); const originalSubmitBtnHTML = submitButton.innerHTML; submitButton.disabled = true; submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditing ? "Updating..." : "Submitting..."}`; try { const data = await apiRequest(url, method, feedbackPayload); showStylishPopup('success', isEditing ? 'Feedback Updated!' : 'Feedback Submitted!', data.message); resetFeedbackForm(); await fetchFeedbacks(); } catch (error) {} finally { submitButton.disabled = false; submitButton.innerHTML = isEditing ? '<i class="fas fa-paper-plane"></i> Update Feedback' : '<i class="fas fa-paper-plane"></i> Submit Feedback';}});
+        
         function resetFeedbackForm() {
-            if (currentUser) {
-                nameInputInFeedbackForm.value = currentUser.name;
-                nameInputInFeedbackForm.disabled = true;
-            } else {
-                nameInputInFeedbackForm.value = '';
-                nameInputInFeedbackForm.disabled = false;
-                nameInputInFeedbackForm.placeholder = ' '; // For floating label
-            }
-            feedbackTextarea.value = '';
-            ratingInput.value = '0';
-            currentSelectedRating = 0;
-            updateStarVisuals(0);
-            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback'; // Reset innerHTML
-            isEditing = false;
-            currentEditFeedbackId = null;
-
-            if (currentUser) {
-                submitButton.disabled = false;
-            } else {
-                submitButton.disabled = true; 
-            }
+            if (currentUser) { nameInputInFeedbackForm.value = currentUser.name; nameInputInFeedbackForm.disabled = true;}
+            else { nameInputInFeedbackForm.value = ''; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.placeholder = ' '; }
+            if (nameInputInFeedbackForm) nameInputInFeedbackForm.dispatchEvent(new Event('input'));
+            feedbackTextarea.value = ''; if(feedbackTextarea) feedbackTextarea.dispatchEvent(new Event('input'));
+            ratingInput.value = '0'; currentSelectedRating = 0; updateStarVisuals(0);
+            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback'; isEditing = false; currentEditFeedbackId = null;
+            if (currentUser) submitButton.disabled = false; else submitButton.disabled = true; 
         }
 
         async function fetchFeedbacks() {
              try {
-                const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET', null, false);
-                console.log("DEBUG: Raw feedback data received:", data);
-
-                const childrenToRemove = Array.from(feedbackListContainer.children);
-                childrenToRemove.forEach(child => {
-                    if (child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2') {
-                        child.remove();
-                    }
-                });
-
-                if (!feedbackListContainer.contains(averageRatingDisplayEl)) {
-                    feedbackListContainer.prepend(averageRatingDisplayEl);
-                }
+                const data = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET');
+                const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2');
+                childrenToRemove.forEach(child => child.remove());
+                if (!feedbackListContainer.querySelector('#average-rating-display')) feedbackListContainer.prepend(averageRatingDisplayEl);
                 let h2Title = feedbackListContainer.querySelector('h2.section-title'); 
-                if (!h2Title) {
-                     h2Title = document.createElement('h2');
-                     h2Title.textContent = 'Recent Feedbacks';
-                     h2Title.classList.add('section-title'); 
-                     feedbackListContainer.insertBefore(h2Title, feedbackListContainer.querySelector('.feedback-item') || null);
-                }
-
-                if (data.length === 0) {
-                    const msgP = document.createElement('p');
-                    msgP.textContent = 'No feedbacks yet. Be the first!';
-                    msgP.style.textAlign='center';
-                    msgP.style.padding='20px';
-                    msgP.style.color='rgba(255,255,255,0.7)';
-                    feedbackListContainer.appendChild(msgP);
-                    updateAverageRating(0, 0);
-                } else {
-                    const totalRatings = data.reduce((sum, fb) => {
-                        console.log(`DEBUG: Processing feedback ID: ${fb._id}, rating: ${fb.rating}, type: ${typeof fb.rating}`);
-                        const ratingAsNumber = typeof fb.rating === 'number' ? fb.rating : parseInt(fb.rating);
-                        if (isNaN(ratingAsNumber)) {
-                            console.warn(`WARN: Feedback ID: ${fb._id} has invalid rating value: ${fb.rating}. Treating as 0 for average calculation.`);
-                            return sum;
-                        }
-                        return sum + ratingAsNumber;
-                    }, 0);
-
-                    const average = totalRatings / data.length;
-                    console.log("DEBUG: Calculated total ratings:", totalRatings, "data length:", data.length, "calculated average:", average);
-                    updateAverageRating(average, data.length);
-                    data.forEach((fb, index) => addFeedbackToDOM(fb, index));
-                }
-            } catch (err) {
-                console.error("Error fetching feedbacks:", err);
-            }
+                if (!h2Title) { h2Title = document.createElement('h2'); h2Title.textContent = 'Recent Feedbacks'; h2Title.classList.add('section-title'); const firstFb = feedbackListContainer.querySelector('.feedback-item'); feedbackListContainer.insertBefore(h2Title, firstFb || averageRatingDisplayEl.nextSibling || null); }
+                if (data.length === 0) { const msgP = document.createElement('p'); msgP.textContent = 'No feedbacks yet. Be the first!'; msgP.style.cssText='text-align:center; padding:20px; color:rgba(255,255,255,0.7)'; feedbackListContainer.appendChild(msgP); updateAverageRating(0, 0); }
+                else { const totalRatings = data.reduce((sum, fb) => sum + (parseInt(fb.rating) || 0), 0); updateAverageRating(totalRatings / data.length, data.length); data.forEach(addFeedbackToDOM); }
+            } catch (err) { console.error("Error fetching feedbacks:", err); }
         }
 
         function updateAverageRating(avg, count) {
-            const avgNum = parseFloat(avg);
-            let starsHtml = '☆☆☆☆☆';
-            if (!isNaN(avgNum) && avgNum > 0) {
-                const fullStars = Math.floor(avgNum);
-                const halfStar = (avgNum % 1) >= 0.5 ? '★' : '';
-                starsHtml = '★'.repeat(fullStars) + halfStar + '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0));
-            }
-            averageRatingDisplayEl.innerHTML = `
-        <div class="average-rating-container">
-            <h3>Overall Average Rating</h3>
-            <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
-            <div class="average-stars">${starsHtml}</div>
-            <div class="total-feedbacks-count">(${count} Feedbacks) <span class="badge-total">+${count}</span></div>
-        </div>
-    `;
-            setTimeout(() => {
-                const avgContainer = averageRatingDisplayEl.querySelector('.average-rating-container');
-                if (avgContainer && !avgContainer.classList.contains('animate-in')) {
-                    avgContainer.classList.add('animate-in');
-                }
-            }, 50);
+            const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆';
+            if (!isNaN(avgNum) && avgNum > 0) { const full = Math.floor(avgNum), half = (avgNum % 1) >= 0.5 ? '★' : ''; starsHtml = '★'.repeat(full) + half + '☆'.repeat(Math.max(0, 5 - full - (half ? 1 : 0)));}
+            averageRatingDisplayEl.innerHTML = `<div class="average-rating-container"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">(${count} Feedbacks) <span class="badge-total">+${count}</span></div></div>`;
+            setTimeout(() => { const el = averageRatingDisplayEl.querySelector('.average-rating-container'); if (el) el.classList.add('animate-in'); }, 50);
         }
 
-        function addFeedbackToDOM(fbData, index) {
-            const item = document.createElement('div');
-            item.className = 'feedback-item';
-            item.dataset.feedbackId = fbData._id;
-
-            const avatarImg = document.createElement('img');
-            avatarImg.className = 'avatar-img';
-            const defaultAvatarChar = (fbData.name && fbData.name.length > 0 ? fbData.name.charAt(0).toUpperCase() : 'X');
-            avatarImg.src = fbData.avatarUrl || `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
-            avatarImg.alt = fbData.name || 'User Avatar';
-            avatarImg.onerror = function() {
-                this.src = `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(defaultAvatarChar)}`;
-            };
-            if (fbData.userId && typeof fbData.userId === 'object' && fbData.userId.isVerified) {
-                avatarImg.classList.add('verified-user');
-            }
-
-            const detailsDiv = document.createElement('div');
-            detailsDiv.className = 'feedback-details';
-
-            const strongName = document.createElement('strong');
-            let nameContent = fbData.name || 'Anonymous';
-            let userTypeTag = '';
-            let verificationTag = '';
-
-            if (fbData.userId && typeof fbData.userId === 'object') {
-                if (fbData.userId.loginMethod === 'google') {
-                    userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                }
-                
-                if (fbData.userId.isVerified) {
-                    verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
-                } else if (fbData.userId.loginMethod === 'email') {
-                    verificationTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
-                }
-            } else if (fbData.googleIdSubmitter) {
-                userTypeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`;
-                verificationTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;
-            } else {
-                userTypeTag = '';
-                verificationTag = `<span class="unverified-tag-feedback" title="Verification Status Unknown">?</span>`;
-            }
-
-            strongName.innerHTML = `${nameContent} ${userTypeTag} ${verificationTag}`;
-
-            if (fbData.rating) {
-                strongName.classList.add(`rating-${fbData.rating}`);
-            }
-
-
-            if (fbData.isEdited) {
-                const editedTag = document.createElement('span');
-                editedTag.className = 'edited-tag';
-                editedTag.textContent = 'Edited';
-                strongName.appendChild(editedTag);
-            }
-
-            const starsDiv = document.createElement('div');
-            starsDiv.className = 'feedback-stars';
-            starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
-
-            const pFeedback = document.createElement('p');
-            pFeedback.textContent = fbData.feedback;
-
-            const timestampDiv = document.createElement('div');
-            timestampDiv.className = 'feedback-timestamp';
-            try {
-                timestampDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
-            } catch(e) {
-                timestampDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
-            }
-
-            detailsDiv.append(strongName, starsDiv, pFeedback, timestampDiv);
-
-            const editButton = document.createElement('button');
-            editButton.className = 'edit-feedback-btn';
-            editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-            editButton.title = 'Edit this feedback';
-            editButton.disabled = !(currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id && currentUser.userId === fbData.userId._id && (currentUser.loginMethod === 'google' || currentUser.isVerified));
-            
-            editButton.addEventListener('click', (event) => {
-                event.stopPropagation();
-                if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || !fbData.userId._id || currentUser.userId !== fbData.userId._id) {
-                    return showStylishPopup('error', 'Permission Denied!', 'You can only edit your own feedback.');
-                }
-                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to edit feedback.');
-                }
-                showStylishPopup('info', 'Edit Feedback', 'Edit your feedback in the form below.');
-                nameInputInFeedbackForm.value = fbData.name;
-                nameInputInFeedbackForm.disabled = true;
-
-                feedbackTextarea.value = fbData.feedback;
-                currentSelectedRating = fbData.rating;
-                ratingInput.value = fbData.rating;
-                updateStarVisuals(fbData.rating);
-
-                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback'; // Update innerHTML
-                isEditing = true;
-                currentEditFeedbackId = fbData._id;
-
-                if(feedbackFormContainer) {
-                    feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-            item.appendChild(editButton);
-
-
-            if (fbData.replies && fbData.replies.length > 0) {
-                const latestReply = fbData.replies[fbData.replies.length - 1];
-                if (latestReply && latestReply.text) {
-                    const adminReplyDiv = document.createElement('div');
-                    adminReplyDiv.className = 'admin-reply';
-
-                    const adminAvatar = document.createElement('img');
-                    adminAvatar.className = 'admin-reply-avatar';
-                    adminAvatar.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
-                    adminAvatar.alt = 'Admin';
-
-                    const adminReplyContent = document.createElement('div');
-                    adminReplyContent.className = 'admin-reply-content';
-                    let replyTimestampText = '';
-                    try {
-                        replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })}`;
-                    } catch(e) {
-                        replyTimestampText = `(${new Date(latestReply.timestamp).toLocaleString('en-US')}`;
-                    }
-                    adminReplyContent.innerHTML = `<strong>(${(latestReply.adminName || 'Admin')}):</strong> ${latestReply.text} <span class="reply-timestamp">${replyTimestampText}</span>`;
-
-                    adminReplyDiv.append(adminAvatar, adminReplyContent);
-                    detailsDiv.appendChild(adminReplyDiv);
-                }
-            }
-
-            item.append(avatarImg, detailsDiv);
-            feedbackListContainer.appendChild(item);
+        function addFeedbackToDOM(fbData) {
+            const item = document.createElement('div'); item.className = 'feedback-item'; item.dataset.feedbackId = fbData._id;
+            const avatarImg = document.createElement('img'); avatarImg.className = 'avatar-img'; const char = (fbData.name?.[0]?.toUpperCase() || 'X'); avatarImg.src = fbData.avatarUrl || `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; avatarImg.alt = fbData.name || 'User Avatar'; avatarImg.onerror = function() { this.src = `https://placehold.co/50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; }; if (fbData.userId?.isVerified) avatarImg.classList.add('verified-user');
+            const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
+            const strongName = document.createElement('strong'); let name = fbData.name || 'Anonymous', typeTag = '', verTag = '';
+            if (fbData.userId) { if (fbData.userId.loginMethod === 'google') typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`; if (fbData.userId.isVerified) verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`; else if (fbData.userId.loginMethod === 'email') verTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;}
+            else if (fbData.googleIdSubmitter) { typeTag = `<span class="user-type-indicator google-user-indicator" title="Google User">G</span>`; verTag = `<span class="verified-tag-feedback" title="Email Verified"><i class="fas fa-check-circle"></i></span>`;}
+            else verTag = `<span class="unverified-tag-feedback" title="Verification Unknown">?</span>`;
+            strongName.innerHTML = `${name} ${typeTag} ${verTag}`; if (fbData.rating) strongName.classList.add(`rating-${fbData.rating}`);
+            if (fbData.isEdited) { const edited = document.createElement('span'); edited.className = 'edited-tag'; edited.textContent = 'Edited'; strongName.appendChild(edited);}
+            const starsDiv = document.createElement('div'); starsDiv.className = 'feedback-stars'; starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
+            const pFb = document.createElement('p'); pFb.textContent = fbData.feedback;
+            const tsDiv = document.createElement('div'); tsDiv.className = 'feedback-timestamp'; try { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;} catch(e) { tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`; }
+            detailsDiv.append(strongName, starsDiv, pFb, tsDiv);
+            const editBtn = document.createElement('button'); editBtn.className = 'edit-feedback-btn'; editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editBtn.title = 'Edit feedback';
+            editBtn.disabled = !(currentUser && fbData.userId?._id === currentUser.userId && (currentUser.loginMethod === 'google' || currentUser.isVerified));
+            editBtn.onclick = e => { e.stopPropagation(); if (!currentUser || fbData.userId?._id !== currentUser.userId) return showStylishPopup('error', 'Permission Denied!', 'Can only edit own feedback.'); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Verify email to edit.'); showStylishPopup('info', 'Edit Feedback', 'Edit feedback in form below.'); nameInputInFeedbackForm.value = fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input')); feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); currentSelectedRating = fbData.rating; ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating); submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback'; isEditing = true; currentEditFeedbackId = fbData._id; if(feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+            item.appendChild(editBtn);
+            if (fbData.replies?.length > 0) { const reply = fbData.replies[fbData.replies.length - 1]; if (reply?.text) { const replyDiv = document.createElement('div'); replyDiv.className = 'admin-reply'; const adminAva = document.createElement('img'); adminAva.className = 'admin-reply-avatar'; adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAva.alt = 'Admin'; const replyContent = document.createElement('div'); replyContent.className = 'admin-reply-content'; let replyTs = ''; try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle:'short', timeStyle:'short' })}`;} catch(e){ replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')}`;} replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`; replyDiv.append(adminAva, replyContent); detailsDiv.appendChild(replyDiv);}}
+            item.append(avatarImg, detailsDiv); feedbackListContainer.appendChild(item);
         }
 
-        updateUIAfterLogout(); // Initial UI setup
-        checkLoginStatus(); // Check if user is already logged in
+        updateUIAfterLogout(); checkLoginStatus(); 
     });
 </script>
 </body>
