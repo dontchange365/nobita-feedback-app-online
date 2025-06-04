@@ -2209,10 +2209,7 @@
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 <script>
-    // JavaScript remains largely the same, as the core logic doesn't change
-    // Only UI interaction related to icon display might be affected if IDs/classes were changed drastically
-    // but here the IDs are the same, only their CSS and HTML parentage changed.
-
+    // JavaScript code with modifications as requested
     document.addEventListener('DOMContentLoaded', async () => {
         console.log("DOM fully loaded and parsed");
         const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
@@ -2600,7 +2597,9 @@
                 }
             }
         });
-        if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async () => {
+
+        if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async (e) => { // Added 'e' parameter
+            e.preventDefault(); // FORM SUBMIT ROK - YEH ADD KIYA GAYA HAI
             if (!currentUser) return showStylishPopup('error', 'Error', 'You must be logged in to upload an avatar.');
             if (currentUser.loginMethod === 'email' && !currentUser.isVerified) return showStylishPopup('warning', 'Email Verification Required!', 'Please verify your email to upload an avatar.');
             if (avatarUploadInput.files.length === 0) return showStylishPopup('warning', 'No File Selected', 'Please select an image file to upload.');
@@ -2620,7 +2619,7 @@
             try {
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
-                xhr.upload.onprogress = e => { if (e.lengthComputable) { const percent = (e.loaded / e.total) * 100; progressFill.style.width = percent + '%'; progressText.textContent = Math.round(percent) + '%'; }};
+                xhr.upload.onprogress = ev => { if (ev.lengthComputable) { const percent = (ev.loaded / ev.total) * 100; progressFill.style.width = percent + '%'; progressText.textContent = Math.round(percent) + '%'; }};
 
                 await new Promise((resolve, reject) => {
                     xhr.onload = async () => {
@@ -2642,7 +2641,7 @@
                             } catch (beError) { reject(beError); }
                         } else {
                             let errorMsg = 'Cloudinary upload failed.';
-                            try { const errRes = JSON.parse(xhr.responseText); if(errRes.error && errRes.error.message) errorMsg = errRes.error.message; } catch(e) {}
+                            try { const errRes = JSON.parse(xhr.responseText); if(errRes.error && errRes.error.message) errorMsg = errRes.error.message; } catch(parseErr) {}
                             reject(new Error(errorMsg));
                         }
                     };
@@ -3036,11 +3035,6 @@
         updateUIAfterLogout(); // Set initial state assuming logged out
         checkLoginStatus(); // Then check actual login status and update UI + fetch data
     });
- document.getElementById('upload-avatar-now-btn').addEventListener('click', function() {
-  // Name input required hatado, sirf avatar upload pe
-  var nameInput = document.querySelector('#profile-name');
-  if(nameInput) nameInput.removeAttribute('required');
-});
 </script>
 </body>
 </html>
