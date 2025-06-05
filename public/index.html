@@ -1317,7 +1317,7 @@ body, html {
                     <textarea id="feedback" name="feedback" placeholder=" " required></textarea>
                     <label for="feedback">Your Feedback</label>
                 </div>
-                <button type="button" id="enhance-feedback-btn">✨ Enhance Feedback</button>
+                
                 <div class="input-group">
                     <label>Rate Your Experience:</label>
                     <div class="stars" id="star-rating">
@@ -2425,5 +2425,112 @@ document.addEventListener('DOMContentLoaded', async () => {
     resetFeedbackForm(); // Ensure form is in default state on load
 });
 </script>
+<footer class="nobita-footer">
+  <div class="footer-main">
+    <!-- Optional Tagline: Remove if you don't want -->
+   
+    <div class="footer-logo-area">
+      <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" alt="Nobita Logo" class="footer-logo" />
+      <span class="footer-title">NOBITA FEEDBACK</span>
+    </div>
+    <div class="footer-credits">
+      &copy; <span id="footer-year"></span> Made with <span class="footer-heart">❤️</span> by <span class="footer-nobita">Nobita</span>. All rights reserved.
+    </div>
+  </div>
+</footer>
+<script>
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+</script>
+<style>
+.nobita-footer {
+  width: 100vw;
+  margin-left: -15px;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(92deg, var(--bg-gradient-end) 70%, var(--primary-color) 100%);
+  color: var(--secondary-color);
+  font-family: 'Poppins', sans-serif;
+  padding-top: 28px;
+  box-shadow: 0 -2px 16px #16192f55;
+  border-top: 2px solid rgba(255, 215, 0, 0.13);
+}
+.footer-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 8vw 22px 8vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+}
+.footer-tagline {
+  color: #f4f4f9bb;
+  font-size: 0.98em;
+  margin-bottom: 14px;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  text-align: center;
+  opacity: 0.8;
+}
+.footer-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.footer-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2.5px solid var(--secondary-color);
+  box-shadow: 0 0 16px #FFD70044;
+  animation: avatarFooterGlow 2.1s infinite alternate;
+}
+@keyframes avatarFooterGlow {
+  from { box-shadow: 0 0 8px #FFD70055, 0 0 5px #8B5CF688; }
+  to { box-shadow: 0 0 22px #FFD700cc, 0 0 16px #8B5CF6; }
+}
+.footer-title {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: var(--secondary-color);
+  letter-spacing: 1.5px;
+  background: linear-gradient(90deg, #FFD700, #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: move-bg 4s linear infinite;
+}
+.footer-credits {
+  margin-top: 8px;
+  font-size: 0.98em;
+  color: #FFD700bb;
+  letter-spacing: 0.4px;
+  text-align: center;
+  opacity: 0.92;
+  font-weight: 400;
+}
+.footer-heart {
+  color: #f357a8;
+  animation: heartBeat 1.5s infinite alternate;
+  display: inline-block;
+}
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.14); }
+}
+.footer-nobita {
+  color: var(--accent-color);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+}
+@media (max-width: 500px) {
+  .footer-main { padding: 0 6vw 12px 6vw; }
+  .footer-logo-area { gap: 10px; }
+  .footer-logo { width: 36px; height: 36px; }
+  .footer-title { font-size: 1.02em; }
+  .footer-credits { font-size: 0.88em; }
+  .footer-tagline { font-size: 0.89em; margin-bottom: 9px; }
+}
+</style>
 </body>
 </html>
