@@ -1352,7 +1352,7 @@ body, html {
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("DOM fully loaded and parsed - NOBITA's Enhanced Version (Guest Feedback Corrected)");
+    console.log("DOM fully loaded - NOBITA (Final Guest + Unverified Submit)");
     const GOOGLE_CLIENT_ID = '609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com';
 
     // --- Element Selectors ---
@@ -1428,6 +1428,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditing = false;
     let currentEditFeedbackId = null;
 
+    const GUEST_ID_KEY = 'nobi_guestId';
+    const GUEST_NAME_KEY = 'nobi_guestName';
+
     const BASE_API_URL = window.location.origin;
     const API_SIGNUP_URL = `${BASE_API_URL}/api/auth/signup`;
     const API_LOGIN_URL = `${BASE_API_URL}/api/auth/login`;
@@ -1446,6 +1449,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const FEEDBACKS_CACHE_KEY = 'nobi_feedbacks';
     const USER_PROFILE_CACHE_KEY = 'nobi_user_profile';
+
+    function generateUUID() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
     function showFullScreenLoader() {
         const loader = document.getElementById('nobi-fullscreen-loader');
@@ -1490,26 +1503,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (document.getElementById('login-icon-trigger')) {
-        document.getElementById('login-icon-trigger').onclick = function () {
-            openLoginModal();
-        };
+        document.getElementById('login-icon-trigger').onclick = function () { openLoginModal(); };
     }
     if (document.getElementById('close-busicon-login-modal-btn')) {
-        document.getElementById('close-busicon-login-modal-btn').onclick = function () {
-            closeAuthModal();
-        };
+        document.getElementById('close-busicon-login-modal-btn').onclick = function () { closeAuthModal(); };
     }
     if (document.getElementById('close-busicon-signup-modal-btn')) {
-        document.getElementById('close-busicon-signup-modal-btn').onclick = function () {
-            closeAuthModal();
-        };
+        document.getElementById('close-busicon-signup-modal-btn').onclick = function () { closeAuthModal(); };
     }
     if (document.getElementById('auth-modal-overlay')) {
-        document.getElementById('auth-modal-overlay').onclick = function (e) {
-            if (e.target === this) {
-                closeAuthModal();
-            }
-        };
+        document.getElementById('auth-modal-overlay').onclick = function (e) { if (e.target === this) { closeAuthModal(); } };
     }
 
     function togglePass(id, el) {
@@ -1691,7 +1694,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!response.ok) {
                 if (response.status === 403 && data && data.message && data.message.includes("Email not verified")) {
-                    // Specific handling
+                    // Specific handling for this error if needed by caller
                 }
                 throw new Error(data.message || `Server Error (${response.status})`);
             }
@@ -1702,7 +1705,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error.message.includes("Failed to fetch")) msg = "Network error. Check your internet connection.";
             else if (error.message) msg = error.message;
 
-            if (!(error.message && error.message.includes("Email not verified"))) {
+            if (!(error.message && error.message.includes("Email not verified"))) { // Avoid double popups for this specific case
                 showStylishPopup({ iconType: 'error', title: 'Request Failed', message: msg, buttons: [{text: 'OK', action: closeStylishPopup}]});
             }
             throw error;
@@ -1716,28 +1719,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function handleAuthResponse(data, source = "email") {
+    async function handleAuthResponse(data, source = "email", linkedGuestActivity = false) {
         closeAuthModal();
         localStorage.setItem('authToken', data.token);
         currentUser = data.user;
         localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser));
+        
+        if (linkedGuestActivity) {
+            localStorage.removeItem(GUEST_ID_KEY);
+            localStorage.removeItem(GUEST_NAME_KEY);
+            console.log("Guest ID and Name cleared after linking activity.");
+        }
         updateUIAfterLogin();
 
-        let msg = `Successfully logged in!`;
-        if (source === 'google') msg = 'Successfully logged in with Google!';
+        let msg = data.message || (source === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!');
+        if (linkedGuestActivity) {
+            msg += " Your previous guest activity has been linked to this account.";
+        }
         
         let type = 'success';
-        if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-            msg = `Account created for ${currentUser.name}! Please check your email to verify your account and unlock all features.`;
+        // Use message from signup API if available (it often contains "Please verify your email")
+        if (currentUser.loginMethod === 'email' && !currentUser.isVerified && data.message && data.message.toLowerCase().includes("verify")) {
             type = 'warning';
-            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'flex';
-            if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'flex';
-        } else {
-            if (emailVerificationPrompt) emailVerificationPrompt.style.display = 'none';
-            if (feedbackVerificationPrompt) feedbackVerificationPrompt.style.display = 'none';
+        } else if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+             msg = `Account created for ${currentUser.name}! Please check your email to verify your account.`;
+             if (linkedGuestActivity) msg += " Your previous guest activity has also been linked.";
+             type = 'warning';
         }
+        
         showStylishPopup({ iconType: type, title: `Welcome, ${currentUser.name}!`, message: msg, buttons: [{text: 'Awesome!', action: closeStylishPopup}] });
         await fetchFeedbacks();
+    }
+
+    async function processSignup(name, email, password, signupButton) {
+        const guestId = localStorage.getItem(GUEST_ID_KEY);
+        const guestName = localStorage.getItem(GUEST_NAME_KEY);
+        let linkGuestId = null;
+
+        if (guestId && guestName) {
+            return new Promise(resolveOuter => {
+                showStylishPopup({
+                    iconType: 'confirm',
+                    title: 'Link Guest Activity?',
+                    message: `You have previous activity as Guest: "${guestName}". Do you want to link this activity to your new account?`,
+                    buttons: [
+                        {
+                            text: 'Yes, Link',
+                            action: async () => {
+                                linkGuestId = guestId;
+                                closeStylishPopup();
+                                resolveOuter(linkGuestId);
+                            }
+                        },
+                        {
+                            text: 'No, Fresh Account',
+                            action: () => {
+                                localStorage.removeItem(GUEST_ID_KEY); 
+                                localStorage.removeItem(GUEST_NAME_KEY);
+                                closeStylishPopup();
+                                resolveOuter(null); 
+                            }
+                        }
+                    ]
+                });
+            }).then(async (idToLink) => {
+                const payload = { name, email, password };
+                if (idToLink) {
+                    payload.linkGuestId = idToLink;
+                }
+                const data = await apiRequest(API_SIGNUP_URL, 'POST', payload, false, signupButton, "Signing up...");
+                handleAuthResponse(data, "email", !!idToLink);
+            });
+        } else {
+            const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }, false, signupButton, "Signing up...");
+            handleAuthResponse(data, "email", false);
+        }
     }
 
     if (busiconEmailLoginForm) busiconEmailLoginForm.addEventListener('submit', async e => {
@@ -1758,46 +1814,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = busiconModalSignupEmailInput.value.trim();
         const password = busiconModalSignupPasswordInput.value;
         const confirmPassword = busiconModalSignupConfirmPasswordInput.value;
+
         if (!name || !email || !password || !confirmPassword) return showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'Please fill in all fields.', buttons: [{text:'OK', action: closeStylishPopup}] });
         if (password !== confirmPassword) return showStylishPopup({ iconType: 'error', title: 'Password Mismatch!', message: 'Passwords do not match.', buttons: [{text:'OK', action: closeStylishPopup}] });
         if (password.length < 6) return showStylishPopup({ iconType: 'error', title: 'Weak Password!', message: 'Password must be at least 6 characters long.', buttons: [{text:'OK', action: closeStylishPopup}] });
+        
         try {
             const signupButton = busiconEmailSignupForm.querySelector('button[type="submit"]');
-            const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }, false, signupButton, "Signing up...");
-            handleAuthResponse(data, "email");
-        } catch (error) { /* handled by apiRequest */ }
+            await processSignup(name, email, password, signupButton);
+        } catch (error) { /* Error handled by apiRequest or processSignup */ }
     });
 
     let googleLoginPopupTimeout;
-    const triggerGoogleSignIn = () => {
+    const triggerGoogleSignIn = (isSignupContext = false) => {
         closeAuthModal();
         if (userProfileModal) userProfileModal.classList.remove('active');
-        showStylishPopup({
-            iconType: 'google', icon: 'fa-google', title: 'Connecting with Google...',
-            message: 'The Google sign-in prompt should appear shortly. <br><br>If it doesn\'t, please ensure popups are not blocked by your browser.',
-            buttons: [{ text: 'Cancel', action: () => { clearTimeout(googleLoginPopupTimeout); closeStylishPopup(); console.log("Google Sign-In attempt cancelled by user."); } }]
-        });
-        googleLoginPopupTimeout = setTimeout(() => {}, 7000);
-        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-            google.accounts.id.prompt(notification => {
-                clearTimeout(googleLoginPopupTimeout);
-                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                    console.warn('Google Sign-In prompt not displayed or skipped.', notification.getNotDisplayedReason(), notification.getSkippedReason());
-                    closeStylishPopup();
-                    showStylishPopup({ iconType: 'warning', title: 'Google Sign-In Issue', message: 'The Google Sign-In prompt could not be displayed. This might be due to browser settings, ad blockers, or trying too frequently. Please try again later or use email login.', buttons: [{text: 'OK', action: closeStylishPopup}] });
-                } else if (notification.isDismissedMoment()) {
-                    console.log("Google Sign-In prompt dismissed by user.");
-                    closeStylishPopup();
-                }
+        
+        const guestId = localStorage.getItem(GUEST_ID_KEY);
+        const guestName = localStorage.getItem(GUEST_NAME_KEY);
+
+        const showGooglePrompt = (linkGuestIdForGoogle = null) => {
+            showStylishPopup({
+                iconType: 'google', icon: 'fa-google', title: 'Connecting with Google...',
+                message: 'The Google sign-in prompt should appear shortly. <br><br>If it doesn\'t, please ensure popups are not blocked by your browser.',
+                buttons: [{ text: 'Cancel', action: () => { clearTimeout(googleLoginPopupTimeout); closeStylishPopup(); console.log("Google Sign-In attempt cancelled by user."); sessionStorage.removeItem('temp_linkGuestId'); } }]
+            });
+            googleLoginPopupTimeout = setTimeout(() => {}, 7000);
+
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                sessionStorage.setItem('temp_linkGuestId', linkGuestIdForGoogle || ''); 
+                google.accounts.id.prompt(notification => {
+                    clearTimeout(googleLoginPopupTimeout);
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        console.warn('Google Sign-In prompt not displayed or skipped.', notification.getNotDisplayedReason(), notification.getSkippedReason());
+                        closeStylishPopup();
+                        showStylishPopup({ iconType: 'warning', title: 'Google Sign-In Issue', message: 'The Google Sign-In prompt could not be displayed. This might be due to browser settings, ad blockers, or trying too frequently. Please try again later or use email login.', buttons: [{text: 'OK', action: closeStylishPopup}] });
+                        sessionStorage.removeItem('temp_linkGuestId');
+                    } else if (notification.isDismissedMoment()) {
+                        console.log("Google Sign-In prompt dismissed by user.");
+                        closeStylishPopup();
+                        sessionStorage.removeItem('temp_linkGuestId');
+                    }
+                });
+            } else { 
+                clearTimeout(googleLoginPopupTimeout); closeStylishPopup();
+                showStylishPopup({ iconType: 'error', title: 'Google Sign-In Error', message: 'Google Sign-In is not available at the moment. Please try again later or use email login.', buttons: [{text: 'OK', action: closeStylishPopup}] });
+            }
+        };
+
+        if (guestId && guestName && isSignupContext) { 
+            showStylishPopup({
+                iconType: 'confirm', title: 'Link Guest Activity?',
+                message: `You have previous activity as Guest: "${guestName}". Do you want to link this activity to your Google account?`,
+                buttons: [
+                    { text: 'Yes, Link', action: () => { closeStylishPopup(); showGooglePrompt(guestId); } },
+                    { text: 'No, Fresh Account', action: () => { 
+                        localStorage.removeItem(GUEST_ID_KEY); localStorage.removeItem(GUEST_NAME_KEY); 
+                        closeStylishPopup(); showGooglePrompt(null); 
+                    }}
+                ]
             });
         } else {
-            clearTimeout(googleLoginPopupTimeout); closeStylishPopup();
-            showStylishPopup({ iconType: 'error', title: 'Google Sign-In Error', message: 'Google Sign-In is not available at the moment. Please try again later or use email login.', buttons: [{text: 'OK', action: closeStylishPopup}] });
+            showGooglePrompt(null);
         }
     };
 
-    if (busiconGoogleLoginBtn) busiconGoogleLoginBtn.onclick = triggerGoogleSignIn;
-    if (busiconGoogleSignupBtn) busiconGoogleSignupBtn.onclick = triggerGoogleSignIn;
+    if (busiconGoogleLoginBtn) busiconGoogleLoginBtn.onclick = () => triggerGoogleSignIn(false);
+    if (busiconGoogleSignupBtn) busiconGoogleSignupBtn.onclick = () => triggerGoogleSignIn(true);
 
     window.onload = () => {
         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
@@ -1805,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             console.error("Google Identity Services script not loaded. Google Sign-In will not work.");
         }
-        checkLoginStatus(); // This will call updateUIAfterLogout or updateUIAfterLogin
+        checkLoginStatus();
         if (ownerInfoEl) setTimeout(() => ownerInfoEl.classList.add('animate-in'), 200);
         if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);
         if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
@@ -1813,9 +1896,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function handleGoogleCredentialResponse(response) {
         closeStylishPopup(); showFullScreenLoader();
+        const linkGuestId = sessionStorage.getItem('temp_linkGuestId');
+        sessionStorage.removeItem('temp_linkGuestId'); 
+
+        const payload = { token: response.credential };
+        if (linkGuestId) {
+            payload.linkGuestId = linkGuestId;
+        }
         try {
-            const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', { token: response.credential }, false, null, "Signing in with Google...");
-            handleAuthResponse(data, "google");
+            const data = await apiRequest(API_GOOGLE_SIGNIN_URL, 'POST', payload, false, null, "Signing in with Google...");
+            handleAuthResponse(data, "google", !!linkGuestId);
         } catch (error) {} finally { hideFullScreenLoader(); }
     }
 
@@ -1839,10 +1929,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (cachedUserJSON !== freshUserDataJSON) {
                     currentUser = freshUserData; localStorage.setItem(USER_PROFILE_CACHE_KEY, freshUserDataJSON); updateUIAfterLogin();
                 } else if (!userLoadedFromCache) { currentUser = freshUserData; updateUIAfterLogin(); }
-            } catch (error) {
-                localStorage.removeItem('authToken'); localStorage.removeItem(USER_PROFILE_CACHE_KEY); currentUser = null; updateUIAfterLogout();
+            } catch (error) { 
+                localStorage.removeItem('authToken'); 
+                localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+                localStorage.removeItem(GUEST_ID_KEY); 
+                localStorage.removeItem(GUEST_NAME_KEY);
+                currentUser = null; 
+                updateUIAfterLogout();
+                resetFeedbackForm();
             }
-        } else { localStorage.removeItem(USER_PROFILE_CACHE_KEY); currentUser = null; updateUIAfterLogout(); }
+        } else { 
+            localStorage.removeItem(USER_PROFILE_CACHE_KEY); // Ensure this is cleared if no token
+            // Guest keys are not cleared here; they persist for guest sessions until explicit logout or account linking.
+            currentUser = null; 
+            updateUIAfterLogout(); 
+            resetFeedbackForm();
+        }
         await fetchFeedbacks();
     }
 
@@ -1859,7 +1961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (nameInputInFeedbackForm) {
             nameInputInFeedbackForm.value = currentUser.name;
-            nameInputInFeedbackForm.disabled = true;
+            nameInputInFeedbackForm.disabled = true; 
             nameInputInFeedbackForm.dispatchEvent(new Event('input'));
         }
 
@@ -1896,8 +1998,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (userMenu) userMenu.classList.remove('active'); if (userProfileModal) userProfileModal.classList.remove('active');
         
         if (nameInputInFeedbackForm) {
-            nameInputInFeedbackForm.value = '';
-            nameInputInFeedbackForm.disabled = false;
+            const storedGuestName = localStorage.getItem(GUEST_NAME_KEY); 
+            nameInputInFeedbackForm.value = storedGuestName || ''; 
+            nameInputInFeedbackForm.disabled = false; 
             nameInputInFeedbackForm.placeholder = ' ';
             nameInputInFeedbackForm.dispatchEvent(new Event('input'));
         }
@@ -1907,12 +2010,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (feedbackFormContainer) feedbackFormContainer.style.display = 'block';
         
         [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => { if (el) el.disabled = true; });
-        localStorage.removeItem(USER_PROFILE_CACHE_KEY);
         
         if (submitButton) {
-            submitButton.disabled = false; // Guests can submit
+            submitButton.disabled = false;
         }
-        resetFeedbackForm();
     }
 
     if (menuLogoutLink) menuLogoutLink.addEventListener('click', e => {
@@ -1924,9 +2025,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     text: 'Logout', addSpinnerOnClick: true, spinnerText: 'Logging out...',
                     action: async () => {
                         await new Promise(resolve => setTimeout(resolve, 500));
-                        localStorage.removeItem('authToken'); currentUser = null;
+                        localStorage.removeItem('authToken'); 
+                        localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+                        localStorage.removeItem(GUEST_ID_KEY); 
+                        localStorage.removeItem(GUEST_NAME_KEY);
+                        currentUser = null;
                         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
                         updateUIAfterLogout();
+                        resetFeedbackForm(); 
                         closeStylishPopup();
                         showStylishPopup({ iconType: 'info', title: 'Logged Out', message: 'You have been successfully logged out.', buttons: [{text:'OK', action: closeStylishPopup}] });
                         fetchFeedbacks();
@@ -1939,230 +2045,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (menuViewProfileLink) menuViewProfileLink.addEventListener('click', e => { e.preventDefault(); if (userMenu) userMenu.classList.remove('active'); if (userProfileModal) userProfileModal.classList.add('active'); updateUIAfterLogin(); });
     
-    async function requestAndShowVerificationEmail() {
-        if (!currentUser || currentUser.isVerified) return;
-        try {
-            const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {});
-            showStylishPopup({iconType: 'success', title: 'Verification Link Sent!', message: `${data.message} Please check your inbox (and spam folder).`, buttons: [{text: 'OK', action: closeStylishPopup}]});
-        } catch (error) { /* Handled by apiRequest */ }
-    }
-    
+    async function requestAndShowVerificationEmail() { if (!currentUser || currentUser.isVerified) return; try { const data = await apiRequest(API_REQUEST_VERIFICATION_URL, 'POST', {}); showStylishPopup({iconType: 'success', title: 'Verification Link Sent!', message: `${data.message} Please check your inbox (and spam folder).`, buttons: [{text: 'OK', action: closeStylishPopup}]}); } catch (error) {} }
     if (sendVerificationEmailBtn) sendVerificationEmailBtn.addEventListener('click', async (event) => { await requestAndShowVerificationEmail(); });
     if (sendVerificationEmailBtnForm) sendVerificationEmailBtnForm.addEventListener('click', async (event) => { await requestAndShowVerificationEmail(); });
 
     if (profileEditForm) {
-        profileEditForm.addEventListener('input', () => {
-            if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) {
-                saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name);
-            } else {
-                saveProfileChangesBtn.disabled = true;
-            }
-        });
-        profileEditForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to save changes.', buttons: [{text:'OK', action: closeStylishPopup}] });
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                return showStylishPopup({
-                    iconType: 'warning', title: 'Email Verification Required',
-                    message: 'Please verify your email to update your profile. Would you like to resend the verification email?',
-                    buttons: [ { text: 'Send Verification Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
-                });
-            }
-            const newName = profileNameInput.value.trim();
-            if (!newName) return showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Name cannot be empty.', buttons: [{text:'OK', action: closeStylishPopup}] });
-            if (currentUser.loginMethod === 'google' && newName !== currentUser.name) {
-                return showStylishPopup({ iconType: 'info', title: 'Google User', message: 'Your name is managed by your Google account and cannot be changed here.', buttons: [{text:'OK', action: closeStylishPopup}] });
-            }
-            if (newName === currentUser.name) { saveProfileChangesBtn.disabled = true; return; }
-            try {
-                const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName }, false, saveProfileChangesBtn, "Saving...");
-                if (data.token) localStorage.setItem('authToken', data.token);
-                currentUser = { ...currentUser, ...data.user };
-                localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser));
-                if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                updateUIAfterLogin();
-                showStylishPopup({ iconType: 'success', title: 'Profile Updated!', message: data.message || 'Your profile name has been updated successfully!', buttons: [{text:'OK', action: closeStylishPopup}] });
-            } catch (error) { /* Handled by apiRequest */ }
-        });
+        profileEditForm.addEventListener('input', () => { if (currentUser && currentUser.loginMethod === 'email' && currentUser.isVerified) { saveProfileChangesBtn.disabled = (profileNameInput.value.trim() === currentUser.name); } else { saveProfileChangesBtn.disabled = true; } });
+        profileEditForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to save changes.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to update your profile. Would you like to resend the verification email?', buttons: [ { text: 'Send Verification Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ] }); } const newName = profileNameInput.value.trim(); if (!newName) return showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Name cannot be empty.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (currentUser.loginMethod === 'google' && newName !== currentUser.name) { return showStylishPopup({ iconType: 'info', title: 'Google User', message: 'Your name is managed by your Google account and cannot be changed here.', buttons: [{text:'OK', action: closeStylishPopup}] }); } if (newName === currentUser.name) { saveProfileChangesBtn.disabled = true; return; } try { const data = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName }, false, saveProfileChangesBtn, "Saving..."); if (data.token) localStorage.setItem('authToken', data.token); currentUser = { ...currentUser, ...data.user }; localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser)); if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; updateUIAfterLogin(); showStylishPopup({ iconType: 'success', title: 'Profile Updated!', message: data.message || 'Your profile name has been updated successfully!', buttons: [{text:'OK', action: closeStylishPopup}] }); } catch (error) { } });
     }
-
-    if (avatarUploadInput) avatarUploadInput.addEventListener('change', () => {
-        if (avatarUploadInput.files.length > 0) {
-            if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                showStylishPopup({
-                    iconType: 'warning', title: 'Email Verification Required',
-                    message: 'Please verify your email to upload a new avatar. Would you like to resend the verification email?',
-                    buttons: [ { text: 'Send Email', addSpinnerOnClick: true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
-                });
-                avatarUploadInput.value = ''; return;
-            }
-            const reader = new FileReader();
-            reader.onload = e => profileDisplayAvatar.src = e.target.result;
-            reader.readAsDataURL(avatarUploadInput.files[0]);
-            if (uploadAvatarNowBtn) { uploadAvatarNowBtn.style.display = 'block'; uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar'; }
-            if (saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
-        } else {
-            if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-            if (currentUser) {
-                profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`;
-                if (profileEditForm) profileEditForm.dispatchEvent(new Event('input'));
-            }
-        }
-    });
-
-    if (uploadAvatarNowBtn) uploadAvatarNowBtn.addEventListener('click', async () => {
-        if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to upload an avatar.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-             return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required!', message: 'Please verify your email to upload an avatar.', buttons: [{text:'OK', action: closeStylishPopup}]});
-        }
-        if (avatarUploadInput.files.length === 0) return showStylishPopup({ iconType: 'warning', title: 'No File Selected', message: 'Please select an image file to upload.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        const file = avatarUploadInput.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        const originalBtnHTML = uploadAvatarNowBtn.innerHTML;
-        uploadAvatarNowBtn.disabled = true;
-        uploadAvatarNowBtn.innerHTML = `<span class="nobi-spinner"></span> Uploading...`;
-        if(uploadProgressBar) uploadProgressBar.style.display = 'block';
-        if(progressFill) progressFill.style.width = '0%';
-        if(progressText) progressText.textContent = '0%';
-        try {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
-            xhr.upload.onprogress = e => {
-                if (e.lengthComputable) {
-                    const percent = (e.loaded / e.total) * 100;
-                    if(progressFill) progressFill.style.width = percent + '%';
-                    if(progressText) progressText.textContent = Math.round(percent) + '%';
-                }
-            };
-            await new Promise((resolve, reject) => {
-                xhr.onload = async () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const cloudRes = JSON.parse(xhr.responseText);
-                        const imgUrl = cloudRes.secure_url;
-                        try {
-                            const beRes = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: currentUser.name, avatarUrl: imgUrl });
-                            if (beRes.token) localStorage.setItem('authToken', beRes.token);
-                            currentUser = { ...currentUser, ...beRes.user };
-                            localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser));
-                            if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl;
-                            updateUIAfterLogin(); await fetchFeedbacks();
-                            avatarUploadInput.value = '';
-                            if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-                            showStylishPopup({ iconType: 'success', title: 'Avatar Updated!', message: 'Your new avatar has been uploaded and saved.', buttons: [{text:'OK', action: closeStylishPopup}] });
-                            resolve();
-                        } catch (beError) { reject(beError); }
-                    } else { const errRes = JSON.parse(xhr.responseText); reject(new Error(errRes.error.message || 'Cloudinary upload failed.')); }
-                };
-                xhr.onerror = () => reject(new Error('Network error during avatar upload.'));
-                xhr.send(formData);
-            });
-        } catch (error) {
-            showStylishPopup({ iconType: 'error', title: 'Upload Error!', message: error.message || 'Failed to upload avatar. Please try again.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        } finally {
-            uploadAvatarNowBtn.disabled = false;
-            uploadAvatarNowBtn.innerHTML = originalBtnHTML;
-            if(uploadProgressBar) uploadProgressBar.style.display = 'none';
-        }
-    });
-
-    if (changePasswordForm) changePasswordForm.addEventListener('submit', async e => {
-        e.preventDefault();
-        if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to change your password.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (currentUser.loginMethod === 'google') return showStylishPopup({ iconType: 'info', title: 'Google User', message: 'Password changes for Google accounts are managed through Google.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-             return showStylishPopup({
-                iconType: 'warning', title: 'Email Verification Required',
-                message: 'Please verify your email to change your password. Resend verification email?',
-                buttons: [ { text: 'Send Email', addSpinnerOnClick: true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
-            });
-        }
-        const curPw = currentPasswordInput.value;
-        const newPw = newPasswordProfileInput.value;
-        const confNewPw = confirmNewPasswordProfileInput.value;
-        if (!curPw || !newPw || !confNewPw) return showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'All password fields are required.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (newPw !== confNewPw) return showStylishPopup({ iconType: 'error', title: 'Password Mismatch!', message: 'The new passwords do not match.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (newPw.length < 6) return showStylishPopup({ iconType: 'error', title: 'Weak Password!', message: 'Your new password must be at least 6 characters long.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        if (curPw === newPw) return showStylishPopup({ iconType: 'warning', title: 'Same Password!', message: 'Your new password cannot be the same as your current password.', buttons: [{text:'OK', action: closeStylishPopup}] });
-        try {
-            const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword: curPw, newPassword: newPw }, false, changePasswordBtn, "Changing Password...");
-            showStylishPopup({ iconType: 'success', title: 'Password Changed!', message: data.message || 'Your password has been successfully changed.', buttons: [{text:'OK', action: closeStylishPopup}] });
-            [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => { inp.value = ''; inp.dispatchEvent(new Event('input')); });
-        } catch (error) { /* Handled by apiRequest */ }
-    });
-
+    if (avatarUploadInput) {
+        avatarUploadInput.addEventListener('change', () => { if (avatarUploadInput.files.length > 0) { if (currentUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) { showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to upload a new avatar. Would you like to resend the verification email?', buttons: [ { text: 'Send Email', addSpinnerOnClick: true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ] }); avatarUploadInput.value = ''; return; } const reader = new FileReader(); reader.onload = e => profileDisplayAvatar.src = e.target.result; reader.readAsDataURL(avatarUploadInput.files[0]); if (uploadAvatarNowBtn) { uploadAvatarNowBtn.style.display = 'block'; uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar'; } if (saveProfileChangesBtn) saveProfileChangesBtn.disabled = true; } else { if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; if (currentUser) { profileDisplayAvatar.src = currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(currentUser.name.charAt(0).toUpperCase())}`; if (profileEditForm) profileEditForm.dispatchEvent(new Event('input')); } } });
+    }
+    if (uploadAvatarNowBtn) {
+        uploadAvatarNowBtn.addEventListener('click', async () => { if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to upload an avatar.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required!', message: 'Please verify your email to upload an avatar.', buttons: [{text:'OK', action: closeStylishPopup}]}); } if (avatarUploadInput.files.length === 0) return showStylishPopup({ iconType: 'warning', title: 'No File Selected', message: 'Please select an image file to upload.', buttons: [{text:'OK', action: closeStylishPopup}] }); const file = avatarUploadInput.files[0]; const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); const originalBtnHTML = uploadAvatarNowBtn.innerHTML; uploadAvatarNowBtn.disabled = true; uploadAvatarNowBtn.innerHTML = `<span class="nobi-spinner"></span> Uploading...`; if(uploadProgressBar) uploadProgressBar.style.display = 'block'; if(progressFill) progressFill.style.width = '0%'; if(progressText) progressText.textContent = '0%'; try { const xhr = new XMLHttpRequest(); xhr.open('POST', CLOUDINARY_UPLOAD_URL, true); xhr.upload.onprogress = e => { if (e.lengthComputable) { const percent = (e.loaded / e.total) * 100; if(progressFill) progressFill.style.width = percent + '%'; if(progressText) progressText.textContent = Math.round(percent) + '%'; } }; await new Promise((resolve, reject) => { xhr.onload = async () => { if (xhr.status >= 200 && xhr.status < 300) { const cloudRes = JSON.parse(xhr.responseText); const imgUrl = cloudRes.secure_url; try { const beRes = await apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: currentUser.name, avatarUrl: imgUrl }); if (beRes.token) localStorage.setItem('authToken', beRes.token); currentUser = { ...currentUser, ...beRes.user }; localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser)); if (profileDisplayAvatar) profileDisplayAvatar.src = currentUser.avatarUrl; updateUIAfterLogin(); await fetchFeedbacks(); avatarUploadInput.value = ''; if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none'; showStylishPopup({ iconType: 'success', title: 'Avatar Updated!', message: 'Your new avatar has been uploaded and saved.', buttons: [{text:'OK', action: closeStylishPopup}] }); resolve(); } catch (beError) { reject(beError); } } else { const errRes = JSON.parse(xhr.responseText); reject(new Error(errRes.error.message || 'Cloudinary upload failed.')); } }; xhr.onerror = () => reject(new Error('Network error during avatar upload.')); xhr.send(formData); }); } catch (error) { showStylishPopup({ iconType: 'error', title: 'Upload Error!', message: error.message || 'Failed to upload avatar. Please try again.', buttons: [{text:'OK', action: closeStylishPopup}] }); } finally { uploadAvatarNowBtn.disabled = false; uploadAvatarNowBtn.innerHTML = originalBtnHTML; if(uploadProgressBar) uploadProgressBar.style.display = 'none'; } });
+    }
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async e => { e.preventDefault(); if (!currentUser) return showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to change your password.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (currentUser.loginMethod === 'google') return showStylishPopup({ iconType: 'info', title: 'Google User', message: 'Password changes for Google accounts are managed through Google.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to change your password. Resend verification email?', buttons: [ { text: 'Send Email', addSpinnerOnClick: true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ] }); } const curPw = currentPasswordInput.value; const newPw = newPasswordProfileInput.value; const confNewPw = confirmNewPasswordProfileInput.value; if (!curPw || !newPw || !confNewPw) return showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'All password fields are required.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (newPw !== confNewPw) return showStylishPopup({ iconType: 'error', title: 'Password Mismatch!', message: 'The new passwords do not match.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (newPw.length < 6) return showStylishPopup({ iconType: 'error', title: 'Weak Password!', message: 'Your new password must be at least 6 characters long.', buttons: [{text:'OK', action: closeStylishPopup}] }); if (curPw === newPw) return showStylishPopup({ iconType: 'warning', title: 'Same Password!', message: 'Your new password cannot be the same as your current password.', buttons: [{text:'OK', action: closeStylishPopup}] }); try { const data = await apiRequest(API_CHANGE_PASSWORD_URL, 'POST', { currentPassword: curPw, newPassword: newPw }, false, changePasswordBtn, "Changing Password..."); showStylishPopup({ iconType: 'success', title: 'Password Changed!', message: data.message || 'Your password has been successfully changed.', buttons: [{text:'OK', action: closeStylishPopup}] }); [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => { inp.value = ''; inp.dispatchEvent(new Event('input')); }); } catch (error) { } });
+    }
     starsElements.forEach(star => {
         star.addEventListener('click', () => { const value = parseInt(star.dataset.value); currentSelectedRating = value; ratingInput.value = value; updateStarVisuals(value); });
         star.addEventListener('mouseover', () => { const value = parseInt(star.dataset.value); updateStarVisuals(value, true); });
         star.addEventListener('mouseout', () => { updateStarVisuals(currentSelectedRating); });
     });
-    function updateStarVisuals(val, isHover = false) { starsElements.forEach(s => { const sVal = parseInt(s.dataset.value); if (isHover) { if (sVal <= val) s.classList.add('highlighted'); else s.classList.remove('highlighted'); s.classList.remove('selected'); } else { if (sVal <= val) s.classList.add('selected'); else s.classList.remove('selected'); s.classList.remove('highlighted'); } }); }
+    function updateStarVisuals(val, isHover = false) {
+        starsElements.forEach(s => { const sVal = parseInt(s.dataset.value); if (isHover) { if (sVal <= val) s.classList.add('highlighted'); else s.classList.remove('highlighted'); s.classList.remove('selected'); } else { if (sVal <= val) s.classList.add('selected'); else s.classList.remove('selected'); s.classList.remove('highlighted'); } });
+    }
+    if (enhanceFeedbackBtn) {
+        enhanceFeedbackBtn.addEventListener('click', async () => { const originalFeedback = feedbackTextarea.value.trim(); if (!originalFeedback) return showStylishPopup({iconType: 'warning', title: 'Empty Feedback', message: 'Write some feedback first, then enhance it!', buttons: [{text:'OK', action: closeStylishPopup}]}); const originalBtnText = enhanceFeedbackBtn.innerHTML; enhanceFeedbackBtn.disabled = true; enhanceFeedbackBtn.innerHTML = `<span class="nobi-spinner"></span> Enhancing...`; try { const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`; const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] }; const apiKey = ""; /* IMPORTANT: Key should be on backend */ const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) { const errorData = await response.json(); console.error("Gemini API error:", errorData); throw new Error(errorData.error?.message || "Failed to enhance feedback due to API error."); } const result = await response.json(); let enhancedText = originalFeedback; if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) { enhancedText = result.candidates[0].content.parts[0].text; showStylishPopup({iconType: 'success', title: 'Feedback Enhanced!', message: 'AI has helped refine your feedback.', buttons: [{text:'OK', action: closeStylishPopup}]}); } else { console.warn("Gemini API response issue or no text found:", result); showStylishPopup({iconType: 'warning', title: 'Enhancement Issue', message: 'Could not get a refined version from AI. Using original feedback.', buttons: [{text:'OK', action: closeStylishPopup}]}); } feedbackTextarea.value = enhancedText; feedbackTextarea.dispatchEvent(new Event('input')); } catch (error) { console.error("Error enhancing feedback:", error); showStylishPopup({iconType: 'error', title: 'Enhancement Failed', message: `An error occurred: ${error.message}. Please try again later.`, buttons: [{text:'OK', action: closeStylishPopup}]}); } finally { enhanceFeedbackBtn.disabled = false; enhanceFeedbackBtn.innerHTML = originalBtnText; } });
+    } else { console.error("Enhance feedback button not found!");}
 
-    if (enhanceFeedbackBtn) enhanceFeedbackBtn.addEventListener('click', async () => {
-        const originalFeedback = feedbackTextarea.value.trim();
-        if (!originalFeedback) return showStylishPopup({iconType: 'warning', title: 'Empty Feedback', message: 'Write some feedback first, then enhance it!', buttons: [{text:'OK', action: closeStylishPopup}]});
-        const originalBtnText = enhanceFeedbackBtn.innerHTML;
-        enhanceFeedbackBtn.disabled = true;
-        enhanceFeedbackBtn.innerHTML = `<span class="nobi-spinner"></span> Enhancing...`;
-        try {
-            const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            const apiKey = ""; // IMPORTANT: This key should NOT be in client-side code. Move to backend.
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) {
-                const errorData = await response.json(); console.error("Gemini API error:", errorData);
-                throw new Error(errorData.error?.message || "Failed to enhance feedback due to API error.");
-            }
-            const result = await response.json();
-            let enhancedText = originalFeedback;
-            if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-                enhancedText = result.candidates[0].content.parts[0].text;
-                 showStylishPopup({iconType: 'success', title: 'Feedback Enhanced!', message: 'AI has helped refine your feedback.', buttons: [{text:'OK', action: closeStylishPopup}]});
-            } else {
-                console.warn("Gemini API response issue or no text found:", result);
-                showStylishPopup({iconType: 'warning', title: 'Enhancement Issue', message: 'Could not get a refined version from AI. Using original feedback.', buttons: [{text:'OK', action: closeStylishPopup}]});
-            }
-            feedbackTextarea.value = enhancedText;
-            feedbackTextarea.dispatchEvent(new Event('input'));
-        } catch (error) {
-            console.error("Error enhancing feedback:", error);
-            showStylishPopup({iconType: 'error', title: 'Enhancement Failed', message: `An error occurred: ${error.message}. Please try again later.`, buttons: [{text:'OK', action: closeStylishPopup}]});
-        } finally {
-            enhanceFeedbackBtn.disabled = false;
-            enhanceFeedbackBtn.innerHTML = originalBtnText;
-        }
-    }); else console.error("Enhance feedback button not found!");
-
-    // CORRECTED submitButton event listener for GUEST FEEDBACK
     if (submitButton) submitButton.addEventListener('click', async () => {
         const feedbackContent = feedbackTextarea.value.trim();
         const ratingValue = ratingInput.value;
         let nameValue;
+        let guestId = localStorage.getItem(GUEST_ID_KEY);
+        let storedGuestName = localStorage.getItem(GUEST_NAME_KEY);
 
-        if (currentUser) {
-            nameValue = currentUser.name; // Name from logged-in user
-            // For logged-in email users who are not verified, show verification prompt if they try to submit.
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                if (feedbackVerificationPrompt && feedbackVerificationPrompt.style.display !== 'flex') {
-                    feedbackVerificationPrompt.style.display = 'flex'; // Show it if hidden
-                }
-                return showStylishPopup({
-                    iconType: 'warning',
-                    title: 'Email Verification Required',
-                    message: 'Please verify your email to ensure your feedback is linked to your verified account. You can also send feedback as a guest if you log out.',
-                    buttons: [
-                        { text: 'Send Verification Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await requestAndShowVerificationEmail(); } },
-                        { text: 'OK', action: closeStylishPopup }
-                    ]
-                });
-            }
+        if (currentUser) { // Logged-in user
+            nameValue = currentUser.name;
+            // Removed the block that showed "Email Verification Required" for submitting feedback.
+            // Unverified logged-in users can now submit feedback.
+            // Verification might still be required for other actions like editing.
         } else { // Guest user
-            nameValue = nameInputInFeedbackForm.value.trim(); // Name from input field for guest
-            if (!nameValue) { // Require name for guests
+            nameValue = nameInputInFeedbackForm.value.trim();
+            if (!nameValue) {
                 return showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Please enter your name to submit feedback as a guest.', buttons: [{text:'OK', action: closeStylishPopup}] });
             }
+            if (!guestId || (guestId && storedGuestName !== nameValue)) {
+                guestId = generateUUID(); 
+                localStorage.setItem(GUEST_ID_KEY, guestId);
+                localStorage.setItem(GUEST_NAME_KEY, nameValue);
+                storedGuestName = nameValue; 
+                console.log(`New/Updated Guest Session: ID=${guestId}, Name=${nameValue}`);
+            }
+            if (nameInputInFeedbackForm.value !== nameValue) nameInputInFeedbackForm.value = nameValue;
         }
 
         if (!feedbackContent || ratingValue === '0') {
@@ -2170,31 +2106,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         let feedbackPayload = {
-            name: nameValue, // This 'name' will be sent to the backend.
+            name: nameValue,
             feedback: feedbackContent,
             rating: parseInt(ratingValue)
         };
 
+        if (!currentUser && guestId) {
+            feedbackPayload.guestId = guestId;
+        }
+
         const isSubmissionByLoggedInUser = !!currentUser;
-        // Editing is only for logged-in users' own feedback
         const url = (isEditing && isSubmissionByLoggedInUser) ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
         const method = (isEditing && isSubmissionByLoggedInUser) ? 'PUT' : 'POST';
 
-        // This check for editing remains specific to logged-in, verified users
+        // Email verification is still required for EDITING feedback if the user is email-based and unverified.
         if (isEditing && isSubmissionByLoggedInUser && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-             return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to edit your feedback.', buttons: [{text:'OK', action: closeStylishPopup}] });
+             return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback.', buttons: [{text:'OK', action: closeStylishPopup}] });
         }
         
         const spinnerText = (isEditing && isSubmissionByLoggedInUser) ? "Updating Feedback..." : "Submitting Feedback...";
         try {
-            // For guest submissions, apiRequest will not send an Authorization header if token is null (handled in apiRequest)
             const data = await apiRequest(url, method, feedbackPayload, false, submitButton, spinnerText);
             showStylishPopup({ iconType: 'success', title: (isEditing && isSubmissionByLoggedInUser) ? 'Feedback Updated!' : 'Feedback Submitted!', message: data.message || 'Thank you for your feedback!', buttons: [{text:'Great!', action: closeStylishPopup}] });
-            resetFeedbackForm(); // This needs to correctly set name field for guest or logged-in user
+            resetFeedbackForm();
             await fetchFeedbacks();
-        } catch (error) { /* Handled by apiRequest: it will show an error popup */ }
+        } catch (error) { /* Handled by apiRequest */ }
     });
-
 
     function resetFeedbackForm() {
         if (currentUser) {
@@ -2203,10 +2140,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 nameInputInFeedbackForm.disabled = true;
                 nameInputInFeedbackForm.dispatchEvent(new Event('input'));
             }
-        } else { // Guest
+        } else { 
             if (nameInputInFeedbackForm) {
-                nameInputInFeedbackForm.value = '';
-                nameInputInFeedbackForm.disabled = false; // Ensure enabled for guest
+                const storedGuestName = localStorage.getItem(GUEST_NAME_KEY);
+                nameInputInFeedbackForm.value = storedGuestName || ''; 
+                nameInputInFeedbackForm.disabled = false; 
                 nameInputInFeedbackForm.placeholder = ' ';
                 nameInputInFeedbackForm.dispatchEvent(new Event('input'));
             }
@@ -2216,10 +2154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (submitButton) {
             submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
-            submitButton.disabled = false; // Should always be enabled now for guests or logged-in users (verification check for logged-in users is inside the click handler)
+            submitButton.disabled = false; 
         }
         isEditing = false; currentEditFeedbackId = null;
-         // Hide verification prompt on form reset if user is not logged in or is verified
         if (feedbackVerificationPrompt && (!currentUser || (currentUser && currentUser.isVerified))) {
             feedbackVerificationPrompt.style.display = 'none';
         }
@@ -2243,7 +2180,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             feedbacksArray.forEach(addFeedbackToDOM);
         }
     }
-
     async function fetchFeedbacks() {
         try {
             const cachedFeedbacksJSON = localStorage.getItem(FEEDBACKS_CACHE_KEY);
@@ -2263,7 +2199,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage.setItem(FEEDBACKS_CACHE_KEY, freshFeedbacksJSON);
         } catch (err) { if (!localStorage.getItem(FEEDBACKS_CACHE_KEY)) renderFeedbackData([]); }
     }
-
     function updateAverageRating(avg, count) {
         if(!averageRatingDisplayEl) return;
         const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆';
@@ -2277,10 +2212,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const avatarImg = document.createElement('img');
         avatarImg.className = 'avatar-img';
-        const char = (fbData.name?.[0]?.toUpperCase() || 'G');
-        avatarImg.src = fbData.avatarUrl || `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`;
-        avatarImg.alt = fbData.name || 'Guest Avatar';
-        avatarImg.onerror = function () { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(char)}`; };
+        const charForAvatar = (fbData.name?.[0]?.toUpperCase() || 'G'); 
+        let avatarSource = fbData.avatarUrl;
+        if (!avatarSource && fbData.guestId) {
+             avatarSource = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent((fbData.name || 'guest').toLowerCase() + fbData.guestId)}&flip=true&radius=50&scale=90`;
+        } else if (!avatarSource) {
+             avatarSource = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`;
+        }
+        avatarImg.src = avatarSource;
+        avatarImg.alt = fbData.name || 'User Avatar';
+        avatarImg.onerror = function () { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`; };
         
         const detailsDiv = document.createElement('div'); detailsDiv.className = 'feedback-details';
         const strongName = document.createElement('strong');
@@ -2288,6 +2229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let typeTag = '', verTag = '';
 
         if (fbData.userId && typeof fbData.userId === 'object') {
+            nameDisplay = fbData.userId.name || fbData.name; 
             if (fbData.userId.isVerified) {
                 avatarImg.classList.add('verified-user');
             }
@@ -2297,9 +2239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (fbData.userId.loginMethod === 'email') {
                 verTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
             }
-        } else {
-             nameDisplay = fbData.name || 'Guest';
-             verTag = `<span class="unverified-tag-feedback" title="Guest Submission">Guest</span>`;
+        } else { 
+             nameDisplay = fbData.name || 'Guest'; 
+             verTag = `<span class="unverified-tag-feedback" title="Guest Submission${fbData.guestId ? ` (ID: ${fbData.guestId.substring(0,6)}...)` : ''}">Guest</span>`;
         }
 
         strongName.innerHTML = `${nameDisplay} ${typeTag} ${verTag}`;
@@ -2315,52 +2257,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const editBtn = document.createElement('button'); editBtn.className = 'edit-feedback-btn'; editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>'; editBtn.title = 'Edit your feedback';
         
-        const canEdit = currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === currentUser.userId &&
-                       (currentUser.loginMethod === 'google' || (currentUser.loginMethod === 'email' && currentUser.isVerified));
+        const isFeedbackOwner = currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === currentUser.userId;
+        const canEdit = isFeedbackOwner && (currentUser.loginMethod === 'google' || (currentUser.loginMethod === 'email' && currentUser.isVerified));
         
-        if (!fbData.userId || typeof fbData.userId !== 'object') {
-            editBtn.style.display = 'none';
-        } else {
+        if (fbData.userId && typeof fbData.userId === 'object') { 
             editBtn.disabled = !canEdit;
-            if (!canEdit && currentUser && fbData.userId._id === currentUser.userId && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
+            if (isFeedbackOwner && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                 editBtn.title = "Verify your email to edit this feedback.";
             }
+            item.appendChild(editBtn);
+
+            editBtn.onclick = e => { 
+                e.stopPropagation();
+                if (!isFeedbackOwner) {
+                     return showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{text:'OK', action: closeStylishPopup}] });
+                }
+                if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { // Still require verification for editing
+                    return showStylishPopup({
+                        iconType: 'warning', title: 'Email Verification Required',
+                        message: 'Please verify your email to *edit* your feedback. Resend verification email?',
+                        buttons: [ { text: 'Send Email', addSpinnerOnClick:true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
+                    });
+                }
+                if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.userId.name || fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
+                if(feedbackTextarea) {feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input'));}
+                currentSelectedRating = fbData.rating; if(ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
+                if(submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
+                isEditing = true; currentEditFeedbackId = fbData._id;
+                if (feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                showStylishPopup({iconType:'info', title:'Editing Feedback', message:'The form has been pre-filled. Make changes and click "Update Feedback".', buttons: [{text:'Got it!', action:closeStylishPopup}]});
+            };
+        } else { 
+            editBtn.style.display = 'none';
         }
-        // Only append edit button if the feedback is not from a guest (i.e. fbData.userId exists and is an object)
-        if (fbData.userId && typeof fbData.userId === 'object') {
-           item.appendChild(editBtn);
+
+        if (fbData.replies?.length > 0) {
+            const reply = fbData.replies[fbData.replies.length - 1]; if (reply?.text) { const replyDiv = document.createElement('div'); replyDiv.className = 'admin-reply'; const adminAva = document.createElement('img'); adminAva.className = 'admin-reply-avatar'; adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAva.alt = 'Admin'; const replyContent = document.createElement('div'); replyContent.className = 'admin-reply-content'; let replyTs = ''; try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')}`; } replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`; replyDiv.append(adminAva, replyContent); detailsDiv.appendChild(replyDiv); }
         }
-
-
-        editBtn.onclick = e => { // This onclick should ideally only be attached if the button is visible/relevant
-            e.stopPropagation();
-            // This check is important to prevent errors if somehow clicked on a hidden button for guest
-            if (!currentUser || !fbData.userId || typeof fbData.userId !== 'object' || fbData.userId._id !== currentUser.userId) {
-                 return showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{text:'OK', action: closeStylishPopup}] });
-            }
-            if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                return showStylishPopup({
-                    iconType: 'warning', title: 'Email Verification Required',
-                    message: 'Please verify your email to edit your feedback. Resend verification email?',
-                    buttons: [ { text: 'Send Email', addSpinnerOnClick:true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
-                });
-            }
-            if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
-            if(feedbackTextarea) {feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input'));}
-            currentSelectedRating = fbData.rating; if(ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
-            if(submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
-            isEditing = true; currentEditFeedbackId = fbData._id;
-            if (feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            showStylishPopup({iconType:'info', title:'Editing Feedback', message:'The form has been pre-filled with your feedback. Make your changes and click "Update Feedback".', buttons: [{text:'Got it!', action:closeStylishPopup}]});
-        };
-        // item.appendChild(editBtn); // Moved up
-
-        if (fbData.replies?.length > 0) { const reply = fbData.replies[fbData.replies.length - 1]; if (reply?.text) { const replyDiv = document.createElement('div'); replyDiv.className = 'admin-reply'; const adminAva = document.createElement('img'); adminAva.className = 'admin-reply-avatar'; adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; adminAva.alt = 'Admin'; const replyContent = document.createElement('div'); replyContent.className = 'admin-reply-content'; let replyTs = ''; try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')}`; } replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`; replyDiv.append(adminAva, replyContent); detailsDiv.appendChild(replyDiv); } }
         item.append(avatarImg, detailsDiv); feedbackListContainer.appendChild(item);
     }
 
-    updateUIAfterLogout();
-    resetFeedbackForm();
+    checkLoginStatus();
 });
 </script>
 </body>
