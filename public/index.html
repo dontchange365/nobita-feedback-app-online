@@ -1553,106 +1553,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function openLoginModal() {
-        if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) {
-            authModalOverlay.classList.add('active');
-            busiconLoginContainer.style.display = 'block';
-            busiconSignupContainer.style.display = 'none';
-            if (busiconModalLoginEmailInput) busiconModalLoginEmailInput.focus();
-        }
-    }
-
-    function openSignupModal() {
-        if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) {
-            authModalOverlay.classList.add('active');
-            busiconLoginContainer.style.display = 'none';
-            busiconSignupContainer.style.display = 'block';
-            if (busiconModalSignupNameInput) busiconModalSignupNameInput.focus();
-        }
-    }
-
-    function closeAuthModal() {
-        if (authModalOverlay) {
-            authModalOverlay.classList.remove('active');
-            if (busiconLoginContainer) busiconLoginContainer.style.display = 'none';
-            if (busiconSignupContainer) busiconSignupContainer.style.display = 'none';
-        }
-    }
-
-    if (document.getElementById('login-icon-trigger')) {
-        document.getElementById('login-icon-trigger').onclick = function () { openLoginModal(); };
-    }
-    if (document.getElementById('close-busicon-login-modal-btn')) {
-        document.getElementById('close-busicon-login-modal-btn').onclick = function () { closeAuthModal(); };
-    }
-    if (document.getElementById('close-busicon-signup-modal-btn')) {
-        document.getElementById('close-busicon-signup-modal-btn').onclick = function () { closeAuthModal(); };
-    }
-    if (document.getElementById('auth-modal-overlay')) {
-        document.getElementById('auth-modal-overlay').onclick = function (e) { if (e.target === this) { closeAuthModal(); } };
-    }
-
-    function togglePass(id, el) {
-        var input = document.getElementById(id);
-        if (!input || !el) return;
-        if (input.type === "password") {
-            input.type = "text";
-            el.innerHTML = '<i class="fas fa-eye"></i>';
-        } else {
-            input.type = "password";
-            el.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        }
-    }
+    function openLoginModal() { if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) { authModalOverlay.classList.add('active'); busiconLoginContainer.style.display = 'block'; busiconSignupContainer.style.display = 'none'; if (busiconModalLoginEmailInput) busiconModalLoginEmailInput.focus(); } }
+    function openSignupModal() { if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) { authModalOverlay.classList.add('active'); busiconLoginContainer.style.display = 'none'; busiconSignupContainer.style.display = 'block'; if (busiconModalSignupNameInput) busiconModalSignupNameInput.focus(); } }
+    function closeAuthModal() { if (authModalOverlay) { authModalOverlay.classList.remove('active'); if (busiconLoginContainer) busiconLoginContainer.style.display = 'none'; if (busiconSignupContainer) busiconSignupContainer.style.display = 'none'; } }
+    if (document.getElementById('login-icon-trigger')) document.getElementById('login-icon-trigger').onclick = function () { openLoginModal(); };
+    if (document.getElementById('close-busicon-login-modal-btn')) document.getElementById('close-busicon-login-modal-btn').onclick = function () { closeAuthModal(); };
+    if (document.getElementById('close-busicon-signup-modal-btn')) document.getElementById('close-busicon-signup-modal-btn').onclick = function () { closeAuthModal(); };
+    if (document.getElementById('auth-modal-overlay')) document.getElementById('auth-modal-overlay').onclick = function (e) { if (e.target === this) closeAuthModal(); };
+    
+    function togglePass(id, el) { var input = document.getElementById(id); if (!input || !el) return; if (input.type === "password") { input.type = "text"; el.innerHTML = '<i class="fas fa-eye"></i>'; } else { input.type = "password"; el.innerHTML = '<i class="fas fa-eye-slash"></i>'; } }
     window.togglePass = togglePass;
 
     function showStylishPopup(options = {}) {
-        if (!stylishPopupOverlay || !stylishPopupTitleEl || !stylishPopupMessageEl || !stylishPopupIconEl || !stylishPopupButtonContainer) {
-            const simpleMessage = (options.message || '').replace(/<p>|<\/p>|<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, '');
-            alert(`${options.title || 'Notice'}:\n${simpleMessage}`);
-            if (options.buttons && options.buttons.length === 1 && typeof options.buttons[0].action === 'function' && !options.buttons[0].addSpinnerOnClick) {
-                options.buttons[0].action();
-            } else if (!options.buttons && options.onConfirm && typeof options.onConfirm === 'function') {
-                options.onConfirm();
-            }
-            return;
-        }
-        stylishPopupIconEl.className = 'popup-icon-area';
-        if (options.iconType) stylishPopupIconEl.classList.add(options.iconType);
-        const iconsFA = { 'success': 'fa-check-circle', 'error': 'fa-times-circle', 'info': 'fa-info-circle', 'warning': 'fa-exclamation-triangle', 'confirm': 'fa-question-circle', 'forgot_password': 'fa-key', 'verify_email': 'fa-envelope-open-text', 'celebrate': 'fa-star', 'user-lock': 'fa-user-lock', 'google': 'fa-google' };
-        const iconClass = options.icon || iconsFA[options.iconType] || 'fa-info-circle';
-        stylishPopupIconEl.innerHTML = `<i class="fas ${iconClass}"></i>`;
-        stylishPopupTitleEl.textContent = options.title || 'Notice';
-        stylishPopupMessageEl.innerHTML = (options.message || '').startsWith('<p>') ? options.message : `<p>${options.message || ''}</p>`;
-        if (stylishPopupFormArea) {
-            stylishPopupFormArea.innerHTML = options.formHTML || '';
-            stylishPopupFormArea.style.display = options.formHTML ? 'block' : 'none';
-        }
+        if (!stylishPopupOverlay || !stylishPopupTitleEl || !stylishPopupMessageEl || !stylishPopupIconEl || !stylishPopupButtonContainer) { const simpleMessage = (options.message || '').replace(/<p>|<\/p>|<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, ''); alert(`${options.title || 'Notice'}:\n${simpleMessage}`); if (options.buttons && options.buttons.length === 1 && typeof options.buttons[0].action === 'function' && !options.buttons[0].addSpinnerOnClick) options.buttons[0].action(); else if (!options.buttons && options.onConfirm && typeof options.onConfirm === 'function') options.onConfirm(); return; }
+        stylishPopupIconEl.className = 'popup-icon-area'; if (options.iconType) stylishPopupIconEl.classList.add(options.iconType); const iconsFA = { 'success': 'fa-check-circle', 'error': 'fa-times-circle', 'info': 'fa-info-circle', 'warning': 'fa-exclamation-triangle', 'confirm': 'fa-question-circle', 'forgot_password': 'fa-key', 'verify_email': 'fa-envelope-open-text', 'celebrate': 'fa-star', 'user-lock': 'fa-user-lock', 'google': 'fa-google' };
+        const iconClass = options.icon || iconsFA[options.iconType] || 'fa-info-circle'; stylishPopupIconEl.innerHTML = `<i class="fas ${iconClass}"></i>`; stylishPopupTitleEl.textContent = options.title || 'Notice'; stylishPopupMessageEl.innerHTML = (options.message || '').startsWith('<p>') ? options.message : `<p>${options.message || ''}</p>`;
+        if (stylishPopupFormArea) { stylishPopupFormArea.innerHTML = options.formHTML || ''; stylishPopupFormArea.style.display = options.formHTML ? 'block' : 'none'; }
         stylishPopupButtonContainer.innerHTML = '';
-        if (options.buttons && options.buttons.length > 0) {
-            options.buttons.forEach(btnConfig => {
-                const button = document.createElement('button');
-                button.textContent = btnConfig.text;
-                button.className = `popup-button ${btnConfig.className || ''}`.trim();
-                if (btnConfig.id) button.id = btnConfig.id;
-                button.onclick = async () => {
-                    let originalBtnHTML;
-                    if (btnConfig.addSpinnerOnClick) {
-                        originalBtnHTML = button.innerHTML;
-                        button.disabled = true;
-                        button.innerHTML = `<span class="nobi-spinner"></span> ${btnConfig.spinnerText || 'Processing...'}`;
-                    }
-                    try { await btnConfig.action(button); } catch (e) { console.error("Error in popup button action:", e); } finally { if (btnConfig.addSpinnerOnClick && stylishPopupOverlay.classList.contains('active') && document.body.contains(button)) { button.disabled = false; button.innerHTML = originalBtnHTML; } }
-                };
-                stylishPopupButtonContainer.appendChild(button);
-            });
-        } else {
-            const okBtn = document.createElement('button');
-            okBtn.textContent = options.confirmText || 'OK';
-            okBtn.className = 'popup-button';
-            okBtn.id = 'stylishPopupPrimaryActionBtn';
-            okBtn.onclick = () => { if (stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); if (options.onConfirm) options.onConfirm(); };
-            stylishPopupButtonContainer.appendChild(okBtn);
-        }
+        if (options.buttons && options.buttons.length > 0) { options.buttons.forEach(btnConfig => { const button = document.createElement('button'); button.textContent = btnConfig.text; button.className = `popup-button ${btnConfig.className || ''}`.trim(); if (btnConfig.id) button.id = btnConfig.id; button.onclick = async () => { let originalBtnHTML; if (btnConfig.addSpinnerOnClick) { originalBtnHTML = button.innerHTML; button.disabled = true; button.innerHTML = `<span class="nobi-spinner"></span> ${btnConfig.spinnerText || 'Processing...'}`; } try { await btnConfig.action(button); } catch (e) { console.error("Error in popup button action:", e); } finally { if (btnConfig.addSpinnerOnClick && stylishPopupOverlay.classList.contains('active') && document.body.contains(button)) { button.disabled = false; button.innerHTML = originalBtnHTML; } } }; stylishPopupButtonContainer.appendChild(button); }); } else { const okBtn = document.createElement('button'); okBtn.textContent = options.confirmText || 'OK'; okBtn.className = 'popup-button'; okBtn.id = 'stylishPopupPrimaryActionBtn'; okBtn.onclick = () => { if (stylishPopupOverlay) stylishPopupOverlay.classList.remove('active'); if (options.onConfirm) options.onConfirm(); }; stylishPopupButtonContainer.appendChild(okBtn); }
         if (stylishPopupOverlay) stylishPopupOverlay.classList.add('active');
     }
     window.showStylishPopup = showStylishPopup;
@@ -1673,20 +1591,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (busiconForgotPasswordLink) busiconForgotPasswordLink.addEventListener('click', e => { e.preventDefault(); openForgotModal(); });
     if (userProfileModal) { userProfileModal.addEventListener('click', e => { if (e.target === userProfileModal) userProfileModal.classList.remove('active'); }); userProfileModal.querySelectorAll('[data-modal-close]').forEach(trigger => trigger.addEventListener('click', () => { const targetModal = document.getElementById(trigger.getAttribute('data-modal-close')); if (targetModal) targetModal.classList.remove('active'); })); }
 
-    async function apiRequest(url, method, body = null, isFormData = false, buttonToSpin = null, spinnerText = "Processing...") {
-        const headers = {}; if (!isFormData) headers['Content-Type'] = 'application/json'; const token = localStorage.getItem('authToken'); if (token) headers['Authorization'] = `Bearer ${token}`;
-        let currentSubmitBtn = buttonToSpin || (document.activeElement?.tagName === 'BUTTON' ? document.activeElement : null);
-        let originalButtonHTML;
-        if(currentSubmitBtn && currentSubmitBtn.disabled) currentSubmitBtn = null;
-        if (currentSubmitBtn) { originalButtonHTML = currentSubmitBtn.innerHTML; currentSubmitBtn.disabled = true; currentSubmitBtn.innerHTML = `<span class="nobi-spinner"></span> ${spinnerText}`; } else if (method === 'POST' && url.includes('/api/auth/google-signin')) showFullScreenLoader();
-        try {
-            const response = await fetch(url, { method, headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) });
-            let data; const contentType = response.headers.get('content-type'); if (contentType && contentType.includes('application/json')) data = await response.json(); else { const text = await response.text(); if (response.ok) data = text ? { message: text } : {}; else throw new Error(text || `Server Error (${response.status})`); }
-            if (!response.ok) throw new Error(data.message || `Server Error (${response.status})`);
-            return data;
-        } catch (error) { console.error(`API request error at ${url}:`, error); let msg = "An unexpected error occurred. Please try again."; if (error.message.includes("Failed to fetch")) msg = "Network error. Check your internet connection."; else if (error.message) msg = error.message; if (!(error.message && error.message.includes("Email not verified"))) showStylishPopup({ iconType: 'error', title: 'Request Failed', message: msg, buttons: [{text: 'OK', action: closeStylishPopup}]}); throw error; } finally { if (currentSubmitBtn) { currentSubmitBtn.disabled = false; currentSubmitBtn.innerHTML = originalButtonHTML; } else if (method === 'POST' && url.includes('/api/auth/google-signin')) hideFullScreenLoader(); }
-    }
-
+    async function apiRequest(url, method, body = null, isFormData = false, buttonToSpin = null, spinnerText = "Processing...") { const headers = {}; if (!isFormData) headers['Content-Type'] = 'application/json'; const token = localStorage.getItem('authToken'); if (token) headers['Authorization'] = `Bearer ${token}`; let currentSubmitBtn = buttonToSpin || (document.activeElement?.tagName === 'BUTTON' ? document.activeElement : null); let originalButtonHTML; if(currentSubmitBtn && currentSubmitBtn.disabled) currentSubmitBtn = null; if (currentSubmitBtn) { originalButtonHTML = currentSubmitBtn.innerHTML; currentSubmitBtn.disabled = true; currentSubmitBtn.innerHTML = `<span class="nobi-spinner"></span> ${spinnerText}`; } else if (method === 'POST' && url.includes('/api/auth/google-signin')) showFullScreenLoader(); try { const response = await fetch(url, { method, headers, body: isFormData ? body : (body ? JSON.stringify(body) : null) }); let data; const contentType = response.headers.get('content-type'); if (contentType && contentType.includes('application/json')) data = await response.json(); else { const text = await response.text(); if (response.ok) data = text ? { message: text } : {}; else throw new Error(text || `Server Error (${response.status})`); } if (!response.ok) throw new Error(data.message || `Server Error (${response.status})`); return data; } catch (error) { console.error(`API request error at ${url}:`, error); let msg = "An unexpected error occurred. Please try again."; if (error.message.includes("Failed to fetch")) msg = "Network error. Check your internet connection."; else if (error.message) msg = error.message; if (!(error.message && error.message.includes("Email not verified"))) showStylishPopup({ iconType: 'error', title: 'Request Failed', message: msg, buttons: [{text: 'OK', action: closeStylishPopup}]}); throw error; } finally { if (currentSubmitBtn) { currentSubmitBtn.disabled = false; currentSubmitBtn.innerHTML = originalButtonHTML; } else if (method === 'POST' && url.includes('/api/auth/google-signin')) hideFullScreenLoader(); } }
     async function handleAuthResponse(data, source = "email", linkedGuestActivity = false) { closeAuthModal(); localStorage.setItem('authToken', data.token); currentUser = data.user; localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(currentUser)); if (linkedGuestActivity) { localStorage.removeItem(GUEST_ID_KEY); localStorage.removeItem(GUEST_NAME_KEY); console.log("Guest ID and Name cleared after linking activity."); } updateUIAfterLogin(); let msg = data.message || (source === 'google' ? 'Successfully logged in with Google!' : 'Successfully logged in!'); if (linkedGuestActivity) msg += " Your previous guest activity has been linked to this account."; let type = 'success'; if (currentUser.loginMethod === 'email' && !currentUser.isVerified && data.message && data.message.toLowerCase().includes("verify")) type = 'warning'; else if (currentUser.loginMethod === 'email' && !currentUser.isVerified) { msg = `Account created for ${currentUser.name}! Please check your email to verify your account.`; if (linkedGuestActivity) msg += " Your previous guest activity has also been linked."; type = 'warning'; } showStylishPopup({ iconType: type, title: `Welcome, ${currentUser.name}!`, message: msg, buttons: [{text: 'Awesome!', action: closeStylishPopup}] }); await fetchFeedbacks(); }
     async function processSignup(name, email, password, signupButton) { const guestId = localStorage.getItem(GUEST_ID_KEY); const guestName = localStorage.getItem(GUEST_NAME_KEY); if (guestId && guestName) { return new Promise(resolveOuter => { showStylishPopup({ iconType: 'confirm', title: 'Link Guest Activity?', message: `You have previous activity as Guest: "${guestName}". Do you want to link this activity to your new account?`, buttons: [ { text: 'Yes, Link', action: async () => { closeStylishPopup(); resolveOuter(guestId); } }, { text: 'No, Fresh Account', action: () => { localStorage.removeItem(GUEST_ID_KEY); localStorage.removeItem(GUEST_NAME_KEY); closeStylishPopup(); resolveOuter(null); } } ] }); }).then(async (idToLink) => { const payload = { name, email, password }; if (idToLink) payload.linkGuestId = idToLink; const data = await apiRequest(API_SIGNUP_URL, 'POST', payload, false, signupButton, "Signing up..."); handleAuthResponse(data, "email", !!idToLink); }); } else { const data = await apiRequest(API_SIGNUP_URL, 'POST', { name, email, password }, false, signupButton, "Signing up..."); handleAuthResponse(data, "email", false); } }
     if (busiconEmailLoginForm) busiconEmailLoginForm.addEventListener('submit', async e => { e.preventDefault(); const email = busiconModalLoginEmailInput.value.trim(); const password = busiconModalLoginPasswordInput.value; if (!email || !password) return showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'Please enter both email and password.', buttons: [{text:'OK', action: closeStylishPopup}] }); try { const loginButton = busiconEmailLoginForm.querySelector('button[type="submit"]'); const data = await apiRequest(API_LOGIN_URL, 'POST', { email, password }, false, loginButton, "Logging in..."); handleAuthResponse(data, "email"); } catch (error) { } });
@@ -1715,30 +1620,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchFeedbacks() { try { const cachedFeedbacksJSON = localStorage.getItem(FEEDBACKS_CACHE_KEY); if (cachedFeedbacksJSON) { const cachedFeedbacks = JSON.parse(cachedFeedbacksJSON); if (cachedFeedbacks && cachedFeedbacks.data && Array.isArray(cachedFeedbacks.data)) renderFeedbackData(cachedFeedbacks.data); else localStorage.removeItem(FEEDBACKS_CACHE_KEY); } } catch (e) { console.error("Error reading feedbacks from cache:", e); localStorage.removeItem(FEEDBACKS_CACHE_KEY); } try { const freshFeedbacksArray = await apiRequest(API_FETCH_FEEDBACKS_URL, 'GET'); const freshFeedbacksJSON = JSON.stringify({ data: freshFeedbacksArray, timestamp: Date.now() }); const cachedFeedbacksJSON = localStorage.getItem(FEEDBACKS_CACHE_KEY); let needsServerRender = true; if (cachedFeedbacksJSON) { try { const cachedData = JSON.parse(cachedFeedbacksJSON); if (JSON.stringify(cachedData.data) === JSON.stringify(freshFeedbacksArray)) needsServerRender = false; } catch (e) {} } if (needsServerRender) renderFeedbackData(freshFeedbacksArray); localStorage.setItem(FEEDBACKS_CACHE_KEY, freshFeedbacksJSON); } catch (err) { if (!localStorage.getItem(FEEDBACKS_CACHE_KEY)) renderFeedbackData([]); } }
     function updateAverageRating(avg, count) { if(!averageRatingDisplayEl) return; const avgNum = parseFloat(avg); let starsHtml = '☆☆☆☆☆'; if (!isNaN(avgNum) && avgNum > 0) { const full = Math.floor(avgNum), halfVal = avgNum % 1; let halfChar = ''; if (halfVal >= 0.25 && halfVal < 0.75) halfChar = '◐'; else if (halfVal >= 0.75) halfChar = '★'; starsHtml = '★'.repeat(full) + halfChar + '☆'.repeat(Math.max(0, 5 - full - (halfChar ? 1 : 0))); } averageRatingDisplayEl.innerHTML = `<div class="average-rating-container animate-in"><h3>Overall Average Rating</h3><div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div><div class="average-stars">${starsHtml}</div><div class="total-feedbacks-count">Based on ${count} Feedback${count === 1 ? '' : 's'} <span class="badge-total">+${count}</span></div></div>`; }
     
-    // --- UPDATED FUNCTION: addFeedbackToDOM ---
+    // --- FINAL CORRECTED FUNCTION: addFeedbackToDOM ---
     function addFeedbackToDOM(fbData) {
-        if(!feedbackListContainer) return;
+        if (!feedbackListContainer) return;
 
-        // 1. Pinned class add hogi agar feedback pinned hai
         const item = document.createElement('div');
         item.className = `feedback-item ${fbData.isPinned ? 'pinned' : ''}`;
         item.dataset.feedbackId = fbData._id;
 
-        // 2. Naya Pinned Badge Code
-        const pinnedBadgeHTML = fbData.isPinned ? `
-        <div class="pinned-badge">
-            <span class="pin-svg">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 4H16V6H14V4ZM14 2H6V4H14V2ZM12 18V10H8V18H6V8H4V6H6V4C6 2.9 6.9 2 8 2H12C13.1 2 14 2.9 14 4V6H16V8H14V18H12Z" fill="#332400"/>
-            </svg>
-            </span>
-            Pinned
-        </div>
-        ` : '';
-        
         const avatarImg = document.createElement('img');
         avatarImg.className = 'avatar-img';
-        const charForAvatar = (fbData.name?.[0]?.toUpperCase() || 'G'); 
+        const charForAvatar = (fbData.name?.[0]?.toUpperCase() || 'G');
         let avatarSource = fbData.avatarUrl;
         if (!avatarSource && fbData.guestId) {
             avatarSource = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent((fbData.name || 'guest').toLowerCase() + fbData.guestId)}&flip=true&radius=50&scale=90`;
@@ -1747,8 +1639,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         avatarImg.src = avatarSource;
         avatarImg.alt = fbData.name || 'User Avatar';
-        avatarImg.onerror = function () { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`; };
-        
+        avatarImg.onerror = function() { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`; };
+
         const detailsDiv = document.createElement('div');
         detailsDiv.className = 'feedback-details';
         const strongName = document.createElement('strong');
@@ -1756,7 +1648,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let typeTag = '', verTag = '';
 
         if (fbData.userId && typeof fbData.userId === 'object') {
-            nameDisplay = fbData.userId.name || fbData.name; 
+            nameDisplay = fbData.userId.name || fbData.name;
             if (fbData.userId.isVerified) avatarImg.classList.add('verified-user');
             if (fbData.userId.loginMethod === 'google') typeTag = `<span class="user-type-indicator google-user-indicator" title="Logged in with Google">G</span>`;
             if (fbData.userId.isVerified) {
@@ -1764,12 +1656,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (fbData.userId.loginMethod === 'email') {
                 verTag = `<span class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>`;
             }
-        } else { 
-            nameDisplay = fbData.name || 'Guest'; 
+        } else {
+            nameDisplay = fbData.name || 'Guest';
             verTag = `<span class="unverified-tag-feedback" title="Guest Submission${fbData.guestId ? ` (ID: ${fbData.guestId.substring(0,6)}...)` : ''}">Guest</span>`;
         }
-        
-        // 3. Purana emoji yahan se hata diya gaya hai
+
         strongName.innerHTML = `${nameDisplay} ${typeTag} ${verTag}`;
 
         if (fbData.rating) strongName.classList.add(`rating-${fbData.rating}`);
@@ -1779,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             edited.textContent = 'Edited';
             strongName.appendChild(edited);
         }
-        
+
         const starsDiv = document.createElement('div');
         starsDiv.className = 'feedback-stars';
         starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
@@ -1794,44 +1685,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         detailsDiv.append(strongName, starsDiv, pFb, tsDiv);
         
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-feedback-btn';
-        editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-        editBtn.title = 'Edit your feedback';
-        
+        item.append(avatarImg, detailsDiv);
+
         const isFeedbackOwner = currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === currentUser.userId;
         const canEdit = isFeedbackOwner && (currentUser.loginMethod === 'google' || (currentUser.loginMethod === 'email' && currentUser.isVerified));
         
-        if (fbData.userId && typeof fbData.userId === 'object') { 
+        if (fbData.userId && typeof fbData.userId === 'object') {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-feedback-btn';
+            editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            editBtn.title = 'Edit your feedback';
             editBtn.disabled = !canEdit;
+
             if (isFeedbackOwner && currentUser.loginMethod === 'email' && !currentUser.isVerified) {
                 editBtn.title = "Verify your email to edit this feedback.";
             }
-            item.appendChild(editBtn);
-            editBtn.onclick = e => { 
+            
+            editBtn.onclick = e => {
                 e.stopPropagation();
                 if (!isFeedbackOwner) {
-                    return showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{text:'OK', action: closeStylishPopup}] });
+                    return showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{ text: 'OK', action: closeStylishPopup }] });
                 }
                 if (currentUser.loginMethod === 'email' && !currentUser.isVerified) {
-                    return showStylishPopup({
-                        iconType: 'warning', title: 'Email Verification Required',
-                        message: 'Please verify your email to *edit* your feedback. Resend verification email?',
-                        buttons: [ { text: 'Send Email', addSpinnerOnClick:true, spinnerText:'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup } ]
-                    });
+                    return showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback. Resend verification email?', buttons: [{ text: 'Send Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await requestAndShowVerificationEmail(); } }, { text: 'Later', action: closeStylishPopup }] });
                 }
-                if(nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.userId.name || fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input'));}
-                if(feedbackTextarea) {feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input'));}
-                currentSelectedRating = fbData.rating; if(ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
-                if(submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
+                if (nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.userId.name || fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input')); }
+                if (feedbackTextarea) { feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); }
+                currentSelectedRating = fbData.rating; if (ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
+                if (submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
                 isEditing = true; currentEditFeedbackId = fbData._id;
                 if (feedbackFormContainer) feedbackFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                showStylishPopup({iconType:'info', title:'Editing Feedback', message:'The form has been pre-filled. Make changes and click "Update Feedback".', buttons: [{text:'Got it!', action:closeStylishPopup}]});
+                showStylishPopup({ iconType: 'info', title: 'Editing Feedback', message: 'The form has been pre-filled. Make changes and click "Update Feedback".', buttons: [{ text: 'Got it!', action: closeStylishPopup }] });
             };
-        } else { 
-            editBtn.style.display = 'none';
+            item.appendChild(editBtn);
         }
-
+        
         if (fbData.replies?.length > 0) {
             const reply = fbData.replies[fbData.replies.length - 1];
             if (reply?.text) {
@@ -1844,23 +1732,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const replyContent = document.createElement('div');
                 replyContent.className = 'admin-reply-content';
                 let replyTs = '';
-                try {
-                    replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}`;
-                } catch (e) {
-                    replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')}`;
-                }
+                try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })})`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`; }
                 replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`;
                 replyDiv.append(adminAva, replyContent);
                 detailsDiv.appendChild(replyDiv);
             }
         }
+
+        if (fbData.isPinned) {
+            const pinnedBadgeHTML = `
+            <div class="pinned-badge">
+                <span class="pin-svg">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4H16V6H14V4ZM14 2H6V4H14V2ZM12 18V10H8V18H6V8H4V6H6V4C6 2.9 6.9 2 8 2H12C13.1 2 14 2.9 14 4V6H16V8H14V18H12Z" fill="#332400"/>
+                </svg>
+                </span>
+                Pinned
+            </div>`;
+            item.insertAdjacentHTML('afterbegin', pinnedBadgeHTML);
+        }
         
-        // Badge ko HTML ke shuru mein daal rahe hain
-        item.innerHTML = pinnedBadgeHTML + item.innerHTML; 
-        item.append(avatarImg, detailsDiv);
         feedbackListContainer.appendChild(item);
     }
-    // --- END OF UPDATED FUNCTION ---
+    // --- END OF CORRECTED FUNCTION ---
 
     checkLoginStatus();
 });
