@@ -679,6 +679,26 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
     }
 });
 
+// ===== WEBHOOK VERIFY START =====
+const VERIFY_TOKEN = "nobi_savage_token";
+
+app.get('/webhook', (req, res) => {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+        console.log("WEBHOOK_VERIFIED");
+        res.status(200).send(challenge);
+    } else {
+        res.sendStatus(403);
+    }
+});
+
+app.post('/webhook', (req, res) => {
+    res.status(200).send('OK');
+});
+// ===== WEBHOOK VERIFY END =====
 
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
