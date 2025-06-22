@@ -190,6 +190,58 @@ async function sendEmail(options) {
     }
 }
 
+// Email template constant
+const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl) => `
+<div style="font-family: 'Poppins',sans-serif; background: #f2f3f5; margin:0; padding: 0; min-height: 100vh; width: 100vw;">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(120deg, #7c3aed, #22d3ee); min-height:100vh; padding: 0; margin:0;">
+    <tr>
+      <td align="center" style="padding: 0; margin:0;">
+        <table width="420" cellpadding="0" cellspacing="0" border="0" style="background: #fff; border-radius: 14px; overflow:hidden; margin:40px auto 32px auto; box-shadow: 0 2px 16px #22033b18;">
+          <tr>
+            <td align="center" style="padding: 0;">
+              <img src="${avatarUrl}" alt="User Avatar" width="80" height="80" style="border-radius: 50%; margin: 28px auto 8px auto; box-shadow: 0 2px 14px #00000030; display:block;" />
+              <div style="background: linear-gradient(90deg, #1877f2, #42a5f5); padding: 18px 0;">
+                <h2 style="color: white; margin: 0; font-size: 1.6em;">
+                  ${heading}
+                </h2>
+              </div>
+              <div style="padding: 30px 7% 18px 7%;">
+                <p style="font-size: 1.05em; color: #333;">
+                  Hello <strong>${name}</strong>,<br><br>
+                  ${
+                    heading.includes('Password') ?
+                    'We received a request to reset your password.<br>Use the button below to change it:' :
+                    'Thanks for registering!<br>Click the button below to verify your email address:'
+                  }
+                </p>
+                <a href="${link}" style="display: inline-block; padding: 13px 25px; font-size: 1em; background-color: #1877f2; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 20px; font-weight: 600; letter-spacing: 0.4px;">
+                  ${buttonText}
+                </a>
+                <p style="margin:24px 0 0 0; font-size: 0.95em; color:#777;">
+                  <b>Having trouble with the button?</b><br>
+                  <span style="word-break:break-all; display:inline-block; margin-top:4px;">
+                    <a href="${link}" style="color: #1877f2; text-decoration: underline;">${link}</a>
+                  </span>
+                </p>
+                <p style="font-size: 0.95em; color: #f44336; margin-top: 22px;">
+                  ⚠️ This link will expire in 10 minutes. Please act fast!
+                </p>
+                <p style="font-style: italic; font-size: 0.91em; color: #555; margin-top: 18px;">
+                  "Power doesn’t reset — it restores." — NOBI BOT 💀
+                </p>
+              </div>
+              <div style="background-color: #f0f2f5; padding: 14px; font-size: 0.87em; color: #999;">
+                &copy; 2025 NOBI BOT | Need help? <a href="mailto:support@nobibot.com" style="color:#1877f2;">Contact Support</a>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+`;
+
 // --- Auth Routes ---
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, linkGuestId } = req.body;
@@ -232,7 +284,13 @@ app.post('/api/auth/signup', async (req, res) => {
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         const emailSubject = 'Nobita Feedback App: Email Verification';
         const emailText = `Hello ${newUser.name},\n\nPlease click the link to verify your email:\n${verifyUrl}\n\nThank you,\nNobita Feedback App Team`;
-        const emailHtml = `<p>Hello ${newUser.name},</p><p>Please click <a href="${verifyUrl}">here</a> to verify your email.</p>`;
+        const emailHtml = NOBITA_EMAIL_TEMPLATE(
+            "📩 Email Verification",
+            newUser.name,
+            "✅ Verify Your Email",
+            verifyUrl,
+            newUser.avatarUrl || getDiceBearAvatarUrl(newUser.name)
+        );
         
         try {
             await sendEmail({ email: newUser.email, subject: emailSubject, message: emailText, html: emailHtml });
@@ -347,7 +405,13 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
         const resetPagePath = "/reset-password.html";
         const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`;
         const textMessage = `Hello ${user.name},\n\nPassword reset link:\n${resetUrl}\n\nNobita Feedback App Team`;
-        const htmlMessage = `<p>Hello ${user.name},</p><p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`;
+        const htmlMessage = NOBITA_EMAIL_TEMPLATE(
+            "🔐 Password Reset",
+            user.name,
+            "🔁 Reset Your Password",
+            resetUrl,
+            user.avatarUrl || getDiceBearAvatarUrl(user.name)
+        );
         await sendEmail({ email: user.email, subject: 'Your Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "A password reset link has been sent to your email (if valid and linked)." });
     } catch (error) {
@@ -392,7 +456,13 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         const verifyPagePath = "/verify-email.html";
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         const textMessage = `Hello ${user.name},\n\nVerify your email:\n${verifyUrl}\n\nNobita Feedback App Team`;
-        const htmlMessage = `<p>Hello ${user.name},</p><p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`;
+        const htmlMessage = NOBITA_EMAIL_TEMPLATE(
+            "📩 Email Verification",
+            user.name,
+            "✅ Verify Your Email",
+            verifyUrl,
+            user.avatarUrl || getDiceBearAvatarUrl(user.name)
+        );
         await sendEmail({ email: user.email, subject: 'Your Email Verification Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Verification link has been sent to your email." });
     } catch (error) {
@@ -485,7 +555,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/feedbacks', async (req, res) => {
     try {
         const allFeedbacks = await Feedback.find()
-            .populate({ path: 'userId', select: 'loginMethod isVerified email name avatarUrl' })
+            .populate({ path: 'userId', select: 'loginMethod isVerified email name avatarUrl createdAt' })
             .sort({ isPinned: -1, timestamp: -1 });
 
         res.status(200).json(allFeedbacks);
@@ -599,23 +669,56 @@ const authenticateAdmin = (req, res, next) => {
     const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' }); }
 };
-app.get('/admin-panel-nobita', authenticateAdmin, async (req, res) => {
-    console.log("Admin panel access attempt.");
-    try {
-        const feedbacks = await Feedback.find().populate({ path: 'userId', select: 'loginMethod name email isVerified' }).sort({ isPinned: -1, timestamp: -1 });
-        const encodedCredentials = Buffer.from(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`).toString('base64');
-        const authHeaderValue = `Basic ${encodedCredentials}`;
-        const nobitaAvatarUrl = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; const blueTickPath = '/images/blue-tick.png'; const redTickPath = '/images/red-tick.png';
-        let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADMIN PANEL: NOBITA'S COMMAND CENTER</title><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Roboto',sans-serif;background:linear-gradient(135deg, #1A1A2E, #16213E);color:#E0E0E0;margin:0;padding:30px 20px;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{color:#FFD700;text-align:center;margin-bottom:40px;font-size:2.8em;text-shadow:0 0 15px rgba(255,215,0,0.5)}.main-panel-btn-container{width:100%;max-width:1200px;display:flex;justify-content:space-between;margin-bottom:20px;padding:0 10px;align-items:center;}.main-panel-btn{background-color:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;font-size:1em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-decoration:none;display:inline-block;text-transform:uppercase}.main-panel-btn:hover{background-color:#0056b3;transform:translateY(-2px)}.feedback-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:30px;width:100%;max-width:1200px}.feedback-card{background-color:transparent;border-radius:15px;perspective:1000px;min-height:500px}.feedback-card-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;box-shadow:0 8px 25px rgba(0,0,0,.4);border-radius:15px}.feedback-card.is-flipped .feedback-card-inner{transform:rotateY(180deg)}.feedback-card-front,.feedback-card-back{position:absolute;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#2C3E50;color:#E0E0E0;border-radius:15px;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}.feedback-card-back{transform:rotateY(180deg);background-color:#34495E}.feedback-header{display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-shrink:0}.feedback-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #FFD700;flex-shrink:0;box-shadow:0 0 10px rgba(255,215,0,.3)}.feedback-avatar img{width:100%;height:100%;object-fit:cover}.feedback-info{flex-grow:1;display:flex;flex-direction:column;align-items:flex-start}.feedback-info h4{margin:0;font-size:1.3em;color:#FFD700;text-transform:uppercase;display:flex;align-items:center;gap:8px}.feedback-info h4 small{font-size:0.7em; color:#bbb; text-transform:none; margin-left:5px;}.feedback-info .rating{font-size:1.1em;color:#F39C12;margin-top:5px}.feedback-info .user-ip{font-size:.9em;color:#AAB7B8;margin-top:5px}.feedback-body{font-size:1em;color:#BDC3C7;line-height:1.6;margin-bottom:15px;flex-grow:1;overflow-y:auto;word-wrap:break-word}.feedback-date{font-size:.8em;color:#7F8C8D;text-align:right;margin-bottom:10px;border-top:1px solid #34495E;padding-top:10px;flex-shrink:0}.action-buttons{display:flex;gap:10px;margin-bottom:10px;flex-shrink:0}.action-buttons button,.flip-btn{flex-grow:1;padding:10px 12px;border:none;border-radius:8px;font-size:.9em;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.action-buttons button:hover,.flip-btn:hover{transform:translateY(-2px)}.delete-btn{background-color:#E74C3C;color:white}.delete-btn:hover{background-color:#C0392B}.change-avatar-btn{background-color:#3498DB;color:white}.change-avatar-btn:hover{background-color:#2980B9}.change-avatar-btn:disabled{background-color:#555;cursor:not-allowed}.flip-btn{background-color:#fd7e14;color:white;margin-top:10px;flex-grow:0;width:100%}.flip-btn:hover{background-color:#e66800}.reply-section{border-top:1px solid #34495E;padding-top:15px;margin-top:10px;flex-shrink:0}.reply-section textarea{width:calc(100% - 20px);padding:10px;border:1px solid #4A6070;border-radius:8px;background-color:#34495E;color:#ECF0F1;resize:vertical;min-height:50px;margin-bottom:10px;font-size:.95em}.reply-section textarea::placeholder{color:#A9B7C0}.reply-btn{background-color:#27AE60;color:white;width:100%;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;transition:background-color .3s ease,transform .2s;text-transform:uppercase}.reply-btn:hover{background-color:#229954;transform:translateY(-2px)}.replies-display{margin-top:15px;background-color:#213042;border-radius:10px;padding:10px;border:1px solid #2C3E50;max-height:150px;overflow-y:auto}.replies-display h4{color:#85C1E9;font-size:1.1em;margin-bottom:10px;border-bottom:1px solid #34495E;padding-bottom:8px}.single-reply{border-bottom:1px solid #2C3E50;padding-bottom:10px;margin-bottom:10px;font-size:.9em;color:#D5DBDB;display:flex;align-items:flex-start;gap:10px}.single-reply:last-child{border-bottom:none;margin-bottom:0}.admin-reply-avatar-sm{width:30px;height:30px;border-radius:50%;border:2px solid #9B59B6;flex-shrink:0;object-fit:cover;box-shadow:0 0 5px rgba(155,89,182,.5)}.reply-content-wrapper{flex-grow:1;word-wrap:break-word}.reply-admin-name{font-weight:bold;color:#9B59B6;display:inline;margin-right:5px}.reply-timestamp{font-size:.75em;color:#8E9A9D;margin-left:10px}.edited-admin-tag{background-color:#5cb85c;color:white;padding:3px 8px;border-radius:5px;font-size:.75em;font-weight:bold;vertical-align:middle}.admin-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:2000}.admin-custom-modal{background:#222a35;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);text-align:center;color:#f0f0f0;width:90%;max-width:480px;border:1px solid #445}.admin-custom-modal h3{color:#FFD700;margin-top:0;margin-bottom:15px;font-size:1.8em}.admin-custom-modal p{margin-bottom:25px;font-size:1.1em;line-height:1.6;color:#ccc;word-wrap:break-word}.admin-modal-buttons button{background-color:#007bff;color:white;border:none;padding:12px 22px;border-radius:8px;cursor:pointer;font-size:1em;margin:5px;transition:background-color .3s,transform .2s;font-weight:bold}.admin-modal-buttons button:hover{transform:translateY(-2px)}#adminModalOkButton:hover{background-color:#0056b3}#adminModalConfirmButton{background-color:#28a745}#adminModalConfirmButton:hover{background-color:#1e7e34}#adminModalCancelButton{background-color:#dc3545}#adminModalCancelButton:hover{background:none;color:#dc3545}.select-all-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }.select-all-container label { font-size: 1.1em; color: #FFD700; }.select-all-container input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }.bulk-delete-btn { background-color: #E74C3C; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color .3s ease,transform .2s; text-transform: uppercase; margin-left: auto;}.feedback-checkbox { width: 20px; height: 20px; margin-left: 5px; cursor: pointer; align-self: flex-start; }@media (max-width:768px){h1{font-size:2.2em}.feedback-grid{grid-template-columns:1fr}.main-panel-btn-container{flex-direction:column; gap: 15px;}.select-all-container {margin-right: 0;}.bulk-delete-btn {width: 100%; margin-left: 0;}}</style></head><body><h1>NOBITA'S COMMAND CENTER</h1><div class="main-panel-btn-container"><div class="select-all-container"><input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)"><label for="selectAllCheck">Select All</label></div><button class="bulk-delete-btn" onclick="tryDeleteSelectedFeedbacks()">Delete Selected</button></div><div class="feedback-grid">`;
-        if (feedbacks.length === 0) html += `<p style="text-align:center;color:#7F8C8D;font-size:1.2em;grid-column:1 / -1;">No feedback received yet!</p>`;
-        else { feedbacks.forEach(fb => { let userTag = '', userDisplayName = (fb.userId && fb.userId.name) ? fb.userId.name : fb.name; if (!userDisplayName) userDisplayName = 'Guest User'; let userEmailDisplay = ''; if (fb.userId && typeof fb.userId === 'object') { userEmailDisplay = fb.userId.email ? `<small>(${fb.userId.email})</small>` : ''; if (fb.userId.isVerified) userTag += `<img src="${blueTickPath}" alt="V" title="Verified" style="width:18px;height:18px;vertical-align:middle;margin-left:5px;">`; else if (fb.userId.loginMethod === 'email') userTag += `<img src="${redTickPath}" alt="NV" title="Not Verified" style="width:18px;height:18px;vertical-align:middle;margin-left:5px;">`; } else if (fb.googleIdSubmitter) userTag += `<img src="${blueTickPath}" alt="V" title="Verified (Google Legacy)" style="width:18px;height:18px;vertical-align:middle;margin-left:5px;">`; else userTag += `<img src="${redTickPath}" alt="G" title="Guest or Unknown" style="width:18px;height:18px;vertical-align:middle;margin-left:5px;">`; const pinIndicator = fb.isPinned ? ' <span title="Pinned">📌</span>' : ''; html += `<div class="feedback-card" id="card-${fb._id}"><div class="feedback-card-inner"><div class="feedback-card-front"><div class="feedback-header"><input type="checkbox" class="feedback-checkbox" value="${fb._id}"><div class="feedback-avatar"><img src="${fb.avatarUrl || getDiceBearAvatarUrl(userDisplayName, fb.guestId || (fb.userId ? fb.userId.toString() : ''))}" alt="${userDisplayName.charAt(0) || 'U'}"></div><div class="feedback-info"><h4>${userDisplayName}${pinIndicator} ${fb.isEdited ? '<span class="edited-admin-tag">E</span>' : ''} ${userTag}</h4><small style="font-size:0.7em; color:#bbb;">${userEmailDisplay.replace(/[()]/g, '')}</small><div class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5-fb.rating)}</div><div class="user-ip">IP: ${fb.userIp||'N/A'} | UserID: ${fb.userId? (fb.userId._id?fb.userId._id.toString():fb.userId.toString()) : (fb.guestId ? `Guest (${fb.guestId.substring(0,6)}...)` : 'N/A')}</div></div></div><div class="feedback-body"><p>${fb.feedback}</p></div><div class="feedback-date">${fb.isEdited?'Edited':'Posted'}: ${new Date(fb.timestamp).toLocaleString()}${fb.isEdited&&fb.originalContent?`<br><small>Original: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>`:''}</div><div class="action-buttons"><button class="delete-btn" onclick="tryDeleteFeedback('${fb._id}')">DEL</button><button style="background-color: #17a2b8;" onclick="tryPinFeedback('${fb._id}', ${fb.isPinned})">${fb.isPinned ? 'UNPIN' : 'PIN'}</button><button class="change-avatar-btn" onclick="tryChangeAvatarForFeedback('${fb._id}')" title="Change this feedback's avatar">AV</button></div><div class="reply-section"><textarea id="reply-text-${fb._id}" placeholder="Admin reply..."></textarea><button class="reply-btn" onclick="tryPostReply('${fb._id}','reply-text-${fb._id}')">REPLY</button><div class="replies-display">${fb.replies&&fb.replies.length>0?'<h4>Replies:</h4>':''}${fb.replies.map(reply=>`<div class="single-reply"><img src="${nobitaAvatarUrl}" alt="A" class="admin-reply-avatar-sm"><div class="reply-content-wrapper"><span class="reply-admin-name">${reply.adminName}:</span> ${reply.text}<span class="reply-timestamp">(${new Date(reply.timestamp).toLocaleString()})</span></div></div>`).join('')}</div></div>${fb.isEdited&&fb.originalContent?`<button class="flip-btn" onclick="flipCard('${fb._id}')">ORIG</button>`:''}</div>`; if (fb.isEdited&&fb.originalContent) html += `<div class="feedback-card-back"><div class="feedback-header"><div class="feedback-avatar"><img src="${(fb.originalContent.avatarUrl||fb.avatarUrl)}" alt="O"></div><div class="feedback-info"><h4>ORIG: ${fb.originalContent.name}</h4><div class="rating">${'★'.repeat(fb.originalContent.rating)}${'☆'.repeat(5-fb.originalContent.rating)}</div></div></div><div class="feedback-body"><p>${fb.originalContent.feedback}</p></div><div class="feedback-date">Orig Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</div><div style="margin-top:auto;"><button class="flip-btn" onclick="flipCard('${fb._id}')">EDITED</button></div></div>`; html += `</div></div>`; }); }
-        html += `</div><div id="adminModalOverlay" class="admin-modal-overlay"><div class="admin-custom-modal"><h3 id="adminModalTitle"></h3><p id="adminModalMessage"></p><div class="admin-modal-buttons"><button id="adminModalOkButton">OK</button><button id="adminModalConfirmButton" style="display:none;">Confirm</button><button id="adminModalCancelButton" style="display:none;">Cancel</button></div></div></div><script>const AUTH_HEADER='${authHeaderValue}';if(!AUTH_HEADER||AUTH_HEADER==="Basic Og=="){console.error("CRITICAL: AUTH_HEADER missing/invalid!");showAdminModal('alert','Auth Error','Admin auth not configured. Actions fail.');}const adminModalOverlay=document.getElementById('adminModalOverlay'),adminModalTitle=document.getElementById('adminModalTitle'),adminModalMessage=document.getElementById('adminModalMessage'),adminModalOkButton=document.getElementById('adminModalOkButton'),adminModalConfirmButton=document.getElementById('adminModalConfirmButton'),adminModalCancelButton=document.getElementById('adminModalCancelButton');let globalConfirmCallback=null;function showAdminModal(t,e,o,a=null){adminModalTitle.textContent=e,adminModalMessage.textContent=o,globalConfirmCallback=a,adminModalOkButton.style.display="confirm"===t?"none":"inline-block",adminModalConfirmButton.style.display="confirm"===t?"inline-block":"none",adminModalCancelButton.style.display="confirm"===t?"inline-block":"none",adminModalOverlay.style.display="flex"}adminModalOkButton.addEventListener("click",()=>adminModalOverlay.style.display="none"),adminModalConfirmButton.addEventListener("click",()=>{adminModalOverlay.style.display="none",globalConfirmCallback&&globalConfirmCallback(!0)}),adminModalCancelButton.addEventListener("click",()=>{adminModalOverlay.style.display="none",globalConfirmCallback&&globalConfirmCallback(!1)});function flipCard(t){document.getElementById(\`card-\${t}\`).classList.toggle("is-flipped")}async function tryDeleteFeedback(t){showAdminModal("confirm","Delete Feedback?","Sure to delete? Cannot undo.",async e=>{if(e)try{const e=await fetch(\`/api/admin/feedback/\${t}\`,{method:"DELETE",headers:{Authorization:AUTH_HEADER}});if(e.ok)showAdminModal("alert","Deleted!","Feedback deleted."),setTimeout(()=>location.reload(),1e3);else{const t=await e.json();showAdminModal("alert","Error!",\`Failed to delete: \${t.message||e.statusText}\`)}}catch(t){showAdminModal("alert","Fetch Error!",\`Error: \${t.message}\`)}})}async function tryPostReply(t,e){const o=document.getElementById(e).value.trim();if(!o)return void showAdminModal("alert","Empty Reply","Write something.");showAdminModal("confirm","Post Reply?",\`Confirm: "\${o.substring(0,50)}..."\`,async e=>{if(e)try{const e=await fetch(\`/api/admin/feedback/\${t}/reply\`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:AUTH_HEADER},body:JSON.stringify({replyText:o,adminName:"👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"})});if(e.ok)showAdminModal("alert","Replied!","Reply posted."),setTimeout(()=>location.reload(),1e3);else{const t=await e.json();showAdminModal("alert","Error!",\`Failed to reply: \${t.message||e.statusText}\`)}}catch(t){showAdminModal("alert","Fetch Error!",\`Error: \${t.message}\`)}})}async function tryChangeAvatarForFeedback(feedbackId){showAdminModal("confirm","Change Avatar?",\`Regenerate a new random avatar for this feedback card?\`,async confirmed=>{if(confirmed){try{const response=await fetch(\`/api/admin/feedback/\${feedbackId}/change-avatar\`,{method:'PUT',headers:{'Authorization':AUTH_HEADER}});if(response.ok){showAdminModal("alert","Avatar Changed!",\`Avatar has been updated.\`);setTimeout(()=>location.reload(),1200)}else{const errorData=await response.json();showAdminModal("alert","Error!",\`Failed to change avatar: \${errorData.message||response.statusText}\`)}}catch(error){showAdminModal("alert","Fetch Error!",\`An error occurred: \${error.message}\`)}}})}async function tryPinFeedback(feedbackId,isCurrentlyPinned){const action=isCurrentlyPinned?'Unpin':'Pin';const newPinStatus=!isCurrentlyPinned;showAdminModal("confirm",\`\${action} Feedback?\`,\`Are you sure you want to \${action.toLowerCase()} this feedback?\`,async confirmed=>{if(confirmed){try{const response=await fetch(\`/api/admin/feedback/\${feedbackId}/pin\`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':AUTH_HEADER},body:JSON.stringify({isPinned:newPinStatus})});if(response.ok){showAdminModal("alert","Success!",\`Feedback has been \${action.toLowerCase()}ned.\`);setTimeout(()=>location.reload(),1200)}else{const errorData=await response.json();showAdminModal("alert","Error!",\`Failed to \${action.toLowerCase()} feedback: \${errorData.message||response.statusText}\`)}}catch(error){showAdminModal("alert","Fetch Error!",\`An error occurred: \${error.message}\`)}}})}function toggleSelectAll(t){document.querySelectorAll(".feedback-checkbox").forEach(e=>e.checked=t)}async function tryDeleteSelectedFeedbacks(){const t=Array.from(document.querySelectorAll(".feedback-checkbox:checked")).map(t=>t.value);if(0===t.length)return void showAdminModal("alert","No Selection","Select feedback to delete.");showAdminModal("confirm","Delete Selected?",\`Delete \${t.length} selected? Cannot undo.\`,async e=>{if(e)try{const e=await fetch("/api/admin/feedbacks/batch-delete",{method:"DELETE",headers:{"Content-Type":"application/json",Authorization:AUTH_HEADER},body:JSON.stringify({ids:t})});if(e.ok)showAdminModal("alert","Deleted!",\`\${t.length} feedback(s) deleted.\`),setTimeout(()=>location.reload(),1e3);else{const t=await e.json();showAdminModal("alert","Error!",\`Failed: \${t.message||e.statusText}\`)}}catch(t){showAdminModal("alert","Fetch Error!",\`Error: \${t.message}\`)}})}</script></body></html>`;
-        res.send(html);
-    } catch (error) { console.error('Error generating admin panel:', error); res.status(500).send(`Admin panel issue: ${error.message}`); }
-});
+
+// UPDATED: Serve the admin panel as static files from the 'admin-panel' directory
+app.use('/admin-panel-nobita', authenticateAdmin, express.static(path.join(__dirname, 'admin-panel')));
+
 app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => { console.log(`ADMIN DEL: ${req.params.id}`); try { const fb = await Feedback.findByIdAndDelete(req.params.id); if (!fb) return res.status(404).json({ message: 'ID not found.' }); res.status(200).json({ message: 'Deleted.' }); } catch (e) { console.error(`ADMIN DEL ERR: ${req.params.id}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
 app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => { const { ids } = req.body; console.log(`ADMIN BATCH DEL:`, ids); if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: 'No IDs.' }); try { const r = await Feedback.deleteMany({ _id: { $in: ids } }); if (r.deletedCount === 0) return res.status(404).json({ message: 'None found.' }); res.status(200).json({ message: `${r.deletedCount} deleted.`, deletedCount: r.deletedCount }); } catch (e) { console.error(`ADMIN BATCH DEL ERR:`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
 app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => { const fId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN REPLY: ${fId}, Text: ${replyText}`); if (!replyText) return res.status(400).json({ message: 'Reply text missing.' }); try { const fb = await Feedback.findById(fId); if (!fb) return res.status(404).json({ message: 'ID not found.' }); fb.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await fb.save(); res.status(200).json({ message: 'Replied.', reply: fb.replies[fb.replies.length - 1] }); } catch (e) { console.error(`ADMIN REPLY ERR: ${fId}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
+
+// NEW: DELETE a specific admin reply
+app.delete('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, async (req, res) => {
+    try {
+        const { feedbackId, replyId } = req.params;
+        const updatedFeedback = await Feedback.findByIdAndUpdate(
+            feedbackId,
+            { $pull: { replies: { _id: replyId } } },
+            { new: true }
+        );
+        if (!updatedFeedback) {
+            return res.status(404).json({ message: "Feedback or reply not found." });
+        }
+        res.status(204).send(); // 204 No Content is appropriate for a successful delete
+    } catch (error) {
+        console.error("ADMIN DEL REPLY ERR:", error);
+        res.status(500).json({ message: "Server error while deleting reply." });
+    }
+});
+
+// NEW: UPDATE (edit) a specific admin reply
+app.put('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, async (req, res) => {
+    try {
+        const { feedbackId, replyId } = req.params;
+        const { text } = req.body;
+        if (!text || text.trim() === '') {
+            return res.status(400).json({ message: "Reply text cannot be empty." });
+        }
+        const updatedFeedback = await Feedback.findOneAndUpdate(
+            { "_id": feedbackId, "replies._id": replyId },
+            { "$set": { "replies.$.text": text, "replies.$.timestamp": new Date() } },
+            { new: true }
+        );
+        if (!updatedFeedback) {
+            return res.status(404).json({ message: "Feedback or reply not found." });
+        }
+        res.status(200).json({ message: "Reply updated successfully." });
+    } catch (error) {
+        console.error("ADMIN EDIT REPLY ERR:", error);
+        res.status(500).json({ message: "Server error while updating reply." });
+    }
+});
+
 
 app.put('/api/admin/feedback/:id/pin', authenticateAdmin, async (req, res) => {
     const { isPinned } = req.body;
@@ -623,14 +726,14 @@ app.put('/api/admin/feedback/:id/pin', authenticateAdmin, async (req, res) => {
         return res.status(400).json({ message: 'Invalid request: "isPinned" must be a boolean.' });
     }
     try {
-        const feedbackToUpdate = await Feedback.findById(req.params.id);
+        const feedbackToUpdate = await Feedback.findById(req.params.id).populate({ path: 'userId', select: 'loginMethod isVerified' });
         if (!feedbackToUpdate) {
             return res.status(404).json({ message: 'Feedback not found.' });
         }
         feedbackToUpdate.isPinned = isPinned;
         await feedbackToUpdate.save();
         console.log(`ADMIN PIN/UNPIN: Feedback ID ${req.params.id} set to isPinned: ${isPinned}`);
-        res.status(200).json({ message: `Feedback ${isPinned ? 'pinned' : 'unpinned'} successfully.`, feedback: feedbackToUpdate });
+        res.status(200).json(feedbackToUpdate);
     } catch (error) {
         console.error(`ADMIN PIN/UNPIN ERR: ${req.params.id}`, error);
         res.status(500).json({ message: 'Server error while updating feedback.', error: error.message });
@@ -647,31 +750,34 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
             return res.status(404).json({ message: 'Feedback not found.' });
         }
 
-        // Case 1: Feedback is from a REGISTERED USER (Email or Google)
+        let newAvatarUrl;
+
         if (feedback.userId) {
             const user = await User.findById(feedback.userId);
             if (user) {
                 if (!user.name) return res.status(400).json({ message: 'User name missing for avatar generation.' });
                 
-                const newAvatarUrl = getDiceBearAvatarUrl(user.name, Date.now().toString());
+                newAvatarUrl = getDiceBearAvatarUrl(user.name, Date.now().toString());
                 
                 user.avatarUrl = newAvatarUrl;
                 await user.save();
                 
                 await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: newAvatarUrl } });
                 
-                return res.status(200).json({ message: 'User avatar updated across all their feedbacks.', newAvatarUrl });
+                // Fetch the updated feedback to return the full object
+                const updatedFeedback = await Feedback.findById(feedbackId).populate({ path: 'userId', select: 'loginMethod isVerified' });
+                return res.status(200).json(updatedFeedback);
             }
         }
 
-        // Case 2: Feedback is from a GUEST (or deleted user)
+        // Fallback for guests or if user was deleted
         if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
         
-        const newGuestAvatarUrl = getDiceBearAvatarUrl(feedback.name, Date.now().toString());
-        feedback.avatarUrl = newGuestAvatarUrl;
+        newAvatarUrl = getDiceBearAvatarUrl(feedback.name, Date.now().toString());
+        feedback.avatarUrl = newAvatarUrl;
         await feedback.save();
         
-        res.status(200).json({ message: 'Guest feedback avatar changed.', newAvatarUrl: newGuestAvatarUrl });
+        res.status(200).json(feedback);
 
     } catch (error) {
         console.error(`ADMIN AVATAR CHANGE ERR ON FEEDBACK ${feedbackId}:`, error);
@@ -679,26 +785,6 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
     }
 });
 
-// ===== WEBHOOK VERIFY START =====
-const VERIFY_TOKEN = "nobi_savage_token";
-
-app.get('/webhook', (req, res) => {
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
-
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-        console.log("WEBHOOK_VERIFIED");
-        res.status(200).send(challenge);
-    } else {
-        res.sendStatus(403);
-    }
-});
-
-app.post('/webhook', (req, res) => {
-    res.status(200).send('OK');
-});
-// ===== WEBHOOK VERIFY END =====
 
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) {
