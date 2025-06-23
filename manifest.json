@@ -1,0 +1,15 @@
+{
+  "short_name": "AdminHub",
+  "name": "NOBITA Admin Panel",
+  "start_url": "/admin-panel/index.html",
+  "icons": [
+    {
+      "src": "/images/notification.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/admin-panel/"
+}

@@ -12,33 +12,45 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const cloudinary = require('cloudinary').v2; // Cloudinary
 const multer = require('multer'); // Multer for file uploads
+const webpush = require('web-push'); // Added web-push
 
 dotenv.config(); // This is for local .env file, Render will ignore it
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Default to 3000 if not set
 
+// --- AGGRESSIVE DEBUGGING START (KEEP THIS FOR YOUR CONFIRMATION) ---
+console.log("--- VAPID Key Debugging START ---");
+console.log("process.env.VAPID_PUBLIC_KEY:", process.env.VAPID_PUBLIC_KEY);
+console.log("Is VAPID_PUBLIC_KEY defined?", !!process.env.VAPID_PUBLIC_KEY);
+if (!process.env.VAPID_PUBLIC_KEY) {
+    console.error("CRITICAL: VAPID_PUBLIC_KEY is undefined or empty right after dotenv.config()!");
+    console.error("Check your .env file or deployment environment variables.");
+}
+console.log("--- VAPID Key Debugging END ---");
+// --- END AGGRESSIVE DEBUGGING ---
+
 // Load from .env (On Render, these will come from the dashboard)
 const MONGODB_URI = process.env.MONGODB_URI;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+// Removed ADMIN_USERNAME and ADMIN_PASSWORD as they are replaced by hashed password
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME; // Used for initial login check
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH; // New: Hashed admin password
+const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET; // New: Secret for admin JWT
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET; // User JWT secret
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+// NEW: For initial admin user creation if it doesn't exist in DB
+const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
 
 // Cloudinary Configuration
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
-
 cloudinary.config({
-  cloud_name: CLOUDINARY_CLOUD_NAME,
-  api_key: CLOUDINARY_API_KEY,
-  api_secret: CLOUDINARY_API_SECRET
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 // --- Debugging Environment Variables ---
@@ -46,38 +58,49 @@ console.log("--- Environment Variable Check (server.js start) ---");
 console.log("PORT (from process.env):", process.env.PORT);
 console.log("MONGODB_URI (loaded):", MONGODB_URI ? "SET" : "NOT SET");
 console.log("JWT_SECRET (loaded):", JWT_SECRET ? "SET" : "NOT SET");
+console.log("ADMIN_JWT_SECRET (loaded):", ADMIN_JWT_SECRET ? "SET" : "NOT SET"); // New Check
 console.log("FRONTEND_URL (loaded):", FRONTEND_URL ? "SET" : "NOT SET");
-// ... (other console logs for env vars)
+console.log("ADMIN_USERNAME (loaded):", ADMIN_USERNAME ? "SET" : "NOT SET"); // Still useful for initial check
+console.log("ADMIN_PASSWORD_HASH (loaded):", ADMIN_PASSWORD_HASH ? "SET" : "NOT SET"); // New Check
+console.log("ADMIN_INITIAL_PASSWORD (loaded):", ADMIN_INITIAL_PASSWORD ? "SET" : "NOT SET"); // NEW CHECK
+console.log("GOOGLE_CLIENT_ID (loaded):", GOOGLE_CLIENT_ID ? "SET" : "NOT SET");
+console.log("EMAIL_USER (loaded):", EMAIL_USER ? "SET" : "NOT SET");
+console.log("EMAIL_PASS (loaded):", EMAIL_PASS ? "SET" : "NOT SET");
+console.log("EMAIL_HOST (loaded):", EMAIL_HOST ? "SET" : "NOT SET");
+console.log("EMAIL_PORT (loaded):", EMAIL_PORT ? "SET" : "NOT SET");
+console.log("CLOUDINARY_CLOUD_NAME (loaded):", process.env.CLOUDINARY_CLOUD_NAME ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_KEY (loaded):", process.env.CLOUDINARY_API_KEY ? "SET" : "NOT SET");
+console.log("CLOUDINARY_API_SECRET (loaded):", process.env.CLOUDINARY_API_SECRET ? "SET" : "NOT SET");
+console.log("VAPID_PUBLIC_KEY (loaded):", process.env.VAPID_PUBLIC_KEY ? "SET" : "NOT SET"); // Added VAPID checks
+console.log("VAPID_PRIVATE_KEY (loaded):", process.env.VAPID_PRIVATE_KEY ? "SET" : "NOT SET");
+console.log("VAPID_SUBJECT (loaded):", process.env.VAPID_SUBJECT ? "SET" : "NOT SET");
 console.log("--- End Environment Variable Check ---");
 
 // Critical environment variables check
-if (!MONGODB_URI || !JWT_SECRET || !FRONTEND_URL) {
-    console.error("CRITICAL ERROR: MONGODB_URI, JWT_SECRET, or FRONTEND_URL environment variable not found.");
+if (!MONGODB_URI || !JWT_SECRET || !FRONTEND_URL || !ADMIN_JWT_SECRET || !ADMIN_PASSWORD_HASH || !ADMIN_USERNAME) { // Added new admin variables
+    console.error("CRITICAL ERROR: One or more critical environment variables (MONGODB_URI, JWT_SECRET, FRONTEND_URL, ADMIN_JWT_SECRET, ADMIN_PASSWORD_HASH, ADMIN_USERNAME) are not found.");
     process.exit(1);
 }
-// ... (other warnings for missing env vars)
+if (!GOOGLE_CLIENT_ID) {
+    console.warn("WARNING: GOOGLE_CLIENT_ID not set. Google Sign-in will not work.");
+}
+if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
+    console.warn("WARNING: Email service environment variables (EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT) are not fully set. Email functionalities may not work.");
+}
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    console.warn("WARNING: Cloudinary environment variables are not fully set. Avatar upload will not work.");
+}
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY || !process.env.VAPID_SUBJECT) { // Added VAPID warning
+    console.warn("WARNING: VAPID keys or subject not set. Push notifications will not work.");
+}
 
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('MongoDB connection successful!'))
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-});
-
-// Function to generate DiceBear avatar URL
-function getDiceBearAvatarUrl(name, randomSeed = '') {
-    const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
-    const seed = encodeURIComponent(seedName + randomSeed);
-    return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
-}
-
 // Mongoose Schemas
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  username: { type: String, unique: true, sparse: true }, // NEW: Added username field
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String }, // Optional for Google users
   googleId: { type: String, sparse: true, unique: true },
@@ -88,7 +111,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: { type: Date, default: undefined },
   isVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String, default: undefined },
-  emailVerificationExpires: { type: Date, default: undefined }
+  emailVerificationExpires: { type: Date, default: undefined },
+  pushSubscription: { // NEW: Field to store push subscription
+    type: Object,
+    default: null
+  }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -105,14 +132,65 @@ const feedbackSchema = new mongoose.Schema({
   isEdited: { type: Boolean, default: false },
   originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
   replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }],
-  isPinned: { type: Boolean, default: false }
+  isPinned: { type: Boolean, default: false },
+  readByAdmin: { type: Boolean, default: false } // NEW: Field to track if admin has read the feedback
 });
 const Feedback = mongoose.model('Feedback', feedbackSchema);
+
+// BLOG SCHEMA ADDED HERE
+const blogSchema = new mongoose.Schema({
+  link: { type: String, required: true }, // e.g. rdp.html
+  title: { type: String, required: true },
+  summary: { type: String, required: true },
+  badge: { type: String, default: '' },
+  author: { type: String, default: 'Nobita' },
+  date: { type: Date, default: Date.now }
+});
+const Blog = mongoose.model('Blog', blogSchema);
+
+// Subscription in-memory (now backed by DB)
+// This is the ONLY declaration for adminPushSubscription
+let adminPushSubscription = null;
+
+// Function to load admin push subscription from DB on startup
+async function loadAdminPushSubscriptionFromDB() {
+    try {
+        // Assuming your admin user is identified by ADMIN_USERNAME
+        const adminUser = await User.findOne({ username: ADMIN_USERNAME });
+        if (adminUser && adminUser.pushSubscription) {
+            adminPushSubscription = adminUser.pushSubscription;
+            console.log("Admin push subscription loaded from DB on startup.");
+        } else {
+            console.warn("No admin push subscription found in DB on startup. Admin must log in and enable push notifications.");
+        }
+    } catch (error) {
+        console.error("Error loading admin push subscription from DB:", error);
+    }
+}
+
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('MongoDB connection successful!');
+    loadAdminPushSubscriptionFromDB(); // Call to load subscription on successful DB connection
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+});
+
+// Function to generate DiceBear avatar URL
+function getDiceBearAvatarUrl(name, randomSeed = '') {
+    const seedName = (typeof name === 'string' && name) ? name.toLowerCase() : 'default_seed';
+    const seed = encodeURIComponent(seedName + randomSeed);
+    return `https://api.dicebear.com/8.x/adventurer/svg?seed=${seed}&flip=true&radius=50&doodle=true&scale=90`;
+}
+
 
 // Middleware Setup
 app.use(cors({
     origin: [FRONTEND_URL, `http://localhost:${PORT}`, `http://localhost:3001`], // Added 3001 if you test frontend from there
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'], // Added PATCH
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(bodyParser.json());
@@ -130,20 +208,44 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware to authenticate JWT token (used by protected routes)
+// Middleware to authenticate user JWT token
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) return res.status(401).json({ message: "Authentication token not found." });
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            console.error("JWT Verification Error:", err.message);
+            console.error("User JWT Verification Error:", err.message);
             return res.status(403).json({ message: "Invalid or expired token. Please log in again." });
         }
         req.user = { ...user, isVerified: user.isVerified };
         next();
     });
 };
+
+// NEW: Middleware to authenticate ADMIN JWT token
+const authenticateAdminToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) {
+        console.warn("Admin authentication attempt: No token provided.");
+        return res.status(401).json({ message: "Admin authentication required." });
+    }
+    jwt.verify(token, ADMIN_JWT_SECRET, (err, adminUser) => {
+        if (err) {
+            console.error("Admin JWT Verification Error:", err.message);
+            // Specifically check for TokenExpiredError for better client-side handling
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: "Admin session expired. Please log in again." });
+            }
+            return res.status(403).json({ message: "Invalid admin token." });
+        }
+        req.adminUser = adminUser; // Attach admin user payload to request
+        console.log(`Admin ${adminUser.username} authenticated.`);
+        next();
+    });
+};
+
 
 // Middleware to check if email is verified (used by protected routes that require verification)
 const isEmailVerified = async (req, res, next) => {
@@ -166,6 +268,7 @@ const isEmailVerified = async (req, res, next) => {
     }
 };
 
+
 // Function to send emails
 async function sendEmail(options) {
     if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
@@ -176,6 +279,7 @@ async function sendEmail(options) {
     const transporter = nodemailer.createTransport({
         host: EMAIL_HOST, port: parseInt(EMAIL_PORT), secure: parseInt(EMAIL_PORT) === 465,
         auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+        tls: { rejectUnauthorized: false } // Required for some hosts, be careful in production
     });
     const mailOptions = { from: `"Nobita Feedback App" <${EMAIL_USER}>`, to: options.email, subject: options.subject, text: options.message, html: options.html };
     try {
@@ -242,7 +346,63 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl) => `
 </div>
 `;
 
-// --- Auth Routes ---
+// --- Admin Authentication Route (NEW) ---
+app.post('/api/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    // Use specific admin username from env for authentication
+    if (username !== ADMIN_USERNAME) {
+        return res.status(401).json({ message: "Invalid username or password." });
+    }
+
+    try {
+        let adminUser = await User.findOne({ username: ADMIN_USERNAME });
+
+        // If admin user does not exist, create it (ONLY for the first time setup)
+        if (!adminUser) {
+            console.warn(`Admin user '${ADMIN_USERNAME}' not found in DB. Attempting to create it.`);
+            if (!ADMIN_INITIAL_PASSWORD) { // A temporary initial password for setup
+                 console.error("CRITICAL ERROR: ADMIN_INITIAL_PASSWORD environment variable is required to create the initial admin user.");
+                 return res.status(500).json({ message: "Server setup incomplete: Initial admin password not set for first-time creation." });
+            }
+            const initialHashedPassword = await bcrypt.hash(ADMIN_INITIAL_PASSWORD, 12);
+            adminUser = new User({
+                name: 'Admin User', // Default name for the admin
+                username: ADMIN_USERNAME, // Set username
+                email: `${ADMIN_USERNAME.toLowerCase().replace(/\s/g, '')}@admin.com`, // Default email, can be changed later
+                password: initialHashedPassword,
+                loginMethod: 'email',
+                isVerified: true // Admin is always verified
+            });
+            await adminUser.save();
+            console.log(`Admin user '${ADMIN_USERNAME}' created with default password.`);
+        }
+
+        // Compare the provided password with the hashed password from the found/created adminUser
+        const isMatch = await bcrypt.compare(password, adminUser.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid username or password." });
+        }
+
+        // Generate admin JWT
+        const adminPayload = {
+            username: adminUser.username, // Use username from the found/created user
+            userId: adminUser._id, // Now adminUser is guaranteed to exist and have an _id
+            loggedInAt: new Date().toISOString()
+        };
+        const adminToken = jwt.sign(adminPayload, ADMIN_JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
+
+        res.status(200).json({ message: "Admin login successful!", token: adminToken, admin: adminPayload });
+
+    } catch (error) {
+        console.error("Admin login error:", error);
+        res.status(500).json({ message: "Server error during admin login.", error: error.message });
+    }
+});
+
+
+// --- Auth Routes (Existing User Auth) ---
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, linkGuestId } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Name, email, and password are required." });
@@ -254,7 +414,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 12);
         const userAvatar = getDiceBearAvatarUrl(name, Date.now().toString());
-        
+
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const newUser = new User({
             name, email: email.toLowerCase(), password: hashedPassword,
@@ -267,14 +427,14 @@ app.post('/api/auth/signup', async (req, res) => {
         if (linkGuestId) {
             console.log(`Attempting to link guest ID ${linkGuestId} to new user ${newUser._id}`);
             const updateResult = await Feedback.updateMany(
-                { guestId: linkGuestId, userId: null }, 
-                { 
-                    $set: { 
-                        userId: newUser._id, 
+                { guestId: linkGuestId, userId: null },
+                {
+                    $set: {
+                        userId: newUser._id,
                         name: newUser.name,
                         avatarUrl: newUser.avatarUrl,
                         guestId: null
-                    } 
+                    }
                 }
             );
             console.log(`Feedbacks updated for guest ID linking: ${updateResult.modifiedCount} modified.`);
@@ -291,7 +451,7 @@ app.post('/api/auth/signup', async (req, res) => {
             verifyUrl,
             newUser.avatarUrl || getDiceBearAvatarUrl(newUser.name)
         );
-        
+
         try {
             await sendEmail({ email: newUser.email, subject: emailSubject, message: emailText, html: emailHtml });
         } catch (emailError) {
@@ -365,13 +525,13 @@ app.post('/api/auth/google-signin', async (req, res) => {
             console.log(`Attempting to link guest ID ${linkGuestId} to Google user ${user._id}`);
             const updateResult = await Feedback.updateMany(
                 { guestId: linkGuestId, userId: null },
-                { 
-                    $set: { 
-                        userId: user._id, 
+                {
+                    $set: {
+                        userId: user._id,
                         name: user.name,
                         avatarUrl: user.avatarUrl,
                         guestId: null
-                    } 
+                    }
                 }
             );
             console.log(`Feedbacks updated for guest ID linking (Google): ${updateResult.modifiedCount} modified.`);
@@ -535,7 +695,7 @@ app.post('/api/user/change-password', authenticateToken, isEmailVerified, async 
 });
 app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.single('avatar'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) return res.status(500).json({ message: 'Avatar upload service is not configured on the server.' });
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) return res.status(500).json({ message: 'Avatar upload service is not configured on the server.' });
     try {
         const result = await new Promise((resolve, reject) => { cloudinary.uploader.upload_stream({ folder: 'nobita_feedback_avatars', transformation: [ { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" }, { quality: "auto:eco" } ] }, (error, result) => { if (error) return reject(new Error(error.message)); if (!result || !result.secure_url) return reject(new Error('Cloudinary did not return a URL.')); resolve(result); }).end(req.file.buffer); });
         const userId = req.user.userId; const user = await User.findById(userId);
@@ -550,7 +710,23 @@ app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.s
 
 
 // --- Static Files & Feedback Routes ---
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); // Existing public static server
+
+// Admin Panel Static Route - Now requires admin authentication via middleware before serving the actual index.html
+// For simplicity, we will rely on client-side JS to redirect if no token.
+app.get('/admin-panel', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-panel', 'index.html'));
+});
+
+// Redirect /admin to /admin-panel for consistency (optional)
+app.get('/admin', (req, res) => {
+    res.redirect('/admin-panel');
+});
+
+// Admin Login Page Route (publicly accessible)
+app.get('/admin-login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
+});
 
 app.get('/api/feedbacks', async (req, res) => {
     try {
@@ -578,6 +754,7 @@ app.post('/api/feedback', async (req, res) => {
         rating: parseInt(rating),
         userIp,
         isEdited: false,
+        readByAdmin: false, // New feedbacks are unread by default
     };
 
     const authHeader = req.headers['authorization'];
@@ -624,6 +801,10 @@ app.post('/api/feedback', async (req, res) => {
 
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
+
+        // Call push notification here after successful feedback submission
+        sendPushNotificationToAdmin(newFeedback);
+
         res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
 
     } catch (error) {
@@ -658,27 +839,16 @@ app.put('/api/feedback/:id', authenticateToken, isEmailVerified, async (req, res
         }
         await existingFeedback.save();
         res.status(200).json({ message: 'Your feedback has been updated!', feedback: existingFeedback });
-    } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Failed to update feedback.', error: error.message }); }
+    } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Failed to update profile.', error: error.message }); }
 });
 
-// --- Admin Panel Routes ---
-const authenticateAdmin = (req, res, next) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0');
-    const authHeader = req.headers.authorization; if (!authHeader) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: AUTH HEADER MISSING.' }); }
-    const [scheme, credentials] = authHeader.split(' '); if (scheme !== 'Basic' || !credentials) { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); return res.status(401).json({ message: 'UNAUTHORIZED: INVALID AUTH SCHEME.' }); }
-    const [username, password] = Buffer.from(credentials, 'base64').toString().split(':');
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) { next(); } else { res.set('WWW-Authenticate', 'Basic realm="Admin Area"'); res.status(401).json({ message: 'UNAUTHORIZED: INVALID ADMIN CREDENTIALS.' }); }
-};
-
-// UPDATED: Serve the admin panel as static files from the 'admin-panel' directory
-app.use('/admin-panel-nobita', authenticateAdmin, express.static(path.join(__dirname, 'admin-panel')));
-
-app.delete('/api/admin/feedback/:id', authenticateAdmin, async (req, res) => { console.log(`ADMIN DEL: ${req.params.id}`); try { const fb = await Feedback.findByIdAndDelete(req.params.id); if (!fb) return res.status(404).json({ message: 'ID not found.' }); res.status(200).json({ message: 'Deleted.' }); } catch (e) { console.error(`ADMIN DEL ERR: ${req.params.id}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
-app.delete('/api/admin/feedbacks/batch-delete', authenticateAdmin, async (req, res) => { const { ids } = req.body; console.log(`ADMIN BATCH DEL:`, ids); if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: 'No IDs.' }); try { const r = await Feedback.deleteMany({ _id: { $in: ids } }); if (r.deletedCount === 0) return res.status(404).json({ message: 'None found.' }); res.status(200).json({ message: `${r.deletedCount} deleted.`, deletedCount: r.deletedCount }); } catch (e) { console.error(`ADMIN BATCH DEL ERR:`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
-app.post('/api/admin/feedback/:id/reply', authenticateAdmin, async (req, res) => { const fId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN REPLY: ${fId}, Text: ${replyText}`); if (!replyText) return res.status(400).json({ message: 'Reply text missing.' }); try { const fb = await Feedback.findById(fId); if (!fb) return res.status(404).json({ message: 'ID not found.' }); fb.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await fb.save(); res.status(200).json({ message: 'Replied.', reply: fb.replies[fb.replies.length - 1] }); } catch (e) { console.error(`ADMIN REPLY ERR: ${fId}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
+// --- Admin Panel Routes (NOW PROTECTED by authenticateAdminToken) ---
+app.delete('/api/admin/feedback/:id', authenticateAdminToken, async (req, res) => { console.log(`ADMIN DEL: ${req.params.id}`); try { const fb = await Feedback.findByIdAndDelete(req.params.id); if (!fb) return res.status(404).json({ message: 'ID not found.' }); res.status(200).json({ message: 'Deleted.' }); } catch (e) { console.error(`ADMIN DEL ERR: ${req.params.id}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
+app.delete('/api/admin/feedbacks/batch-delete', authenticateAdminToken, async (req, res) => { const { ids } = req.body; console.log(`ADMIN BATCH DEL:`, ids); if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: 'No IDs.' }); try { const r = await Feedback.deleteMany({ _id: { $in: ids } }); if (r.deletedCount === 0) return res.status(404).json({ message: 'None found.' }); res.status(200).json({ message: `${r.deletedCount} deleted.`, deletedCount: r.deletedCount }); } catch (e) { console.error(`ADMIN BATCH DEL ERR:`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
+app.post('/api/admin/feedback/:id/reply', authenticateAdminToken, async (req, res) => { const fId = req.params.id; const { replyText, adminName } = req.body; console.log(`ADMIN REPLY: ${fId}, Text: ${replyText}`); if (!replyText) return res.status(400).json({ message: 'Reply text missing.' }); try { const fb = await Feedback.findById(fId); if (!fb) return res.status(404).json({ message: 'ID not found.' }); fb.replies.push({ text: replyText, adminName: adminName || 'Admin', timestamp: new Date() }); await fb.save(); res.status(200).json({ message: 'Replied.', reply: fb.replies[fb.replies.length - 1] }); } catch (e) { console.error(`ADMIN REPLY ERR: ${fId}`, e); res.status(500).json({ message: 'Failed.', error: e.message }); } });
 
 // NEW: DELETE a specific admin reply
-app.delete('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, async (req, res) => {
+app.delete('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdminToken, async (req, res) => {
     try {
         const { feedbackId, replyId } = req.params;
         const updatedFeedback = await Feedback.findByIdAndUpdate(
@@ -697,7 +867,7 @@ app.delete('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, 
 });
 
 // NEW: UPDATE (edit) a specific admin reply
-app.put('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, async (req, res) => {
+app.put('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdminToken, async (req, res) => {
     try {
         const { feedbackId, replyId } = req.params;
         const { text } = req.body;
@@ -720,7 +890,7 @@ app.put('/api/admin/feedback/:feedbackId/reply/:replyId', authenticateAdmin, asy
 });
 
 
-app.put('/api/admin/feedback/:id/pin', authenticateAdmin, async (req, res) => {
+app.put('/api/admin/feedback/:id/pin', authenticateAdminToken, async (req, res) => {
     const { isPinned } = req.body;
     if (typeof isPinned !== 'boolean') {
         return res.status(400).json({ message: 'Invalid request: "isPinned" must be a boolean.' });
@@ -740,7 +910,7 @@ app.put('/api/admin/feedback/:id/pin', authenticateAdmin, async (req, res) => {
     }
 });
 
-app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, async (req, res) => {
+app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminToken, async (req, res) => {
     const { feedbackId } = req.params;
     console.log(`ADMIN AVATAR CHANGE FOR FEEDBACK: ${feedbackId}`);
 
@@ -756,14 +926,14 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
             const user = await User.findById(feedback.userId);
             if (user) {
                 if (!user.name) return res.status(400).json({ message: 'User name missing for avatar generation.' });
-                
+
                 newAvatarUrl = getDiceBearAvatarUrl(user.name, Date.now().toString());
-                
+
                 user.avatarUrl = newAvatarUrl;
                 await user.save();
-                
+
                 await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: newAvatarUrl } });
-                
+
                 // Fetch the updated feedback to return the full object
                 const updatedFeedback = await Feedback.findById(feedbackId).populate({ path: 'userId', select: 'loginMethod isVerified' });
                 return res.status(200).json(updatedFeedback);
@@ -772,11 +942,11 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
 
         // Fallback for guests or if user was deleted
         if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
-        
+
         newAvatarUrl = getDiceBearAvatarUrl(feedback.name, Date.now().toString());
         feedback.avatarUrl = newAvatarUrl;
         await feedback.save();
-        
+
         res.status(200).json(feedback);
 
     } catch (error) {
@@ -785,14 +955,176 @@ app.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdmin, asyn
     }
 });
 
+// NEW: PATCH route to mark feedback as read
+app.patch('/api/admin/feedbacks/:id/mark-read', authenticateAdminToken, async (req, res) => {
+    try {
+        const feedbackId = req.params.id;
+        const feedback = await Feedback.findByIdAndUpdate(
+            feedbackId,
+            { $set: { readByAdmin: true } },
+            { new: true } // Return the updated document
+        );
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found.' });
+        }
+        res.status(200).json({ success: true, message: 'Feedback marked as read.', feedback });
+    } catch (error) {
+        console.error(`Error marking feedback ${req.params.id} as read:`, error);
+        res.status(500).json({ message: 'Failed to mark feedback as read.', error: error.message });
+    }
+});
 
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  } else {
-    res.status(404).json({message: "API endpoint not found."});
+
+// BLOG API ROUTES ADDED HERE (NOW PROTECTED by authenticateAdminToken)
+// Add new blog (ADMIN)
+app.post('/api/admin/blog', authenticateAdminToken, async (req, res) => {
+  const { link, title, summary, badge } = req.body;
+  if (!link || !title || !summary) return res.status(400).json({ message: 'Missing fields.' });
+  try {
+    const blog = new Blog({ link, title, summary, badge });
+    await blog.save();
+    res.status(201).json({ message: 'Blog created.', blog });
+  } catch (err) {
+    res.status(500).json({ message: 'Fail.', error: err.message });
   }
 });
+
+// Get all blogs (PUBLIC) - This remains public as it's for the frontend blog display
+app.get('/api/blogs', async (req, res) => {
+  try {
+    const blogs = await Blog.find().sort({ date: -1 });
+    res.json(blogs);
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    res.status(500).json({ message: "Failed to fetch blogs.", error: error.message });
+  }
+});
+
+// DELETE blog by ID (ADMIN)
+app.delete('/api/admin/blog/:id', authenticateAdminToken, async (req, res) => {
+  try {
+    const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
+    if (!deletedBlog) {
+      return res.status(404).json({ message: 'Blog not found.' });
+    }
+    res.json({ message: 'Blog deleted successfully.' });
+  } catch (e) {
+    console.error("Delete blog error:", e);
+    res.status(500).json({ message: 'Failed to delete blog.', error: e.message });
+  }
+});
+
+// UPDATE blog by ID (ADMIN)
+app.put('/api/admin/blog/:id', authenticateAdminToken, async (req, res) => {
+  const { link, title, summary, badge } = req.body;
+  if (!link || !title || !summary) return res.status(400).json({ message: 'Missing fields for update.' });
+  try {
+    const blog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { link, title, summary, badge },
+      { new: true, runValidators: true } // new: true returns the updated document, runValidators ensures schema validation
+    );
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found.' });
+    }
+    res.json({ message: 'Blog updated successfully.', blog });
+  } catch (e) {
+    console.error("Update blog error:", e);
+    res.status(500).json({ message: 'Failed to update blog.', error: e.message });
+  }
+});
+
+// --- Web Push Notification Setup ---
+webpush.setVapidDetails(
+  process.env.VAPID_SUBJECT,
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+// NEW: Endpoint to provide VAPID Public Key to the frontend
+app.get('/api/vapid-public-key', (req, res) => {
+    if (!process.env.VAPID_PUBLIC_KEY) {
+        console.error("VAPID_PUBLIC_KEY is not set in environment variables when serving to frontend.");
+        return res.status(500).json({ message: "VAPID public key not configured on server." });
+    }
+    res.send(process.env.VAPID_PUBLIC_KEY);
+});
+
+
+// Existing endpoint to save admin push subscription
+app.post('/api/admin/save-subscription', authenticateAdminToken, async (req, res) => {
+    // FIXED: Correctly parse the subscription object, allowing for nested or direct payload
+    const subscription = req.body.subscription || req.body; 
+    if (!subscription || !subscription.endpoint) {
+        return res.status(400).json({ message: 'No push subscription data provided, or endpoint missing.' });
+    }
+    try {
+        const adminUser = await User.findOne({ username: ADMIN_USERNAME });
+        if (!adminUser) {
+            return res.status(404).json({ message: 'Admin user not found in database.' });
+        }
+        adminUser.pushSubscription = subscription;
+        await adminUser.save();
+        adminPushSubscription = subscription; // Update in-memory as well
+        console.log("Admin push subscription saved to DB and in-memory.");
+        res.status(201).json({ message: 'Admin push subscription saved successfully!' });
+    } catch (error) {
+        console.error("Error saving admin push subscription:", error);
+        res.status(500).json({ message: 'Failed to save admin push subscription.', error: error.message });
+    }
+});
+
+
+// Function to send push notification to admin
+async function sendPushNotificationToAdmin(feedback) { // Make this function async
+  // Always use the latest loaded subscription
+  if (adminPushSubscription) { // Check if it's set
+    const payload = JSON.stringify({
+      title: 'New Feedback Received!',
+      body: `From: ${feedback.name} | Rating: ${feedback.rating}\n"${feedback.feedback}"`,
+      icon: '/icons/icon-192x192.png' // Optional: Add an icon for the notification
+    });
+
+    webpush.sendNotification(adminPushSubscription, payload)
+      .then(() => console.log('Push notification sent to admin!'))
+      .catch(async err => { // Make this async to use await with DB operations if needed for cleanup
+        console.error('Error sending push notification to admin:', err);
+        // If subscription is no longer valid, clear it from memory and DB
+        if (err.statusCode === 404 || err.statusCode === 410) {
+            console.warn('Admin push subscription is no longer valid. Clearing it from memory and DB.');
+            adminPushSubscription = null; // Clear from memory
+
+            // Also clear from DB
+            try {
+                // Find the admin user by username and clear their subscription
+                const adminUserInDB = await User.findOne({ username: ADMIN_USERNAME });
+                if (adminUserInDB) {
+                    adminUserInDB.pushSubscription = null;
+                    await adminUserInDB.save();
+                    console.log('Invalid admin push subscription removed from DB.');
+                }
+            } catch (dbError) {
+                console.error('Error removing invalid subscription from DB:', dbError);
+            }
+        }
+      });
+  } else {
+    console.log('No admin push subscription found. Cannot send notification.');
+  }
+}
+
+
+// Fallback for unmatched API routes and other static files
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({message: "API endpoint not found."});
+  } else {
+    // Serve static files from the 'public' directory
+    // This will handle requests like /index.html, /verify-email.html etc.
+    res.sendFile(path.join(__dirname, 'public', req.path));
+  }
+});
+
 
 app.listen(PORT, () => {
     console.log(`Nobita's server is running on port ${PORT}: http://localhost:${PORT}`);

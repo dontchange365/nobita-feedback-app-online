@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Hub (Secured UI)</title>
+    <link rel="manifest" href="/manifest.json">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-body-light: #f1f5f9; --bg-panel-light: #ffffff; --text-primary-light: #0f172a; --text-secondary-light: #64748b; --border-light: #e2e8f0;
+            --bg-body-dark: #0f172a; --bg-panel-dark: #1e293b; --text-primary-dark: #e2e8f0; --text-secondary-dark: #94a3b8; --border-dark: #334155;
+            --accent-pink: #ec4899; --accent-glow: rgba(236, 72, 153, 0.5); --danger-color: #f43f5e; --success-color: #22c59e; --warning-color: #f59e0b;
+
+            /* Global variable for consistent horizontal padding, now in rem */
+            --page-content-padding: 1rem; /* 16px / 16 = 1rem */
+            --border-width: 0.0625rem; /* 1px / 16 = 0.0625rem */
+            --header-height: 3.5rem; /* Approximate height of the header (e.g., 56px) */
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(0.625rem); } to { opacity: 1; transform: translateY(0); } } /* 10px */
+        @keyframes toastIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalContentIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Universal box-sizing for consistent width calculations */
+        * { box-sizing: border-box; }
+
+        /* Basic HTML and Body styles to fill the screen */
+        html, body {
+            height: 100%;
+            margin: 0;
+            /* Prevent horizontal scrolling */
+            overflow-x: hidden; /* New: Explicitly hide horizontal overflow */
+            overflow-y: auto;
+            min-height: 100vh;
+            /* Add padding to the top of the body to account for the fixed header */
+            padding-top: var(--header-height); /* This ensures content starts below the fixed header */
+        }
+
+        /* Dark/Light Mode transitions and base colors */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--bg-body-light);
+            color: var(--text-primary-light);
+            --bg-body: var(--bg-body-light);
+            --bg-panel: var(--bg-panel-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --border: var(--border-light);
+        }
+        body.dark-mode {
+            background-color: var(--bg-body-dark);
+            color: var(--text-primary-dark);
+            --bg-body: var(--bg-body-dark);
+            --bg-panel: var(--bg-panel-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --border: var(--border-dark);
+        }
+
+        /* Screen transitions for list/detail views */
+        .screen {
+            position: relative;
+            top: 0; left: 0; width: 100%;
+            min-height: calc(100vh - var(--header-height));
+            display: flex; flex-direction: column;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s;
+            overflow-y: auto;
+            /* Ensure screens themselves don't cause horizontal overflow */
+            overflow-x: hidden; /* New: Hide horizontal overflow for screens */
+            background-color: var(--bg-body);
+        }
+        .screen:not(.active) { transform: translateX(100%); pointer-events: none; opacity: 0; }
+        #list-container.slide-out { transform: translateX(-100%); opacity: 0; }
+
+        /* Header, Stats, List Toolbar styling */
+
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            padding: 0.75rem var(--page-content-padding);
+            background-color: var(--bg-panel);
+            border-bottom: var(--border-width) solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.625rem;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .app-header h1 {
+            margin: 0; font-size: 1.25rem;
+            white-space: nowrap;
+            flex-shrink: 1; min-width: 0; /* Important for text overflow */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .theme-switch {
+            display: flex; align-items: center; gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .switch { position: relative; display: inline-block; width: 2.75rem; height: 1.5rem; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 1.5rem; }
+        .slider:before { position: absolute; content: ""; height: 1rem; width: 1rem; left: 0.25rem; bottom: 0.25rem; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-pink); } input:checked + .slider:before { transform: translateX(1.25rem); }
+
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s;
+        }
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+        .notification-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            position: relative;
+        }
+        .notification-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            line-height: 1;
+        }
+
+
+        /* Stats Grid Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 1rem var(--page-content-padding);
+        }
+        .stat-card {
+            background-color: var(--bg-panel); border-radius: 0.75rem;
+            padding: 1rem;
+            border: var(--border-width) solid var(--border);
+            animation: fadeIn 0.5s ease both;
+        }
+        .stat-card .title { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.5rem 0; text-transform: uppercase; }
+        .stat-card .value { font-size: 1.75rem; font-weight: bold; margin: 0; }
+
+        /* Login Info Card (NEW) */
+        .login-info-card {
+            background-color: var(--bg-panel);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: var(--border-width) solid var(--border);
+            animation: fadeIn 0.5s ease both;
+        }
+        .login-info-card h3 {
+            margin: 0 0 0.75rem 0;
+            color: var(--accent-pink);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .login-info-card p {
+            margin: 0.4rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .login-info-card p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+
+        /* List Toolbar Section */
+        .list-toolbar {
+            padding: 0.75rem var(--page-content-padding);
+            display: flex; flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            border-top: var(--border-width) solid var(--border);
+            border-bottom: var(--border-width) solid var(--border);
+            background-color: var(--bg-panel);
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            min-width: 150px;
+            flex-basis: 100%;
+        }
+        .search-bar input {
+            width: 100%; padding: 0.625rem;
+            border-radius: 0.5rem;
+            border: var(--border-width) solid var(--border);
+            background-color: var(--bg-body); color: var(--text-primary);
+        }
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            flex-grow: 1;
+            justify-content: flex-start;
+        }
+        .filter-buttons button, .bulk-action-btn {
+            padding: 0.5rem 0.75rem;
+            border: var(--border-width) solid var(--border);
+            border-radius: 0.5rem;
+            background-color: transparent; color: var(--text-secondary); cursor: pointer;
+            flex-shrink: 0;
+        }
+        .filter-buttons button.active { background-color: var(--accent-pink); color: white; border-color: var(--accent-pink); }
+        .bulk-action-btn {
+            background-color: var(--danger-color); color: white; border-color: var(--danger-color);
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        @media (max-width: 480px) {
+            .bulk-action-btn {
+                flex-basis: 100%;
+                margin-left: 0;
+            }
+        }
+
+
+        /* Feedback List Styling */
+        .feedback-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 0 var(--page-content-padding);
+            padding-bottom: 1rem;
+            min-height: 200px;
+        }
+
+        .feedback-card {
+            background-color: var(--bg-panel);
+            border: var(--border-width) solid var(--border);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex; gap: 0.75rem;
+            align-items: center;
+            transition: all 0.2s ease; animation: fadeIn 0.5s ease both;
+            /* Ensure cards don't cause overflow */
+            min-width: 0; /* Allow flex item to shrink */
+            width: 100%; /* Ensure it takes full available width */
+        }
+        .feedback-card .card-selector { flex-shrink: 0; }
+        .feedback-card .card-main-content {
+            flex-grow: 1; cursor: pointer;
+            display: flex; gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+            min-width: 0; /* Important: Allow content to shrink */
+        }
+        .feedback-card:hover { transform: translateY(-0.1875rem); box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.05); border-color: var(--accent-pink); }
+        .card-avatar {
+            width: 2.8125rem; height: 2.8125rem; border-radius: 50%; object-fit: cover;
+            flex-shrink: 0;
+        }
+        .card-content {
+            flex-grow: 1;
+            min-width: 0; /* Important for text overflow */
+        }
+        .card-content h3 {
+            margin: 0 0 0.25rem 0; font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-content p { margin:0; font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* NEW: Added style for time display in feedback card */
+        .feedback-card .card-time {
+            font-size: 0.75rem; /* Smaller font size for time */
+            color: var(--text-secondary);
+            margin-left: auto; /* Push to the right */
+            align-self: flex-end; /* Align to the bottom right of the card */
+            white-space: nowrap; /* Prevent wrapping */
+            flex-shrink: 0; /* Prevent shrinking on small screens */
+        }
+
+
+        /* Detail Screen Styling */
+        .detail-header {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 1rem var(--page-content-padding);
+            background-color: var(--bg-panel); border-bottom: var(--border-width) solid var(--border);
+            flex-shrink: 0;
+            /* Ensure header of detail screen is also contained */
+            width: 100%;
+        }
+        .back-button { background: none; border: none; color: var(--text-primary); cursor: pointer; font-size: 1.5rem; }
+        .detail-header h2 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .detail-content {
+            padding: 1.5rem var(--page-content-padding);
+            overflow-y: auto; flex-grow: 1;
+            /* Ensure detail content doesn't cause horizontal overflow */
+            width: 100%;
+            overflow-x: hidden;
+        }
+        .detail-section {
+            background-color: var(--bg-panel);
+            border: var(--border-width) solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            /* Ensure sections are contained */
+            width: 100%;
+        }
+        .detail-section h4 {
+            margin: -1.25rem -1.25rem 1rem -1.25rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-secondary);
+            border-bottom: var(--border-width) solid var(--border);
+            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .feedback-display { display: flex; gap: 1rem; align-items: flex-start; }
+        .feedback-display-avatar { width: 3.125rem; height: 3.125rem; border-radius: 50%; }
+        .action-button {
+            background-color: var(--bg-body); width: 100%; color: var(--text-primary);
+            border: var(--border-width) solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .action-button:hover { border-color: var(--accent-pink); color: var(--accent-pink); }
+        .action-button.danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
+        .action-button.danger:hover { background-color: #c23049; }
+        textarea {
+            width: 100%; padding: 0.625rem;
+            border: var(--border-width) solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--bg-body); color: var(--text-primary);
+            min-height: 5rem;
+            margin-bottom: 0.625rem;
+        }
+        .replies-list .reply-item {
+            display: flex; gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-top: var(--border-width) solid var(--border);
+            animation: fadeIn 0.3s ease;
+            width: 100%; /* Ensure reply items are contained */
+              margin-bottom: 2.4rem !important;
+        }
+        .reply-avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .reply-body { flex-grow: 1; min-width: 0; } /* Important for text overflow in replies */
+        .reply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+        .reply-actions .reply-action-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 0.8rem; padding: 0.25rem; }
+        .reply-actions .reply-action-btn:hover { color: var(--accent-pink); }
+        .reply-actions .reply-action-btn.danger:hover { color: var(--danger-color); }
+        .reply-body p { margin: 0.25rem 0 0.5rem; }
+        .edit-reply-form { margin-top: 0.5rem; }
+
+        /* Toast and Modal Styling */
+        #toast-container { position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 1001; }
+        .toast {
+            background-color: var(--bg-panel-dark); color: var(--text-primary-dark);
+            padding: 0.9375rem 1.25rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.3125rem 0.9375rem rgba(0,0,0,0.3);
+            margin-top: 0.625rem; opacity: 0; animation: toastIn 0.3s ease forwards;
+            max-width: calc(100vw - 2.5rem); /* Ensure toast doesn't overflow horizontally */
+            display: flex; /* Added for toast content alignment */
+            align-items: center; /* Added for toast content alignment */
+            gap: 0.5rem; /* Added for spacing between icon/avatar and text */
+        }
+        .toast.success { background-color: var(--success-color); } .toast.error { background-color: var(--danger-color); } .toast.warning { background-color: var(--warning-color); color: #fff; }
+        .toast .toast-icon { font-size: 1.2em; }
+        .toast .toast-avatar { width: 1.8rem; height: 1.8rem; border-radius: 50%; object-fit: cover; }
+
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: modalFadeIn 0.3s ease; }
+        .modal-content {
+            background-color: var(--bg-panel); color: var(--text-primary);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            width: 90%; max-width: 25rem;
+            text-align: center;
+            box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,0.2);
+            animation: modalContentIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-content h3 { margin-top: 0; }
+        .modal-content p { margin: 0.75rem 0 1.5rem 0; color: var(--text-secondary); }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
+        .modal-btn {
+            flex-grow: 1; padding: 0.75rem;
+            border: none; border-radius: 0.5rem;
+            font-weight: bold; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .modal-btn:hover { transform: translateY(-0.125rem); opacity: 0.9; }
+        .modal-btn.cancel { background-color: var(--bg-body); color: var(--text-secondary); border: var(--border-width) solid var(--border); }
+        .modal-btn.confirm { background-color: var(--danger-color); color: white; }
+
+
+        /* --- Mobile Specific Adjustments --- */
+        @media (max-width: 600px) {
+            :root {
+                --page-content-padding: 0.75rem;
+                --header-height: 3.8rem;
+            }
+
+            .app-header {
+                padding: 0.75rem 0.75rem;
+            }
+
+            .app-header h1 {
+                font-size: 1.1rem;
+            }
+
+            .header-controls {
+                gap: 0.7rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr !important; /* force 2 columns on mobile */
+                gap: 0.75rem;
+            }
+            /* Add styles for square/cube look for stat cards */
+            .stat-card, .login-info-card {
+                min-height: 110px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .list-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.6rem;
+            }
+
+            .search-bar {
+                order: 1;
+                flex-basis: auto;
+            }
+
+            .filter-buttons {
+                order: 2;
+                justify-content: center;
+                flex-basis: auto;
+            }
+            .filter-buttons button {
+                flex-grow: 1;
+            }
+
+            .bulk-action-btn {
+                order: 3;
+                margin-left: 0;
+            }
+
+            .feedback-card .card-main-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .card-avatar {
+                margin-bottom: 0.3rem;
+            }
+
+            .detail-section {
+                padding: 1rem;
+            }
+            .detail-section h4 {
+                margin: -1rem -1rem 0.8rem -1rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .action-button {
+                padding: 0.6rem;
+                font-size: 0.95rem;
+            }
+
+            .detail-section > div {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+        }
+
+        /* --- Further refinement for smaller phone screens if needed (e.g., < 360px) --- */
+        @media (max-width: 360px) {
+            .filter-buttons button {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.6rem;
+            }
+        }
+
+      /* Feedback Detail: Always Centered Modal */
+#detail-container.active {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1001;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+#detail-container .detail-content {
+  max-height: 100vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  width: 95vw;
+  max-width: 530px;
+  margin: 0;
+  padding: rem;
+}
+
+.detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 5; /* ya z-index: 11; aur bhi bada kar sakta hai */
+  background: var(--bg-panel);
+}
+
+/* Notification Modal Styling */
+#notif-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.3s ease;
+}
+
+#notif-modal .modal-content {
+    background-color: var(--bg-panel);
+    border: var(--border-width) solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 0.625rem 1.875rem rgba(0,0,0,0.2);
+    animation: modalContentIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left; /* Adjust text alignment for notification list */
+    max-height: 80vh; /* Ensure modal content is scrollable if many notifications */
+    display: flex;
+    flex-direction: column;
+}
+
+#notif-modal .modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+#notif-modal .modal-actions {
+    margin-top: 1rem;
+    justify-content: flex-end; /* Align close button to the right */
+}
+
+#notif-modal .modal-actions button {
+    background-color: var(--accent-pink);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    flex-grow: 0; /* Don't let it grow */
+}
+
+#notif-list {
+    flex-grow: 1;
+    overflow-y: auto; /* Make the list scrollable */
+    padding-right: 0.5rem; /* Add some padding for scrollbar */
+    margin-bottom: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#notif-list > div {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border); /* Use theme border */
+}
+
+#notif-list > div:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+#notif-list img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-pink); /* Use theme accent */
+    object-fit: cover;
+}
+
+#notif-list span {
+    font-weight: 600;
+    color: var(--text-primary); /* Use theme text primary */
+}
+
+#notif-list div > div { /* for feedback text */
+    color: var(--accent-pink);
+    font-size: 0.89rem;
+}
+
+#notif-list span:last-child { /* for time */
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--text-secondary); /* Use theme text secondary */
+}
+
+
+@media (max-width: 600px) {
+    #notif-modal .modal-content {
+        padding: 1rem;
+    }
+    #notif-list > div {
+        flex-wrap: wrap;
+        padding: 10px 0;
+        gap: 10px;
+    }
+    #notif-list span:last-child {
+        margin-left: 0;
+        width: 100%;
+        text-align: right;
+    }
+}
+
+.stat-btn {
+    cursor: pointer;
+    transition: box-shadow 0.18s, transform 0.19s;
+    box-shadow: 0 2px 10px 0 rgba(35, 35, 56, 0.08);
+    border: 1.5px solid transparent;
+    position: relative;
+}
+.stat-btn:active {
+    transform: scale(0.98);
+}
+.stat-btn:hover, .stat-btn:focus {
+    box-shadow: 0 4px 20px 0 rgba(236, 72, 153, 0.467), 0 2px 12px 0 rgba(35, 35, 56, 0.165);
+    border: 1.5px solid var(--accent-pink);
+    z-index: 2;
+}
+.stat-modal-content {
+    animation: modalContentIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--bg-panel);
+    min-width: 240px;
+}
+
+/* Blog Modal Specific Styles */
+#blog-modal-overlay {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#blog-modal-overlay .modal-content {
+  background-color: var(--bg-panel-dark); /* Darker background for blog modal */
+  color: #FFD700; /* Gold text */
+  max-width: 420px;
+  padding: 0; /* Remove default padding as internal div handles it */
+  text-align: left; /* Align text left for forms/lists */
+  max-height: 90vh;   /* Modal can't exceed 90% viewport */
+  overflow-y: auto;   /* Vertical scroll within modal if needed */
+  min-height: 180px;
+}
+#blog-modal-overlay h3 {
+    margin:1.5rem 0 0.9rem 0;
+    color:#FFD700;
+    font-size:1.1rem;
+    text-align: center;
+}
+#blog-modal-overlay label {
+    display: block;
+    margin-top: 0.8rem;
+    margin-bottom: 0.3rem;
+    color: #FFD700;
+    font-size: .98em;
+}
+#blog-modal-overlay input[type="text"],
+#blog-modal-overlay textarea {
+    width: calc(100% - 20px); /* Adjust width for padding/border */
+    padding: 0.6rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid rgba(255, 215, 0, 0.5); /* Gold border */
+    border-radius: 0.4rem;
+    background-color: #333; /* Dark input background */
+    color: #fff; /* White text for inputs */
+    font-size: 0.95rem;
+    box-sizing: border-box; /* Include padding/border in element's total width/height */
+}
+#blog-modal-overlay textarea {
+    resize: vertical;
+}
+#blog-modal-overlay button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #FFD700; /* Gold button */
+    color: #232338; /* Dark text for button */
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    margin-top: 1rem;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+}
+#blog-modal-overlay button[type="submit"]:hover {
+    background-color: #e6c200; /* Darker gold on hover */
+    transform: translateY(-2px);
+}
+#blog-modal-overlay #msg-area {
+    margin-top: 1rem;
+    color: #FFD700;
+    text-align: center;
+    font-size: 0.9em;
+}
+#blog-modal-overlay .blog-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px dashed rgba(255, 215, 0, 0.3); /* Dashed gold border */
+}
+#blog-modal-overlay .blog-item:last-child {
+    border-bottom: none;
+}
+#blog-modal-overlay .blog-item-details {
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+#blog-modal-overlay .blog-item-details strong {
+    color: #fff; /* White title */
+}
+#blog-modal-overlay .blog-item-actions button {
+    background: none;
+    border: 1px solid;
+    border-radius: 0.3rem;
+    padding: 0.3em 0.6em;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+#blog-modal-overlay .blog-item-actions .edit-blog-btn {
+    color: #4CAF50; /* Green for edit */
+    border-color: #4CAF50;
+}
+#blog-modal-overlay .blog-item-actions .edit-blog-btn:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+#blog-modal-overlay .blog-item-actions .delete-blog-btn {
+    color: #f43f5e; /* Red for delete */
+    border-color: #f43f5e;
+}
+#blog-modal-overlay .blog-item-actions .delete-blog-btn:hover {
+    background-color: #f43f5e;
+    color: white;
+}
+
+#blog-admin-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.edit-blog-form {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Adjustments for mobile view within the blog modal */
+@media (max-width: 600px) {
+    #blog-modal-overlay .modal-content {
+        max-width: 95%; /* Make it wider on small screens */
+    }
+    #blog-modal-overlay .blog-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    #blog-modal-overlay .blog-item-details {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    #blog-modal-overlay .blog-item-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    #blog-modal-overlay .blog-item-actions button {
+        flex-grow: 1;
+        margin-left: 0.5rem;
+    }
+    #blog-modal-overlay .blog-item-actions button:first-child {
+        margin-left: 0;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+    <div id="list-container" class="screen active">
+        <header class="app-header">
+            <h1>Admin Hub</h1>
+            <div class="header-controls">
+                <button class="notification-btn" id="notification-btn" title="Notifications">
+                    🔔 <span class="badge" id="notification-count" style="display:none;">0</span>
+                </button>
+                <button class="logout-btn" id="logout-btn">Logout</button>
+                <div class="theme-switch">
+                    <span>☀️</span><label class="switch"><input type="checkbox" id="theme-toggle"><span class="slider"></span></label><span>🌙</span>
+                </div>
+            </div>
+        </header>
+        <div class="stats-grid">
+            <div class="stat-card stat-btn" data-type="total"><p class="title">Total Feedbacks</p><h2 id="stats-total" class="value">...</h2></div>
+            <div class="stat-card stat-btn" data-type="average"><p class="title">Average Rating</p><h2 id="stats-avg-rating" class="value">...</h2></div>
+            <div class="stat-card stat-btn" data-type="replies"><p class="title">Total Replies</p><h2 id="stats-replies" class="value">...</h2></div>
+            <div class="stat-card stat-btn" data-type="pinned"><p class="title">Pinned Items</p><h2 id="stats-pinned" class="value">...</h2></div>
+            <div class="login-info-card stat-btn" data-type="session">
+                <h3>Admin Session Details</h3>
+                <p>Logged in as: <strong><span id="admin-username-display">Loading...</span></strong></p>
+                <p>Logged in at: <span id="admin-login-timestamp-display">Loading...</span></p>
+            </div>
+            <!-- NEW: Add Blog stat-square -->
+            <div class="stat-card stat-btn" data-type="addblog" style="background:#232338; color:#FFD700;">
+                <p class="title"><i class="fas fa-blog"></i> Add Blog</p>
+                <h2 class="value" style="color:#FFD700;font-size:2.0rem;"><i class="fas fa-plus-circle"></i></h2>
+            </div>
+        </div>
+
+        <!-- MODAL POPUP FOR STATS -->
+        <div id="stat-modal-overlay" class="modal-overlay" style="display:none;">
+            <div class="modal-content stat-modal-content">
+                <h3 id="stat-modal-title"></h3>
+                <div id="stat-modal-body" style="margin: 1.1rem 0 1.7rem 0;"></div>
+                <div class="modal-actions">
+                    <button onclick="closeStatModal()" class="modal-btn cancel">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL FOR BLOG CRUD -->
+        <div id="blog-modal-overlay" class="modal-overlay" style="display:none;">
+            <div class="modal-content stat-modal-content" style="max-width:420px;padding:0;">
+                <div style="padding:0 1.4rem;">
+                    <h3 style="margin:1.5rem 0 0.9rem 0;color:#FFD700;font-size:1.1rem;"><i class="fas fa-blog"></i> Manage Blogs</h3>
+                    <form id="add-blog-form" autocomplete="off">
+                        <label for="blog-link" style="color:#FFD700;font-size:.98em;">File Link (e.g. <b>rdp.html</b>):</label>
+                        <input type="text" id="blog-link" placeholder="File name (e.g. rdp.html)" required>
+                        <label for="blog-title" style="color:#FFD700;font-size:.98em;">Blog Title:</label>
+                        <input type="text" id="blog-title" placeholder="Blog title" required>
+                        <label for="blog-summary" style="color:#FFD700;font-size:.98em;">Summary Text:</label>
+                        <textarea id="blog-summary" placeholder="Short description below the title" required rows="2"></textarea>
+                        <label for="blog-badge" style="color:#FFD700;font-size:.98em;">Badge Text (optional):</label>
+                        <input type="text" id="blog-badge" placeholder="Badge (e.g. RDP)">
+                        <button type="submit" style="margin-bottom:8px;"><i class="fas fa-plus"></i> Add Blog</button>
+                        <div id="msg-area"></div>
+                    </form>
+                    <div id="blog-admin-list" style="margin-top:20px;"></div>
+                </div>
+                <div class="modal-actions" style="margin-top:1.2rem;margin-bottom:1rem;">
+                    <button onclick="closeBlogModal()" class="modal-btn cancel">Close</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="list-toolbar">
+            <div class="search-bar"><input type="search" id="search-input" placeholder="Search by name or feedback..."></div>
+            <div class="filter-buttons" id="filter-buttons">
+                <button class="active" data-filter="all">All</button><button data-filter="pinned">Pinned</button><button data-filter="replied">Replied</button><button data-filter="unreplied">Unreplied</button>
+            </div>
+            <button class="bulk-action-btn" onclick="tryDeleteSelectedFeedbacks()">Delete Selected</button>
+        </div>
+        <div class="feedback-list" id="feedback-list"><p style="text-align:center; padding: 2rem;">Loading feedbacks...</p></div>
+    </div>
+    <div id="detail-container" class="screen"></div>
+    <div id="toast-container"></div>
+
+    <div id="custom-confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="modal-btn cancel">Cancel</button>
+                <button id="modal-confirm-btn" class="modal-btn confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notif-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Notifications</h3>
+            <div id="notif-list">
+                <div style="color:#ccc;text-align:center;margin:2rem 0;">Loading notifications...</div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="document.getElementById('notif-modal').style.display = 'none';">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allFeedbacks = [];
+        let currentFilter = 'all';
+        let currentSearchTerm = '';
+        const ADMIN_AVATAR = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Example Admin Avatar
+        let ADMIN_NAME = 'Admin'; // Will be updated from localStorage
+
+        // NEW: Global state for notifications
+        let notificationList = []; // List of new feedback notifications
+        let unreadNotifCount = 0;  // Kitne unread
+        let lastFeedbackId = null; // To track the latest feedback fetched for polling
+
+        // NEW: Blog management variables
+        let blogList = []; // To store blog data
+
+        // --- Step 1: Consolidated Service Worker Registration Function ---
+        async function setupServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.register('/sw.js');
+                    console.log('Service worker registered:', reg.scope);
+
+                    // NEW: Add event listener for messages from the service worker
+                    navigator.serviceWorker.addEventListener('message', (event) => {
+                        console.log("Push message in foreground:", event.data);
+                        // Assuming event.data is an object with title and body
+                        if (event.data && event.data.type === 'new-feedback') {
+                            const { title, body, avatarUrl, feedback } = event.data;
+                            // Add to notificationList and update badge without re-fetching all feedbacks
+                            onNewFeedbackReceivedFromSW(title, body, avatarUrl, feedback);
+                        } else if (event.data && event.data.type === 'toast') {
+                            showToast(event.data.message, event.data.toastType, event.data.avatarUrl, event.data.icon);
+                        }
+                    });
+
+                    return reg;
+                } catch (err) {
+                    console.error('Service worker registration failed:', err);
+                }
+            }
+            return null; // Return null if SW not supported or registration fails
+        }
+
+        // --- Authentication Check on Load ---
+        document.addEventListener('DOMContentLoaded', async () => { // Made async to await setupServiceWorker
+            const adminToken = localStorage.getItem('adminToken');
+            const adminUser = JSON.parse(localStorage.getItem('adminLoggedInUser'));
+
+            if (!adminToken || !adminUser || !adminUser.username || !adminUser.loggedInAt) {
+                // No valid admin token or user details found, redirect to login
+                window.location.href = '/admin-login.html';
+                return; // Stop further execution
+            }
+
+            // Set Admin Name from logged-in user details
+            ADMIN_NAME = adminUser.username;
+            document.getElementById('admin-username-display').textContent = ADMIN_NAME;
+            try {
+                const loginDate = new Date(adminUser.loggedInAt);
+                document.getElementById('admin-login-timestamp-display').textContent = loginDate.toLocaleString();
+            } catch (e) {
+                document.getElementById('admin-login-timestamp-display').textContent = 'N/A';
+            }
+
+            // Proceed with normal admin panel setup if authenticated
+            setupEventListeners();
+            applyInitialTheme();
+            // Call fetchAndProcessData and then initialize lastFeedbackId
+            fetchAndProcessData().then(() => {
+                if(allFeedbacks.length > 0) {
+                    lastFeedbackId = allFeedbacks[0]._id;
+                }
+            });
+
+
+            // --- Step 2: Register SW ONLY ONCE and then setup push notifications ---
+            const swRegistration = await setupServiceWorker();
+            if (swRegistration) {
+                subscribeUserForPush(swRegistration); // Pass the registration object
+            }
+
+            // Start polling for new feedbacks
+            setInterval(pollNewFeedbacks, 10000); // 10s
+
+            // Add event listener for the blog submission form
+            document.getElementById('add-blog-form').addEventListener('submit', handleAddBlog);
+        });
+
+        function setupEventListeners() {
+            document.getElementById('theme-toggle').addEventListener('change', toggleTheme);
+            document.getElementById('search-input').addEventListener('input', e => {
+                currentSearchTerm = e.target.value.toLowerCase();
+                renderList();
+            });
+            document.getElementById('filter-buttons').addEventListener('click', e => {
+                if (e.target.tagName === 'BUTTON') {
+                    currentFilter = e.target.dataset.filter;
+                    document.querySelectorAll('#filter-buttons button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderList();
+                }
+            });
+            document.getElementById('logout-btn').addEventListener('click', logoutAdmin); // NEW: Logout button
+
+            document.getElementById('notification-btn').addEventListener('click', () => {
+                // Modified to open actual notification modal
+                openNotifModal();
+            });
+
+            // Add Blog stat-square logic - MODIFIED
+            document.querySelectorAll('.stat-btn').forEach(card => {
+                card.addEventListener('click', function() {
+                    let type = this.getAttribute('data-type');
+                    if (type === 'addblog') {
+                        showBlogModal();
+                    } else {
+                        showStatModal(type);
+                    }
+                });
+            });
+        }
+        function applyInitialTheme() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            document.getElementById('theme-toggle').checked = isDarkMode;
+        }
+        function toggleTheme(e) {
+            document.body.classList.toggle('dark-mode', e.target.checked);
+            localStorage.setItem('darkMode', e.target.checked);
+        }
+
+        // NEW: Admin Logout Function
+        function logoutAdmin() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminLoggedInUser');
+            // Clear any active push subscriptions on logout if possible (optional but good practice)
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                 navigator.serviceWorker.ready.then(reg => {
+                    reg.pushManager.getSubscription().then(subscription => {
+                        if (subscription) {
+                            subscription.unsubscribe().then(successful => {
+                                if (successful) console.log('Successfully unsubscribed from push notifications.');
+                                // You might want to notify your backend to remove this subscription too
+                            }).catch(e => console.error('Failed to unsubscribe push:', e));
+                        }
+                    });
+                 });
+            }
+
+            showToast('Logged out successfully.', 'info');
+            setTimeout(() => {
+                window.location.href = '/admin-login.html';
+            }, 500);
+        }
+
+        async function subscribeUserForPush(registration) {
+            if (!('PushManager' in window)) {
+                console.warn('PushManager not supported by browser.');
+                document.getElementById('notification-btn').style.display = 'none';
+                return;
+            }
+
+            try {
+                // Request Notification permission
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    showToast("Notifications blocked. Enable to get live updates.", "warning");
+                    document.getElementById('notification-btn').style.display = 'none';
+                    return;
+                }
+
+                let subscription = await registration.pushManager.getSubscription();
+                if (!subscription) {
+                    const response = await fetch('/api/vapid-public-key');
+                    if (!response.ok) {
+                        console.error('Failed to get VAPID public key:', response.statusText);
+                        showToast('Failed to setup push notifications: Server key missing.', 'error');
+                        document.getElementById('notification-btn').style.display = 'none';
+                        return;
+                    }
+                    const vapidPublicKey = await response.text();
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                    });
+                }
+                console.log('User is subscribed:', subscription);
+
+                // Send subscription to your server
+                // CHANGED: Path to /api/admin/save-subscription as per server.js
+                await fetch('/api/admin/save-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({ subscription })
+                });
+                showToast('Push notifications enabled!', 'success');
+                document.getElementById('notification-btn').style.display = 'inline-block'; // Ensure button is visible
+            } catch (error) {
+                console.error('Failed to subscribe the user for push:', error);
+                showToast('Failed to enable push notifications. Check console.', 'error');
+                document.getElementById('notification-btn').style.display = 'none';
+            }
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        async function fetchAndProcessData() {
+            try {
+                const response = await fetch('/api/feedbacks', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        const errorData = await response.json().catch(() => ({ message: 'Unauthorized' }));
+                        showToast(errorData.message || 'Admin session expired or unauthorized. Please log in again.', 'error');
+                        logoutAdmin();
+                        return;
+                    }
+                    throw new Error(`HTTP Error: ${response.statusText}`);
+                }
+                allFeedbacks = await response.json();
+                renderList();
+                calculateAndDisplayStats();
+            } catch (error) {
+                showToast(`Could not load data: ${error.message}`, "error");
+                document.getElementById('feedback-list').innerHTML = `<p style="text-align:center; padding: 2rem; color: var(--danger-color);">Failed to load feedbacks. ${error.message}</p>`;
+            }
+        }
+
+        function renderList() {
+            const listEl = document.getElementById('feedback-list');
+            let filteredFeedbacks = allFeedbacks;
+            if (currentFilter === 'pinned') filteredFeedbacks = allFeedbacks.filter(fb => fb.isPinned);
+            if (currentFilter === 'replied') filteredFeedbacks = allFeedbacks.filter(fb => fb.replies && fb.replies.length > 0);
+            if (currentFilter === 'unreplied') filteredFeedbacks = filteredFeedbacks.filter(fb => !fb.replies || fb.replies.length === 0);
+            if (currentSearchTerm) {
+                filteredFeedbacks = filteredFeedbacks.filter(fb => {
+                    const userName = ((fb.userId && fb.userId.name) ? fb.userId.name : fb.name) || 'Guest User';
+                    return userName.toLowerCase().includes(currentSearchTerm) || (fb.feedback && fb.feedback.toLowerCase().includes(currentSearchTerm));
+                });
+            }
+            if (filteredFeedbacks.length === 0) {
+                listEl.innerHTML = `<p style="text-align:center; padding: 2rem;">No feedback matches your criteria.</p>`;
+                return;
+            }
+            listEl.innerHTML = filteredFeedbacks.map((fb, index) => {
+                const userName = ((fb.userId && fb.userId.name) ? fb.userId.name : fb.name) || 'Guest User';
+                const avatarUrl = fb.avatarUrl || `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(userName)}`;
+                // Format timestamp to 12-hour format
+                const feedbackTime = new Date(fb.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                return `
+                <div class="feedback-card" data-id="${fb._id}" style="animation-delay: ${index * 30}ms">
+                    <div class="card-selector"><input type="checkbox" value="${fb._id}"></div>
+                    <div class="card-main-content" onclick="navigateToDetail('${fb._id}')">
+                        <img src="${avatarUrl}" alt="avatar" class="card-avatar">
+                        <div class="card-content">
+                            <h3>${userName} ${fb.isPinned ? '📌' : ''}</h3>
+                            <p class="rating">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</p>
+                        </div>
+                    </div>
+                    <div class="card-time">${feedbackTime}</div>
+                </div>`;
+            }).join('');
+        }
+        function renderDetailScreen(feedbackId) {
+            const fb = allFeedbacks.find(f => f._id === feedbackId);
+            if (!fb) return navigateToList();
+
+            const detailContainer = document.getElementById('detail-container');
+            const userName = ((fb.userId && fb.userId.name) ? fb.userId.name : fb.name) || 'Guest User';
+            const userAvatar = fb.avatarUrl || `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(userName)}`;
+
+            let userTag = '';
+            const blueTickPath = '/images/blue-tick.png', redTickPath = '/images/red-tick.png';
+            if (fb.userId && typeof fb.userId === 'object') {
+                if (fb.userId.isVerified) userTag = `<img src="${blueTickPath}" alt="V" title="Verified" style="height:1.25rem;">`; /* 20px */
+                else if (fb.userId.loginMethod === 'email') userTag = `<img src="${redTickPath}" alt="NV" title="Not Verified" style="height:1.25rem;">`; /* 20px */
+            } else if (fb.googleIdSubmitter) {
+                userTag = `<img src="${blueTickPath}" alt="V" title="Verified (Google Legacy)" style="height:1.25rem;">`; /* 20px */
+            } else {
+                userTag = `<img src="${redTickPath}" alt="G" title="Guest or Unknown" style="height:1.25rem;">`; /* 20px */
+            }
+
+            const repliesHtml = fb.replies && fb.replies.length > 0 ? fb.replies.map(r => `
+                <div class="reply-item" id="reply-${r._id}">
+                    <img src="${ADMIN_AVATAR}" alt="admin avatar" class="reply-avatar">
+                    <div class="reply-body">
+                        <div class="reply-header">
+                            <strong>${r.adminName || 'Admin'}</strong>
+                            <div class="reply-actions">
+                                <button class="reply-action-btn" onclick="toggleEditReply('${fb._id}', '${r._id}')">Edit</button>
+                                <button class="reply-action-btn danger" onclick="tryDeleteReply('${fb._id}', '${r._id}')">Delete</button>
+                            </div>
+                        </div>
+                        <p class="reply-text">${r.text}</p>
+                        <small>${new Date(r.timestamp).toLocaleString()}</small>
+                        <div class="edit-reply-form" style="display: none;">
+                            <textarea class="edit-reply-textarea">${r.text}</textarea>
+                            <button class="action-button" onclick="tryEditReply('${fb._id}', '${r._id}')">Save Changes</button>
+                        </div>
+                    </div>
+                </div>`).join('') : '<p>No replies yet.</p>';
+
+            const originalContentHtml = (fb.isEdited && fb.originalContent) ? `
+                <div class="detail-section">
+                    <h4>Original Content (Pre-edit)</h4>
+                    <p><strong>Feedback:</strong> "${fb.originalContent.feedback}"</p>
+                    <small>Posted: ${new Date(fb.originalContent.timestamp).toLocaleString()}</small>
+                </div>` : '';
+
+            detailContainer.innerHTML = `
+                <header class="detail-header">
+                    <button class="back-button" onclick="navigateToList()">‹</button>
+                    <h2>${userName} ${userTag}</h2>
+                </header>
+                <div class="detail-content">
+                    <div class="detail-section">
+                        <h4>Feedback Details ${fb.isEdited ? '(Edited)' : ''}</h4>
+                        <div class="feedback-display">
+                            <img src="${userAvatar}" alt="user avatar" class="feedback-display-avatar">
+                            <div>
+                                <p class="rating" style="font-size:1.2rem; margin-top:0;">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</p>
+                                <p>"${fb.feedback}"</p>
+                                <small>Submitted: ${new Date(fb.timestamp).toLocaleString()}</small>
+                            </div>
+                        </div>
+                    </div>
+                    ${originalContentHtml}
+                    <div class="detail-section">
+                        <h4>Manage</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+                            <button class="action-button" onclick="tryPinFeedback('${fb._id}', ${fb.isPinned})">${fb.isPinned ? 'Unpin' : 'Pin'}</button>
+                            <button class="action-button" onclick="tryChangeAvatarForFeedback('${fb._id}')">New Avatar</button>
+                            <button class="action-button danger" onclick="tryDeleteFeedback('${fb._id}')">Delete</button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Reply as ${ADMIN_NAME}</h4>
+                        <textarea id="reply-text" placeholder="Your reply..."></textarea>
+                        <button class="action-button" style="width:100%" onclick="tryPostReply('${fb._id}')">Send Reply</button>
+                        <div class="replies-list" style="margin-top:1.25rem;">${repliesHtml}</div>
+                    </div>
+                </div>`;
+        }
+        function calculateAndDisplayStats() {
+            const total = allFeedbacks.length;
+            const avgRating = total > 0 ? (allFeedbacks.reduce((sum, fb) => sum + fb.rating, 0) / total).toFixed(1) : '0.0';
+            const pinned = allFeedbacks.filter(fb => fb.isPinned).length;
+            const replies = allFeedbacks.reduce((sum, fb) => sum + (fb.replies ? fb.replies.length : 0), 0);
+            document.getElementById('stats-total').textContent = total;
+            document.getElementById('stats-avg-rating').textContent = `${avgRating} ★`;
+            document.getElementById('stats-pinned').textContent = pinned;
+            document.getElementById('stats-replies').textContent = replies;
+        }
+
+        function navigateToDetail(id) {
+            renderDetailScreen(id);
+            document.getElementById('list-container').classList.add('slide-out');
+            document.getElementById('detail-container').classList.add('active');
+        }
+
+        function navigateToList() {
+            document.getElementById('list-container').classList.remove('slide-out');
+            document.getElementById('detail-container').classList.remove('active');
+            renderList();
+        }
+
+        // Modified performApiAction to include admin token
+        async function performApiAction(url, options = {}) {
+            const adminToken = localStorage.getItem('adminToken');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers // Merge existing headers
+            };
+
+            if (adminToken) {
+                headers['Authorization'] = `Bearer ${adminToken}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: headers,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP ${response.status}: ${response.statusText}` }));
+                    // Check for 401/403 specifically to handle expired/invalid tokens
+                    if (response.status === 401 || response.status === 403) {
+                        showToast(errorData.message || 'Admin session expired or unauthorized. Please log in again.', 'error');
+                        logoutAdmin();
+                        return;
+                    }
+                    throw new Error(`HTTP Error: ${response.statusText}`);
+                }
+                return response.status === 204 ? true : await response.json();
+            } catch (error) {
+                console.error('API Action Failed:', error);
+                // Only show toast if it's not a session invalidation already handled
+                if (error.message !== "Admin session invalidated.") {
+                    showToast(error.message, 'error');
+                }
+                throw error;
+            }
+        }
+
+        function showCustomConfirm(message, title = "Confirm Action") {
+            return new Promise(resolve => {
+                const modal = document.getElementById('custom-confirm-modal');
+                const titleEl = document.getElementById('modal-title');
+                const messageEl = document.getElementById('modal-message');
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                modal.style.display = 'flex';
+
+                confirmBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    resolve(true);
+                };
+
+                cancelBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    resolve(false);
+                };
+            });
+        }
+
+        function handleSuccess(message) {
+            showToast(message, 'success');
+            // Instead of location.reload(), re-fetch data for a smoother UX
+            // In a more complex app, you might only update the specific changed item
+            fetchAndProcessData();
+            navigateToList(); // Go back to list view after action
+        }
+
+        async function tryDeleteFeedback(id) {
+            const confirmed = await showCustomConfirm('Delete this feedback permanently? This action cannot be undone.', 'Confirm Deletion');
+            if (!confirmed) return;
+
+            try {
+                await performApiAction(`/api/admin/feedback/${id}`, {
+                    method: 'DELETE',
+                });
+                handleSuccess('Feedback deleted successfully!');
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        async function tryDeleteSelectedFeedbacks() {
+            const selectedIds = Array.from(document.querySelectorAll('.feedback-list input[type="checkbox"]:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return showToast('No items selected.', 'warning');
+
+            const confirmed = await showCustomConfirm(`Delete ${selectedIds.length} selected items permanently? This action cannot be undone.`, 'Confirm Bulk Deletion');
+            if (!confirmed) return;
+
+            try {
+                await performApiAction('/api/admin/feedbacks/batch-delete', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ ids: selectedIds }),
+                });
+                handleSuccess(`${selectedIds.length} items deleted successfully!`);
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        async function tryPinFeedback(id, isPinned) {
+            try {
+                const updatedData = await performApiAction(`/api/admin/feedback/${id}/pin`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ isPinned: !isPinned }),
+                });
+                handleSuccess(`Feedback ${updatedData.isPinned ? 'pinned' : 'unpinned'}!`);
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        async function tryChangeAvatarForFeedback(id) {
+            try {
+                await performApiAction(`/api/admin/feedback/${id}/change-avatar`, {
+                    method: 'PUT',
+                });
+                handleSuccess('Avatar regenerated!');
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        async function tryPostReply(id) {
+            const textEl = document.getElementById('reply-text');
+            const text = textEl.value;
+            if (!text.trim()) return showToast('Reply cannot be empty.', 'warning');
+
+            try {
+                await performApiAction(`/api/admin/feedback/${id}/reply`, {
+                    method: 'POST',
+                    body: JSON.stringify({ replyText: text, adminName: ADMIN_NAME }),
+                });
+                textEl.value = '';
+                handleSuccess('Reply sent!');
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        function toggleEditReply(feedbackId, replyId) {
+            const replyEl = document.getElementById(`reply-${replyId}`);
+            if (!replyEl) return;
+
+            const textEl = replyEl.querySelector('.reply-text');
+            const formEl = replyEl.querySelector('.edit-reply-form');
+
+            const isEditing = formEl.style.display === 'block';
+            textEl.style.display = isEditing ? 'block' : 'none';
+            formEl.style.display = isEditing ? 'none' : 'block';
+        }
+
+        async function tryEditReply(feedbackId, replyId) {
+            const replyEl = document.getElementById(`reply-${replyId}`);
+            const textarea = replyEl.querySelector('.edit-reply-textarea');
+            const newText = textarea.value.trim();
+
+            if (!newText) return showToast('Reply cannot be empty.', 'warning');
+
+            try {
+                await performApiAction(`/api/admin/feedback/${feedbackId}/reply/${replyId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ text: newText }),
+                });
+                handleSuccess('Reply updated!');
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        async function tryDeleteReply(feedbackId, replyId) {
+            const confirmed = await showCustomConfirm('Are you sure you want to delete this reply?', 'Confirm Reply Deletion');
+            if (!confirmed) return;
+
+            try {
+                await performApiAction(`/api/admin/feedback/${feedbackId}/reply/${replyId}`, {
+                    method: 'DELETE',
+                });
+                handleSuccess('Reply deleted!');
+            } catch (error) { /* Handled by performApiAction */ }
+        }
+
+        // Modified showToast to accept icon/avatar
+        function showToast(message, type = 'success', avatarUrl = null, icon = null) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            if (avatarUrl) {
+                const avatarImg = document.createElement('img');
+                avatarImg.src = avatarUrl;
+                avatarImg.className = 'toast-avatar';
+                toast.appendChild(avatarImg);
+            } else if (icon) {
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'toast-icon';
+                iconSpan.textContent = icon;
+                toast.appendChild(iconSpan);
+            }
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = message;
+            toast.appendChild(textSpan);
+
+            container.appendChild(toast);
+            container.scrollTop = container.scrollHeight;
+
+            if (type !== 'success') {
+                 setTimeout(() => { toast.remove(); }, 3500);
+            } else {
+                setTimeout(() => { toast.remove(); }, 2000); // Shorter duration for success messages
+            }
+        }
+
+        // NEW: setBellActive function
+        function setBellActive(isActive, count = 0) {
+            let badge = document.getElementById("notification-count");
+            if (isActive && count > 0) {
+                badge.textContent = count;
+                badge.style.display = "inline-block";
+            } else {
+                badge.textContent = "0";
+                badge.style.display = "none";
+            }
+        }
+
+        // ---- Polling Logic (NEW FEEDBACK NOTIFIER) ----
+        // CODE UPDATE FOR POLLING (replace pollNewFeedbacks function)
+        async function pollNewFeedbacks() {
+            try {
+                const res = await fetch('/api/feedbacks', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                         console.warn("Polling failed: Admin session expired or unauthorized. Not redirecting from poll.");
+                    }
+                    throw new Error(`Polling HTTP Error: ${res.statusText}`);
+                }
+                const data = await res.json();
+                if (Array.isArray(data) && data.length) {
+                    let newIndex = -1;
+                    if (lastFeedbackId) {
+                        // Find how many feedbacks are new since lastFeedbackId
+                        newIndex = data.findIndex(fb => fb._id === lastFeedbackId);
+                    }
+                    // All feedbacks before newIndex are new
+                    const newFeedbacks = newIndex === -1 ? data : data.slice(0, newIndex);
+                    if (newFeedbacks.length > 0) {
+                        newFeedbacks.reverse().forEach(fb => {
+                            // Call onNewFeedbackReceived with full feedback object for notifications
+                            onNewFeedbackReceived(fb);
+                        });
+                        fetchAndProcessData(); // Re-fetch all data to update list view
+                    }
+                    lastFeedbackId = data[0]._id; // Always update lastFeedbackId to the current latest
+                }
+            } catch(e) {
+                console.error("Polling error:", e.message);
+            }
+        }
+
+        // --- Notification functions ---
+        function showBrowserNotification(title, body) {
+            if (Notification.permission === "granted") {
+                navigator.serviceWorker.getRegistration().then(function(reg) {
+                    if (reg) {
+                        reg.showNotification(title, {
+                            body: body,
+                            icon: '/images/notification.png'   // Yeh path bilkul sahi hai!
+                        });
+                    } else {
+                        new Notification(title, {
+                            body: body,
+                            icon: '/images/notification.png'
+                        });
+                    }
+                });
+            }
+        }
+
+        // Updated onNewFeedbackReceived() function
+        function onNewFeedbackReceived(feedback) {
+            const userName = ((feedback.userId && feedback.userId.name) ? feedback.userId.name : feedback.name) || 'Guest User';
+            const avatarUrl = feedback.avatarUrl || `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(userName)}`;
+
+            // Add new notification entry
+            notificationList.unshift({
+                emoji: "🔥",
+                msg: `New Feedback from ${userName}!`,
+                feedback: feedback.feedback,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // 12-hour format
+                avatar: avatarUrl
+            });
+            // Limit to last 20
+            if(notificationList.length > 20) notificationList.length = 20;
+
+            unreadNotifCount++;
+            setBellActive(true, unreadNotifCount);
+
+            // Show browser push
+            showBrowserNotification(
+                "New Feedback Received!",
+                `From: ${userName}\nRating: ${feedback.rating}\n"${feedback.feedback}"`
+            );
+
+            // In-app toast
+            showToast(`New Feedback from ${userName}!`, "info", avatarUrl, "🔔");
+        }
+
+        // NEW: Function to handle messages coming from the Service Worker for new feedbacks
+        function onNewFeedbackReceivedFromSW(title, body, avatarUrl, feedbackText) {
+            // This function is triggered when a push notification is received
+            // and the service worker sends a message to the client.
+            // It avoids re-fetching all data and directly updates the UI.
+
+            notificationList.unshift({
+                emoji: "🔥",
+                msg: title,
+                feedback: feedbackText,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }), // 12-hour format
+                avatar: avatarUrl
+            });
+            if(notificationList.length > 20) notificationList.length = 20;
+
+            unreadNotifCount++;
+            setBellActive(true, unreadNotifCount);
+
+            // You might want to also re-fetch the data to update the main list
+            // if the user is currently on the list view, or if they navigate back.
+            // For simplicity, we'll just show a toast here.
+            showToast(title, "info", avatarUrl, "🔔");
+
+            // Optional: If you want the list to update immediately when SW pushes a new feedback
+            // and the user is on the list screen, call fetchAndProcessData() here.
+            // However, the current polling logic might already handle this, so be careful not to duplicate.
+            // fetchAndProcessData();
+        }
+
+        // NEW: Render real notifications in modal
+        function renderNotifList() {
+            const notifListEl = document.getElementById("notif-list");
+            if(notificationList.length === 0) {
+                notifListEl.innerHTML = `<div style="color:#ccc;text-align:center;margin:2rem 0;">No new notifications.</div>`;
+                return;
+            }
+            let html = notificationList.map(n=>
+              `<div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--border);">
+                  <img src="${n.avatar}" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--accent-pink);">
+                  <div>
+                    <span style="font-weight:600;color:var(--text-primary);">${n.msg}</span>
+                    <div style="color:var(--accent-pink);font-size:0.89rem;">${n.feedback || ''}</div>
+                  </div>
+                  <span style="margin-left:auto;font-size:0.85rem;color:var(--text-secondary);">${n.time}</span>
+              </div>`
+            ).join('');
+            notifListEl.innerHTML = html;
+        }
+
+        // NEW: Open notification modal = mark all as read
+        function openNotifModal() {
+            document.getElementById('notif-modal').style.display = "flex"; // Use flex to center
+            renderNotifList();
+            unreadNotifCount = 0;
+            setBellActive(false, 0); // reset bell
+        }
+
+        // Stat Buttons -> Popup Modal Logic
+        function showStatModal(type) {
+            let title = '';
+            let body = '';
+            if(type==='total') {
+                title = 'Total Feedbacks';
+                body = `<span style="font-size:2.2rem;font-weight:800;color:var(--accent-pink);">${document.getElementById('stats-total').textContent}</span>
+                <p>This is the <b>total number</b> of feedbacks received from users so far. More feedbacks mean more engagement!</p>`;
+            }
+            else if(type==='average') {
+                title = 'Average Rating';
+                body = `<span style="font-size:2.1rem;font-weight:800;color:gold;">${document.getElementById('stats-avg-rating').textContent}</span>
+                <p><b>Average rating</b> calculated from all feedbacks received. High average = Happy users!</p>`;
+            }
+            else if(type==='replies') {
+                title = 'Total Replies';
+                body = `<span style="font-size:2.1rem;font-weight:800;color:limegreen;">${document.getElementById('stats-replies').textContent}</span>
+                <p>Total <b>admin replies</b> given to all feedbacks. Quick responses boost credibility.</p>`;
+            }
+            else if(type==='pinned') {
+                title = 'Pinned Items';
+                body = `<span style="font-size:2.1rem;font-weight:800;color:deepskyblue;">${document.getElementById('stats-pinned').textContent}</span>
+                <p><b>Pinned feedbacks</b> are marked important for future review or showcase.</p>`;
+            }
+            else if(type==='session') {
+                title = 'Admin Session Detail';
+                body = `<div style="font-size:1.09rem;">
+                    <b>Logged in as:</b> <span style="color:var(--accent-pink);">${document.getElementById('admin-username-display').textContent}</span><br>
+                    <b>Login Time:</b> <span>${document.getElementById('admin-login-timestamp-display').textContent}</span><br>
+                    <b>Browser:</b> <span>${navigator.userAgent}</span>
+                </div>`;
+            }
+            else {
+                title = "More Info";
+                body = "No data available.";
+            }
+            document.getElementById('stat-modal-title').innerHTML = title;
+            document.getElementById('stat-modal-body').innerHTML = body;
+            document.getElementById('stat-modal-overlay').style.display = 'flex';
+        }
+        function closeStatModal() {
+            document.getElementById('stat-modal-overlay').style.display = 'none';
+        }
+
+        // Blog Modal Logic (NEW)
+        function showBlogModal() {
+            document.getElementById('blog-modal-overlay').style.display = 'flex';
+            fetchBlogs(); // Load blogs in modal panel
+        }
+        function closeBlogModal() {
+            document.getElementById('blog-modal-overlay').style.display = 'none';
+        }
+
+        async function fetchBlogs() {
+            try {
+                const response = await performApiAction('/api/blogs'); // Public API, no token needed
+                blogList = response;
+                renderBlogAdminList();
+            } catch (error) {
+                showCustomMessage('Failed to load blogs.', 'error');
+                console.error("Error fetching blogs:", error);
+            }
+        }
+
+        function renderBlogAdminList() {
+            const listContainer = document.getElementById('blog-admin-list');
+            if (blogList.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center;color:#ccc;">No blogs added yet.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = blogList.map(blog => `
+                <div class="blog-item" id="blog-item-${blog._id}">
+                    <div class="blog-item-details">
+                        <strong>${blog.title}</strong><br>
+                        <small>${blog.link} ${blog.badge ? `(${blog.badge})` : ''}</small>
+                        <p style="font-size:0.8em; margin:0.3em 0;">${blog.summary}</p>
+                    </div>
+                    <div class="blog-item-actions">
+                        <button class="edit-blog-btn" onclick="editBlog('${blog._id}')">Edit</button>
+                        <button class="delete-blog-btn" onclick="deleteBlog('${blog._id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleAddBlog(event) {
+            event.preventDefault();
+            const linkInput = document.getElementById('blog-link');
+            const titleInput = document.getElementById('blog-title');
+            const summaryInput = document.getElementById('blog-summary');
+            const badgeInput = document.getElementById('blog-badge');
+            const msgArea = document.getElementById('msg-area');
+
+            const newBlog = {
+                link: linkInput.value,
+                title: titleInput.value,
+                summary: summaryInput.value,
+                badge: badgeInput.value || null
+            };
+
+            try {
+                await performApiAction('/api/admin/blogs', {
+                    method: 'POST',
+                    body: JSON.stringify(newBlog)
+                });
+                showCustomMessage('Blog added successfully!', 'success');
+                linkInput.value = '';
+                titleInput.value = '';
+                summaryInput.value = '';
+                badgeInput.value = '';
+                fetchBlogs(); // Refresh the list
+            } catch (error) {
+                showCustomMessage(`Failed to add blog: ${error.message}`, 'error');
+                console.error("Error adding blog:", error);
+            }
+        }
+
+        async function deleteBlog(blogId) {
+            const confirmed = await showCustomConfirm('Are you sure you want to delete this blog?', 'Confirm Blog Deletion');
+            if (!confirmed) return;
+
+            try {
+                await performApiAction(`/api/admin/blogs/${blogId}`, {
+                    method: 'DELETE'
+                });
+                showCustomMessage('Blog deleted successfully!', 'success');
+                fetchBlogs(); // Refresh the list
+            } catch (error) {
+                showCustomMessage(`Failed to delete blog: ${error.message}`, 'error');
+                console.error("Error deleting blog:", error);
+            }
+        }
+
+        function editBlog(blogId) {
+            const blog = blogList.find(b => b._id === blogId);
+            if (!blog) return;
+
+            const blogItemElement = document.getElementById(`blog-item-${blogId}`);
+            if (!blogItemElement) return;
+
+            // Save original HTML to restore if needed, or hide actions and replace
+            const originalContent = blogItemElement.innerHTML;
+            blogItemElement.innerHTML = `
+                <div class="blog-item-details" style="flex-grow:1;">
+                    <label for="edit-link-${blogId}" style="color:#FFD700;font-size:.9em; margin-bottom:0.1em;">Link:</label>
+                    <input type="text" id="edit-link-${blogId}" value="${blog.link}" style="margin-bottom:0.4em;">
+
+                    <label for="edit-title-${blogId}" style="color:#FFD700;font-size:.9em; margin-bottom:0.1em;">Title:</label>
+                    <input type="text" id="edit-title-${blogId}" value="${blog.title}" style="margin-bottom:0.4em;">
+
+                    <label for="edit-summary-${blogId}" style="color:#FFD700;font-size:.9em; margin-bottom:0.1em;">Summary:</label>
+                    <textarea id="edit-summary-${blogId}" rows="2" style="margin-bottom:0.4em;">${blog.summary}</textarea>
+
+                    <label for="edit-badge-${blogId}" style="color:#FFD700;font-size:.9em; margin-bottom:0.1em;">Badge:</label>
+                    <input type="text" id="edit-badge-${blogId}" value="${blog.badge || ''}" style="margin-bottom:0.4em;">
+                </div>
+                <div class="blog-item-actions" style="display:flex; flex-direction:column; gap:0.5em;">
+                    <button class="edit-blog-btn" onclick="submitEditBlog('${blogId}')">Save</button>
+                    <button class="delete-blog-btn" onclick="fetchBlogs()">Cancel</button> <!-- Re-renders the list to cancel edit -->
+                </div>
+            `;
+
+            // Optional: Scroll to the element being edited if it's off-screen
+            blogItemElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+
+        async function submitEditBlog(blogId) {
+            const linkInput = document.getElementById(`edit-link-${blogId}`);
+            const titleInput = document.getElementById(`edit-title-${blogId}`);
+            const summaryInput = document.getElementById(`edit-summary-${blogId}`);
+            const badgeInput = document.getElementById(`edit-badge-${blogId}`);
+
+            const updatedBlog = {
+                link: linkInput.value,
+                title: titleInput.value,
+                summary: summaryInput.value,
+                badge: badgeInput.value || null
+            };
+
+            try {
+                await performApiAction(`/api/admin/blogs/${blogId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedBlog)
+                });
+                showCustomMessage('Blog updated successfully!', 'success');
+                fetchBlogs(); // Refresh the list
+            } catch (error) {
+                showCustomMessage(`Failed to update blog: ${error.message}`, 'error');
+                console.error("Error updating blog:", error);
+            }
+        }
+
+        function showCustomMessage(message, type = 'info') {
+            const msgArea = document.getElementById('msg-area');
+            msgArea.textContent = message;
+            msgArea.style.color = type === 'success' ? '#22c55e' : (type === 'error' ? '#f43f5e' : '#FFD700'); // Gold for info
+            setTimeout(() => {
+                msgArea.textContent = '';
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>

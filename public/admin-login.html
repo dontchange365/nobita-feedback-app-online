@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Nobita Feedback</title>
+    <style>
+        :root {
+            --bg-body-light: #f1f5f9; --bg-panel-light: #ffffff; --text-primary-light: #0f172a; --text-secondary-light: #64748b; --border-light: #e2e8f0;
+            --bg-body-dark: #0f172a; --bg-panel-dark: #1e293b; --text-primary-dark: #e2e8f0; --text-secondary-dark: #94a3b8; --border-dark: #334155;
+            --accent-pink: #ec4899; --accent-glow: rgba(236, 72, 153, 0.5); --danger-color: #f43f5e; --success-color: #22c55e; --warning-color: #f59e0b;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+            color: var(--text-primary-light); /* Default light mode text */
+        }
+        body.dark-mode {
+            background: linear-gradient(135deg, #4c1d95 0%, #881337 100%);
+            color: var(--text-primary-dark);
+        }
+        .login-container {
+            background-color: var(--bg-panel-light);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.25);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transition: background-color 0.3s;
+            position: relative;
+            animation: fadeIn 0.8s ease-out forwards;
+            border: 1px solid var(--border-light);
+        }
+        body.dark-mode .login-container {
+            background-color: var(--bg-panel-dark);
+            border: 1px solid var(--border-dark);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-container h2 {
+            margin-top: 0;
+            color: var(--accent-pink);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+            position: relative;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary-light);
+        }
+        body.dark-mode .input-group label {
+            color: var(--text-primary-dark);
+        }
+        .input-group input[type="text"],
+        .input-group input[type="password"] {
+            width: calc(100% - 24px); /* Adjust for padding */
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 0.5rem;
+            background-color: var(--bg-body-light);
+            color: var(--text-primary-light);
+            font-size: 1rem;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        body.dark-mode .input-group input {
+            background-color: var(--bg-body-dark);
+            border: 1px solid var(--border-dark);
+            color: var(--text-primary-dark);
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%; /* Adjusted for better alignment */
+            transform: translateY(10%); /* Fine-tune adjustment */
+            cursor: pointer;
+            color: var(--text-secondary-light);
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        body.dark-mode .password-toggle {
+            color: var(--text-secondary-dark);
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            justify-content: space-between; /* To push "Remember Me" to the right */
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--text-secondary-light);
+        }
+        body.dark-mode .checkbox-group label {
+            color: var(--text-secondary-dark);
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 0.6rem;
+            width: 1.1rem;
+            height: 1.1rem;
+            accent-color: var(--accent-pink); /* Modern way to style checkbox */
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent-pink);
+            color: white;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #d13a82; /* Slightly darker pink */
+            transform: translateY(-2px);
+        }
+        .theme-switch {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 2.75rem;
+            height: 1.5rem;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 1.5rem;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1rem;
+            width: 1rem;
+            left: 0.25rem;
+            bottom: 0.25rem;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-pink); }
+        input:checked + .slider:before { transform: translateX(1.25rem); }
+
+        #toast-container {
+            position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 1001;
+            display: flex; flex-direction: column-reverse; /* Stack toasts from bottom up */
+            align-items: flex-end;
+        }
+        .toast {
+            background-color: var(--bg-panel-dark); color: var(--text-primary-dark);
+            padding: 0.9375rem 1.25rem; border-radius: 0.5rem;
+            box-shadow: 0 0.3125rem 0.9375rem rgba(0,0,0,0.3);
+            margin-top: 0.625rem; opacity: 0; animation: toastIn 0.3s ease forwards;
+            min-width: 250px; max-width: 350px;
+            text-align: center;
+        }
+        @keyframes toastIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast.success { background-color: var(--success-color); }
+        .toast.error { background-color: var(--danger-color); }
+        .toast.warning { background-color: var(--warning-color); color: #fff; }
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="theme-switch">
+            <span>☀️</span>
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+            <span>🌙</span>
+        </div>
+        <h2>Admin Login</h2>
+        <form id="admin-login-form">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <span class="password-toggle" id="toggle-password">Show</span>
+            </div>
+            <div class="checkbox-group">
+                <label for="remember-me">
+                    <input type="checkbox" id="remember-me"> Remember Me
+                </label>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    <div id="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('admin-login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const rememberMeCheckbox = document.getElementById('remember-me');
+            const togglePassword = document.getElementById('toggle-password');
+            const themeToggle = document.getElementById('theme-toggle');
+
+            applyInitialTheme();
+            loadRememberedCredentials();
+
+            togglePassword.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                togglePassword.textContent = type === 'password' ? 'Show' : 'Hide';
+            });
+
+            themeToggle.addEventListener('change', toggleTheme);
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const rememberMe = rememberMeCheckbox.checked;
+
+                if (rememberMe) {
+                    localStorage.setItem('adminUsername', username);
+                    localStorage.setItem('adminRememberMe', 'true');
+                } else {
+                    localStorage.removeItem('adminUsername');
+                    localStorage.removeItem('adminRememberMe');
+                }
+
+                try {
+                    const response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('adminToken', data.token);
+                        localStorage.setItem('adminLoggedInUser', JSON.stringify(data.admin)); // Store admin details
+                        showToast('Login successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/admin-panel';
+                        }, 1000);
+                    } else {
+                        showToast(data.message || 'Login failed. Please check your credentials.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showToast('Network error or server unavailable.', 'error');
+                }
+            });
+        });
+
+        function applyInitialTheme() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            document.getElementById('theme-toggle').checked = isDarkMode;
+        }
+
+        function toggleTheme(e) {
+            document.body.classList.toggle('dark-mode', e.target.checked);
+            localStorage.setItem('darkMode', e.target.checked);
+        }
+
+        function loadRememberedCredentials() {
+            if (localStorage.getItem('adminRememberMe') === 'true') {
+                document.getElementById('username').value = localStorage.getItem('adminUsername') || '';
+                document.getElementById('remember-me').checked = true;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            if (type !== 'success') {
+                 setTimeout(() => { toast.remove(); }, 3500);
+            } else {
+                setTimeout(() => { toast.remove(); }, 2000); // Shorter duration for success messages
+            }
+        }
+    </script>
+</body>
+</html>

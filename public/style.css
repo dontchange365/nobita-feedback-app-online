@@ -34,8 +34,23 @@
     --rating-2-color: #fd7e14;
     --rating-1-color: #dc3545;
 }
+/* NEW BLOG LIST STYLES */
+        #blog-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 50px; /* Increased gap between cards */
+            width: 100%;
+          justify-content: center;
+    flex-wrap: wrap;
+            padding: 100px 10%; /* Increased padding for "wider" feel */
+            max-width: 1600px; /* Increased max-width to allow more spread */
+            margin: 0 auto;
+            /* background-color: #1a1a2e; Removed specific background color */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
 /* --- Global HTML/Body Styles --- */
+
 html {
     scroll-behavior: smooth;
     scrollbar-width: thin;
@@ -1251,8 +1266,25 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
     margin: 30px 0 24px 0;
     opacity: 0.55;
 }
+footer.main-footer {
+  position: relative;    /* No fixed, no absolute! */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  background: #1a1a2e;
+  color: #FFD700;
+  text-align: center;
+  padding: 18px 0 12px 0;
+  font-weight: 600;
+  font-size: 15px;
+  z-index: 1;
+  border-top: 1px solid #ffffff1a;
+  box-shadow: 0 -2px 18px #0005;
+}
+
 .main-footer {
-    padding:20px 0;
+    padding:0px 0;
     text-align:center;
     background:var(--bg-gradient-start);
     color:var(--text-color-light);
@@ -1262,7 +1294,7 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
     box-shadow:0 -4px 20px rgba(255,215,0,0.2);
     box-sizing: border-box;
     width: 100%; /* Ensure it spans full width */
-    margin-top: 40px;
+    margin-top: 0px;
 }
 .main-footer b {
     color:var(--secondary-color);
