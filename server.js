@@ -202,7 +202,7 @@ app.use((req, res, next) => {
     if (clientIp) {
         if (clientIp.substr(0, 7) === "::ffff:") clientIp = clientIp.substr(7);
         if (clientIp === '::1') clientIp = '127.0.0.1';
-        if (clientIp.includes(',')) clientIp = client.split(',')[0].trim();
+        if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
     }
     req.clientIp = clientIp || 'UNKNOWN_IP';
     next();
