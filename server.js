@@ -202,7 +202,7 @@ app.use((req, res, next) => {
     if (clientIp) {
         if (clientIp.substr(0, 7) === "::ffff:") clientIp = clientIp.substr(7);
         if (clientIp === '::1') clientIp = '127.0.0.1';
-        if (clientIp.includes(',')) clientIp = client.split(',')[0].trim();
+        if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
     }
     req.clientIp = clientIp || 'UNKNOWN_IP';
     next();
@@ -738,7 +738,21 @@ app.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.s
 
 // --- Static Files & Feedback Routes ---
 app.use(express.static(path.join(__dirname, 'public'))); // Existing public static server
+const fs = require('fs');
+app.get('/:page', (req, res, next) => {
+  // Ignore requests that look like real API or static files
+  if (req.path.startsWith('/api/') || req.path.endsWith('.js') || req.path.endsWith('.css') || req.path.endsWith('.ico') || req.path.endsWith('.png') || req.path.endsWith('.svg')) return next();
 
+  const file = path.join(__dirname, 'public', `${req.params.page}.html`);
+  fs.access(file, (err) => {
+    if (err) return next(); // Not found? Pass to next middleware
+    res.sendFile(file);
+  });
+});
+// OG INDEX CLEANER: koi bhi /index ya /index.html aaye toh root pe 301 redirect maar
+app.get(['/index', '/index.html'], (req, res) => {
+  res.redirect(301, '/');
+});
 // Admin Panel Static Route - Now requires admin authentication via middleware before serving the actual index.html
 // For simplicity, we will rely on client-side JS to redirect if no token.
 app.get('/admin-panel', (req, res) => {

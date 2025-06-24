@@ -963,7 +963,7 @@ function addFeedbackToDOM(fbData) {
             replyDiv.className = 'admin-reply';
             const adminAva = document.createElement('img');
             adminAva.className = 'admin-reply-avatar';
-            adminAva.src = '[https://i.ibb.co/FsSs4SG/creator-avatar.png](https://i.ibb.co/FsSs4SG/creator-avatar.png)'; // Image of Admin Creator
+            adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Image of Admin Creator
             adminAva.alt = 'Admin';
             const replyContent = document.createElement('div');
             replyContent.className = 'admin-reply-content';
@@ -1843,3 +1843,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (feedbackListContainer) setTimeout(() => feedbackListContainer.classList.add('animate-in'), 400);
 
 });
+// AUTO URL CLEANER: .html ko URL se gayab kar deta hai + .html links ko auto clean redirect
+(function() {
+  // On page load, agar URL /page.html hai, toh .html hata de (browser address bar me, bina reload)
+  var path = window.location.pathname;
+  if (path.match(/\/([a-zA-Z0-9_-]+)\.html$/)) {
+    var clean = path.replace(/\.html$/, '');
+    if (clean !== path) window.history.replaceState({}, '', clean);
+  }
+  // Intercept all <a href="*.html"> click and clean redirect kare
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.addEventListener('click', function(e) {
+      // OG: Anchors with .html in href
+      var a = e.target.closest('a');
+      if (a && a.getAttribute('href') && a.getAttribute('href').endsWith('.html')) {
+        e.preventDefault();
+        var newUrl = a.getAttribute('href').replace('.html', '');
+        // Use location.assign for full reload (so backend serves right file)
+        window.location.assign(newUrl);
+      }
+    });
+  });
+})();
+// OG Index.html killer: saare anchor aur JS se index.html redirect ko handle karega
+(function() {
+  // Intercept all <a> clicks for any type of index.html reference
+  document.body.addEventListener('click', function(e) {
+    let a = e.target.closest('a');
+    if (a && a.getAttribute('href')) {
+      let href = a.getAttribute('href').replace(/^\.?\//, '').toLowerCase();
+      if (href === 'index.html' || href === 'index' || href === './index.html' || href === '/index.html' || href === '/index') {
+        e.preventDefault();
+        window.location.assign('/');
+      }
+    }
+  });
+
+  // Patch window.location redirects (assign, replace, direct set)
+  let origAssign = window.location.assign;
+  let origReplace = window.location.replace;
+  Object.defineProperty(window.location, 'href', {
+    set: function(url) {
+      if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+        origAssign.call(window.location, '/');
+      } else {
+        origAssign.call(window.location, url);
+      }
+    },
+    get: function() {
+      return window.location.toString();
+    }
+  });
+  window.location.assign = function(url) {
+    if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+      return origAssign.call(window.location, '/');
+    }
+    return origAssign.apply(window.location, arguments);
+  };
+  window.location.replace = function(url) {
+    if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+      return origReplace.call(window.location, '/');
+    }
+    return origReplace.apply(window.location, arguments);
+  };
+})();
