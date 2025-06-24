@@ -202,7 +202,7 @@ app.use((req, res, next) => {
     if (clientIp) {
         if (clientIp.substr(0, 7) === "::ffff:") clientIp = clientIp.substr(7);
         if (clientIp === '::1') clientIp = '127.0.0.1';
-        if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
+        if (clientIp.includes(',')) clientIp = client.split(',')[0].trim();
     }
     req.clientIp = clientIp || 'UNKNOWN_IP';
     next();
@@ -658,27 +658,54 @@ const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 },
 
 // --- User Profile Management Routes ---
 app.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, res) => {
-    const { name, avatarUrl } = req.body; const userId = req.user.userId;
-    if (!name) return res.status(400).json({ message: 'Name is required.' });
+    const { name, avatarUrl } = req.body;
+    const userId = req.user.userId;
+
     try {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found.' });
+
+        // SMART LOGIC: Name only required if updating it
+        // Google login name CANNOT be changed by user, so ignore if not same as user.name
         if (user.loginMethod === 'google') {
-            if (name !== user.name) return res.status(400).json({ message: 'Name for Google-linked accounts cannot be changed here.' });
-            if (avatarUrl && avatarUrl !== user.avatarUrl) user.avatarUrl = avatarUrl;
+            if (typeof name !== 'undefined' && name !== user.name) {
+                return res.status(400).json({ message: 'Name for Google-linked accounts cannot be changed here.' });
+            }
+            if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) {
+                user.avatarUrl = avatarUrl;
+            }
         } else {
-            user.name = name;
-            if (avatarUrl) user.avatarUrl = avatarUrl;
-            else if (user.avatarUrl && user.avatarUrl.startsWith('https://api.dicebear.com') && name !== req.user.name) user.avatarUrl = getDiceBearAvatarUrl(name, Date.now().toString());
+            // Only update name if provided & not empty string
+            if (typeof name !== 'undefined') {
+                if (!name || !name.trim()) return res.status(400).json({ message: 'Name cannot be empty.' });
+                user.name = name.trim();
+                // Auto-update dicebear if user is using dicebear avatar & name changes
+                if (user.avatarUrl && user.avatarUrl.startsWith('https://api.dicebear.com') && name !== req.user.name && typeof avatarUrl === 'undefined') {
+                    user.avatarUrl = getDiceBearAvatarUrl(name, Date.now().toString());
+                }
+            }
+            // Only update avatar if provided
+            if (typeof avatarUrl !== 'undefined' && avatarUrl) {
+                user.avatarUrl = avatarUrl;
+            }
         }
         await user.save();
-        if (avatarUrl || (user.loginMethod === 'email' && name !== req.user.name)) {
+        // Update Feedbacks if name or avatar changed
+        // This condition now correctly reflects whether a field was *actually* updated based on the request
+        const shouldUpdateFeedbacks = (typeof name !== 'undefined' && user.name !== req.user.name) || (typeof avatarUrl !== 'undefined' && user.avatarUrl !== req.user.avatarUrl);
+
+        if (shouldUpdateFeedbacks) {
             await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl, name: user.name } });
         }
+
+
         const updatedUserForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ message: 'Profile updated successfully!', user: updatedUserForToken, token: newToken });
-    } catch (error) { console.error('Profile update error:', error); res.status(500).json({ message: 'Failed to update profile.', error: error.message }); }
+    } catch (error) {
+        console.error('Profile update error:', error);
+        res.status(500).json({ message: 'Failed to update profile.', error: error.message });
+    }
 });
 app.post('/api/user/change-password', authenticateToken, isEmailVerified, async (req, res) => {
     const { currentPassword, newPassword } = req.body; const userId = req.user.userId;
@@ -1054,7 +1081,7 @@ app.get('/api/vapid-public-key', (req, res) => {
 // Existing endpoint to save admin push subscription
 app.post('/api/admin/save-subscription', authenticateAdminToken, async (req, res) => {
     // FIXED: Correctly parse the subscription object, allowing for nested or direct payload
-    const subscription = req.body.subscription || req.body; 
+    const subscription = req.body.subscription || req.body;
     if (!subscription || !subscription.endpoint) {
         return res.status(400).json({ message: 'No push subscription data provided, or endpoint missing.' });
     }

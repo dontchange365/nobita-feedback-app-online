@@ -127,8 +127,10 @@ function showStylishPopup(options = {}) {
         return;
     }
 
-    stylishPopupIconEl.className = 'popup-icon-area';
-    if (options.iconType) stylishPopupIconEl.classList.add(options.iconType);
+    // Resetting the class list to prevent double icons
+    stylishPopupIconEl.className = 'popup-icon-area'; // Keep base class
+
+    // Mapping iconType to Font Awesome classes
     const iconsFA = {
         'success': 'fa-check-circle',
         'error': 'fa-times-circle',
@@ -141,8 +143,13 @@ function showStylishPopup(options = {}) {
         'user-lock': 'fa-user-lock',
         'google': 'fa-google'
     };
-    const iconClass = options.icon || iconsFA[options.iconType] || 'fa-info-circle';
-    stylishPopupIconEl.innerHTML = `<i class="fas ${iconClass}"></i>`;
+
+    // Determine the icon class to use
+    let iconClassToUse = options.icon || iconsFA[options.iconType] || 'fa-info-circle';
+
+    // Add the determined icon class to the element
+    stylishPopupIconEl.innerHTML = `<i class="fas ${iconClassToUse}"></i>`;
+
 
     stylishPopupTitleEl.textContent = options.title || 'Notice';
     stylishPopupMessageEl.innerHTML = (options.message || '').startsWith('<p>') ? options.message : `<p>${options.message || ''}</p>`;
@@ -448,7 +455,7 @@ function updateUIAfterLogout() {
     if (navLoginIconTrigger) navLoginIconTrigger.classList.remove('hidden');
     if (userProfileTrigger) {
         userProfileTrigger.classList.add('hidden');
-        if (userProfileAvatarImg) userProfileAvatarImg.src = 'https://i.ibb.co/VpjRLsv/sample-user.png';
+        if (userProfileAvatarImg) userProfileAvatarImg.src = '[https://i.ibb.co/VpjRLsv/sample-user.png](https://i.ibb.co/VpjRLsv/sample-user.png)';
         if (userProfileNameSpan) userProfileNameSpan.textContent = 'User Name';
     }
 
@@ -482,7 +489,7 @@ function updateUIAfterLogout() {
     if (submitButton) submitButton.disabled = false;
 
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-    if (profileDisplayAvatar) profileDisplayAvatar.src = 'https://placehold.co/120x120/6a0dad/FFFFFF?text=U';
+    if (profileDisplayAvatar) profileDisplayAvatar.src = '[https://placehold.co/120x120/6a0dad/FFFFFF?text=U](https://placehold.co/120x120/6a0dad/FFFFFF?text=U)';
 }
 
 // Resets feedback form
@@ -558,7 +565,7 @@ async function resendVerification(){
   }
 
   try {
-    const response = await fetch("https://nobita-feedback-app-online.onrender.com/api/auth/resend-verification", {
+    const response = await fetch("[https://nobita-feedback-app-online.onrender.com/api/auth/resend-verification](https://nobita-feedback-app-online.onrender.com/api/auth/resend-verification)", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -956,7 +963,7 @@ function addFeedbackToDOM(fbData) {
             replyDiv.className = 'admin-reply';
             const adminAva = document.createElement('img');
             adminAva.className = 'admin-reply-avatar';
-            adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
+            adminAva.src = '[https://i.ibb.co/FsSs4SG/creator-avatar.png](https://i.ibb.co/FsSs4SG/creator-avatar.png)'; // Image of Admin Creator
             adminAva.alt = 'Admin';
             const replyContent = document.createElement('div');
             replyContent.className = 'admin-reply-content';
@@ -972,7 +979,7 @@ function addFeedbackToDOM(fbData) {
         const pinnedBadgeHTML = `
         <div class="pinned-badge">
             <span class="pin-svg">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
                 <path d="M14 4H16V6H14V4ZM14 2H6V4H14V2ZM12 18V10H8V18H6V8H4V6H6V4C6 2.9 6.9 2 8 2H12C13.1 2 14 2.9 14 4V6H16V8H14V18H12Z" fill="#332400"/>
             </svg>
             </span>
