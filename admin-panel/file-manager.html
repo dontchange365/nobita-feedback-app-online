@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NOBI FILE MANAGER 😈💻</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <!-- --- Authentication Check and Header Start --- -->
+  <script>
+    // Ye script page load hote hi run hoga.
+    // Check karega ki admin authenticated hai ya nahi.
+    const adminToken = localStorage.getItem('adminToken');
+    const adminLoggedInUser = JSON.parse(localStorage.getItem('adminLoggedInUser'));
+
+    if (!adminToken || !adminLoggedInUser || !adminLoggedInUser.username || !adminLoggedInUser.userId) {
+        console.warn("Admin token ya user data missing/invalid. Redirecting to login.");
+        // window.location.replace() use karein taki back button se protected page par wapis na aa saken.
+        window.location.replace('/admin-login.html');
+    }
+
+    // --- Helper Functions for Authentication and UI (Global scope mein) ---
+
+    // Logout function
+    function logoutAdmin() {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminLoggedInUser');
+        localStorage.removeItem('adminUsername'); // 'Remember Me' ke liye
+        localStorage.removeItem('adminRememberMe'); // 'Remember Me' ke liye
+        showToast('Logged out successfully.', 'info');
+        setTimeout(() => {
+            window.location.replace('/admin-login.html'); // Redirect to login page after logout
+        }, 500);
+    }
+
+    // Show Toast Notification Function
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) {
+            console.warn('Toast container not found. Cannot show toast:', message);
+            return;
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        // Toast ko 3 seconds baad remove karein
+        setTimeout(() => { toast.remove(); }, 3000);
+    }
+
+    // Apply Initial Theme
+    function applyInitialTheme() {
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        document.body.classList.toggle('dark-mode', isDarkMode);
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+          themeToggle.checked = isDarkMode;
+        }
+    }
+
+    // Toggle Theme
+    function toggleTheme(e) {
+        document.body.classList.toggle('dark-mode', e.target.checked);
+        localStorage.setItem('darkMode', e.target.checked);
+    }
+
+    // DOMContentLoaded par theme apply karein
+    document.addEventListener('DOMContentLoaded', applyInitialTheme);
+
+    // --- API Action Helper Function (Authentication ke saath) ---
+    // Ye function har API call ko wrap karega aur Authorization header add karega.
+    async function performFileManagerApiAction(path, opts = {}) {
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            // Agar token nahi hai, to redirect kar do, waise initial check se catch ho jayega
+            showToast('Session expired. Please log in again.', 'error');
+            logoutAdmin();
+            throw new Error('Authentication required.');
+        }
+
+        const url = '/api/file-manager' + path;
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}`, // JWT token add kiya
+            ...(opts.headers || {}) // Aur koi custom headers hain to unhe merge kar do
+        };
+
+        const finalOpts = {
+            ...opts,
+            headers: headers,
+        };
+
+        // Agar body object hai to JSON.stringify karein
+        if (finalOpts.body && typeof finalOpts.body !== 'string') {
+            finalOpts.body = JSON.stringify(finalOpts.body);
+        }
+
+        try {
+            const res = await fetch(url, finalOpts);
+
+            if (res.status === 401 || res.status === 403) {
+                // Agar session expired ya unauthorized hai, to logout kar do
+                const errorData = await res.json().catch(() => ({ message: 'Authentication failed or session expired.' }));
+                showToast(errorData.message || 'Session expired. Please log in again.', 'error');
+                logoutAdmin();
+                throw new Error(errorData.message || 'Unauthorized access');
+            }
+
+            if (!res.ok) {
+                // Normal HTTP errors
+                let msg = 'Error: ' + res.status;
+                try { let js = await res.json(); msg = js.error || msg; } catch{}
+                throw new Error(msg);
+            }
+
+            // DELETE operations ke liye response empty ho sakta hai, isliye handle karein
+            if (opts.method === 'DELETE') {
+                 // Depend karta hai backend kya return karta hai, yahan generic success
+                 return res.status === 204 ? {} : await res.json().catch(() => ({ success: true }));
+            }
+
+            return await res.json();
+        } catch (error) {
+            console.error("File Manager API Error:", error);
+            // showToast function already error display kar chuki hai
+            throw error; // Re-throw error ताकि calling function bhi handle kar sake agar zaroori ho
+        }
+    }
+  </script>
+  <!-- --- Authentication Check and Header End --- -->
+
+  <div id="container">
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <span>📁 FILES</span>
+        <!-- Logout Button and Theme Toggle (added to sidebar-header) -->
+        <button id="logoutBtn" title="Logout">Logout</button>
+        <div class="theme-switch" style="margin-left: 10px; display: flex; align-items: center; gap: 5px;">
+            <span>☀️</span>
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+            <span>🌙</span>
+        </div>
+        <button id="backBtn" title="Back">⬅️</button>
+      </div>
+      <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
+      <div id="file-search-bar">
+        <input type="text" id="search-input" placeholder="Search files/folders...">
+      </div>
+      <div id="file-list"></div>
+      <div id="sidebar-footer">
+        <button class="add-folder" title="Add Folder"><i class="fas fa-folder-plus"></i></button>
+        <button class="add-file" title="Add File"><i class="fas fa-file"></i></button>
+        <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
+        <input type="file" id="file-upload" multiple style="display:none;">
+        <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
+      </div>
+    </div>
+    <div id="main"></div>
+  </div>
+  <div id="popup">
+    <div id="popup-content"></div>
+  </div>
+  <div id="popup-editor">
+    <div id="popup-editor-content">
+      <div class="editor-filename"></div>
+      <div id="find-replace-bar" style="display:none;"></div>
+      <div id="editor-wrapper">
+        <textarea id="code-editor" name="code"></textarea>
+      </div>
+      <div class="popup-editor-actions">
+        <button type="button" class="save">Save</button>
+        <button type="button" class="cancel">Cancel</button>
+        <button type="button" class="findreplace-btn" title="Find & Replace"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <button id="floating-back-btn" title="Go Back">⬅️</button>
+
+  <div id="bulk-actions-bar">
+    <button class="select-all" onclick="selectAllFiles()">Select All</button>
+    <button class="deselect-all" onclick="deselectAllFiles()">Deselect All</button>
+    <button class="delete-selected" onclick="bulkDelete()">Delete Selected</button>
+  </div>
+
+  <!-- Toast Container for notifications -->
+  <div id="toast-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/ruby/ruby.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+  <script src="script.js"></script>
+  
+</body>
+</html>

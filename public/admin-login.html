@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Nobita Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --bg-body-light: #f1f5f9; --bg-panel-light: #ffffff; --text-primary-light: #0f172a; --text-secondary-light: #64748b; --border-light: #e2e8f0;
@@ -133,11 +134,37 @@
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex; /* Loading spinner ke liye */
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Loading spinner aur text ke beech space */
         }
         button[type="submit"]:hover {
             background-color: #d13a82; /* Slightly darker pink */
             transform: translateY(-2px);
         }
+
+        /* Loading Spinner Styles */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none; /* Default hidden */
+        }
+        button[type="submit"].loading .spinner {
+            display: block; /* Show when loading */
+        }
+        button[type="submit"].loading span {
+            display: none; /* Hide text when loading */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .theme-switch {
             position: absolute;
             top: 1.5rem;
@@ -192,11 +219,109 @@
             min-width: 250px; max-width: 350px;
             text-align: center;
         }
-        @keyframes toastIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes toastIn { from { transform: translateY(100%); opacity: 0; } to { opacity: 1; } }
         .toast.success { background-color: var(--success-color); }
         .toast.error { background-color: var(--danger-color); }
         .toast.warning { background-color: var(--warning-color); color: #fff; }
 
+        /* Redirect Choice Popup Styles */
+        #redirect-popup {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            justify-content: center; /* Use flex properties here, will be toggled by JS */
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px); /* Blur effect */
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        #redirect-popup-content {
+            background-color: var(--bg-panel-light);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid var(--border-light);
+            animation: popupFadeIn 0.3s ease-out forwards;
+        }
+        body.dark-mode #redirect-popup-content {
+            background-color: var(--bg-panel-dark);
+            border: 1px solid var(--border-dark);
+        }
+
+        #redirect-popup-content h3 {
+            color: var(--accent-pink);
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #redirect-popup-content p {
+            color: var(--text-primary-light);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        body.dark-mode #redirect-popup-content p {
+            color: var(--text-primary-dark);
+        }
+
+        .redirect-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .redirect-buttons button {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .redirect-buttons button i {
+            font-size: 1.2em;
+        }
+
+        .redirect-buttons button.admin-hub-btn {
+            background-color: #6366f1; /* Indigo */
+            color: white;
+        }
+        .redirect-buttons button.admin-hub-btn:hover {
+            background-color: #4f52e0;
+            transform: translateY(-2px);
+        }
+
+        .redirect-buttons button.file-manager-btn {
+            background-color: #f472b6; /* Pink */
+            color: white;
+        }
+        .redirect-buttons button.file-manager-btn:hover {
+            background-color: #e859a7;
+            transform: translateY(-2px);
+        }
+
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* New style for the login form container */
+        #login-form-container {
+            display: block; /* Default to block for initial load, JS will hide/show */
+        }
     </style>
 </head>
 <body>
@@ -210,37 +335,80 @@
             <span>🌙</span>
         </div>
         <h2>Admin Login</h2>
-        <form id="admin-login-form">
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required autocomplete="username">
-            </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
-                <span class="password-toggle" id="toggle-password">Show</span>
-            </div>
-            <div class="checkbox-group">
-                <label for="remember-me">
-                    <input type="checkbox" id="remember-me"> Remember Me
-                </label>
-            </div>
-            <button type="submit">Login</button>
-        </form>
+        <div id="login-form-container"> <!-- Added this wrapper div -->
+            <form id="admin-login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                    <span class="password-toggle" id="toggle-password">Show</span>
+                </div>
+                <div class="checkbox-group">
+                    <label for="remember-me">
+                        <input type="checkbox" id="remember-me"> Remember Me
+                    </label>
+                </div>
+                <button type="submit" id="login-button">
+                    <span>Login</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+        </div>
     </div>
     <div id="toast-container"></div>
+
+    <!-- Redirect Choice Popup -->
+    <div id="redirect-popup">
+        <div id="redirect-popup-content">
+            <h3>Login Successful!</h3>
+            <p>Where would you like to go?</p>
+            <div class="redirect-buttons">
+                <button id="goto-admin-hub" class="admin-hub-btn"><i class="fas fa-chart-line"></i> Admin Hub</button>
+                <button id="goto-file-manager" class="file-manager-btn"><i class="fas fa-folder"></i> File Manager</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('admin-login-form');
+            const loginFormContainer = document.getElementById('login-form-container'); // New reference
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
             const rememberMeCheckbox = document.getElementById('remember-me');
             const togglePassword = document.getElementById('toggle-password');
             const themeToggle = document.getElementById('theme-toggle');
+            const loginButton = document.getElementById('login-button');
+            const redirectPopup = document.getElementById('redirect-popup');
+            const gotoAdminHubBtn = document.getElementById('goto-admin-hub');
+            const gotoFileManagerBtn = document.getElementById('goto-file-manager');
 
             applyInitialTheme();
             loadRememberedCredentials();
+
+            // --- Session Checker at Page Load ---
+            const adminToken = localStorage.getItem('adminToken');
+            const adminLoggedInUser = localStorage.getItem('adminLoggedInUser'); // Check for string presence
+
+            if (adminToken && adminLoggedInUser) {
+                // If token and user data exist, assume logged in and show popup
+                console.log("Existing session detected. Showing redirect choice.");
+                loginFormContainer.style.display = 'none'; // Hide the login form
+                redirectPopup.style.display = 'flex'; // Show the redirect popup
+                // Optional: You might want to verify the token with the server here
+                // for stronger session validation, but that adds a network call on every load.
+                // For a client-side check only, presence is enough.
+            } else {
+                // No active session, show login form and ensure popup is hidden
+                console.log("No active session. Displaying login form.");
+                loginFormContainer.style.display = 'block'; // Ensure form is visible
+                redirectPopup.style.display = 'none'; // Ensure popup is hidden
+            }
+            // --- End Session Checker ---
+
 
             togglePassword.addEventListener('click', () => {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -252,6 +420,10 @@
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                // Loading animation shuru karein
+                loginButton.classList.add('loading');
+                loginButton.disabled = true;
 
                 const username = usernameInput.value;
                 const password = passwordInput.value;
@@ -278,18 +450,35 @@
 
                     if (response.ok) {
                         localStorage.setItem('adminToken', data.token);
-                        localStorage.setItem('adminLoggedInUser', JSON.stringify(data.admin)); // Store admin details
-                        showToast('Login successful! Redirecting...', 'success');
-                        setTimeout(() => {
-                            window.location.href = '/admin-panel';
-                        }, 1000);
+                        localStorage.setItem('adminLoggedInUser', JSON.stringify(data.admin));
+                        showToast('Login successful!', 'success');
+                        
+                        // New login, so hide form and show redirect popup
+                        loginFormContainer.style.display = 'none';
+                        redirectPopup.style.display = 'flex';
+
                     } else {
                         showToast(data.message || 'Login failed. Please check your credentials.', 'error');
                     }
                 } catch (error) {
                     console.error('Login error:', error);
                     showToast('Network error or server unavailable.', 'error');
+                } finally {
+                    // Loading animation band karein
+                    loginButton.classList.remove('loading');
+                    loginButton.disabled = false;
                 }
+            });
+
+            // Redirect buttons ke liye event listeners
+            gotoAdminHubBtn.addEventListener('click', () => {
+                redirectPopup.style.display = 'none';
+                window.location.href = '/admin-panel';
+            });
+
+            gotoFileManagerBtn.addEventListener('click', () => {
+                redirectPopup.style.display = 'none';
+                window.location.href = '/admin-panel/file-manager.html';
             });
         });
 
@@ -317,10 +506,10 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             container.appendChild(toast);
-            if (type !== 'success') {
-                 setTimeout(() => { toast.remove(); }, 3500);
+            if (type === 'success') {
+                 setTimeout(() => { toast.remove(); }, 2000);
             } else {
-                setTimeout(() => { toast.remove(); }, 2000); // Shorter duration for success messages
+                setTimeout(() => { toast.remove(); }, 3500);
             }
         }
     </script>
