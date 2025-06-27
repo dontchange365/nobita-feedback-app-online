@@ -17,6 +17,7 @@ const cloudinary = require('cloudinary').v2; // Cloudinary
 const multer = require('multer'); // Multer for file uploads
 const webpush = require('web-push'); // Added web-push
 const fs = require('fs'); // Filesystem module, used by both original and file manager
+const axios = require('axios'); // Added axios for GitHub API calls
 
 dotenv.config(); // Load environment variables from .env file (for local development)
 
@@ -26,7 +27,8 @@ const PORT = process.env.PORT || 3000;
 // --- AGGRESSIVE DEBUGGING START (KEEP THIS FOR YOUR CONFIRMATION) ---
 console.log("--- VAPID Key Debugging START ---");
 console.log("process.env.VAPID_PUBLIC_KEY:", process.env.VAPID_PUBLIC_KEY);
-console.log("Is VAPID_PUBLIC_KEY defined?", !!process.env.VAPID_PUBLIC_KEY);
+console.log("Is VAPID_PUBLIC_KEY defined?
+", !!process.env.VAPID_PUBLIC_KEY);
 if (!process.env.VAPID_PUBLIC_KEY) {
     console.error("CRITICAL: VAPID_PUBLIC_KEY is undefined or empty right after dotenv.config()!");
     console.error("Check your .env file or deployment environment variables.");
@@ -47,6 +49,7 @@ const EMAIL_HOST = process.env.EMAIL_HOST;
 const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // GitHub Token from .env
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -76,6 +79,7 @@ console.log("CLOUDINARY_API_SECRET (loaded):", process.env.CLOUDINARY_API_SECRET
 console.log("VAPID_PUBLIC_KEY (loaded):", process.env.VAPID_PUBLIC_KEY ? "SET" : "NOT SET");
 console.log("VAPID_PRIVATE_KEY (loaded):", process.env.VAPID_PRIVATE_KEY ? "SET" : "NOT SET");
 console.log("VAPID_SUBJECT (loaded):", process.env.VAPID_SUBJECT ? "SET" : "NOT SET");
+console.log("GITHUB_TOKEN (loaded):", GITHUB_TOKEN ? "SET" : "NOT SET (GitHub push will use fallback or fail)");
 console.log("--- End Environment Variable Check ---");
 
 // Critical environment variables check
@@ -95,6 +99,10 @@ if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !pr
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY || !process.env.VAPID_SUBJECT) {
     console.warn("WARNING: VAPID keys or subject not set. Push notifications will not work.");
 }
+if (!GITHUB_TOKEN) {
+    console.warn("WARNING: GITHUB_TOKEN is not set in environment variables. GitHub push functionality might use hardcoded fallback or fail.");
+}
+
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -511,50 +519,117 @@ app.delete('/api/file-manager', authenticateAdminToken, (req, res) => {
   });
 });
 
-// New Helper Endpoint: Get All Files Recursively (for GitHub Upload)
-app.get('/api/file-manager-all-files', authenticateAdminToken, async (req, res) => {
-  const baseDir = BASE_DIR; // Use the configured BASE_DIR
+// --- NOBITA: PUSH ALL FILES TO GITHUB API ---
 
-  function walk(dir, fileList = [], root = dir) {
-    fs.readdirSync(dir).forEach(file => {
-      const filePath = path.join(dir, file);
-      // Exclude specific directories or files that should not be uploaded
-      if (filePath.includes('node_modules') || filePath.includes('.git') || filePath.includes('.env')) {
-        return; // Skip these
-      }
+// Helper to recursively fetch all files (with exclusions)
+function walkAllFiles(dir, base = '', arr = []) {
+  fs.readdirSync(dir).forEach(file => {
+    const filePath = path.join(dir, file);
+    const relPath = path.join(base, file);
 
-      if (fs.statSync(filePath).isDirectory()) {
-        walk(filePath, fileList, root);
-      } else {
-        // Only read text-based files to avoid issues with binary data if not needed
-        // For actual GitHub upload, you might need to handle binary files differently (e.g., as buffers)
-        // For now, assuming most relevant files are text.
-        const fileExtension = path.extname(filePath).toLowerCase();
-        const textFileExtensions = ['.js', '.json', '.html', '.css', '.md', '.txt', '.env', '.ts', '.jsx', '.tsx', '.py', '.java', '.c', '.cpp', '.sh', '.xml', '.yml', '.yaml'];
+    // Exclude common directories/files that shouldn't be pushed to GitHub
+    const excludedPaths = [
+      'node_modules', '.git', '.env', 'package-lock.json', 'yarn.lock',
+      'Thumbs.db', '.DS_Store', 'nbproject', // Common IDE/OS specific files
+      // Add any other files/folders you want to exclude here
+    ];
 
-        if (textFileExtensions.includes(fileExtension) || !fileExtension) { // Include files with no extension
-            try {
-                fileList.push({
-                    path: path.relative(root, filePath),
-                    content: fs.readFileSync(filePath, 'utf8')
-                });
-            } catch (readErr) {
-                console.warn(`Could not read file ${filePath} (possibly binary or encoding issue), skipping: ${readErr.message}`);
-            }
+    // Check if the current file/directory path includes any excluded path segment
+    const shouldExclude = excludedPaths.some(exclude => relPath.includes(exclude));
+
+    if (shouldExclude) {
+      console.log(`Skipping excluded path: ${relPath}`);
+      return;
+    }
+
+    if (fs.statSync(filePath).isDirectory()) {
+      walkAllFiles(filePath, relPath, arr);
+    } else {
+        // Attempt to read as UTF-8, handle potential encoding errors for binary files
+        try {
+            const content = fs.readFileSync(filePath, 'utf8');
+            arr.push({ path: relPath.replace(/\\/g, '/'), content: content });
+        } catch (e) {
+            console.warn(`Could not read file ${filePath} as UTF-8 (likely binary). Skipping for GitHub push.`);
+            // You might want to handle binary files differently (e.g., read as buffer and base64 encode)
+            // But for this simple implementation, we'll skip them if they cause encoding errors.
+        }
+    }
+  });
+  return arr;
+}
+
+// --- PUSH ALL FILES ENDPOINT (ADMIN Protected) ---
+app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) => {
+  // Token .env se uthao, kabhi bhi yahan mat likh!
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  const REPO = 'dontchange365/nobita-feedback-app-online';
+  const BRANCH = 'main';
+  const pushMessage = req.body.message || 'Auto push from NOBI FILE MANAGER 😈';
+  const baseDir = __dirname;
+
+  // Safe check — .env me token hai ya nahi
+  if (!GITHUB_TOKEN) {
+    console.error("GitHub Token is not configured. Please set GITHUB_TOKEN in your .env file.");
+    return res.status(500).json({ error: 'GitHub Token is not configured.' });
+  }
+
+  // --- Rest of function yahan daal ---
+
+
+  try {
+    const allFiles = walkAllFiles(baseDir); // Get all files recursively
+
+    for (const file of allFiles) {
+      let sha = undefined; // Initialize SHA for file existence check
+
+      // Step 1: Check if the file exists on GitHub to get its SHA (required for updating)
+      try {
+        const meta = await axios.get(
+          `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`,
+          { 
+            headers: { Authorization: `token ${GITHUB_TOKEN}` } 
+          }
+        );
+        sha = meta.data.sha; // If file exists, get its SHA
+      } catch (e) { 
+        // If file not found (404) or any other error, it means the file doesn't exist or we can't get its SHA.
+        // We will attempt to create it. If it's another error, it will fail on PUT.
+        if (e.response && e.response.status === 404) {
+          console.log(`File ${file.path} not found on GitHub, will create.`);
         } else {
-            console.log(`Skipping non-text file for GitHub upload: ${filePath}`);
+          console.warn(`Error checking SHA for ${file.path}:`, e.response?.data || e.message);
         }
       }
+
+      // Step 2: Push/overwrite the file to GitHub
+      await axios.put(
+        `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}`,
+        {
+          message: pushMessage,
+          content: Buffer.from(file.content).toString('base64'), // Encode content to Base64
+          branch: BRANCH,
+          ...(sha ? { sha } : {}) // Include SHA if updating an existing file
+        },
+        { 
+          headers: { 
+  Authorization: `token ${GITHUB_TOKEN}`,
+  'Content-Type': 'application/json', // Important for GitHub API PUT requests
+            'Accept': 'application/vnd.github.v3+json' // Specify API version
+          } 
+        }
+      );
+      console.log(`Pushed: ${file.path}`);
+    }
+
+    res.json({ success: true, totalFilesPushed: allFiles.length, message: 'All files successfully pushed to GitHub!' });
+  } catch (err) {
+    console.error('GitHub push error:', err.response?.data || err.message || err);
+    res.status(500).json({ 
+      error: 'GitHub push failed', 
+      detail: err.response?.data?.message || err.message,
+      status: err.response?.status 
     });
-    return fileList;
-  }
-  
-  try {
-    const files = walk(baseDir);
-    res.json(files);
-  } catch (e) {
-    console.error("Error in /api/file-manager-all-files:", e);
-    res.status(500).json({ error: e.message });
   }
 });
 
