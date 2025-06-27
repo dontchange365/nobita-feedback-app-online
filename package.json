@@ -47,7 +47,7 @@
     "web-push": "^3.6.7",
     "body-parser": "^1.20.2",
     "google-auth-library": "^9.0.0",
-    "axios": "^1.7.2",
+    "axios": "^1.7.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.3"
