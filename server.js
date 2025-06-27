@@ -18,6 +18,7 @@ const multer = require('multer'); // Multer for file uploads
 const webpush = require('web-push'); // Added web-push
 const fs = require('fs'); // Filesystem module, used by both original and file manager
 const axios = require('axios'); // Added axios for GitHub API calls
+const simpleGit = require('simple-git'); // Added for GitHub pull
 
 dotenv.config(); // Load environment variables from .env file (for local development)
 
@@ -49,6 +50,9 @@ const EMAIL_PORT = process.env.EMAIL_PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // GitHub Token from .env
+const GITHUB_REPO_OWNER = 'dontchange365'; // Fixed GitHub repo owner
+const GITHUB_REPO_NAME = 'nobita-feedback-app-online'; // Fixed GitHub repo name
+const GITHUB_BRANCH = 'main'; // Fixed GitHub branch
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -78,7 +82,7 @@ console.log("CLOUDINARY_API_SECRET (loaded):", process.env.CLOUDINARY_API_SECRET
 console.log("VAPID_PUBLIC_KEY (loaded):", process.env.VAPID_PUBLIC_KEY ? "SET" : "NOT SET");
 console.log("VAPID_PRIVATE_KEY (loaded):", process.env.VAPID_PRIVATE_KEY ? "SET" : "NOT SET");
 console.log("VAPID_SUBJECT (loaded):", process.env.VAPID_SUBJECT ? "SET" : "NOT SET");
-console.log("GITHUB_TOKEN (loaded):", GITHUB_TOKEN ? "SET" : "NOT SET (GitHub push will use fallback or fail)");
+console.log("GITHUB_TOKEN (loaded):", GITHUB_TOKEN ? "SET" : "NOT SET (GitHub push/pull will use fallback or fail)");
 console.log("--- End Environment Variable Check ---");
 
 // Critical environment variables check
@@ -99,7 +103,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY || !process.
     console.warn("WARNING: VAPID keys or subject not set. Push notifications will not work.");
 }
 if (!GITHUB_TOKEN) {
-    console.warn("WARNING: GITHUB_TOKEN is not set in environment variables. GitHub push functionality might use hardcoded fallback or fail.");
+    console.warn("WARNING: GITHUB_TOKEN is not set in environment variables. GitHub push/pull functionality might use hardcoded fallback or fail.");
 }
 
 
@@ -233,8 +237,9 @@ const authenticateToken = (req, res, next) => {
 
 // --- Middleware to authenticate ADMIN JWT token ---
 const authenticateAdminToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // For SSE, token is in query param
+    let token = req.query.token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
+
     if (token == null) {
         console.warn("Admin authentication attempt: No token provided.");
         return res.status(401).json({ message: "Admin authentication required." });
@@ -562,8 +567,9 @@ function walkAllFiles(dir, base = '', arr = []) {
 app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) => {
   // Token .env se uthao, kabhi bhi yahan mat likh!
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-  const REPO = 'dontchange365/nobita-feedback-app-online';
-  const BRANCH = 'main';
+  const REPO_OWNER = GITHUB_REPO_OWNER;
+  const REPO_NAME = GITHUB_REPO_NAME;
+  const BRANCH = GITHUB_BRANCH;
   const pushMessage = req.body.message || 'Auto push from NOBI FILE MANAGER 😈';
   const baseDir = __dirname;
 
@@ -572,9 +578,6 @@ app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) =
     console.error("GitHub Token is not configured. Please set GITHUB_TOKEN in your .env file.");
     return res.status(500).json({ error: 'GitHub Token is not configured.' });
   }
-
-  // --- Rest of function yahan daal ---
-
 
   try {
     const allFiles = walkAllFiles(baseDir); // Get all files recursively
@@ -585,13 +588,13 @@ app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) =
       // Step 1: Check if the file exists on GitHub to get its SHA (required for updating)
       try {
         const meta = await axios.get(
-          `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`,
-          { 
-            headers: { Authorization: `token ${GITHUB_TOKEN}` } 
+          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`,
+          {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` }
           }
         );
         sha = meta.data.sha; // If file exists, get its SHA
-      } catch (e) { 
+      } catch (e) {
         // If file not found (404) or any other error, it means the file doesn't exist or we can't get its SHA.
         // We will attempt to create it. If it's another error, it will fail on PUT.
         if (e.response && e.response.status === 404) {
@@ -603,19 +606,19 @@ app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) =
 
       // Step 2: Push/overwrite the file to GitHub
       await axios.put(
-        `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}`,
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}`,
         {
           message: pushMessage,
           content: Buffer.from(file.content).toString('base64'), // Encode content to Base64
           branch: BRANCH,
           ...(sha ? { sha } : {}) // Include SHA if updating an existing file
         },
-        { 
-          headers: { 
+        {
+          headers: {
   Authorization: `token ${GITHUB_TOKEN}`,
   'Content-Type': 'application/json', // Important for GitHub API PUT requests
             'Accept': 'application/vnd.github.v3+json' // Specify API version
-          } 
+          }
         }
       );
       console.log(`Pushed: ${file.path}`);
@@ -624,11 +627,192 @@ app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) =
     res.json({ success: true, totalFilesPushed: allFiles.length, message: 'All files successfully pushed to GitHub!' });
   } catch (err) {
     console.error('GitHub push error:', err.response?.data || err.message || err);
-    res.status(500).json({ 
-      error: 'GitHub push failed', 
+    res.status(500).json({
+      error: 'GitHub push failed',
       detail: err.response?.data?.message || err.message,
-      status: err.response?.status 
+      status: err.response?.status
     });
+  }
+});
+
+
+// NOBI BOT SSE LIVE LOG (GitHub Push Stream)
+app.get('/api/admin/push-to-github/stream', authenticateAdminToken, async (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.flushHeaders(); // Important for SSE to send headers immediately
+
+  // Helper function to send log messages
+  function sendLog(msg) {
+    res.write(`data: ${msg}\n\n`);
+  }
+
+  sendLog('[Connecting to GitHub...]');
+
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  const REPO_OWNER = GITHUB_REPO_OWNER;
+  const REPO_NAME = GITHUB_REPO_NAME;
+  const BRANCH = GITHUB_BRANCH;
+  const pushMessage = req.query.message || 'Auto push from NOBI FILE MANAGER 😈';
+  const baseDir = __dirname;
+
+  // Safety check for GitHub Token
+  if (!GITHUB_TOKEN) {
+    sendLog("[ERROR] GitHub Token is not configured. Please set GITHUB_TOKEN in your .env file.");
+    sendLog('[GITHUB_DONE]');
+    return res.end();
+  }
+
+  try {
+    // This walkAllFiles is your file recursion function — get an array of all files
+    const allFiles = walkAllFiles(baseDir); // [{ path, content }]
+    sendLog(`[Found ${allFiles.length} files, pushing to GitHub...]`);
+    let pushed = 0;
+
+    for (const file of allFiles) {
+      sendLog(`[PUSHING] ${file.path}`);
+      // -- Check if file exists to get SHA
+      let sha = undefined;
+      try {
+        const meta = await axios.get(
+          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`,
+          { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+        sha = meta.data.sha;
+      } catch (e) {
+        // file doesn't exist, skip getting SHA (it will be a create operation)
+        if (e.response && e.response.status === 404) {
+          // console.log(`File ${file.path} not found on GitHub, will create.`);
+        } else {
+          // Log other errors but continue trying to push
+          console.warn(`Error checking SHA for ${file.path}:`, e.response?.data || e.message);
+        }
+      }
+      // -- Push file
+      try {
+        await axios.put(
+          `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}`,
+          {
+            message: pushMessage,
+            content: Buffer.from(file.content).toString('base64'),
+            branch: BRANCH,
+            ...(sha ? { sha } : {}) // Include SHA if updating an existing file
+          },
+          {
+            headers: {
+              Authorization: `token ${GITHUB_TOKEN}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          }
+        );
+        pushed++;
+        sendLog(`[✅] ${file.path} (pushed)`);
+      } catch (err) {
+        sendLog(`[❌] ${file.path} (FAILED) — ${err.response?.data?.message || err.message}`);
+      }
+    }
+    sendLog(`[COMPLETE] Pushed: ${pushed}/${allFiles.length} files.`);
+    sendLog('[GITHUB_DONE]'); // Signal completion
+    res.end(); // Close the SSE connection
+  } catch (e) {
+    console.error("Critical error during GitHub SSE push:", e);
+    sendLog(`[ERROR] ${e.message}`);
+    sendLog('[GITHUB_DONE]'); // Signal completion even on error
+    res.end(); // Close the SSE connection
+  }
+});
+
+// Helper function to recursively download files from GitHub
+async function downloadGithubContents(owner, repo, branch, repoPath, localPath, sendLog) {
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  if (!GITHUB_TOKEN) {
+    throw new Error('GitHub Token is not configured for pull operations.');
+  }
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}?ref=${branch}`;
+  let response;
+  try {
+    response = await axios.get(url, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json'
+      }
+    });
+  } catch (error) {
+    // If a path doesn't exist on GitHub, that's fine, just skip it.
+    if (error.response && error.response.status === 404) {
+        sendLog(`[SKIPPED] ${repoPath} not found on GitHub.`)
+        return;
+    }
+    throw error; // Re-throw other errors
+  }
+
+
+  if (Array.isArray(response.data)) { // It's a directory
+    sendLog(`[PULLING DIR] ${repoPath}`);
+    // Create local directory if it doesn't exist
+    if (!fs.existsSync(localPath)) {
+      fs.mkdirSync(localPath, { recursive: true });
+    }
+
+    for (const item of response.data) {
+      const newRepoPath = item.path;
+      const newLocalPath = path.join(localPath, item.name);
+      await downloadGithubContents(owner, repo, branch, newRepoPath, newLocalPath, sendLog);
+    }
+  } else if (response.data.type === 'file') { // It's a file
+    sendLog(`[PULLING FILE] ${repoPath}`);
+    // Decode content from Base64 and write to local file
+    const content = Buffer.from(response.data.content, 'base64').toString('utf8');
+    fs.writeFileSync(localPath, content);
+    sendLog(`[✅] ${repoPath} (pulled)`);
+  }
+}
+
+// NOBI BOT SSE LIVE LOG (GitHub Pull Stream)
+app.get('/api/admin/pull-from-github/stream', authenticateAdminToken, async (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.flushHeaders(); // Important for SSE to send headers immediately
+
+  function sendLog(msg) {
+    res.write(`data: ${msg}\n\n`);
+  }
+
+  sendLog('[Connecting to GitHub for pull...]');
+
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  const REPO_OWNER = GITHUB_REPO_OWNER;
+  const REPO_NAME = GITHUB_REPO_NAME;
+  const BRANCH = GITHUB_BRANCH;
+  const baseDir = __dirname; // Current directory where server.js resides
+
+  if (!GITHUB_TOKEN) {
+    sendLog("[ERROR] GitHub Token is not configured. Please set GITHUB_TOKEN in your .env file.");
+    sendLog('[GITHUB_DONE]');
+    return res.end();
+  }
+
+  try {
+    sendLog(`[Starting pull from ${REPO_OWNER}/${REPO_NAME}/${BRANCH}]`);
+    // Start recursive download from the root of the repository
+    await downloadGithubContents(REPO_OWNER, REPO_NAME, BRANCH, '', baseDir, sendLog);
+
+    sendLog('[COMPLETE] GitHub pull done!');
+    sendLog('[GITHUB_DONE]'); // Signal completion
+    res.end(); // Close the SSE connection
+  } catch (e) {
+    console.error("Critical error during GitHub SSE pull:", e);
+    sendLog(`[ERROR] ${e.message}`);
+    sendLog('[GITHUB_DONE]'); // Signal completion even on error
+    res.end(); // Close the SSE connection
   }
 });
 
