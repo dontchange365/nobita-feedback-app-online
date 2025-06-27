@@ -8,7 +8,96 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
   <link rel="stylesheet" href="style.css">
-  
+  <style>
+    /* GitHub Log Popup Styles */
+    #github-log-popup {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #github-log-content {
+      background: #282c34; /* Darker background for the log */
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 700px;
+      max-height: 80%; /* Limit height */
+      display: flex;
+      flex-direction: column;
+      color: #e0e0e0; /* Light text color */
+      font-family: 'Consolas', 'Monaco', monospace; /* Monospaced font for logs */
+      border: 1px solid #61dafb; /* Accent border */
+    }
+
+    #github-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #444;
+    }
+
+    #github-log-header h2 {
+      margin: 0;
+      color: #61dafb; /* Accent color for heading */
+      font-size: 1.5em;
+    }
+
+    #github-log-header button {
+      background: #f44336; /* Red for close */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background-color 0.3s ease;
+    }
+
+    #github-log-header button:hover {
+      background-color: #d32f2f;
+    }
+
+    #github-log-area {
+      flex-grow: 1; /* Allows the textarea to fill available space */
+      background: #1e1e1e; /* Even darker for the log area */
+      border: 1px solid #333;
+      padding: 15px;
+      font-size: 0.9em;
+      line-height: 1.4;
+      overflow-y: auto; /* Scrollable */
+      white-space: pre-wrap; /* Preserve whitespace and wrap text */
+      word-wrap: break-word; /* Break long words */
+      border-radius: 5px;
+      color: #c0c0c0;
+    }
+
+    #githubSpinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #61dafb;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      display: none; /* Hidden by default */
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
   <!-- --- Authentication Check and Header Start --- -->
@@ -131,6 +220,114 @@
             throw error; // Re-throw error ताकि calling function bhi handle kar sake agar zaroori ho
         }
     }
+
+    // --- GitHub Log Functionality ---
+    let githubLogState = [];
+    let githubPushInProgress = false;
+
+    function showGithubLogPopup() {
+      // Load previous state if available and no push is in progress
+      const prev = sessionStorage.getItem('githubLogState');
+      if (prev && !githubPushInProgress) {
+        try {
+          githubLogState = JSON.parse(prev);
+        } catch (e) {
+          console.error("Error parsing stored githubLogState:", e);
+          githubLogState = []; // Reset if corrupted
+        }
+      } else if (!githubPushInProgress) {
+        githubLogState = []; // Clear if starting a new session and no push in progress
+      }
+      document.getElementById('github-log-popup').style.display = 'flex';
+      renderGithubLog();
+    }
+
+    function closeGithubLogPopup() {
+      document.getElementById('github-log-popup').style.display = 'none';
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+    }
+
+    function renderGithubLog() {
+      const area = document.getElementById('github-log-area');
+      area.textContent = githubLogState.join('\n');
+      area.scrollTop = area.scrollHeight; // Auto-scroll to bottom
+      document.getElementById('githubSpinner').style.display = githubPushInProgress ? 'inline-block' : 'none';
+    }
+
+    function githubLog(line) {
+      githubLogState.push(line);
+      // Keep only the last 100 lines to prevent memory issues
+      if (githubLogState.length > 100) {
+        githubLogState = githubLogState.slice(-100);
+      }
+      renderGithubLog();
+      // Save state to session storage periodically (or on every update)
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+    }
+
+    // Event listener for the GitHub Push button (assuming it exists)
+    // You'll need to add a button with id="github-upload-btn" in your HTML
+    document.addEventListener('DOMContentLoaded', () => {
+      const githubUploadBtn = document.getElementById('github-upload-btn');
+      if (githubUploadBtn) {
+        githubUploadBtn.addEventListener('click', async function() {
+          // Clear previous log state and set push in progress
+          githubLogState = [];
+          sessionStorage.removeItem('githubLogState'); // Clear session storage on new push
+          githubPushInProgress = true;
+          showGithubLogPopup();
+          githubLog('[Connecting to GitHub...]');
+
+          try {
+            const adminToken = localStorage.getItem('adminToken');
+            if (!adminToken) {
+                githubLog('[ERROR] Admin token not found. Please log in.');
+                githubPushInProgress = false;
+                renderGithubLog();
+                return;
+            }
+            const message = encodeURIComponent('Full push from NOBI FILE MANAGER 😈');
+
+            // --- SSE Stream
+            // Pass token as query parameter as per the prompt's instruction for SSE
+            const eventSource = new EventSource(`/api/admin/push-to-github/stream?token=${encodeURIComponent(adminToken)}&message=${message}`);
+
+            eventSource.onmessage = function(event) {
+              if (event.data === '[GITHUB_DONE]') {
+                githubPushInProgress = false;
+                renderGithubLog();
+                eventSource.close(); // Close the connection when done
+                githubLog('[COMPLETE] GitHub push done!');
+                showToast('GitHub push complete!', 'success');
+                return;
+              }
+              githubLog(event.data);
+            };
+
+            eventSource.onerror = function(e) {
+              githubPushInProgress = false;
+              renderGithubLog();
+              eventSource.close(); // Close on error as well
+              githubLog('[ERROR] Connection error or server stopped.');
+              showToast('GitHub push encountered an error.', 'error');
+            };
+
+          } catch (e) {
+            githubPushInProgress = false;
+            githubLog('[ERROR] ' + e.message);
+            renderGithubLog();
+            showToast('Failed to start GitHub push.', 'error');
+          }
+        });
+      }
+
+      // Event listener for closing the GitHub log popup
+      const closeGithubLogBtn = document.getElementById('close-github-log-popup');
+      if (closeGithubLogBtn) {
+        closeGithubLogBtn.addEventListener('click', closeGithubLogPopup);
+      }
+    });
+
   </script>
   <!-- --- Authentication Check and Header End --- -->
 
@@ -161,10 +358,8 @@
         <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
         <input type="file" id="file-upload" multiple style="display:none;">
         <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
-        <!-- GitHub Upload Button -->
-        <button class="github-upload" id="github-upload-btn" title="Push All Files to GitHub">
-          <i class="fab fa-github"></i>
-        </button>
+        <!-- GitHub Push Button Added Here -->
+        <button id="github-upload-btn" title="Push All Files to GitHub"><i class="fab fa-github"></i> Push All</button>
       </div>
     </div>
     <div id="main"></div>
@@ -198,6 +393,17 @@
   <!-- Toast Container for notifications -->
   <div id="toast-container"></div>
 
+  <!-- GitHub Log Popup Structure -->
+  <div id="github-log-popup">
+    <div id="github-log-content">
+      <div id="github-log-header">
+        <h2>GitHub Push Log <span id="githubSpinner"></span></h2>
+        <button id="close-github-log-popup">Close</button>
+      </div>
+      <div id="github-log-area"></div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
@@ -213,36 +419,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
   <script src="script.js"></script>
-  <script>
-    // GitHub Upload Logic - now making a backend API call
-    document.getElementById('github-upload-btn').addEventListener('click', async function() {
-      showToast('Uploading all files to GitHub...', 'info');
-      try {
-        const adminToken = localStorage.getItem('adminToken'); // Get admin token for authorization
-        
-        // Make a POST request to the new backend endpoint
-        const res = await fetch('/api/admin/push-to-github', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminToken}` // Send admin token
-          },
-          body: JSON.stringify({ message: 'Full push from NOBI FILE MANAGER 😈' }) // Optional message for commit
-        });
-        
-        const result = await res.json();
-
-        if (res.ok) { // Check if the response status is 2xx
-          showToast(`All files pushed to GitHub! Total files: ${result.totalFilesPushed || 'N/A'} 😈`, 'success');
-        } else {
-          showToast('GitHub push failed: ' + (result.detail || result.error || 'Unknown error'), 'error');
-          console.error('GitHub push failed response:', result);
-        }
-      } catch (e) {
-        showToast('GitHub upload failed: ' + e.message, 'error');
-        console.error('Frontend GitHub upload error:', e);
-      }
-    });
-  </script>
+  
 </body>
 </html>
