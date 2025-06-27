@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOBI BOT Terminal</title>
+    <style>
+        /* CSS starts here */
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 89vh;
+            margin: 0;
+            padding: 0;
+            background: #121212;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+        }
+
+        .terminal-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            min-height: 0;
+            overflow: hidden;
+            width: 100vw;
+        }
+
+        .terminal-output {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 14px 7px 0 7px;
+            background: #000000;
+            font-size: 10px;
+            line-height: 1.45;
+            word-break: break-word;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+        .terminal-output p {
+            margin: 0;
+            padding: 0;
+            text-align: left;
+        }
+
+        .unified-footer {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            background-color: #111;
+            border-top: 1px solid #222;
+        }
+
+        .terminal-input-area {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            flex-shrink: 0;
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+
+        /* --- NEW CSS FOR PROMPT CONTAINER --- */
+        #prompt-container {
+          max-width: 100px; /* Adjust as needed for better fit */
+          min-width: 42px; /* Minimum width for prompt, e.g., '~$ ' */
+          display: inline-block;
+          overflow-x: auto; /* Enable horizontal scrolling */
+          vertical-align: middle;
+          white-space: nowrap; /* Prevent line breaks within the prompt path */
+          margin-right: 7px;
+          scrollbar-width: none; /* Hide scrollbar for Firefox */
+          flex-shrink: 0; /* Prevent it from shrinking */
+          height: 22px; /* To align with textarea line height */
+          padding-top: 9px; /* Align text vertically */
+          box-sizing: border-box;
+        }
+        #prompt-container::-webkit-scrollbar {
+          display: none; /* Hide scrollbar for Chrome/Safari */
+        }
+        /* --- END NEW CSS --- */
+
+        .prompt {
+            color: #ffd700;
+            font-size: 0.9em;
+            /* Removed margin-right and align-self as #prompt-container handles layout */
+        }
+
+        .terminal-input {
+            background: none;
+            border: none;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9em;
+            outline: none;
+            flex-grow: 1;
+            caret-color: #fff;
+            padding: 0;
+            line-height: 1.35;
+            min-height: 22px;
+            max-height: 110px; /* ~5 lines (22px * 5) */
+            height: 22px; /* Initial height */
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            resize: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+        
+        .terminal-input:disabled {
+            cursor: not-allowed;
+        }
+
+        /* ANSI Color and Style Definitions (unchanged) */
+        .ansi-black { color: #000; }
+        .ansi-red { color: #f00; }
+        .ansi-green { color: #0f0; }
+        .ansi-yellow { color: #ff0; }
+        .ansi-blue { color: #00f; }
+        .ansi-magenta { color: #f0f; }
+        .ansi-cyan { color: #0ff; }
+        .ansi-white { color: #fff; }
+        .ansi-bright-black { color: #888; }
+        .ansi-bright-red { color: #f55; }
+        .ansi-bright-green { color: #5f5; }
+        .ansi-bright-yellow { color: #ff5; }
+        .ansi-bright-blue { color: #55f; }
+        .ansi-bright-magenta { color: #f5f; }
+        .ansi-bright-cyan { color: #5ff; }
+        .ansi-bright-white { color: #fff; }
+        .ansi-bold { font-weight: bold; }
+        .ansi-underline { text-decoration: underline; }
+
+        .terminal-loading-spinner {
+          display: flex;
+          align-items: center;
+          margin-left: 10px;
+          height: 30px;
+        }
+
+        .spinner {
+          width: 18px;
+          height: 18px;
+          border: 3px solid #ff9f1c;
+          border-top: 3px solid #fff;
+          border-radius: 50%;
+          animation: spinner-rotate 0.7s linear infinite;
+        }
+
+        @keyframes spinner-rotate {
+          100% { transform: rotate(360deg); }
+        }
+
+        /* NANO Editor Modal Styles (unchanged) */
+        #nano-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #141621c9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #nano-modal > div {
+            background: #23253d;
+            max-width: 540px;
+            width: 94vw;
+            margin-top: 38px;
+            padding: 21px 10px 19px 10px;
+            border-radius: 18px;
+            box-shadow: 0 6px 22px #000c;
+            border: 1.5px solid #282847;
+            position: relative;
+        }
+
+        #nano-modal .header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 7px;
+        }
+
+        #nano-fname {
+            font-weight: bold;
+            font-size: 1.09em;
+            color: #ffd700;
+            word-break: break-all;
+        }
+
+        #nano-modal button {
+            border: none;
+            padding: 4px 14px 6px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        #nano-modal .close-btn {
+            margin-left: auto;
+            background: #fb5656;
+            color: #fff;
+        }
+        #nano-modal .close-btn:active { background: #e04a4a; }
+
+        #nano-area {
+            width: 100%;
+            min-height: 130px;
+            max-height: 260px;
+            background: #181a24;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1em;
+            border: 1.5px solid #282847;
+            border-radius: 10px;
+            padding: 13px 10px 13px 13px;
+            margin-bottom: 15px;
+            resize: vertical;
+            outline: none;
+        }
+
+        #nano-modal .save-btn {
+            background: #ffd700;
+            color: #23243d;
+            padding: 7px 29px;
+            margin-right: 18px;
+        }
+        #nano-modal .save-btn:active { background: #e0be00; }
+
+        /* NANO Toast Style (unchanged) */
+        #nano-toast {
+            display: none;
+            position: fixed;
+            z-index: 12000;
+            left: 50%;
+            bottom: 5vh;
+            transform: translateX(-50%);
+            background: #181a22;
+            color: #ffd700;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 1.09em;
+            font-weight: bold;
+            box-shadow: 0 8px 24px #000c;
+            border: 2px solid #ffd700cc;
+            text-align: center;
+            opacity: 0.96;
+        }
+
+        /* NEW FOOTER BUTTONS (unchanged) */
+        .terminal-footer {
+            display: flex;
+            justify-content: flex-start; /* Align buttons to the left */
+            align-items: center;
+            padding: 7px 10px 6px 10px;
+            background: #181818;
+            border-top: 1px solid #222;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            gap: 8px; /* Space between buttons */
+            user-select: none;
+        }
+
+        .footer-btn {
+            background: #232436;
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.08em;
+            font-family: inherit;
+            margin: 0; /* Remove extra margin from old .termux-btn */
+            padding: 7px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0003;
+            transition: 0.1s;
+        }
+        .footer-btn:active { background: #191b23; }
+        .footer-btn.active { /* For Ctrl/Alt active state */
+            background: linear-gradient(90deg,#ffab22 20%,#c82343 100%);
+            color: #fff !important;
+            box-shadow: 0 0 18px 4px #ff5c8d70;
+        }
+        .footer-btn:disabled { /* Style for disabled buttons */
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        .footer-btn-wide {
+            min-width: 85px;
+            background: #fb5656;
+            color: #fff;
+            margin-left: 16px; /* Push it further left from others */
+            font-size: 1.11em;
+        }
+        .footer-btn-wide:active { background: #db4040; }
+        .footer-btn-wide:disabled { /* Style for disabled wide buttons */
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        @media (max-width: 650px) {
+            .terminal-footer {
+                padding: 4px 2.5vw 4px 2vw;
+                gap: 3px;
+            }
+            .footer-btn { font-size: 0.95em; min-width: unset; padding: 6px 10px; }
+            .footer-btn-wide { min-width: unset; padding: 6px 12px; margin-left: 8px; font-size: 1.0em; }
+        }
+        /* CSS ends here */
+    </style>
+</head>
+<body>
+    <div class="terminal-output" id="terminalOutput"></div>
+
+    <div class="unified-footer">
+        <div class="terminal-input-area" id="terminalInputArea">
+            <div id="prompt-container">
+                <span id="prompt" class="prompt"></span>
+            </div>
+            <textarea
+              id="terminalInput"
+              class="terminal-input"
+              rows="1"
+              maxlength="5000"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              style="resize:none;"></textarea>
+            
+            <div class="terminal-loading-spinner" id="terminalLoadingSpinner" style="display:none;">
+              <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+          <button id="ctrlBtn" class="footer-btn">Ctrl</button>
+          <button id="altBtn" class="footer-btn">Alt</button>
+          <button id="ctrlCBtn" class="footer-btn footer-btn-wide">Ctrl+C</button>
+        </div>
+        </div>
+
+    <div id="nano-modal" style="display:none;">
+      <div style="background:#23253d;max-width:540px;margin:38px auto 0 auto;padding:22px 12px 15px 12px;border-radius:14px;box-shadow:0 2px 16px #000b;">
+        <div class="header">
+          <span style="font-weight:bold;font-size:1.06em;color:#fff;">NANO Editor: <span id="nano-fname"></span></span>
+          <button onclick="closeNano()" class="close-btn">Close</button>
+        </div>
+        <textarea id="nano-area"></textarea>
+        <button onclick="saveNano()" class="save-btn">SAVE</button>
+        <span id="nano-msg"></span>
+      </div>
+    </div>
+    <div id="nano-toast"></div>
+
+    <script>
+        // JavaScript starts here
+        document.addEventListener('DOMContentLoaded', () => {
+            const terminalOutput = document.getElementById('terminalOutput');
+            const terminalInput = document.getElementById('terminalInput');
+            const promptSpan = document.getElementById('prompt'); // Now refers to the inner span
+            const loadingSpinner = document.getElementById('terminalLoadingSpinner');
+
+            // Nano editor elements
+            const nanoModal = document.getElementById('nano-modal');
+            const nanoFilenameSpan = document.getElementById('nano-fname');
+            const nanoTextArea = document.getElementById('nano-area');
+            const nanoMessageSpan = document.getElementById('nano-msg');
+            const nanoToast = document.getElementById('nano-toast');
+
+            // New footer buttons
+            const ctrlBtn = document.getElementById('ctrlBtn');
+            const altBtn = document.getElementById('altBtn');
+            const ctrlCBtn = document.getElementById('ctrlCBtn');
+
+            let currentPromptText = '';
+            let ctrlPressed = false;
+            let altPressed = false;
+            let lastSpecialKey = null;
+
+            let currentDirectory = '~';
+
+            // --- HELPER FUNCTIONS FOR ANSI AND TRUNCATION ---
+            function stripAnsi(str) {
+                return str.replace(/\x1b\[(\d+;)*(\d+)m/g, '');
+            }
+
+            function smartTruncatePath(pathString, visibleLen = 15) {
+                // pathString should be plain text (no ANSI codes)
+                if (pathString.length > visibleLen) {
+                    return '...' + pathString.slice(-visibleLen);
+                }
+                return pathString;
+            }
+            // --- END HELPER FUNCTIONS ---
+
+            function parseAnsi(text) {
+                let parsedHtml = '';
+                let currentStyle = '';
+                const ansiRegex = /\x1b\[(\d+;)*(\d+)m/g;
+
+                let lastIndex = 0;
+                text.replace(ansiRegex, (match, p1, p2, offset) => {
+                    if (offset > lastIndex) {
+                        parsedHtml += `<span class="${currentStyle}">${escapeHtml(text.substring(lastIndex, offset))}</span>`;
+                    }
+
+                    const codes = match.substring(2, match.length - 1).split(';');
+                    codes.forEach(code => {
+                        code = parseInt(code, 10);
+                        switch (code) {
+                            case 0: currentStyle = ''; break;
+                            case 1: currentStyle += ' ansi-bold'; break;
+                            case 4: currentStyle += ' ansi-underline'; break;
+                            case 30: currentStyle += ' ansi-black'; break;
+                            case 31: currentStyle += ' ansi-red'; break;
+                            case 32: currentStyle += ' ansi-green'; break;
+                            case 33: currentStyle += ' ansi-yellow'; break;
+                            case 34: currentStyle += ' ansi-blue'; break;
+                            case 35: currentStyle += ' ansi-magenta'; break;
+                            case 36: currentStyle += ' ansi-cyan'; break;
+                            case 37: currentStyle += ' ansi-white'; break;
+                            case 90: currentStyle += ' ansi-bright-black'; break;
+                            case 91: currentStyle += ' ansi-bright-red'; break;
+                            case 92: currentStyle += ' ansi-bright-green'; break;
+                            case 93: currentStyle += ' ansi-bright-yellow'; break;
+                            case 94: currentStyle += ' ansi-bright-blue'; break;
+                            case 95: currentStyle += ' ansi-bright-magenta'; break;
+                            case 96: currentStyle += ' ansi-bright-cyan'; break;
+                            case 97: currentStyle += ' ansi-bright-white'; break;
+                        }
+                    });
+                    lastIndex = offset + match.length;
+                });
+
+                if (lastIndex < text.length) {
+                    parsedHtml += `<span class="${currentStyle}">${escapeHtml(text.substring(lastIndex))}</span>`;
+                }
+                return parsedHtml;
+            }
+
+            function escapeHtml(text) {
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function appendOutput(data) {
+                if (terminalOutput.children.length === 0) {
+                     data = data.replace(/^\r?\n/, '');
+                }
+
+                const p = document.createElement('p');
+                p.innerHTML = parseAnsi(data);
+                terminalOutput.appendChild(p);
+                setTimeout(() => {
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }, 50);
+            }
+
+            // --- UPDATED updatePrompt FUNCTION ---
+            function updatePrompt(data) {
+                currentPromptText = data; // Keep original raw data for context if needed
+
+                // For NANO: Extract the full path (strip ANSI from it)
+                const nanoDirMatch = data.match(/(\x1b\[\d+m)?(~.*?)(\x1b\[\d+m)?(\$)/);
+                if (nanoDirMatch && nanoDirMatch[2]) { // Match group 2 is the actual path like ~/abc/app
+                  currentDirectory = stripAnsi(nanoDirMatch[2]).trim();
+                } else {
+                  currentDirectory = '~'; // Fallback
+                }
+
+                // For DISPLAY: Truncate the path for display purposes
+                let displayString = data;
+                let pathMatchForDisplay = data.match(/(\x1b\[\d+m)?(~.*?)(\x1b\[\d+m)?(\$)/);
+
+                if (pathMatchForDisplay) {
+                    const fullPathRaw = pathMatchForDisplay[2]; // e.g., '~/abc/def'
+                    const truncatedPathRaw = smartTruncatePath(stripAnsi(fullPathRaw), 15); // Truncate the plain path
+
+                    // Reconstruct the display string with truncated path, keeping original ANSI codes
+                    let newDisplayString = 
+                        (pathMatchForDisplay[1] || '') + // ANSI code before path
+                        truncatedPathRaw +                // Truncated plain path
+                        (pathMatchForDisplay[3] || '') + // ANSI code after path
+                        '$' +                             // The '$' sign
+                        data.substring(pathMatchForDisplay.index + pathMatchForDisplay[0].length); // Rest of the prompt (if any)
+
+                    promptSpan.innerHTML = parseAnsi(newDisplayString);
+                } else {
+                    // If path not found in expected format, just display as is
+                    promptSpan.innerHTML = parseAnsi(data);
+                }
+
+                terminalInput.focus();
+
+                // Scroll fix (auto right-end) for the prompt container
+                setTimeout(() => {
+                  const pc = document.getElementById('prompt-container');
+                  if (pc) pc.scrollLeft = pc.scrollWidth;
+                }, 8);
+            }
+            // --- END UPDATED updatePrompt FUNCTION ---
+
+            const ws = new WebSocket(`ws://localhost:7860`);
+
+            ws.onopen = () => {
+                console.log('WebSocket connection established.');
+                terminalInput.focus();
+            };
+
+            ws.onmessage = (event) => {
+              const msg = JSON.parse(event.data);
+              if (msg.type === 'output') {
+                appendOutput(msg.data);
+              } else if (msg.type === 'prompt') {
+                updatePrompt(msg.data);
+                hideSpinner();
+                unlockInput();
+                unlockButtons();
+              }
+            };
+
+            ws.onclose = () => {
+                appendOutput('\r\nDisconnected from terminal.');
+                hideSpinner();
+            };
+
+            ws.onerror = (error) => {
+                appendOutput(`WebSocket Error: ${error.message}`);
+            };
+
+            function showSpinner() {
+              loadingSpinner.style.display = 'flex';
+            }
+
+            function hideSpinner() {
+              loadingSpinner.style.display = 'none';
+            }
+
+            // Input locking functions
+            function lockInput() {
+              terminalInput.disabled = true;
+              terminalInput.blur();
+              terminalInput.style.opacity = '0.45';
+            }
+            function unlockInput() {
+              terminalInput.disabled = false;
+              terminalInput.style.opacity = '1';
+              terminalInput.focus();
+            }
+
+            // Button locking functions
+            function lockButtons() {
+              ctrlBtn.disabled = true;
+              altBtn.disabled = true;
+              ctrlCBtn.disabled = false;
+              ctrlCBtn.style.opacity = "1";
+
+              ctrlBtn.style.opacity = "0.45";
+              altBtn.style.opacity = "0.45";
+            }
+            function unlockButtons() {
+              ctrlBtn.disabled = false;
+              altBtn.disabled = false;
+              ctrlCBtn.disabled = false;
+
+              ctrlBtn.style.opacity = "1";
+              altBtn.style.opacity = "1";
+              ctrlCBtn.style.opacity = "1";
+            }
+
+            function sendTerminalCommand(cmd) {
+              ws.send(JSON.stringify({ type: 'input', data: cmd }));
+              showSpinner();
+              lockInput();
+              lockButtons();
+            }
+
+            terminalInput.focus();
+
+            // NEW FOOTER BUTTONS LOGIC
+            ctrlBtn.addEventListener('click', function() {
+                if (this.disabled) return; 
+                ctrlPressed = !ctrlPressed;
+                altPressed = false;
+                ctrlBtn.classList.toggle('active', ctrlPressed);
+                altBtn.classList.remove('active');
+                terminalInput.focus();
+                lastSpecialKey = 'Ctrl';
+            });
+
+            altBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                altPressed = !altPressed;
+                ctrlPressed = false;
+                altBtn.classList.toggle('active', altPressed);
+                ctrlBtn.classList.remove('active');
+                terminalInput.focus();
+                lastSpecialKey = 'Alt';
+            });
+
+            ctrlCBtn.addEventListener('click', function() {
+                ws.send(JSON.stringify({ type: 'input', data: '\x03' }));
+                showSpinner();
+                lockInput();
+                lockButtons(); 
+                
+                ctrlPressed = false;
+                altPressed = false;
+                ctrlBtn.classList.remove('active');
+                altBtn.classList.remove('active');
+                lastSpecialKey = null;
+            });
+
+            document.addEventListener('keydown', function(e) {
+              if (terminalInput.disabled && !(e.ctrlKey && (e.key === 'c' || e.key === 'l'))) {
+                e.preventDefault();
+                return false;
+              }
+
+              if (ctrlPressed && lastSpecialKey === 'Ctrl') {
+                if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
+                  let charCode = e.key.toLowerCase().charCodeAt(0) - 96;
+                  if (charCode >= 1 && charCode <= 26) {
+                    sendTerminalCommand(String.fromCharCode(charCode));
+                  }
+                  ctrlPressed = false; lastSpecialKey = null;
+                  ctrlBtn.classList.remove('active');
+                  e.preventDefault();
+                  terminalInput.focus();
+                  return false;
+                }
+                e.preventDefault();
+                return false;
+              }
+              if (altPressed && lastSpecialKey === 'Alt') {
+                if (e.key.length === 1) {
+                  sendTerminalCommand('\x1b' + e.key);
+                  altPressed = false; lastSpecialKey = null;
+                  altBtn.classList.remove('active');
+                  e.preventDefault();
+                  terminalInput.focus();
+                  return false;
+                }
+                e.preventDefault();
+                return false;
+              }
+            });
+
+            // Auto expand & max 5 lines logic
+            terminalInput.addEventListener('input', function() {
+              this.style.height = '22px';
+              this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+            });
+
+            // Terminal input handler ke andar (keydown ya send logic ke paas)
+            terminalInput.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter' && !terminalInput.disabled) {
+                const command = terminalInput.value.trim();
+
+                // ---- NANO LOGIC ----
+                if (command.startsWith('nano ')) {
+                  e.preventDefault();
+                  const fname = command.slice(5).trim();
+                  if (!fname) {
+                    terminalInput.value = '';
+                    this.style.height = '22px';
+                    appendOutput(`${currentPromptText}nano `);
+                    appendOutput(`\x1b[31mnano: filename expected\x1b[0m\r\n`);
+                    return false;
+                  }
+
+                  openNanoEditor(fname);
+                  terminalInput.value = '';
+                  this.style.height = '22px';
+                  return false;
+                }
+
+                // -- Baaki normal command logic (send to server) --
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    if (command.trim()) {
+                      appendOutput(`${currentPromptText}${command}`);
+                      sendTerminalCommand(command);
+                      terminalInput.value = '';
+                      this.style.height = '22px';
+                    } else {
+                      appendOutput(`${currentPromptText}`);
+                    }
+                    return false;
+                }
+              }
+              // Handles Ctrl+C from physical keyboard
+              if (e.ctrlKey && e.key === 'c' && !terminalInput.disabled) {
+                sendTerminalCommand('\x03');
+                e.preventDefault();
+                return false;
+              }
+              // Handles Ctrl+L from physical keyboard
+              if (e.ctrlKey && e.key === 'l' && !terminalInput.disabled) {
+                terminalOutput.innerHTML = '';
+                e.preventDefault();
+                return false;
+              }
+            });
+
+            // JS LOGIC FOR NANO (Global functions for onclick)
+            window.openNanoEditor = function(fname) {
+              nanoModal.style.display = 'flex';
+              nanoFilenameSpan.innerText = fname;
+              nanoMessageSpan.innerText = 'Loading...';
+              nanoTextArea.value = '';
+
+              lockInput();
+              lockButtons();
+              terminalInput.style.display = 'none';
+              loadingSpinner.style.display = 'none';
+              
+              fetch('/api/text-editor?file=' + encodeURIComponent(fname) + '&dir=' + encodeURIComponent(currentDirectory))
+                .then(res => res.json())
+                .then(d => {
+                  nanoTextArea.value = d.success ? d.content : '';
+                  nanoMessageSpan.innerText = d.success ? 'File loaded!' : 'File not found (new file)';
+                  nanoTextArea.focus();
+                })
+                .catch(error => {
+                  console.error('Nano load error:', error);
+                  nanoMessageSpan.innerText = 'Error loading file!';
+                });
+            }
+
+            window.saveNano = function() {
+              const fname = nanoFilenameSpan.innerText;
+              const content = nanoTextArea.value;
+              nanoMessageSpan.innerText = 'Saving...';
+              fetch('/api/text-editor', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ file: fname, content, dir: currentDirectory })
+              })
+              .then(res => res.json())
+              .then(d => {
+                if(d.success){
+                  showNanoToast("File saved! 😈");
+                  setTimeout(() => {
+                    closeNano();
+                  }, 950);
+                }
+                nanoMessageSpan.innerText = d.success ? '' : 'Save error!';
+              })
+              .catch(error => {
+                  console.error('Nano save error:', error);
+                  nanoMessageSpan.innerText = 'Error saving file!';
+              });
+            }
+
+            window.closeNano = function() {
+              nanoModal.style.display = 'none';
+              nanoFilenameSpan.innerText = '';
+              nanoTextArea.value = '';
+              nanoMessageSpan.innerText = '';
+              
+              terminalInput.style.display = 'block';
+              unlockInput();
+              unlockButtons();
+            }
+
+            // Function to show the nano toast
+            function showNanoToast(msg){
+              nanoToast.innerText = msg;
+              nanoToast.style.display = 'block';
+              setTimeout(() => {
+                nanoToast.style.display = 'none';
+              }, 1200);
+            }
+        });
+    </script>
+</body>
+</html>
