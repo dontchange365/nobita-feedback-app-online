@@ -511,6 +511,53 @@ app.delete('/api/file-manager', authenticateAdminToken, (req, res) => {
   });
 });
 
+// New Helper Endpoint: Get All Files Recursively (for GitHub Upload)
+app.get('/api/file-manager-all-files', authenticateAdminToken, async (req, res) => {
+  const baseDir = BASE_DIR; // Use the configured BASE_DIR
+
+  function walk(dir, fileList = [], root = dir) {
+    fs.readdirSync(dir).forEach(file => {
+      const filePath = path.join(dir, file);
+      // Exclude specific directories or files that should not be uploaded
+      if (filePath.includes('node_modules') || filePath.includes('.git') || filePath.includes('.env')) {
+        return; // Skip these
+      }
+
+      if (fs.statSync(filePath).isDirectory()) {
+        walk(filePath, fileList, root);
+      } else {
+        // Only read text-based files to avoid issues with binary data if not needed
+        // For actual GitHub upload, you might need to handle binary files differently (e.g., as buffers)
+        // For now, assuming most relevant files are text.
+        const fileExtension = path.extname(filePath).toLowerCase();
+        const textFileExtensions = ['.js', '.json', '.html', '.css', '.md', '.txt', '.env', '.ts', '.jsx', '.tsx', '.py', '.java', '.c', '.cpp', '.sh', '.xml', '.yml', '.yaml'];
+
+        if (textFileExtensions.includes(fileExtension) || !fileExtension) { // Include files with no extension
+            try {
+                fileList.push({
+                    path: path.relative(root, filePath),
+                    content: fs.readFileSync(filePath, 'utf8')
+                });
+            } catch (readErr) {
+                console.warn(`Could not read file ${filePath} (possibly binary or encoding issue), skipping: ${readErr.message}`);
+            }
+        } else {
+            console.log(`Skipping non-text file for GitHub upload: ${filePath}`);
+        }
+      }
+    });
+    return fileList;
+  }
+  
+  try {
+    const files = walk(baseDir);
+    res.json(files);
+  } catch (e) {
+    console.error("Error in /api/file-manager-all-files:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 
 // --- Admin Authentication Route ---
 app.post('/api/admin/login', async (req, res) => {
@@ -907,10 +954,6 @@ app.get(['/index', '/index.html'], (req, res) => {
 });
 app.get('/admin-panel', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-panel', 'index.html'));
-});
-
-app.get('/admin', (req, res) => {
-    res.redirect('/admin-panel');
 });
 
 app.get('/admin-login.html', (req, res) => {
