@@ -233,8 +233,9 @@ const authenticateToken = (req, res, next) => {
 
 // --- Middleware to authenticate ADMIN JWT token ---
 const authenticateAdminToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // For SSE, token is in query param
+    let token = req.query.token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
+
     if (token == null) {
         console.warn("Admin authentication attempt: No token provided.");
         return res.status(401).json({ message: "Admin authentication required." });
@@ -629,6 +630,96 @@ app.post('/api/admin/push-to-github', authenticateAdminToken, async (req, res) =
       detail: err.response?.data?.message || err.message,
       status: err.response?.status 
     });
+  }
+});
+
+
+// NOBI BOT SSE LIVE LOG (GitHub Push Stream)
+app.get('/api/admin/push-to-github/stream', authenticateAdminToken, async (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.flushHeaders(); // Important for SSE to send headers immediately
+
+  // Helper function to send log messages
+  function sendLog(msg) {
+    res.write(`data: ${msg}\n\n`);
+  }
+
+  sendLog('[Connecting to GitHub...]');
+
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  const REPO = 'dontchange365/nobita-feedback-app-online'; // Make sure this is correct
+  const BRANCH = 'main';
+  const pushMessage = req.query.message || 'Auto push from NOBI FILE MANAGER 😈';
+  const baseDir = __dirname;
+
+  // Safety check for GitHub Token
+  if (!GITHUB_TOKEN) {
+    sendLog("[ERROR] GitHub Token is not configured. Please set GITHUB_TOKEN in your .env file.");
+    sendLog('[GITHUB_DONE]');
+    return res.end();
+  }
+
+  try {
+    // This walkAllFiles is your file recursion function — get an array of all files
+    const allFiles = walkAllFiles(baseDir); // [{ path, content }]
+    sendLog(`[Found ${allFiles.length} files, pushing to GitHub...]`);
+    let pushed = 0;
+
+    for (const file of allFiles) {
+      sendLog(`[PUSHING] ${file.path}`);
+      // -- Check if file exists to get SHA
+      let sha = undefined;
+      try {
+        const meta = await axios.get(
+          `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`,
+          { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+        );
+        sha = meta.data.sha;
+      } catch (e) {
+        // file doesn't exist, skip getting SHA (it will be a create operation)
+        if (e.response && e.response.status === 404) {
+          // console.log(`File ${file.path} not found on GitHub, will create.`);
+        } else {
+          // Log other errors but continue trying to push
+          console.warn(`Error checking SHA for ${file.path}:`, e.response?.data || e.message);
+        }
+      }
+      // -- Push file
+      try {
+        await axios.put(
+          `https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(file.path)}`,
+          {
+            message: pushMessage,
+            content: Buffer.from(file.content).toString('base64'),
+            branch: BRANCH,
+            ...(sha ? { sha } : {}) // Include SHA if updating an existing file
+          },
+          {
+            headers: {
+              Authorization: `token ${GITHUB_TOKEN}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          }
+        );
+        pushed++;
+        sendLog(`[✅] ${file.path} (pushed)`);
+      } catch (err) {
+        sendLog(`[❌] ${file.path} (FAILED) — ${err.response?.data?.message || err.message}`);
+      }
+    }
+    sendLog(`[COMPLETE] Pushed: ${pushed}/${allFiles.length} files.`);
+    sendLog('[GITHUB_DONE]'); // Signal completion
+    res.end(); // Close the SSE connection
+  } catch (e) {
+    console.error("Critical error during GitHub SSE push:", e);
+    sendLog(`[ERROR] ${e.message}`);
+    sendLog('[GITHUB_DONE]'); // Signal completion even on error
+    res.end(); // Close the SSE connection
   }
 });
 
