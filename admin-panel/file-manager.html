@@ -161,6 +161,10 @@
         <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
         <input type="file" id="file-upload" multiple style="display:none;">
         <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
+        <!-- GitHub Upload Button -->
+        <button class="github-upload" id="github-upload-btn" title="Push All Files to GitHub">
+          <i class="fab fa-github"></i>
+        </button>
       </div>
     </div>
     <div id="main"></div>
@@ -209,6 +213,36 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
   <script src="script.js"></script>
-  
+  <script>
+    // GitHub Upload Logic - now making a backend API call
+    document.getElementById('github-upload-btn').addEventListener('click', async function() {
+      showToast('Uploading all files to GitHub...', 'info');
+      try {
+        const adminToken = localStorage.getItem('adminToken'); // Get admin token for authorization
+        
+        // Make a POST request to the new backend endpoint
+        const res = await fetch('/api/admin/push-to-github', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}` // Send admin token
+          },
+          body: JSON.stringify({ message: 'Full push from NOBI FILE MANAGER 😈' }) // Optional message for commit
+        });
+        
+        const result = await res.json();
+
+        if (res.ok) { // Check if the response status is 2xx
+          showToast(`All files pushed to GitHub! Total files: ${result.totalFilesPushed || 'N/A'} 😈`, 'success');
+        } else {
+          showToast('GitHub push failed: ' + (result.detail || result.error || 'Unknown error'), 'error');
+          console.error('GitHub push failed response:', result);
+        }
+      } catch (e) {
+        showToast('GitHub upload failed: ' + e.message, 'error');
+        console.error('Frontend GitHub upload error:', e);
+      }
+    });
+  </script>
 </body>
 </html>
