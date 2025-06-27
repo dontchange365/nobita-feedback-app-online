@@ -27,8 +27,7 @@ const PORT = process.env.PORT || 3000;
 // --- AGGRESSIVE DEBUGGING START (KEEP THIS FOR YOUR CONFIRMATION) ---
 console.log("--- VAPID Key Debugging START ---");
 console.log("process.env.VAPID_PUBLIC_KEY:", process.env.VAPID_PUBLIC_KEY);
-console.log("Is VAPID_PUBLIC_KEY defined?
-", !!process.env.VAPID_PUBLIC_KEY);
+console.log("Is VAPID_PUBLIC_KEY defined?", !!process.env.VAPID_PUBLIC_KEY);
 if (!process.env.VAPID_PUBLIC_KEY) {
     console.error("CRITICAL: VAPID_PUBLIC_KEY is undefined or empty right after dotenv.config()!");
     console.error("Check your .env file or deployment environment variables.");
