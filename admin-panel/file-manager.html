@@ -221,10 +221,31 @@
     #minimize-log-btn:hover {
         color: #fff;
     }
+
+    /* New CSS for GitHub button in sidebar-header */
+    #sidebar-header #github-action-btn-main {
+      background: #24292f;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 7px;
+      font-size: 1.5em;
+      box-shadow: 0 2px 8px rgba(36,41,47,0.1);
+      transition: 0.2s;
+      flex-shrink: 0; /* Important: Prevents button from shrinking in flex container */
+    }
+    #sidebar-header #github-action-btn-main:hover {
+      background: #444c56;
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
-  <!-- --- Authentication Check and Header Start --- -->
   <script>
     // Ye script page load hote hi run hoga.
     // Check karega ki admin authenticated hai ya nahi.
@@ -472,6 +493,7 @@
       const actionButtons = githubActionPopup.querySelectorAll('.github-action-btn');
       const minimizeLogBtn = document.getElementById('minimize-log-btn');
       const githubSpinnerBtn = document.getElementById('github-spinner-btn'); // The floating spinner icon
+      const closeGithubLogPopupBtn = document.getElementById('close-github-log-popup'); // Close button for the log popup
 
       // 1. Show action selection popup
       if (githubActionBtn) {
@@ -502,13 +524,18 @@
           githubActionPopup.style.display = 'none';
         });
       }
+      
+      // 4. Close GitHub Log Popup (explicit close button)
+      if (closeGithubLogPopupBtn) {
+        closeGithubLogPopupBtn.addEventListener('click', closeGithubLogPopup);
+      }
 
-      // 4. Minimize live log popup
+      // 5. Minimize live log popup
       if (minimizeLogBtn) {
         minimizeLogBtn.addEventListener('click', minimizeGithubLogPopup);
       }
 
-      // 5. Restore live log popup from minimized spinner icon
+      // 6. Restore live log popup from minimized spinner icon
       if (githubSpinnerBtn) {
         githubSpinnerBtn.addEventListener('click', showGithubLogPopup);
       }
@@ -518,13 +545,10 @@
     });
 
   </script>
-  <!-- --- Authentication Check and Header End --- -->
-
   <div id="container">
     <div id="sidebar">
       <div id="sidebar-header">
         <span>📁 FILES</span>
-        <!-- Logout Button and Theme Toggle (added to sidebar-header) -->
         <button id="logoutBtn" title="Logout">Logout</button>
         <div class="theme-switch" style="margin-left: 10px; display: flex; align-items: center; gap: 5px;">
             <span>☀️</span>
@@ -535,6 +559,7 @@
             <span>🌙</span>
         </div>
         <button id="backBtn" title="Back">⬅️</button>
+        <button id="github-action-btn-main" title="GitHub Actions" style="margin-left:6px;"><i class="fab fa-github"></i></button>
       </div>
       <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
       <div id="file-search-bar">
@@ -547,9 +572,7 @@
         <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
         <input type="file" id="file-upload" multiple style="display:none;">
         <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
-        <!-- Main GitHub Action Button to open the Push/Pull choice popup -->
-        <button id="github-action-btn-main" title="GitHub Actions"><i class="fab fa-github"></i> GitHub</button>
-      </div>
+        </div>
     </div>
     <div id="main"></div>
   </div>
@@ -579,10 +602,8 @@
     <button class="delete-selected" onclick="bulkDelete()">Delete Selected</button>
   </div>
 
-  <!-- Toast Container for notifications -->
   <div id="toast-container"></div>
 
-  <!-- GitHub Action Choice Popup -->
   <div id="github-action-popup" class="modal">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
@@ -596,7 +617,6 @@
     </div>
   </div>
 
-  <!-- GitHub Live Log Popup -->
   <div id="github-log-popup" class="modal">
     <div class="modal-content">
       <button id="minimize-log-btn" title="Minimize Log"><i class="fas fa-window-minimize"></i></button>
@@ -608,7 +628,6 @@
     </div>
   </div>
 
-  <!-- Floating GitHub Spinner Button (minimized state) -->
   <div id="github-spinner-btn">
     <div class="github-spinner-icon">
       <i class="fab fa-github"></i>
