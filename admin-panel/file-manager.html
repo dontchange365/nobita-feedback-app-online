@@ -8,7 +8,220 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
   <link rel="stylesheet" href="style.css">
-  
+  <style>
+    /* General Modal Styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #282c34; /* Darker background for modals */
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 500px; /* Max width for action popup */
+      max-height: 80%; /* Limit height for action popup */
+      display: flex;
+      flex-direction: column;
+      color: #e0e0e0; /* Light text color */
+      font-family: 'Poppins', sans-serif;
+      border: 1px solid #61dafb; /* Accent border */
+      position: relative; /* For close button positioning */
+    }
+
+    .modal-content h3 {
+      color: #61dafb;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 1.6em;
+      text-align: center;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-btn:hover,
+    .close-btn:focus {
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* GitHub Action Buttons */
+    .github-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      gap: 10px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .github-action-btn[data-action="push"] {
+      background: linear-gradient(135deg, #24292f, #4a515a); /* Dark GitHub colors */
+      color: white;
+    }
+
+    .github-action-btn[data-action="pull"] {
+      background: linear-gradient(135deg, #007bff, #0056b3); /* Blue for pull */
+      color: white;
+    }
+
+    .github-action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+      opacity: 0.9;
+    }
+
+    .github-action-btn i {
+      font-size: 1.5em;
+    }
+
+
+    /* GitHub Log Popup Styles */
+    #github-log-popup .modal-content {
+      max-width: 700px; /* Wider for logs */
+      padding: 20px;
+    }
+
+    #github-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #444;
+    }
+
+    #github-log-header h2 {
+      margin: 0;
+      color: #61dafb; /* Accent color for heading */
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #github-log-area {
+      flex-grow: 1; /* Allows the textarea to fill available space */
+      background: #1e1e1e; /* Even darker for the log area */
+      border: 1px solid #333;
+      padding: 15px;
+      font-size: 0.9em;
+      line-height: 1.4;
+      overflow-y: auto; /* Scrollable */
+      white-space: pre-wrap; /* Preserve whitespace and wrap text */
+      word-wrap: break-word; /* Break long words */
+      border-radius: 5px;
+      color: #c0c0c0;
+      min-height: 200px; /* Minimum height for log area */
+    }
+
+    /* GitHub Spinner Button in corner */
+    #github-spinner-btn {
+      display: none; /* Hidden by default */
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9999;
+    }
+
+    .github-spinner-icon {
+      width: 50px; /* Increased size */
+      height: 50px;
+      border-radius: 50%;
+      background: #24292f; /* GitHub dark background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .github-spinner-icon:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .github-spinner-icon i {
+      color: white;
+      font-size: 1.8em; /* Icon size */
+      z-index: 1; /* Make sure icon is above spinner anim */
+    }
+
+    .spinner-anim {
+      position: absolute;
+      width: 46px; /* Slightly smaller than parent for border effect */
+      height: 46px;
+      border: 4px solid rgba(255, 255, 255, 0.3); /* Base grey for spinner */
+      border-top: 4px solid #57e; /* Initial blue for loading */
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+      top: 2px; /* Center it */
+      left: 2px; /* Center it */
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Spinner Status Colors */
+    .github-spinner-icon.loading .spinner-anim {
+      border-top-color: #57e; /* Blue for loading */
+      animation: spin 1.2s linear infinite;
+    }
+    .github-spinner-icon.complete .spinner-anim {
+      border-top-color: #2ecc40; /* Green for complete */
+      animation: none; /* Stop animation */
+    }
+    .github-spinner-icon.error .spinner-anim {
+      border-top-color: #e74c3c; /* Red for error */
+      animation: none; /* Stop animation */
+    }
+
+    /* Minimize button */
+    #minimize-log-btn {
+        background: none;
+        border: none;
+        color: #aaa;
+        font-size: 1.8em;
+        cursor: pointer;
+        position: absolute;
+        top: 8px;
+        right: 55px; /* Adjust based on close button position */
+        transition: color 0.3s ease;
+    }
+    #minimize-log-btn:hover {
+        color: #fff;
+    }
+  </style>
 </head>
 <body>
   <!-- --- Authentication Check and Header Start --- -->
@@ -131,6 +344,179 @@
             throw error; // Re-throw error ताकि calling function bhi handle kar sake agar zaroori ho
         }
     }
+
+    // --- GitHub Log Functionality ---
+    let githubLogState = [];
+    let githubProcessStatus = 'idle'; // 'idle', 'loading', 'complete', 'error'
+    let githubEventSource = null; // To store the current EventSource instance
+
+    function updateGithubSpinnerIcon() {
+      const spinnerBtn = document.getElementById('github-spinner-btn');
+      const spinnerAnim = spinnerBtn.querySelector('.spinner-anim');
+
+      spinnerBtn.style.display = (githubProcessStatus === 'idle') ? 'none' : 'block';
+      spinnerBtn.className = 'github-spinner-icon'; // Reset classes
+
+      if (githubProcessStatus === 'loading') {
+        spinnerBtn.classList.add('loading');
+      } else if (githubProcessStatus === 'complete') {
+        spinnerBtn.classList.add('complete');
+      } else if (githubProcessStatus === 'error') {
+        spinnerBtn.classList.add('error');
+      }
+    }
+
+    function showGithubLogPopup() {
+      // Load previous state if available and no process is in progress
+      const prev = sessionStorage.getItem('githubLogState');
+      if (prev && githubProcessStatus === 'idle') { // Only load if not active
+        try {
+          githubLogState = JSON.parse(prev);
+        } catch (e) {
+          console.error("Error parsing stored githubLogState:", e);
+          githubLogState = []; // Reset if corrupted
+        }
+      } else if (githubProcessStatus === 'idle') {
+        githubLogState = []; // Clear if starting a new session and no process in progress
+      }
+      document.getElementById('github-log-popup').style.display = 'flex';
+      updateGithubSpinnerIcon(); // Ensure spinner state is correct
+      renderGithubLog();
+    }
+
+    function closeGithubLogPopup() {
+      document.getElementById('github-log-popup').style.display = 'none';
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+      // If process is complete or errored, and popup is closed, hide the spinner icon too
+      if (githubProcessStatus === 'complete' || githubProcessStatus === 'error') {
+        githubProcessStatus = 'idle';
+        updateGithubSpinnerIcon();
+      }
+    }
+
+    function minimizeGithubLogPopup() {
+      document.getElementById('github-log-popup').style.display = 'none';
+      updateGithubSpinnerIcon(); // Show minimized icon
+    }
+
+    function renderGithubLog() {
+      const area = document.getElementById('github-log-area');
+      area.textContent = githubLogState.join('\n');
+      area.scrollTop = area.scrollHeight; // Auto-scroll to bottom
+    }
+
+    function githubLog(line) {
+      githubLogState.push(line);
+      // Keep only the last 100 lines to prevent memory issues
+      if (githubLogState.length > 100) {
+        githubLogState = githubLogState.slice(-100);
+      }
+      renderGithubLog();
+      // Save state to session storage periodically (or on every update)
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+    }
+
+    async function startGithubStream(endpoint) {
+      githubLogState = [];
+      sessionStorage.removeItem('githubLogState'); // Clear session storage on new push
+      githubProcessStatus = 'loading';
+      showGithubLogPopup(); // Show the full log popup initially
+      githubLog(`[Connecting to GitHub for ${endpoint.includes('push') ? 'push' : 'pull'}...]`);
+
+      const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+          githubLog('[ERROR] Admin token not found. Please log in.');
+          githubProcessStatus = 'error';
+          renderGithubLog();
+          showToast('Admin session expired. Please log in.', 'error');
+          return;
+      }
+      const message = encodeURIComponent('Full action from NOBI FILE MANAGER 😈'); // Generic message
+
+      // Close any existing event source before opening a new one
+      if (githubEventSource) {
+          githubEventSource.close();
+      }
+
+      // Pass token as query parameter as per the prompt's instruction for SSE
+      githubEventSource = new EventSource(`${endpoint}?token=${encodeURIComponent(adminToken)}&message=${message}`);
+
+      githubEventSource.onmessage = function(event) {
+        if (event.data === '[GITHUB_DONE]') {
+          githubProcessStatus = 'complete';
+          renderGithubLog();
+          githubEventSource.close(); // Close the connection when done
+          githubLog(`[COMPLETE] GitHub ${endpoint.includes('push') ? 'push' : 'pull'} done!`);
+          showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} complete!`, 'success');
+          return;
+        }
+        githubLog(event.data);
+      };
+
+      githubEventSource.onerror = function(e) {
+        console.error("GitHub EventSource error:", e);
+        githubProcessStatus = 'error';
+        renderGithubLog();
+        githubEventSource.close(); // Close on error as well
+        githubLog('[ERROR] Connection error or server stopped.');
+        showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} encountered an error.`, 'error');
+      };
+    }
+
+    // DOMContentLoaded for all event listeners and initial UI setup
+    document.addEventListener('DOMContentLoaded', () => {
+      const githubActionBtn = document.getElementById('github-action-btn-main'); // The main button to open action selection
+      const githubActionPopup = document.getElementById('github-action-popup');
+      const githubLogPopup = document.getElementById('github-log-popup');
+      const closeActionPopupBtn = githubActionPopup.querySelector('.close-btn');
+      const actionButtons = githubActionPopup.querySelectorAll('.github-action-btn');
+      const minimizeLogBtn = document.getElementById('minimize-log-btn');
+      const githubSpinnerBtn = document.getElementById('github-spinner-btn'); // The floating spinner icon
+
+      // 1. Show action selection popup
+      if (githubActionBtn) {
+        githubActionBtn.addEventListener('click', () => {
+          githubActionPopup.style.display = 'flex';
+          // Ensure log popup is hidden if action popup is opened
+          githubLogPopup.style.display = 'none';
+        });
+      }
+
+      // 2. Handle action selection (Push/Pull)
+      actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const action = this.dataset.action;
+          githubActionPopup.style.display = 'none'; // Close action selection popup
+
+          if (action === 'push') {
+            startGithubStream('/api/admin/push-to-github/stream');
+          } else if (action === 'pull') {
+            startGithubStream('/api/admin/pull-from-github/stream');
+          }
+        });
+      });
+
+      // 3. Close action selection popup
+      if (closeActionPopupBtn) {
+        closeActionPopupBtn.addEventListener('click', () => {
+          githubActionPopup.style.display = 'none';
+        });
+      }
+
+      // 4. Minimize live log popup
+      if (minimizeLogBtn) {
+        minimizeLogBtn.addEventListener('click', minimizeGithubLogPopup);
+      }
+
+      // 5. Restore live log popup from minimized spinner icon
+      if (githubSpinnerBtn) {
+        githubSpinnerBtn.addEventListener('click', showGithubLogPopup);
+      }
+
+      // Initial state of spinner icon on page load
+      updateGithubSpinnerIcon();
+    });
+
   </script>
   <!-- --- Authentication Check and Header End --- -->
 
@@ -161,10 +547,8 @@
         <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
         <input type="file" id="file-upload" multiple style="display:none;">
         <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
-        <!-- GitHub Upload Button -->
-        <button class="github-upload" id="github-upload-btn" title="Push All Files to GitHub">
-          <i class="fab fa-github"></i>
-        </button>
+        <!-- Main GitHub Action Button to open the Push/Pull choice popup -->
+        <button id="github-action-btn-main" title="GitHub Actions"><i class="fab fa-github"></i> GitHub</button>
       </div>
     </div>
     <div id="main"></div>
@@ -198,6 +582,41 @@
   <!-- Toast Container for notifications -->
   <div id="toast-container"></div>
 
+  <!-- GitHub Action Choice Popup -->
+  <div id="github-action-popup" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h3>Choose GitHub Action</h3>
+      <button class="github-action-btn" data-action="push">
+        <i class="fab fa-github"></i> Push to GitHub
+      </button>
+      <button class="github-action-btn" data-action="pull">
+        <i class="fas fa-download"></i> Pull from GitHub
+      </button>
+    </div>
+  </div>
+
+  <!-- GitHub Live Log Popup -->
+  <div id="github-log-popup" class="modal">
+    <div class="modal-content">
+      <button id="minimize-log-btn" title="Minimize Log"><i class="fas fa-window-minimize"></i></button>
+      <span class="close-btn" id="close-github-log-popup">&times;</span>
+      <div id="github-log-header">
+        <h2>GitHub Log</h2>
+      </div>
+      <div id="github-log-area"></div>
+    </div>
+  </div>
+
+  <!-- Floating GitHub Spinner Button (minimized state) -->
+  <div id="github-spinner-btn">
+    <div class="github-spinner-icon">
+      <i class="fab fa-github"></i>
+      <div class="spinner-anim"></div>
+    </div>
+  </div>
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
@@ -213,36 +632,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
   <script src="script.js"></script>
-  <script>
-    // GitHub Upload Logic - now making a backend API call
-    document.getElementById('github-upload-btn').addEventListener('click', async function() {
-      showToast('Uploading all files to GitHub...', 'info');
-      try {
-        const adminToken = localStorage.getItem('adminToken'); // Get admin token for authorization
-        
-        // Make a POST request to the new backend endpoint
-        const res = await fetch('/api/admin/push-to-github', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminToken}` // Send admin token
-          },
-          body: JSON.stringify({ message: 'Full push from NOBI FILE MANAGER 😈' }) // Optional message for commit
-        });
-        
-        const result = await res.json();
-
-        if (res.ok) { // Check if the response status is 2xx
-          showToast(`All files pushed to GitHub! Total files: ${result.totalFilesPushed || 'N/A'} 😈`, 'success');
-        } else {
-          showToast('GitHub push failed: ' + (result.detail || result.error || 'Unknown error'), 'error');
-          console.error('GitHub push failed response:', result);
-        }
-      } catch (e) {
-        showToast('GitHub upload failed: ' + e.message, 'error');
-        console.error('Frontend GitHub upload error:', e);
-      }
-    });
-  </script>
+  
 </body>
 </html>
