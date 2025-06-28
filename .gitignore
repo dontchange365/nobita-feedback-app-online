@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -8,7 +8,7 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Environment Variables - Aapke paas .env pehle se hai, jo accha hai!
+# Environment Variables
 .env
 .env.local
 .env.development.local
@@ -16,7 +16,6 @@ pnpm-lock.yaml
 .env.production.local
 .env.*
 !.env.example 
-# Agar aap .env.example file rakhte hain (jo GitHub par ja sakti hai) toh usko ignore na karein
 
 # Production
 /build
@@ -59,9 +58,9 @@ Desktop.ini
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-nbproject/ # NetBeans
-*.swp # Vim
-*~ # TextMate and other editors
+nbproject/
+*.swp
+*~
 
 # Coverage reports
 coverage
