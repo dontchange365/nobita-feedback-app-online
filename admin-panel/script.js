@@ -631,13 +631,17 @@ function showMoreMenu(item, anchorEl){
   activeMoreMenu = menu;
 
   // Close menu when clicking outside
-  document.addEventListener('click',function remover(ev){
-    if(activeMoreMenu && !menu.contains(ev.target) && !anchorEl.contains(ev.target)){
-      activeMoreMenu.remove();
-      activeMoreMenu = null;
-      document.removeEventListener('click',remover);
-    }
-  });
+  document.addEventListener('click', function remover(ev){
+  if (
+    activeMoreMenu && 
+    (!menu || !menu.contains(ev.target)) && 
+    (!anchorEl || !anchorEl.contains(ev.target))
+  ) {
+    activeMoreMenu.remove();
+    activeMoreMenu = null;
+    document.removeEventListener('click', remover);
+  }
+});
 }
 
 // Add this function globally to explicitly close the more menu
@@ -921,4 +925,298 @@ async function bulkDelete(){
     }
 
     // --- OPEN BAR ON BUTTON CLICK ---
-    document.querySelector('.findreplace-btn').onclick = renderFindReplaceBar;
+    document.querySelector('.findreplace-btn').onclick =
+    renderFindReplaceBar;
+    
+  // Ye script page load hote hi run hoga.
+    // Check karega ki admin authenticated hai ya nahi.
+    const adminToken = localStorage.getItem('adminToken');
+    const adminLoggedInUser = JSON.parse(localStorage.getItem('adminLoggedInUser'));
+
+    if (!adminToken || !adminLoggedInUser || !adminLoggedInUser.username || !adminLoggedInUser.userId) {
+        console.warn("Admin token ya user data missing/invalid. Redirecting to login.");
+        // window.location.replace() use karein taki back button se protected page par wapis na aa saken.
+        window.location.replace('/admin-login.html');
+    }
+
+    // --- Helper Functions for Authentication and UI (Global scope mein) ---
+
+    // Logout function
+    function logoutAdmin() {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminLoggedInUser');
+        localStorage.removeItem('adminUsername'); // 'Remember Me' ke liye
+        localStorage.removeItem('adminRememberMe'); // 'Remember Me' ke liye
+        showToast('Logged out successfully.', 'info');
+        setTimeout(() => {
+            window.location.replace('/admin-login.html'); // Redirect to login page after logout
+        }, 500);
+    }
+
+    // Show Toast Notification Function
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) {
+            console.warn('Toast container not found. Cannot show toast:', message);
+            return;
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        // Toast ko 3 seconds baad remove karein
+        setTimeout(() => { toast.remove(); }, 3000);
+    }
+
+    // Apply Initial Theme
+    function applyInitialTheme() {
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        document.body.classList.toggle('dark-mode', isDarkMode);
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+          themeToggle.checked = isDarkMode;
+        }
+    }
+
+    // Toggle Theme
+    function toggleTheme(e) {
+        document.body.classList.toggle('dark-mode', e.target.checked);
+        localStorage.setItem('darkMode', e.target.checked);
+    }
+
+    // DOMContentLoaded par theme apply karein
+    document.addEventListener('DOMContentLoaded', applyInitialTheme);
+
+    // --- API Action Helper Function (Authentication ke saath) ---
+    // Ye function har API call ko wrap karega aur Authorization header add karega.
+    async function performFileManagerApiAction(path, opts = {}) {
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            // Agar token nahi hai, to redirect kar do, waise initial check se catch ho jayega
+            showToast('Session expired. Please log in again.', 'error');
+            logoutAdmin();
+            throw new Error('Authentication required.');
+        }
+
+        const url = '/api/file-manager' + path;
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}`, // JWT token add kiya
+            ...(opts.headers || {}) // Aur koi custom headers hain to unhe merge kar do
+        };
+
+        const finalOpts = {
+            ...opts,
+            headers: headers,
+        };
+
+        // Agar body object hai to JSON.stringify karein
+        if (finalOpts.body && typeof finalOpts.body !== 'string') {
+            finalOpts.body = JSON.stringify(finalOpts.body);
+        }
+
+        try {
+            const res = await fetch(url, finalOpts);
+
+            if (res.status === 401 || res.status === 403) {
+                // Agar session expired ya unauthorized hai, to logout kar do
+                const errorData = await res.json().catch(() => ({ message: 'Authentication failed or session expired.' }));
+                showToast(errorData.message || 'Session expired. Please log in again.', 'error');
+                logoutAdmin();
+                throw new Error(errorData.message || 'Unauthorized access');
+            }
+
+            if (!res.ok) {
+                // Normal HTTP errors
+                let msg = 'Error: ' + res.status;
+                try { let js = await res.json(); msg = js.error || msg; } catch{}
+                throw new Error(msg);
+            }
+
+            // DELETE operations ke liye response empty ho sakta hai, isliye handle karein
+            if (opts.method === 'DELETE') {
+                 // Depend karta hai backend kya return karta hai, yahan generic success
+                 return res.status === 204 ? {} : await res.json().catch(() => ({ success: true }));
+            }
+
+            return await res.json();
+        } catch (error) {
+            console.error("File Manager API Error:", error);
+            // showToast function already error display kar chuki hai
+            throw error; // Re-throw error ताकि calling function bhi handle kar sake agar zaroori ho
+        }
+    }
+
+    // --- GitHub Log Functionality ---
+    let githubLogState = [];
+    let githubProcessStatus = 'idle'; // 'idle', 'loading', 'complete', 'error'
+    let githubEventSource = null; // To store the current EventSource instance
+
+    function updateGithubSpinnerIcon() {
+      const spinnerBtn = document.getElementById('github-spinner-btn');
+      const spinnerAnim = spinnerBtn.querySelector('.spinner-anim');
+
+      spinnerBtn.style.display = (githubProcessStatus === 'idle') ? 'none' : 'block';
+      spinnerBtn.className = 'github-spinner-icon'; // Reset classes
+
+      if (githubProcessStatus === 'loading') {
+        spinnerBtn.classList.add('loading');
+      } else if (githubProcessStatus === 'complete') {
+        spinnerBtn.classList.add('complete');
+      } else if (githubProcessStatus === 'error') {
+        spinnerBtn.classList.add('error');
+      }
+    }
+
+    function showGithubLogPopup() {
+      // Load previous state if available and no process is in progress
+      const prev = sessionStorage.getItem('githubLogState');
+      if (prev && githubProcessStatus === 'idle') { // Only load if not active
+        try {
+          githubLogState = JSON.parse(prev);
+        } catch (e) {
+          console.error("Error parsing stored githubLogState:", e);
+          githubLogState = []; // Reset if corrupted
+        }
+      } else if (githubProcessStatus === 'idle') {
+        githubLogState = []; // Clear if starting a new session and no process in progress
+      }
+      document.getElementById('github-log-popup').style.display = 'flex';
+      updateGithubSpinnerIcon(); // Ensure spinner state is correct
+      renderGithubLog();
+    }
+
+    function closeGithubLogPopup() {
+      document.getElementById('github-log-popup').style.display = 'none';
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+      // If process is complete or errored, and popup is closed, hide the spinner icon too
+      if (githubProcessStatus === 'complete' || githubProcessStatus === 'error') {
+        githubProcessStatus = 'idle';
+        updateGithubSpinnerIcon();
+      }
+    }
+
+    function minimizeGithubLogPopup() {
+      document.getElementById('github-log-popup').style.display = 'none';
+      updateGithubSpinnerIcon(); // Show minimized icon
+    }
+
+    function renderGithubLog() {
+      const area = document.getElementById('github-log-area');
+      area.textContent = githubLogState.join('\n');
+      area.scrollTop = area.scrollHeight; // Auto-scroll to bottom
+    }
+
+    function githubLog(line) {
+      githubLogState.push(line);
+      // Keep only the last 100 lines to prevent memory issues
+      if (githubLogState.length > 100) {
+        githubLogState = githubLogState.slice(-100);
+      }
+      renderGithubLog();
+      // Save state to session storage periodically (or on every update)
+      sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+    }
+
+    async function startGithubStream(endpoint) {
+      githubLogState = [];
+      sessionStorage.removeItem('githubLogState'); // Clear session storage on new push
+      githubProcessStatus = 'loading';
+      showGithubLogPopup(); // Show the full log popup initially
+      githubLog(`[Connecting to GitHub for ${endpoint.includes('push') ? 'push' : 'pull'}...]`);
+
+      const adminToken = localStorage.getItem('adminToken');
+      if (!adminToken) {
+          githubLog('[ERROR] Admin token not found. Please log in.');
+          githubProcessStatus = 'error';
+          renderGithubLog();
+          showToast('Admin session expired. Please log in.', 'error');
+          return;
+      }
+      const message = encodeURIComponent('Full action from NOBI FILE MANAGER 😈'); // Generic message
+
+      // Close any existing event source before opening a new one
+      if (githubEventSource) {
+          githubEventSource.close();
+      }
+
+      // Pass token as query parameter as per the prompt's instruction for SSE
+      githubEventSource = new EventSource(`${endpoint}?token=${encodeURIComponent(adminToken)}&message=${message}`);
+
+      githubEventSource.onmessage = function(event) {
+        if (event.data === '[GITHUB_DONE]') {
+          githubProcessStatus = 'complete';
+          renderGithubLog();
+          githubEventSource.close(); // Close the connection when done
+          githubLog(`[COMPLETE] GitHub ${endpoint.includes('push') ? 'push' : 'pull'} done!`);
+          showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} complete!`, 'success');
+          return;
+        }
+        githubLog(event.data);
+      };
+
+      githubEventSource.onerror = function(e) {
+        console.error("GitHub EventSource error:", e);
+        githubProcessStatus = 'error';
+        renderGithubLog();
+        githubEventSource.close(); // Close on error as well
+        githubLog('[ERROR] Connection error or server stopped.');
+        showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} encountered an error.`, 'error');
+      };
+    }
+
+    // DOMContentLoaded for all event listeners and initial UI setup
+    document.addEventListener('DOMContentLoaded', () => {
+      const githubActionBtn = document.getElementById('github-action-btn-main'); // The main button to open action selection
+      const githubActionPopup = document.getElementById('github-action-popup');
+      const githubLogPopup = document.getElementById('github-log-popup');
+      const closeActionPopupBtn = githubActionPopup.querySelector('.close-btn');
+      const actionButtons = githubActionPopup.querySelectorAll('.github-action-btn');
+      const minimizeLogBtn = document.getElementById('minimize-log-btn');
+      const githubSpinnerBtn = document.getElementById('github-spinner-btn'); // The floating spinner icon
+
+      // 1. Show action selection popup
+      if (githubActionBtn) {
+        githubActionBtn.addEventListener('click', () => {
+          githubActionPopup.style.display = 'flex';
+          // Ensure log popup is hidden if action popup is opened
+          githubLogPopup.style.display = 'none';
+        });
+      }
+
+      // 2. Handle action selection (Push/Pull)
+      actionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const action = this.dataset.action;
+          githubActionPopup.style.display = 'none'; // Close action selection popup
+
+          if (action === 'push') {
+            startGithubStream('/api/admin/push-to-github/stream');
+          } else if (action === 'pull') {
+            startGithubStream('/api/admin/pull-from-github/stream');
+          }
+        });
+      });
+
+      // 3. Close action selection popup
+      if (closeActionPopupBtn) {
+        closeActionPopupBtn.addEventListener('click', () => {
+          githubActionPopup.style.display = 'none';
+        });
+      }
+
+      // 4. Minimize live log popup
+      if (minimizeLogBtn) {
+        minimizeLogBtn.addEventListener('click', minimizeGithubLogPopup);
+      }
+
+      // 5. Restore live log popup from minimized spinner icon
+      if (githubSpinnerBtn) {
+        githubSpinnerBtn.addEventListener('click', showGithubLogPopup);
+      }
+
+      // Initial state of spinner icon on page load
+      updateGithubSpinnerIcon();
+    });
+
+  
