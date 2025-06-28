@@ -1591,6 +1591,13 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', req.path));
   }
 });
+// --- SERVER RESTART ENDPOINT (Admin protected) ---
+app.post('/api/admin/restart', authenticateAdminToken, (req, res) => {
+  res.json({ message: 'Server restarting now...' });
+  setTimeout(() => {
+    process.exit(0); // Render will auto-restart the process
+  }, 800);
+});
 
 // --- Server Start ---
 app.listen(PORT, () => {
