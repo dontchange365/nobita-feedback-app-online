@@ -1122,3 +1122,4 @@ input:checked + .slider:before { transform: translateX(1.25rem); } /* 20px */
     #minimize-log-btn:hover {
         color: #fff;
     }
+    
