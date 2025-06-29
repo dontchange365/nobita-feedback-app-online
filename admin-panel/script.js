@@ -1219,4 +1219,4 @@ async function bulkDelete(){
       updateGithubSpinnerIcon();
     });
 
-  
+/* ADMIN HUB JS START FROM HERE */
