@@ -1599,6 +1599,88 @@ app.post('/api/admin/restart', authenticateAdminToken, (req, res) => {
   }, 800);
 });
 
+// server.js (Add this new API endpoint)
+
+// --- API to Create a New Page from Template (Admin Protected) ---
+app.post('/api/admin/create-page-from-template', authenticateAdminToken, async (req, res) => {
+    const {
+        pageName,
+        pageTitle,
+        metaDescription,
+        metaKeywords,
+        pageContent,
+        inlineCss,
+        inlineJs,
+        // NEW FIELDS FROM FRONTEND
+        websiteTitle,
+        heroTitle,
+        heroEmoji,
+        heroPara
+    } = req.body;
+
+    // Validate new required fields as well
+    if (!pageName || !pageTitle || !pageContent || !websiteTitle || !heroTitle || !heroPara) {
+        return res.status(400).json({ message: 'Page name, title, content, website title, hero title, and hero paragraph are required.' });
+    }
+
+    // Ensure the pageName ends with .html
+    const fileName = pageName.endsWith('.html') ? pageName : `${pageName}.html`;
+    const filePath = path.join(__dirname, 'public', fileName);
+
+    // Basic validation to prevent path traversal
+    if (filePath.includes('..') || !filePath.startsWith(path.join(__dirname, 'public'))) {
+        return res.status(400).json({ message: 'Invalid page name.' });
+    }
+
+    const templatePath = path.join(__dirname, 'template.html');
+
+    try {
+        let templateContent = await fs.promises.readFile(templatePath, 'utf8');
+
+        // Replace placeholders in the template
+        templateContent = templateContent.replace(/PAGE TITLE HERE/g, pageTitle);
+        templateContent = templateContent.replace(/Meta description here/g, metaDescription || ''); // Use empty string if not provided
+        templateContent = templateContent.replace(/Nobita, keywords, update, new content/g, metaKeywords || 'Nobita, custom page'); // Default for keywords if empty
+        
+        // Replace NEW Content Placeholders
+        templateContent = templateContent.replace(/WEBSITE_TITLE_PLACEHOLDER/g, websiteTitle);
+        templateContent = templateContent.replace(/HERO_TITLE_PLACEHOLDER/g, heroTitle);
+        templateContent = templateContent.replace(/HERO_EMOJI_PLACEHOLDER/g, heroEmoji || ''); // Emoji can be empty
+        templateContent = templateContent.replace(/HERO_PARA_PLACEHOLDER/g, heroPara);
+        templateContent = templateContent.replace(/MAIN_CONTENT_PLACEHOLDER/g, pageContent);
+
+
+        // Inject inline CSS if provided
+        if (inlineCss) {
+            templateContent = templateContent.replace('</head>', `<style>\n${inlineCss}\n</style>\n</head>`);
+        }
+
+        // Inject inline JavaScript if provided
+        if (inlineJs) {
+            // Find the last </body> tag (or before the last </html> if </body> is missing)
+            // This is a more robust way to inject script at the end of the body
+            const bodyEndIndex = templateContent.lastIndexOf('</body>');
+            if (bodyEndIndex !== -1) {
+                templateContent = templateContent.substring(0, bodyEndIndex) +
+                                  `<script>\n${inlineJs}\n</script>\n` +
+                                  templateContent.substring(bodyEndIndex);
+            } else {
+                // Fallback if </body> is not found (unlikely with your template)
+                templateContent = templateContent.replace('</html>', `<script>\n${inlineJs}\n</script>\n</html>`);
+            }
+        }
+        
+        await fs.promises.writeFile(filePath, templateContent);
+
+        res.status(200).json({ message: `Page "${fileName}" created successfully in public folder.` });
+
+    } catch (error) {
+        console.error('Error creating page from template:', error);
+        res.status(500).json({ message: 'Failed to create page from template.', error: error.message });
+    }
+});
+
+
 // --- Server Start ---
 app.listen(PORT, () => {
     console.log(`Nobita's server with File Manager is running on port ${PORT}: http://localhost:${PORT}`);
