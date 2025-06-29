@@ -1,0 +1,120 @@
+#popup-editor {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(20, 19, 32, 0.89);
+  align-items: center;
+  justify-content: center;
+}
+#popup-editor-content {
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  min-height: 380px;
+  max-height: 88vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-panel);
+  padding: 28px 0 0 0;
+  border-radius: 17px;
+  box-shadow: 0 8px 36px rgba(0,0,0,0.7);
+  min-width: 88vw;
+  max-width: 95vw;
+  color: var(--text-primary);
+}
+#popup-editor-content .editor-filename {
+  font-weight: bold;
+  color: var(--accent-pink);
+  font-size: 1.11em;
+  background: var(--bg-body);
+  padding: 13px 23px 10px 23px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* REMOVED: Old #editor-wrapper, .CodeMirror, and all CodeMirror-specific styles */
+
+/* NEW: Scrollbar styles from Editor.html */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2a2a2a; /* Darker track */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #5d40a3; /* Accent color thumb */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6d4fb3; /* Lighter accent on hover */
+}
+
+/* REMOVED: Old #find-replace-bar and its children styles */
+
+.popup-editor-actions {
+  display: flex;
+  gap: 13px;
+  padding: 13px 23px;
+  background: var(--bg-body);
+  border-top: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+  justify-content: flex-end; /* Align actions to the right */
+  align-items: center;
+}
+.popup-editor-actions button {
+  background: #4ade80;
+  color: #222;
+  font-weight: 600;
+  flex-grow: 0; /* Don't let buttons grow */
+  flex-shrink: 0;
+  width: auto;
+  min-width: 80px;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 15px; /* Added horizontal padding */
+  font-size: 1em;
+  cursor: pointer;
+  transition: 0.13s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.popup-editor-actions button:hover {
+  opacity: 0.9;
+}
+.popup-editor-actions button.save {
+  background: var(--success-color);
+  color: var(--text-primary-light);
+}
+.popup-editor-actions button.cancel {
+  background: var(--danger-color);
+  color: white;
+}
+.popup-editor-actions button.findreplace-btn {
+  background: var(--accent-pink);
+  color: white;
+  margin-left: auto; /* Push to the right */
+  min-width: 50px; /* Adjust size for icon-only button */
+  padding: 7px 10px; /* Adjust padding for icon */
+}
+.popup-editor-actions button.findreplace-btn:hover {
+  background: var(--accent-glow);
+}
+
+/* Media Queries for editor popup */
+@media (max-width: 800px) {
+  #popup-editor-content {
+    width: 95vw;
+    height: 90vh;
+    min-height: 90vh; /* Ensure it stays tall on mobile */
+    max-height: 95vh;
+  }
+}
