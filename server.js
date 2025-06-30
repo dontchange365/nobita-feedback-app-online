@@ -305,47 +305,54 @@ async function sendEmail(options) {
 }
 
 // Email template constant
-const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl) => `
+const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic") => {
+  let messageHTML = '';
+
+  if (type === 'reset-request') {
+    messageHTML = `A password reset request has been initiated for your account.<br>Click the button below to reset your password.`;
+  } else if (type === 'reset-confirm') {
+    messageHTML = `Your password has been successfully reset.<br>You can now log in with your new password.`;
+  } else if (type === 'verify-request') {
+    messageHTML = `Your account has been successfully created.<br>Click the button below to verify your email and unlock all features.`;
+  } else if (type === 'verify-confirm') {
+    messageHTML = `Your email has been successfully verified.<br>Welcome to the NOBITA empire! 🔥`;
+  } else {
+    messageHTML = `This is a confirmation that your request was completed successfully.<br>Click the button below to continue.`;
+  }
+
+  return `
 <div style="font-family: 'Poppins',sans-serif; background: #f2f3f5; margin:0; padding: 0; min-height: 100vh; width: 100vw;">
-  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(120deg, #7c3aed, #22d3ee); min-height:100vh; padding: 0; margin:0;">
+  <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; background: linear-gradient(to bottom right, #000011, #001122); min-height: 100vh;">
     <tr>
-      <td align="center" style="padding: 0; margin:0;">
-        <table width="420" cellpadding="0" cellspacing="0" border="0" style="background: #fff; border-radius: 14px; overflow:hidden; margin:40px auto 32px auto; box-shadow: 0 2px 16px #22033b18;">
+      <td align="center" style="padding: 0 10px;">
+        <table cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background: #001133; border: 2px solid #00ffdd; border-radius: 12px; overflow: hidden; margin: 40px auto; box-shadow: 0 0 16px #00ffdd88;">
           <tr>
             <td align="center" style="padding: 0;">
-              <img src="${avatarUrl}" alt="User Avatar" width="80" height="80" style="border-radius: 50%; margin: 28px auto 8px auto; box-shadow: 0 2px 14px #00000030; display:block;" />
-              <div style="background: linear-gradient(90deg, #1877f2, #42a5f5); padding: 18px 0;">
-                <h2 style="color: white; margin: 0; font-size: 1.6em;">
-                  ${heading}
-                </h2>
+              <img src="${avatarUrl}" alt="User Avatar" style="border-radius: 50%; margin: 24px auto 14px auto; display:block; max-width: 80px; width: 30%; height: auto; box-shadow: 0 0 12px #00ffdd90;" onerror="this.src='https://placehold.co/75x75/1E90FF/FFFFFF?text=USER';"/>
+              <div style="background: linear-gradient(90deg, #00c9ff, #92fe9d); padding: 16px 0; text-align:center;">
+                <h2 style="color: black; margin: 0; font-size: 1.6em; text-transform: uppercase; letter-spacing: 1px;">${heading}</h2>
               </div>
-              <div style="padding: 30px 7% 18px 7%;">
-                <p style="font-size: 1.05em; color: #333;">
+              <div style="padding: 26px 6% 20px 6%; color: #cdeaff;">
+                <p style="font-size: 1em; text-align: left;">
                   Hello <strong>${name}</strong>,<br><br>
-                  ${
-                    heading.includes('Password') ?
-                    'We received a request to reset your password.<br>Use the button below to change it:' :
-                    'Thanks for registering!<br>Click the button below to verify your email address:'
-                  }
+                  ${messageHTML}
                 </p>
-                <a href="${link}" style="display: inline-block; padding: 13px 25px; font-size: 1em; background-color: #1877f2; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 20px; font-weight: 600; letter-spacing: 0.4px;">
-                  ${buttonText}
+                <a href="${link}" style="display: inline-block; width: 100%; max-width: 90%; padding: 12px; font-size: 1em; background-color: #ff3399; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 18px; font-weight: bold; text-align:center; box-shadow: 0 0 10px #ff339955;">
+                  ✅ ${buttonText}
                 </a>
-                <p style="margin:24px 0 0 0; font-size: 0.95em; color:#777;">
-                  <b>Having trouble with the button?</b><br>
-                  <span style="word-break:break-all; display:inline-block; margin-top:4px;">
-                    <a href="${link}" style="color: #1877f2; text-decoration: underline;">${link}</a>
-                  </span>
+                <div style="margin-top: 24px; background: #000814; border: 1px dashed #00ffdd; padding: 12px; font-size: 0.9em; word-break: break-word;">
+                  <p style="margin: 0 0 6px;">⚠️ Button malfunctioning? Use this backup link:</p>
+                  <a href="${link}" style="color: #00ffdd; text-decoration: underline;">${link}</a>
+                </div>
+                <p style="font-size: 0.93em; color: #ff6666; margin-top: 20px;">
+                  ⚠️ This link will self-destruct in 10 minutes.
                 </p>
-                <p style="font-size: 0.95em; color: #f44336; margin-top: 22px;">
-                  ⚠️ This link will expire in 10 minutes. Please act fast!
-                </p>
-                <p style="font-style: italic; font-size: 0.91em; color: #555; margin-top: 18px;">
-                  "Power doesn’t reset — it restores." — NOBI BOT 💀
+                <p style="font-style: italic; font-size: 0.91em; color: #cccccc; margin-top: 16px;">
+                  "Power doesn't reset — it regenerates." — NOBI BOT 👾
                 </p>
               </div>
-              <div style="background-color: #f0f2f5; padding: 14px; font-size: 0.87em; color: #999;">
-                &copy; 2025 NOBI BOT | Need help? <a href="mailto:support@nobibot.com" style="color:#1877f2;">Contact Support</a>
+              <div style="background-color: #000a1a; padding: 14px; font-size: 0.86em; color: #778899; text-align:center;">
+                &copy; 2025 NOBI BOT | Need help? <a href="mailto:nobibot.host@gmail.com" style="color:#00ffdd;">Contact Support</a>
               </div>
             </td>
           </tr>
@@ -353,8 +360,8 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl) => `
       </td>
     </tr>
   </table>
-</div>
-`;
+</div>`;
+};
 
 // --- File Manager Configuration ---
 const BASE_DIR = path.resolve(__dirname, '.');
@@ -916,7 +923,8 @@ app.post('/api/auth/signup', async (req, res) => {
             newUser.name,
             "✅ Verify Your Email",
             verifyUrl,
-            newUser.avatarUrl || getDiceBearAvatarUrl(newUser.name)
+            newUser.avatarUrl || getDiceBearAvatarUrl(newUser.name),
+             'verify-request' 
         );
 
         try {
@@ -1017,58 +1025,6 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     res.status(200).json(req.user);
 });
 
-// --- Password Reset Routes ---
-app.post('/api/auth/request-password-reset', async (req, res) => {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email address is required." });
-    if (!FRONTEND_URL) return res.status(500).json({ message: "Server configuration error (FRONTEND_URL missing)." });
-    try {
-        const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email', isVerified: true });
-        if (!user) return res.status(200).json({ message: "If your email is in our system and linked to an email/password account, you will receive a password reset link." });
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000;
-        await user.save();
-        const resetPagePath = "/reset-password.html";
-        const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`;
-        const textMessage = `Hello ${user.name},\n\nPassword reset link:\n${resetUrl}\n\nNobita Feedback App Team`;
-        const htmlMessage = NOBITA_EMAIL_TEMPLATE(
-            "🔐 Password Reset",
-            user.name,
-            "🔁 Reset Your Password",
-            resetUrl,
-            user.avatarUrl || getDiceBearAvatarUrl(user.name)
-        );
-        await sendEmail({ email: user.email, subject: 'Your Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
-        res.status(200).json({ message: "A password reset link has been sent to your email (if valid and linked)." });
-    } catch (error) {
-        console.error('Request password reset API error:', error);
-        res.status(500).json({ message: "Something went wrong processing the password reset request." });
-    }
-});
-app.post('/api/auth/reset-password', async (req, res) => {
-    const { token, password, confirmPassword } = req.body;
-    if (!token) return res.status(400).json({ message: "Password reset token not found." });
-    if (!password || !confirmPassword || password !== confirmPassword || password.length < 6) {
-        return res.status(400).json({ message: "Invalid password details." });
-    }
-    try {
-        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
-        if (!user) return res.status(400).json({ message: "Password reset token is invalid or has expired." });
-        user.password = await bcrypt.hash(password, 12);
-        user.resetPasswordToken = undefined; user.resetPasswordExpires = undefined;
-        await user.save();
-        const confirmationTextMessage = `Hello ${user.name},\n\nYour password has been reset.`;
-        const confirmationHtmlMessage = `<p>Hello ${user.name},</p><p>Your password has been reset.</p>`;
-        try { await sendEmail({ email: user.email, subject: 'Your Password Has Been Successfully Reset', message: confirmationTextMessage, html: confirmationHtmlMessage});
-        } catch (emailError) { console.error("Error sending password reset confirmation email:", emailError); }
-        res.status(200).json({ message: "Your password has been successfully reset." });
-    } catch (error) {
-        console.error('Reset password API error:', error);
-        res.status(500).json({ message: "Something went wrong while resetting the password." });
-    }
-});
-
 // --- Email Verification Routes ---
 app.post('/api/auth/request-email-verification', authenticateToken, async (req, res) => {
     if (!FRONTEND_URL) return res.status(500).json({ message: "Server configuration error (FRONTEND_URL missing)." });
@@ -1097,6 +1053,92 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         res.status(500).json({ message: "Something went wrong processing the email verification request." });
     }
 });
+
+// --- Password Reset Routes ---
+app.post('/api/auth/request-password-reset', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email address is required." });
+    if (!FRONTEND_URL) return res.status(500).json({ message: "Server configuration error (FRONTEND_URL missing)." });
+    try {
+        const user = await User.findOne({ email: email.toLowerCase(), loginMethod: 'email', isVerified: true });
+        if (!user) return res.status(200).json({ message: "If your email is in our system and linked to an email/password account, you will receive a password reset link." });
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 3600000;
+        await user.save();
+        const resetPagePath = "/reset-password.html";
+        const resetUrl = `${FRONTEND_URL}${resetPagePath}?token=${resetToken}`;
+        const textMessage = `Hello ${user.name},\n\nPassword reset link:\n${resetUrl}\n\nNobita Feedback App Team`;
+        const htmlMessage = NOBITA_EMAIL_TEMPLATE(
+            "🔐 Password Reset",
+            user.name,
+            "🔁 Reset Your Password",
+            resetUrl,
+            user.avatarUrl || getDiceBearAvatarUrl(user.name),
+           'reset-request'
+        );
+        await sendEmail({ email: user.email, subject: 'Your Password Reset Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
+        res.status(200).json({ message: "A password reset link has been sent to your email (if valid and linked)." });
+    } catch (error) {
+        console.error('Request password reset API error:', error);
+        res.status(500).json({ message: "Something went wrong processing the password reset request." });
+    }
+});
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { token, password, confirmPassword } = req.body;
+
+    if (!token) {
+        return res.status(400).json({ message: "Password reset token not found." });
+    }
+
+    if (!password || !confirmPassword || password !== confirmPassword || password.length < 6) {
+        return res.status(400).json({ message: "Invalid password details." });
+    }
+
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Password reset token is invalid or has expired." });
+        }
+
+        user.password = await bcrypt.hash(password, 12);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        const confirmationTextMessage = `Hello ${user.name},\n\nYour password has been reset.`;
+
+        const confirmationHtmlMessage = NOBITA_EMAIL_TEMPLATE(
+            "✅ Password Reset Successful",
+            user.name,
+            "Login Now",
+            `${FRONTEND_URL}`,
+            user.avatarUrl || getDiceBearAvatarUrl(user.name),
+            'reset-confirm' // 👈 THIS WAS MISSING BSDK
+        );
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Your Password Has Been Successfully Reset',
+                message: confirmationTextMessage,
+                html: confirmationHtmlMessage
+            });
+        } catch (emailError) {
+            console.error("Error sending password reset confirmation email:", emailError);
+        }
+
+        res.status(200).json({ message: "Your password has been successfully reset." });
+
+    } catch (error) {
+        console.error('Reset password API error:', error);
+        res.status(500).json({ message: "Something went wrong while resetting the password." });
+    }
+});
 app.post('/api/auth/verify-email', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: "Email verification token not found." });
@@ -1107,7 +1149,9 @@ app.post('/api/auth/verify-email', async (req, res) => {
         user.emailVerificationToken = undefined; user.emailVerificationExpires = undefined;
         await user.save();
         const confirmationTextMessage = `Hello ${user.name},\n\nYour email has been verified.`;
-        const confirmationHtmlMessage = `<p>Hello ${user.name},</p><p>Your email has been verified.</p>`;
+        const confirmationHtmlMessage = NOBITA_EMAIL_TEMPLATE(   "📨 Email Verified Successfully",   user.name,   "Go To Dashboard",   `${FRONTEND_URL}/`,   user.avatarUrl || getDiceBearAvatarUrl(user.name),
+         'verify-confirm'
+        );
         try { await sendEmail({ email: user.email, subject: 'Aapka Email Safaltapoorvak Verify Ho Gaya Hai!', message: confirmationTextMessage, html: confirmationHtmlMessage });
         } catch (emailError) { console.error("Error sending verification confirmation email:", emailError); }
         const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
