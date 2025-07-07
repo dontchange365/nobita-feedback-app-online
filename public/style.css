@@ -266,7 +266,7 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 .hero-btn { margin-top: 18px; padding: 12px 38px; border-radius: 28px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); color: #222; font-weight: 600; font-size: 1.08em; text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.12); transition: all 0.25s;
   white-space: nowrap;
-}}
+}
 .hero-btn:hover { background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); color: #fff; transform: scale(1.06); box-shadow: 0 4px 16px rgba(255,215,0,0.33); }
 .hero-micro-text { font-size: 0.85em; color: rgba(255,255,255,0.7); margin-top: 10px; animation: fadeIn 1.5s ease-out; text-align: center; }
 @media (max-width: 768px) {
@@ -1770,3 +1770,375 @@ footer.main-footer {
 @media (max-width: 420px) {
     .forgot-new-popup { width: 96vw; padding: 20px 6vw 18px;}
 }
+  
+        /* Animated Video Container */
+        #animated-video-container {
+            position: relative;
+            width: 100%; /* User's preferred width */
+            max-width: 1200px; /* Max width for larger screens */
+            height: 30vh; /* Fixed height as requested */
+            overflow: hidden; /* Crucial for containing bubbles */
+            /* Updated background to be colorful */
+            background: linear-gradient(135deg, #ff8c00, #ff4d4d, #9400d3); /* Orange, Red, Purple gradient */
+            background-size: 200% 200%; /* For gradient animation */
+            animation: gradientAnimation 15s ease infinite; /* Gradient animation */
+            margin: 10px 0 5px 0; /* Upar, daayen, neeche, baayen ke liye margins */
+            padding: 0 0px; /* Thoda left padding taaki bilkul edge se na chipke, right side se bhi */
+            border-radius: 25px; /* More rounded corners */
+            border: 4px solid transparent; /* Thicker initial transparent border */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); /* Overall depth */
+            cursor: pointer; /* Overall container is clickable to homepage */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            animation: borderGlow 3s infinite alternate ease-in-out; /* Border glow animation */
+        }
+
+        #animated-video-container:hover {
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.9); /* Stronger overall shadow + yellow glow */
+            transform: translateY(-5px); /* More pronounced lift on hover */
+        }
+
+        @keyframes borderGlow {
+            0% {
+                border-color: rgba(255, 215, 0, 0.3); /* Initial glow color (gold) */
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* Subtle inner glow */
+            }
+            50% {
+                border-color: rgba(255, 215, 0, 0.8); /* Peak glow color */
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); /* Stronger inner glow */
+            }
+            100% {
+                border-color: rgba(255, 215, 0, 0.3); /* Return to initial glow color */
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* Subtle inner glow */
+            }
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 2; /* Below bubbles, above canvas/blob */
+        }
+
+        /* Removed .video-title as per request */
+
+        /* Screen Flicker Overlay */
+        .video-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                transparent 0,
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 2px
+            );
+            animation: flicker 0.2s infinite alternate;
+            z-index: 3; /* Above the main overlay */
+            pointer-events: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.8; }
+        }
+
+        /* SVG Morphing Blob */
+        .morphing-blob-svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%; /* Responsive size */
+            height: 60%; /* Responsive size */
+            transform: translate(-50%, -50%);
+            filter: blur(15px) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)); /* Glow effect */
+            z-index: 1; /* Below overlay and bubbles */
+        }
+
+        /* Canvas Starfield - Positioned by JS */
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Bottom layer */
+        }
+
+        /* Floating Bouncing Glowing Bubbles */
+        #bubble-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5; /* Above everything except blog content */
+            pointer-events: none; /* Allows click-through to container */
+        }
+
+        .bubble {
+            position: absolute;
+            background-color: rgba(0, 123, 255, 0.5); /* Blue-ish */
+            border-radius: 50%;
+            opacity: 0.8; /* Always visible */
+            animation-name: floatAndBounce;
+            animation-timing-function: ease-in-out; /* Smooth timing */
+            animation-iteration-count: infinite;
+            filter: blur(2px);
+            /* Initial position will be set by animation's 0% keyframe */
+        }
+
+        .bubble:nth-child(2n) {
+            background-color: rgba(255, 215, 0, 0.4); /* Gold-ish */
+        }
+        .bubble:nth-child(3n) {
+            background-color: rgba(255, 99, 71, 0.4); /* Red-ish */
+        }
+
+        /* New animation for bubbles to stay within bounds and spread out */
+        @keyframes floatAndBounce {
+            0% {
+                left: var(--x-start);
+                top: var(--y-start);
+                transform: translate(-50%, -50%) scale(var(--scale-start));
+                box-shadow: 0 0 10px var(--bubble-color-shadow);
+            }
+            25% {
+                left: var(--x-point1);
+                top: var(--y-point1);
+                transform: translate(-50%, -50%) scale(var(--scale-point1));
+                box-shadow: 0 0 15px var(--bubble-color-shadow);
+            }
+            50% {
+                left: var(--x-point2);
+                top: var(--y-point2);
+                transform: translate(-50%, -50%) scale(var(--scale-point2));
+                box-shadow: 0 0 20px var(--bubble-color-shadow);
+            }
+            75% {
+                left: var(--x-point3);
+                top: var(--y-point3);
+                transform: translate(-50%, -50%) scale(var(--scale-point3));
+                box-shadow: 0 0 15px var(--bubble-color-shadow);
+            }
+            100% {
+                left: var(--x-start); /* Loop back to start */
+                top: var(--y-start);
+                transform: translate(-50%, -50%) scale(var(--scale-start));
+                box-shadow: 0 0 10px var(--bubble-color-shadow);
+            }
+        }
+
+
+        /* Animated Gradient Background for container */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Blog Content Overlay */
+        .blog-content-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; /* Adjust width for content */
+            max-height: 80%;
+            text-align: center;
+            color: #fff;
+            z-index: 6; /* Above bubbles */
+            pointer-events: none; /* Allows click-through to container by default */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .blog-content-wrapper {
+            overflow: hidden; /* For transition effects */
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animated-blog-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: clamp(1.8em, 6vw, 3.5em); /* Increased title size */
+            color: #FFD700;
+            margin-bottom: 5px;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .animated-blog-summary {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(0.7em, 1.5vw, 1em);
+            color: #e0e0e0;
+            opacity: 0.9;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 15px; /* Space above button */
+        }
+
+        /* Go to Blog Button */
+        .go-to-blog-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 18px;
+            background: linear-gradient(45deg, #007bff, #0056b3); /* Blue gradient */
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: clamp(0.7em, 1.3vw, 0.9em);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            z-index: 7; /* Ensure it's above other elements */
+        }
+
+        .go-to-blog-btn:hover {
+            background: linear-gradient(45deg, #0056b3, #007bff);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .go-to-blog-btn i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .go-to-blog-btn:hover i {
+            transform: translateX(3px);
+        }
+
+
+        /* Blog entry animations */
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOutSlideDown {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeOutScale {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Applying animations to blog content and button */
+        .blog-content-wrapper.fade-in-slide-up .animated-blog-title,
+        .blog-content-wrapper.fade-in-slide-up .animated-blog-summary,
+        .blog-content-wrapper.fade-in-slide-up .go-to-blog-btn {
+            animation: fadeInSlideUp 0.8s ease-out forwards;
+        }
+
+        .blog-content-wrapper.fade-out-slide-down .animated-blog-title,
+        .blog-content-wrapper.fade-out-slide-down .animated-blog-summary,
+        .blog-content-wrapper.fade-out-slide-down .go-to-blog-btn {
+            animation: fadeOutSlideDown 0.8s ease-in forwards;
+        }
+
+        .blog-content-wrapper.fade-in-scale .animated-blog-title,
+        .blog-content-wrapper.fade-in-scale .animated-blog-summary,
+        .blog-content-wrapper.fade-in-scale .go-to-blog-btn {
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        .blog-content-wrapper.fade-out-scale .animated-blog-title,
+        .blog-content-wrapper.fade-out-scale .animated-blog-summary,
+        .blog-content-wrapper.fade-out-scale .go-to-blog-btn {
+            animation: fadeOutScale 0.8s ease-in forwards;
+        }
+
+
+        /* Responsive adjustments for overall container */
+        @media (max-width: 768px) {
+            #animated-video-container {
+                height: 25vh; /* Slightly smaller on tablets */
+            }
+            .animated-blog-title {
+                font-size: clamp(1.5em, 5vw, 3em);
+            }
+            .animated-blog-summary {
+                font-size: clamp(0.65em, 1.2vw, 0.9em);
+            }
+            .go-to-blog-btn {
+                padding: 7px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #animated-video-container {
+                height: 20vh; /* Even smaller on mobile */
+            }
+            .morphing-blob-svg {
+                width: 70%;
+                height: 70%;
+            }
+            .animated-blog-title {
+                font-size: clamp(1.2em, 4vw, 2.5em);
+            }
+            .animated-blog-summary {
+                font-size: clamp(0.6em, 1vw, 0.8em);
+            }
+            .go-to-blog-btn {
+                padding: 6px 12px;
+                font-size: clamp(0.6em, 1vw, 0.8em);
+            }
+        }
