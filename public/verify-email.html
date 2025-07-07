@@ -217,17 +217,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await response.json();
 
         if (response.ok) {
-            showMessage('success', data.message + " <br>Aapko ab login page par redirect kiya jayega...");
-            initialMessageDiv.style.display = 'none';
-            loginPageLink.style.display = 'inline-block';
+    showMessage('success', data.message + " <br>Aapko ab homepage par redirect kiya jayega..."); // Updated message
+    initialMessageDiv.style.display = 'none';
+    loginPageLink.style.display = 'inline-block';
 
-            if (data.token) {
-                localStorage.setItem('authToken', data.token);
-            }
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 4000);
-        } else {
+    // Automatically log in the user if the server sent token and user data
+    if (data.token && data.user) {
+        localStorage.setItem('nobita_jwt', data.token); // Store token with correct key
+        localStorage.setItem('nobi_user_profile', JSON.stringify(data.user)); // Store user profile
+        localStorage.setItem("nobita_last_email", data.user.email); // Store last email
+    }
+
+    // Redirect to homepage
+    setTimeout(() => {
+        window.location.href = '/'; // Redirect to the main homepage
+    }, 4000);
+}
+        
+        else {
             showMessage('error', data.message || 'Email verify karne mein samasya aa gayi.');
             initialMessageDiv.style.display = 'none';
             loginPageLink.style.display = 'inline-block';
