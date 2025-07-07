@@ -67,7 +67,39 @@
     <button class="deselect-all" onclick="deselectAllFiles()">Deselect All</button>
     <button class="delete-selected" onclick="bulkDelete()">Delete Selected</button>
   </div>
+<style>/* Editor Choice Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of other content */
+}
 
+.modal-content {
+    background-color: #2a2a2a; /* Dark background */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: #e0e0e0;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.modal-content button {
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none !important;
+}</style>
   <!-- Toast Container for notifications -->
   <div id="toast-container"></div>
 
@@ -104,7 +136,25 @@
       <div class="spinner-anim"></div>
     </div>
   </div>
-
+<div id="editorChoiceModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">Choose Editor</h3>
+            <p class="mb-4">Which editor would you like to use for this file?</p>
+            <div class="flex flex-col gap-3 mb-4">
+                <button id="chooseAceBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    ACE Editor
+                </button>
+                <button id="chooseCodeMirrorBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    CodeMirror
+                </button>
+            </div>
+            <div class="flex items-center justify-center">
+                <input type="checkbox" id="alwaysUseEditor" class="mr-2">
+                <label for="alwaysUseEditor" class="text-sm">Always use this editor</label>
+            </div>
+            <button id="closeEditorChoiceModal" class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+    </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
