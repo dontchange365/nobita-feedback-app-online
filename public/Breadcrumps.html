@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Breadcrumb Navigation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(0, 15, 30, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        header {
+            background: rgba(0, 30, 60, 0.9);
+            padding: 25px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: #4dabf7;
+        }
+        
+        .subtitle {
+            color: #a0d2ff;
+            font-size: 1.2rem;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+        
+        .content {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .breadcrumb-container {
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .breadcrumb-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            color: #4dabf7;
+            font-size: 1.4rem;
+        }
+        
+        .breadcrumb-path {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 30, 60, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            min-height: 70px;
+        }
+        
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .breadcrumb-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(30, 100, 200, 0.3);
+            border-radius: 8px;
+            color: #e7f5ff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            gap: 8px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .breadcrumb-link:hover {
+            background: rgba(50, 130, 240, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 100, 255, 0.3);
+        }
+        
+        .breadcrumb-link i {
+            font-size: 0.9rem;
+        }
+        
+        .separator {
+            color: #5c7cfa;
+            padding: 0 10px;
+            font-size: 1.2rem;
+        }
+        
+        .breadcrumb-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(0, 20, 40, 0.95);
+            border-radius: 10px;
+            padding: 10px 0;
+            min-width: 220px;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            display: none;
+            transform: translateY(10px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .breadcrumb-item:hover .breadcrumb-dropdown {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .dropdown-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e7f5ff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(50, 130, 240, 0.3);
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            color: #5c7cfa;
+        }
+        
+        .current-location {
+            background: rgba(40, 180, 100, 0.3);
+            border: 1px solid rgba(100, 255, 180, 0.2);
+            color: #c5f6fa;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            gap: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: rgba(30, 100, 200, 0.3);
+            color: #e7f5ff;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .control-btn:hover {
+            background: rgba(50, 130, 240, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .path-editor {
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .editor-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            color: #4dabf7;
+            font-size: 1.4rem;
+        }
+        
+        .path-input-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .path-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            background: rgba(0, 30, 60, 0.5);
+            color: #e7f5ff;
+            font-size: 1.1rem;
+        }
+        
+        .path-input:focus {
+            outline: none;
+            border-color: #5c7cfa;
+            box-shadow: 0 0 0 3px rgba(92, 124, 250, 0.3);
+        }
+        
+        .apply-btn {
+            padding: 15px 30px;
+            border-radius: 10px;
+            background: rgba(40, 180, 100, 0.3);
+            color: #c5f6fa;
+            border: 1px solid rgba(100, 255, 180, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .apply-btn:hover {
+            background: rgba(50, 200, 120, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(0, 30, 60, 0.5);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(100, 150, 255, 0.4);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #4dabf7;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #a0d2ff;
+        }
+        
+        .feature-desc {
+            color: #c5e4ff;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #a0d2ff;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .breadcrumb-path {
+                min-height: auto;
+            }
+            
+            .path-input-container {
+                flex-direction: column;
+            }
+            
+            .path-input {
+                min-width: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .breadcrumb-link, .current-location {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .separator {
+                padding: 0 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-location-arrow"></i> Advanced Breadcrumb Navigation</h1>
+            <p class="subtitle">A sophisticated navigation system with dropdown menus, path editing, and visual hierarchy. Go beyond basic breadcrumbs with this advanced solution.</p>
+        </header>
+        
+        <div class="content">
+            <div class="breadcrumb-container">
+                <div class="breadcrumb-title">
+                    <i class="fas fa-folder-tree"></i>
+                    <h2>Current Location Path</h2>
+                </div>
+                
+                <div class="breadcrumb-path" id="breadcrumbPath">
+                    <!-- Breadcrumbs will be generated here -->
+                </div>
+                
+                <div class="controls">
+                    <div class="control-btn" id="btnBack">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </div>
+                    <div class="control-btn" id="btnForward">
+                        <i class="fas fa-arrow-right"></i> Forward
+                    </div>
+                    <div class="control-btn" id="btnHome">
+                        <i class="fas fa-home"></i> Home
+                    </div>
+                    <div class="control-btn" id="btnRefresh">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </div>
+                </div>
+            </div>
+            
+            <div class="path-editor">
+                <div class="editor-title">
+                    <i class="fas fa-edit"></i>
+                    <h2>Path Editor</h2>
+                </div>
+                
+                <div class="path-input-container">
+                    <input type="text" class="path-input" id="pathInput" value="/Documents/Projects/Web Development/Advanced Breadcrumb Demo">
+                    <button class="apply-btn" id="applyPath">
+                        <i class="fas fa-check-circle"></i> Apply Path
+                    </button>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="feature-title">Hierarchical Navigation</h3>
+                    <p class="feature-desc">Visualize your path hierarchy with intuitive breadcrumbs that show your exact location in the structure.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-caret-square-down"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Dropdowns</h3>
+                    <p class="feature-desc">Each breadcrumb item reveals a dropdown with sibling options when hovered, enabling quick navigation.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Fully Responsive</h3>
+                    <p class="feature-desc">Works seamlessly on all devices from desktops to mobile phones with adaptive layouts.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Advanced Breadcrumb Navigation System | Created with <i class="fas fa-heart" style="color:#ff6b6b;"></i> for modern web applications</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const breadcrumbPath = document.getElementById('breadcrumbPath');
+            const pathInput = document.getElementById('pathInput');
+            const applyPath = document.getElementById('applyPath');
+            
+            // Initial path
+            const initialPath = "/Documents/Projects/Web Development/Advanced Breadcrumb Demo";
+            
+            // Generate breadcrumbs based on path
+            function generateBreadcrumbs(path) {
+                breadcrumbPath.innerHTML = '';
+                
+                // Split path into segments
+                const segments = path.split('/').filter(segment => segment !== '');
+                
+                // Add root segment
+                const rootElement = document.createElement('div');
+                rootElement.className = 'breadcrumb-item';
+                rootElement.innerHTML = `
+                    <a href="#" class="breadcrumb-link" data-path="/">
+                        <i class="fas fa-home"></i> Root
+                    </a>
+                    <div class="breadcrumb-dropdown">
+                        <a href="#" class="dropdown-item" data-path="/Desktop"><i class="fas fa-desktop"></i> Desktop</a>
+                        <a href="#" class="dropdown-item" data-path="/Documents"><i class="fas fa-folder"></i> Documents</a>
+                        <a href="#" class="dropdown-item" data-path="/Downloads"><i class="fas fa-download"></i> Downloads</a>
+                        <a href="#" class="dropdown-item" data-path="/Pictures"><i class="fas fa-image"></i> Pictures</a>
+                        <a href="#" class="dropdown-item" data-path="/Music"><i class="fas fa-music"></i> Music</a>
+                    </div>
+                `;
+                breadcrumbPath.appendChild(rootElement);
+                
+                // Add separator after root
+                addSeparator();
+                
+                // Add path segments
+                let currentPath = '';
+                segments.forEach((segment, index) => {
+                    currentPath += `/${segment}`;
+                    
+                    const isLast = index === segments.length - 1;
+                    
+                    const segmentElement = document.createElement('div');
+                    segmentElement.className = 'breadcrumb-item';
+                    
+                    if (isLast) {
+                        // Current location
+                        segmentElement.innerHTML = `
+                            <div class="current-location">
+                                <i class="fas fa-folder-open"></i> ${segment}
+                            </div>
+                        `;
+                    } else {
+                        // Breadcrumb link with dropdown
+                        segmentElement.innerHTML = `
+                            <a href="#" class="breadcrumb-link" data-path="${currentPath}">
+                                <i class="fas fa-folder"></i> ${segment}
+                            </a>
+                            <div class="breadcrumb-dropdown">
+                                <a href="#" class="dropdown-item" data-path="${currentPath}/Subfolder 1"><i class="fas fa-folder"></i> Subfolder 1</a>
+                                <a href="#" class="dropdown-item" data-path="${currentPath}/Subfolder 2"><i class="fas fa-folder"></i> Subfolder 2</a>
+                                <a href="#" class="dropdown-item" data-path="${currentPath}/Archive"><i class="fas fa-archive"></i> Archive</a>
+                                <a href="#" class="dropdown-item" data-path="${currentPath}/Assets"><i class="fas fa-images"></i> Assets</a>
+                            </div>
+                        `;
+                    }
+                    
+                    breadcrumbPath.appendChild(segmentElement);
+                    
+                    // Add separator if not last
+                    if (!isLast) {
+                        addSeparator();
+                    }
+                });
+                
+                // Add event listeners to breadcrumb links
+                document.querySelectorAll('.breadcrumb-link, .dropdown-item').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const newPath = this.getAttribute('data-path');
+                        pathInput.value = newPath;
+                        generateBreadcrumbs(newPath);
+                    });
+                });
+            }
+            
+            // Add separator between breadcrumbs
+            function addSeparator() {
+                const separator = document.createElement('div');
+                separator.className = 'separator';
+                separator.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                breadcrumbPath.appendChild(separator);
+            }
+            
+            // Initialize with initial path
+            pathInput.value = initialPath;
+            generateBreadcrumbs(initialPath);
+            
+            // Apply path button
+            applyPath.addEventListener('click', function() {
+                const newPath = pathInput.value;
+                if (newPath) {
+                    generateBreadcrumbs(newPath);
+                }
+            });
+            
+            // Control buttons
+            document.getElementById('btnBack').addEventListener('click', function() {
+                alert('Back navigation triggered');
+            });
+            
+            document.getElementById('btnForward').addEventListener('click', function() {
+                alert('Forward navigation triggered');
+            });
+            
+            document.getElementById('btnHome').addEventListener('click', function() {
+                pathInput.value = '/';
+                generateBreadcrumbs('/');
+            });
+            
+            document.getElementById('btnRefresh').addEventListener('click', function() {
+                generateBreadcrumbs(pathInput.value);
+            });
+            
+            // Enable Enter key in path input
+            pathInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyPath.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
