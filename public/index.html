@@ -58,6 +58,46 @@
         </div>
     </section>
 
+
+     <div class="fancy-divider"></div>
+
+    <div id="animated-video-container" onclick="window.location.href='homepage.html'">
+        <div class="video-overlay"></div>
+        <canvas id="starfield-canvas"></canvas>
+        <svg class="morphing-blob-svg" viewBox="0 0 200 200">
+            <defs>
+                <linearGradient id="blobGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <path fill="url(#blobGradient)">
+                <animate attributeName="d" dur="15s" repeatCount="indefinite"
+                    values="M107.5,142.5Q68,185,28.5,140.5Q-11,96,25.5,58Q62,20,107,17.5Q152,15,170.5,57.5Q189,100,166,134Q143,168,107.5,142.5Z;
+                            M111.5,138Q68,175,29.5,139Q-9,103,26.5,60Q62,17,109.5,18.5Q157,20,172,59.5Q187,99,165.5,133Q144,167,111.5,138Z;
+                            M105.5,139.5Q62,178,29,139Q-4,100,27,59.5Q58,19,108.5,18Q159,17,171.5,58.5Q184,100,162.5,133Q141,166,105.5,139.5Z;
+                            M107.5,142.5Q68,185,28.5,140.5Q-11,96,25.5,58Q62,20,107,17.5Q152,15,170.5,57.5Q189,100,166,134Q143,168,107.5,142.5Z"
+                />
+            </path>
+        </svg>
+        <div id="bubble-container"></div>
+
+        <!-- Blog Content Overlay -->
+        <div class="blog-content-overlay">
+            <div class="blog-content-wrapper" id="blog-content-display">
+                <h2 class="animated-blog-title">Loading Latest Content...</h2>
+                <p class="animated-blog-summary">Please wait while we fetch the freshest updates for you.</p>
+                <a href="homepage.html" class="go-to-blog-btn" id="blog-read-more-btn">
+                    Go to Blog <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+     <div class="fancy-divider"></div>
+
+
+
+
     <div id="auth-modal-overlay" class="auth-modal-overlay">
         <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
             <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
@@ -231,12 +271,7 @@
         </div>
     </div>
 
-    <div class="page-content-wrapper">
-        <div class="owner-info">
-            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="owner-avatar" alt="Nobita's Avatar" onerror="this.src='https://placehold.co/65x65/FFD700/000000?text=N'">
-            <span class="owner-text">Created by: 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</span>
-        </div>
-
+   
         <div id="feedback-form-container" class="main-container">
             <h1 id="main-title" class="section-title"></h1>
             <div id="typed-output"></div>
@@ -288,6 +323,11 @@
       </div>
     </div>
     <!-- End Fullscreen Loader HTML -->
+<footer class="main-footer">
+    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+</footer>
+
+
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
 <script src="script.js"></script>
