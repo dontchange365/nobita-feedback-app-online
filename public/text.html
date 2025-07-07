@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>Animated Blog Container</title>
+    <meta name="description" content="A standalone animated container displaying blog content with a 'Go to Blog' button.">
+    <meta name="keywords" content="animated, video, container, blog, HTML, CSS, JavaScript, SVG, Canvas, button, professional">
+    <meta name="author" content="Nobita">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #0d0d1a; /* Dark background for contrast */
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Prevent body scroll if content overflows */
+        }
+
+        /* Animated Video Container */
+        #animated-video-container {
+            position: relative;
+            width: 90%; /* Make it take up most of the width */
+            max-width: 1200px; /* Max width for larger screens */
+            height: 30vh; /* Fixed height as requested */
+            overflow: hidden; /* Crucial for containing bubbles */
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1d, #2a003f); /* Animated gradient will be applied via JS/CSS animation */
+            margin: 10px 0 5px 0; /* Upar, daayen, neeche, baayen ke liye margins */
+            padding: 0 0px; /* Thoda left padding taaki bilkul edge se na chipke, right side se bhi */
+            border-radius: 25px; /* More rounded corners */
+            border: 4px solid transparent; /* Thicker initial transparent border */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7); /* Overall depth */
+            cursor: pointer; /* Overall container is clickable to homepage */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            animation: borderGlow 3s infinite alternate ease-in-out; /* Border glow animation */
+        }
+
+        #animated-video-container:hover {
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.9); /* Stronger overall shadow + yellow glow */
+            transform: translateY(-5px); /* More pronounced lift on hover */
+        }
+
+        @keyframes borderGlow {
+            0% {
+                border-color: rgba(255, 215, 0, 0.3); /* Initial glow color (gold) */
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* Subtle inner glow */
+            }
+            50% {
+                border-color: rgba(255, 215, 0, 0.8); /* Peak glow color */
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); /* Stronger inner glow */
+            }
+            100% {
+                border-color: rgba(255, 215, 0, 0.3); /* Return to initial glow color */
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); /* Subtle inner glow */
+            }
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 2; /* Below bubbles, above canvas/blob */
+        }
+
+        /* Removed .video-title as per request */
+
+        /* Screen Flicker Overlay */
+        .video-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                transparent 0,
+                rgba(255, 255, 255, 0.02) 1px,
+                transparent 2px
+            );
+            animation: flicker 0.2s infinite alternate;
+            z-index: 3; /* Above the main overlay */
+            pointer-events: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.8; }
+        }
+
+        /* SVG Morphing Blob */
+        .morphing-blob-svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%; /* Responsive size */
+            height: 60%; /* Responsive size */
+            transform: translate(-50%, -50%);
+            filter: blur(15px) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)); /* Glow effect */
+            z-index: 1; /* Below overlay and bubbles */
+        }
+
+        /* Canvas Starfield - Positioned by JS */
+        #starfield-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Bottom layer */
+        }
+
+        /* Floating Bouncing Glowing Bubbles */
+        #bubble-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5; /* Above everything except blog content */
+            pointer-events: none; /* Allows click-through to container */
+        }
+
+        .bubble {
+            position: absolute;
+            background-color: rgba(0, 123, 255, 0.5); /* Blue-ish */
+            border-radius: 50%;
+            opacity: 0.8; /* Always visible */
+            animation-name: floatAndBounce; /* Changed animation name */
+            animation-timing-function: ease-in-out; /* Smooth timing */
+            animation-iteration-count: infinite;
+            animation-fill-mode: forwards;
+            filter: blur(2px);
+            /* Initial position will be set by animation's 0% keyframe */
+        }
+
+        .bubble:nth-child(2n) {
+            background-color: rgba(255, 215, 0, 0.4); /* Gold-ish */
+        }
+        .bubble:nth-child(3n) {
+            background-color: rgba(255, 99, 71, 0.4); /* Red-ish */
+        }
+
+        /* New animation for bubbles to stay within bounds and spread out */
+        @keyframes floatAndBounce {
+            0% {
+                left: var(--x-start);
+                top: var(--y-start);
+                transform: translate(-50%, -50%) scale(var(--scale-start));
+                box-shadow: 0 0 10px var(--bubble-color-shadow);
+            }
+            25% {
+                left: var(--x-point1);
+                top: var(--y-point1);
+                transform: translate(-50%, -50%) scale(var(--scale-point1));
+                box-shadow: 0 0 15px var(--bubble-color-shadow);
+            }
+            50% {
+                left: var(--x-point2);
+                top: var(--y-point2);
+                transform: translate(-50%, -50%) scale(var(--scale-point2));
+                box-shadow: 0 0 20px var(--bubble-color-shadow);
+            }
+            75% {
+                left: var(--x-point3);
+                top: var(--y-point3);
+                transform: translate(-50%, -50%) scale(var(--scale-point3));
+                box-shadow: 0 0 15px var(--bubble-color-shadow);
+            }
+            100% {
+                left: var(--x-start); /* Loop back to start */
+                top: var(--y-start);
+                transform: translate(-50%, -50%) scale(var(--scale-start));
+                box-shadow: 0 0 10px var(--bubble-color-shadow);
+            }
+        }
+
+
+        /* Animated Gradient Background */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #animated-video-container {
+            background-size: 400% 400%;
+            animation: gradientAnimation 20s ease infinite;
+        }
+
+        /* Blog Content Overlay */
+        .blog-content-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; /* Adjust width for content */
+            max-height: 80%;
+            text-align: center;
+            color: #fff;
+            z-index: 6; /* Above bubbles */
+            pointer-events: none; /* Allows click-through to container by default */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .blog-content-wrapper {
+            overflow: hidden; /* For transition effects */
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animated-blog-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: clamp(1.8em, 6vw, 3.5em); /* Increased title size */
+            color: #FFD700;
+            margin-bottom: 5px;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .animated-blog-summary {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(0.7em, 1.5vw, 1em);
+            color: #e0e0e0;
+            opacity: 0.9;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 15px; /* Space above button */
+        }
+
+        /* Go to Blog Button */
+        .go-to-blog-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 18px;
+            background: linear-gradient(45deg, #007bff, #0056b3); /* Blue gradient */
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: clamp(0.7em, 1.3vw, 0.9em);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            
+            z-index: 7; /* Ensure it's above other elements */
+        }
+
+        .go-to-blog-btn:hover {
+            background: linear-gradient(45deg, #0056b3, #007bff);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .go-to-blog-btn i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .go-to-blog-btn:hover i {
+            transform: translateX(3px);
+        }
+
+
+        /* Blog entry animations */
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOutSlideDown {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeOutScale {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Applying animations to blog content and button */
+        .blog-content-wrapper.fade-in-slide-up .animated-blog-title,
+        .blog-content-wrapper.fade-in-slide-up .animated-blog-summary,
+        .blog-content-wrapper.fade-in-slide-up .go-to-blog-btn {
+            animation: fadeInSlideUp 0.8s ease-out forwards;
+        }
+
+        .blog-content-wrapper.fade-out-slide-down .animated-blog-title,
+        .blog-content-wrapper.fade-out-slide-down .animated-blog-summary,
+        .blog-content-wrapper.fade-out-slide-down .go-to-blog-btn {
+            animation: fadeOutSlideDown 0.8s ease-in forwards;
+        }
+
+        .blog-content-wrapper.fade-in-scale .animated-blog-title,
+        .blog-content-wrapper.fade-in-scale .animated-blog-summary,
+        .blog-content-wrapper.fade-in-scale .go-to-blog-btn {
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        .blog-content-wrapper.fade-out-scale .animated-blog-title,
+        .blog-content-wrapper.fade-out-scale .animated-blog-summary,
+        .blog-content-wrapper.fade-out-scale .go-to-blog-btn {
+            animation: fadeOutScale 0.8s ease-in forwards;
+        }
+
+
+        /* Responsive adjustments for overall container */
+        @media (max-width: 768px) {
+            #animated-video-container {
+                height: 25vh; /* Slightly smaller on tablets */
+            }
+            .animated-blog-title {
+                font-size: clamp(1.5em, 5vw, 3em);
+            }
+            .animated-blog-summary {
+                font-size: clamp(0.65em, 1.2vw, 0.9em);
+            }
+            .go-to-blog-btn {
+                padding: 7px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #animated-video-container {
+                height: 20vh; /* Even smaller on mobile */
+            }
+            .morphing-blob-svg {
+                width: 70%;
+                height: 70%;
+            }
+            .animated-blog-title {
+                font-size: clamp(1.2em, 4vw, 2.5em);
+            }
+            .animated-blog-summary {
+                font-size: clamp(0.6em, 1vw, 0.8em);
+            }
+            .go-to-blog-btn {
+                padding: 6px 12px;
+                font-size: clamp(0.6em, 1vw, 0.8em);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="animated-video-container" onclick="window.location.href='homepage.html'">
+        <div class="video-overlay"></div>
+        <canvas id="starfield-canvas"></canvas>
+        <svg class="morphing-blob-svg" viewBox="0 0 200 200">
+            <defs>
+                <linearGradient id="blobGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <path fill="url(#blobGradient)">
+                <animate attributeName="d" dur="15s" repeatCount="indefinite"
+                    values="M107.5,142.5Q68,185,28.5,140.5Q-11,96,25.5,58Q62,20,107,17.5Q152,15,170.5,57.5Q189,100,166,134Q143,168,107.5,142.5Z;
+                            M111.5,138Q68,175,29.5,139Q-9,103,26.5,60Q62,17,109.5,18.5Q157,20,172,59.5Q187,99,165.5,133Q144,167,111.5,138Z;
+                            M105.5,139.5Q62,178,29,139Q-4,100,27,59.5Q58,19,108.5,18Q159,17,171.5,58.5Q184,100,162.5,133Q141,166,105.5,139.5Z;
+                            M107.5,142.5Q68,185,28.5,140.5Q-11,96,25.5,58Q62,20,107,17.5Q152,15,170.5,57.5Q189,100,166,134Q143,168,107.5,142.5Z"
+                />
+            </path>
+        </svg>
+        <div id="bubble-container"></div>
+
+        <!-- Blog Content Overlay -->
+        <div class="blog-content-overlay">
+            <div class="blog-content-wrapper" id="blog-content-display">
+                <h2 class="animated-blog-title">Loading Latest Content...</h2>
+                <p class="animated-blog-summary">Please wait while we fetch the freshest updates for you.</p>
+                <a href="#" class="go-to-blog-btn" id="blog-read-more-btn">
+                    Go to Blog <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Canvas Starfield ---
+        const canvas = document.getElementById('starfield-canvas');
+        const ctx = canvas ? canvas.getContext('2d') : null; // Check if canvas exists
+        let stars = [];
+        const numStars = 150; // Increased number of stars for denser field
+
+        function resizeCanvas() {
+            if (!canvas || !ctx) return; // Ensure canvas and context exist
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            initStars();
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5 + 0.5, // 0.5 to 2
+                    alpha: Math.random(), // 0 to 1
+                    velocity: Math.random() * 0.2 + 0.1 // Slower, subtle movement
+                });
+            }
+        }
+
+        function drawStars() {
+            if (!canvas || !ctx) return; // Ensure canvas and context exist
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < numStars; i++) {
+                const star = stars[i];
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.shadowColor = `rgba(255, 255, 255, ${star.alpha})`;
+                ctx.shadowBlur = star.radius * 2;
+                ctx.fill();
+
+                star.x -= star.velocity; // Move stars horizontally
+                if (star.x < -star.radius) { // Reset if off screen
+                    star.x = canvas.width + star.radius;
+                    star.y = Math.random() * canvas.height;
+                    star.alpha = Math.random();
+                }
+
+                // Twinkle effect (subtle alpha change)
+                star.alpha += (Math.random() - 0.5) * 0.02; // Small random change
+                if (star.alpha > 1) star.alpha = 1;
+                if (star.alpha < 0) star.alpha = 0;
+            }
+            requestAnimationFrame(drawStars); // Use drawStars for recursive call
+        }
+
+
+        // --- Floating Bouncing Glowing Bubbles ---
+        const bubbleContainer = document.getElementById('bubble-container');
+        // Increased bubble sizes and adjusted number for better visibility and bounce effect
+        const numBubbles = 15; // Increased number of bubbles for more coverage
+        const bubbleSizes = [70, 90, 110, 130]; // Larger bubble sizes
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            const size = bubbleSizes[Math.floor(Math.random() * bubbleSizes.length)];
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+
+            // Define a buffer zone from the edges of the container (as a percentage)
+            // This ensures the center of the bubble stays within these bounds
+            const edgeBufferPercent = 10; // 10% buffer from each edge
+            const minPercent = edgeBufferPercent;
+            const maxPercent = 100 - edgeBufferPercent;
+
+            // Generate 4 random points for the animation path
+            // Each point's x and y will be a percentage of the container's width/height
+            const generatePoint = () => ({
+                x: Math.random() * (maxPercent - minPercent) + minPercent,
+                y: Math.random() * (maxPercent - minPercent) + minPercent,
+                scale: Math.random() * 0.4 + 0.8 // Scale between 0.8 and 1.2 for smoother size changes
+            });
+
+            const pStart = generatePoint();
+            const p1 = generatePoint();
+            const p2 = generatePoint();
+            const p3 = generatePoint();
+
+            bubble.style.setProperty('--x-start', `${pStart.x}%`);
+            bubble.style.setProperty('--y-start', `${pStart.y}%`);
+            bubble.style.setProperty('--scale-start', pStart.scale);
+
+            bubble.style.setProperty('--x-point1', `${p1.x}%`);
+            bubble.style.setProperty('--y-point1', `${p1.y}%`);
+            bubble.style.setProperty('--scale-point1', p1.scale);
+
+            bubble.style.setProperty('--x-point2', `${p2.x}%`);
+            bubble.style.setProperty('--y-point2', `${p2.y}%`);
+            bubble.style.setProperty('--scale-point2', p2.scale);
+
+            bubble.style.setProperty('--x-point3', `${p3.x}%`);
+            bubble.style.setProperty('--y-point3', `${p3.y}%`);
+            bubble.style.setProperty('--scale-point3', p3.scale);
+
+
+            // Random animation duration and delay
+            bubble.style.animationDuration = `${Math.random() * 10 + 20}s`; // 20-30 seconds for slower, more spread out movement
+            bubble.style.animationDelay = `${Math.random() * 8}s`; // 0-8 seconds delay for more desynchronization
+
+            const randomColorIndex = Math.floor(Math.random() * 3); // For shadow consistency
+            let shadowColor;
+            if (randomColorIndex === 0) shadowColor = 'rgba(0, 123, 255, 0.8)';
+            else if (randomColorIndex === 1) shadowColor = 'rgba(255, 215, 0, 0.8)';
+            else shadowColor = 'rgba(255, 99, 71, 0.8)';
+            bubble.style.setProperty('--bubble-color-shadow', shadowColor);
+
+            if (bubbleContainer) { // Ensure container exists
+                bubbleContainer.appendChild(bubble);
+            }
+        }
+
+        // Generate bubbles
+        document.addEventListener('DOMContentLoaded', () => {
+            if (bubbleContainer) {
+                for (let i = 0; i < numBubbles; i++) {
+                    createBubble();
+                }
+            }
+        });
+
+
+        // --- Blog Content Cycling & Animation ---
+        let allBlogs = [];
+        let currentBlogIndex = 0;
+        const blogDisplayElement = document.getElementById('blog-content-display');
+        const blogTitleElement = blogDisplayElement ? blogDisplayElement.querySelector('.animated-blog-title') : null;
+        const blogSummaryElement = blogDisplayElement ? blogDisplayElement.querySelector('.animated-blog-summary') : null;
+        const blogButtonElement = document.getElementById('blog-read-more-btn'); // Get the new button element
+        let blogCycleInterval;
+
+        const animationClasses = ['fade-in-slide-up', 'fade-in-scale']; // Different entry animations
+
+        function applyExitAnimation(element, animationClass) {
+            return new Promise(resolve => {
+                if (!element) {
+                    resolve();
+                    return;
+                }
+                const exitClass = animationClass.replace('in', 'out');
+                element.classList.add(exitClass);
+                const onAnimationEnd = () => {
+                    element.classList.remove(exitClass);
+                    element.removeEventListener('animationend', onAnimationEnd);
+                    resolve();
+                };
+                element.addEventListener('animationend', onAnimationEnd);
+                // Fallback for cases where animationend might not fire (e.g., element hidden quickly)
+                setTimeout(() => {
+                    if (element.classList.contains(exitClass)) {
+                        element.classList.remove(exitClass);
+                        resolve();
+                    }
+                }, 800); // Animation duration is 0.8s
+            });
+        }
+
+        async function displayNextBlog() {
+            if (!blogDisplayElement || !blogTitleElement || !blogSummaryElement || !blogButtonElement) {
+                console.warn("Blog display elements or button not found. Cannot display blogs.");
+                return;
+            }
+
+            if (!allBlogs.length) {
+                blogTitleElement.textContent = "No blogs available yet.";
+                blogSummaryElement.textContent = "Check back soon for new content!";
+                blogButtonElement.style.display = 'none'; // Hide button if no blogs
+                return;
+            }
+
+            const nextBlog = allBlogs[currentBlogIndex];
+            const currentAnimationClass = animationClasses[Math.floor(Math.random() * animationClasses.length)];
+
+            // Apply exit animation if content is visible and not initial loading message
+            if (blogTitleElement.textContent !== "Loading Latest Content..." && blogTitleElement.textContent !== "No blogs available yet." && blogTitleElement.textContent !== "Failed to load content.") {
+                await applyExitAnimation(blogDisplayElement, currentAnimationClass);
+            }
+            blogDisplayElement.classList.remove(...animationClasses.map(cls => cls.replace('in', 'out')));
+
+
+            // Update content and button link
+            blogTitleElement.textContent = nextBlog.title;
+            blogSummaryElement.textContent = nextBlog.summary;
+            blogButtonElement.href = nextBlog.link || '#'; // Set the link for the button
+            blogButtonElement.style.display = 'inline-flex'; // Show the button
+            if (nextBlog.link) {
+                 blogButtonElement.onclick = (event) => {
+                    event.stopPropagation(); // Prevent the container's onclick from firing
+                    window.open(nextBlog.link, '_blank'); // Open blog in new tab
+                };
+            } else {
+                blogButtonElement.onclick = null; // No action if no link
+            }
+
+
+            // Apply entry animation
+            blogDisplayElement.classList.add(currentAnimationClass);
+            const onAnimationEnd = () => {
+                blogDisplayElement.classList.remove(currentAnimationClass);
+                blogDisplayElement.removeEventListener('animationend', onAnimationEnd);
+            };
+            blogDisplayElement.addEventListener('animationend', onAnimationEnd);
+
+            currentBlogIndex = (currentBlogIndex + 1) % allBlogs.length;
+        }
+
+        // Main blog fetch logic, now only populates allBlogs for animated container
+        async function loadBlogs() {
+            // Show initial loading message in the animated container
+            if (blogTitleElement) {
+                blogTitleElement.textContent = "Loading Latest Content...";
+                blogSummaryElement.textContent = "Please wait while we fetch the freshest updates for you.";
+                if(blogButtonElement) blogButtonElement.style.display = 'none'; // Hide button during initial load
+            }
+
+            let cachedBlogs = [];
+            // Try to load from local storage first
+            if(localStorage.getItem('nobi_blogs')){
+                try {
+                    cachedBlogs = JSON.parse(localStorage.getItem('nobi_blogs'));
+                    if (cachedBlogs.length > 0) {
+                        allBlogs = cachedBlogs; // Set blogs for animated container
+                        displayNextBlog(); // Display first blog in animated container
+                        blogCycleInterval = setInterval(displayNextBlog, 7000); // Cycle every 7 seconds
+                    }
+                } catch(e) {
+                    console.error("Error parsing cached blogs:", e);
+                    localStorage.removeItem('nobi_blogs');
+                }
+            }
+
+            // Always try to fetch latest from server
+            try {
+                const res = await fetch('/api/blogs');
+                if(res.ok) {
+                    const latest = await res.json();
+                    // Only update cache and re-render if new data is different
+                    if (JSON.stringify(latest) !== localStorage.getItem('nobi_blogs')) {
+                        localStorage.setItem('nobi_blogs', JSON.stringify(latest));
+                        allBlogs = latest; // Update blogs for animated container
+                        if (blogDisplayElement && allBlogs.length > 0) {
+                            clearInterval(blogCycleInterval); // Clear existing interval
+                            currentBlogIndex = 0; // Reset index to start from first new blog
+                            displayNextBlog(); // Display first blog of new set
+                            blogCycleInterval = setInterval(displayNextBlog, 7000);
+                        } else if (blogDisplayElement && allBlogs.length === 0) { // If no blogs received
+                            clearInterval(blogCycleInterval);
+                            blogTitleElement.textContent = "No blogs available yet.";
+                            blogSummaryElement.textContent = "Check back soon for new content!";
+                            if(blogButtonElement) blogButtonElement.style.display = 'none';
+                        }
+                    } else if (cachedBlogs.length === 0 && latest.length > 0) {
+                        // If nothing was in cache initially but server has data, use it
+                        allBlogs = latest;
+                        if (blogDisplayElement) {
+                            displayNextBlog();
+                            blogCycleInterval = setInterval(displayNextBlog, 7000);
+                        }
+                    } else if (latest.length === 0 && cachedBlogs.length > 0) {
+                        // If server returns no blogs, but cache had some, clear cache and update UI
+                        localStorage.removeItem('nobi_blogs');
+                        allBlogs = []; // Clear for animated container
+                        clearInterval(blogCycleInterval);
+                        if (blogDisplayElement) {
+                            blogTitleElement.textContent = "No blogs available yet.";
+                            blogSummaryElement.textContent = "Check back soon for new content!";
+                            if(blogButtonElement) blogButtonElement.style.display = 'none';
+                        }
+                    }
+                } else {
+                    console.error("Failed to fetch latest blogs from server:", res.status, res.statusText);
+                    if (blogDisplayElement && !allBlogs.length) { // Also update animated container if empty
+                        blogTitleElement.textContent = "Failed to load content.";
+                        blogSummaryElement.textContent = "Please try refreshing the page.";
+                        if(blogButtonElement) blogButtonElement.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error("Network error fetching blogs:", error);
+                if (blogDisplayElement && !allBlogs.length) { // Also update animated container if empty
+                    blogTitleElement.textContent = "Network Error.";
+                    blogSummaryElement.textContent = "Could not load content.";
+                    if(blogButtonElement) blogButtonElement.style.display = 'none';
+                }
+            }
+        }
+
+        // Call loadBlogs when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBlogs();
+            // Start starfield animation after canvas is ready
+            if (canvas) { // Check if canvas element exists before initializing
+                resizeCanvas();
+                drawStars(); // Call drawStars to start the animation loop
+            }
+        });
+    </script>
+</body>
+</html>
