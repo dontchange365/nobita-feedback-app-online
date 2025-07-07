@@ -1040,12 +1040,13 @@ app.post('/api/auth/request-email-verification', authenticateToken, async (req, 
         const verifyUrl = `${FRONTEND_URL}${verifyPagePath}?token=${verificationToken}`;
         const textMessage = `Hello ${user.name},\n\nVerify your email:\n${verifyUrl}\n\nNobita Feedback App Team`;
         const htmlMessage = NOBITA_EMAIL_TEMPLATE(
-            "📩 Email Verification",
-            user.name,
-            "✅ Verify Your Email",
-            verifyUrl,
-            user.avatarUrl || getDiceBearAvatarUrl(user.name)
-        );
+    "📩 Email Verification",
+    user.name,
+    "✅ Verify Your Email",
+    verifyUrl,
+    user.avatarUrl || getDiceBearAvatarUrl(user.name),
+    'verify-request' // 🧠 THIS IS THE REAL FIX
+);
         await sendEmail({ email: user.email, subject: 'Your Email Verification Link (Nobita Feedback App)', message: textMessage, html: htmlMessage });
         res.status(200).json({ message: "Verification link has been sent to your email." });
     } catch (error) {
@@ -1132,7 +1133,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
             console.error("Error sending password reset confirmation email:", emailError);
         }
 
-        res.status(200).json({ message: "Your password has been successfully reset." });
+        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });  res.status(200).json({ message: "Your password has been successfully reset.", token: appToken, user: userForToken });
 
     } catch (error) {
         console.error('Reset password API error:', error);
@@ -1154,9 +1155,9 @@ app.post('/api/auth/verify-email', async (req, res) => {
         );
         try { await sendEmail({ email: user.email, subject: 'Aapka Email Safaltapoorvak Verify Ho Gaya Hai!', message: confirmationTextMessage, html: confirmationHtmlMessage });
         } catch (emailError) { console.error("Error sending verification confirmation email:", emailError); }
-        const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified };
-        const newToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
-        res.status(200).json({ message: "Your email has been successfully verified.", token: newToken, user: userForToken });
+       const userForToken = { userId: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl, loginMethod: user.loginMethod, isVerified: user.isVerified }; //
+const newToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' }); //
+res.status(200).json({ message: "Your email has been successfully verified.", token: newToken, user: userForToken }); //
     } catch (error) {
         console.error('Verify email API error:', error);
         res.status(500).json({ message: "Something went wrong while verifying the email." });
