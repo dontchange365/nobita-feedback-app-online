@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nobita-About</title>
+    <meta name="description" content="About">
+    <meta name="keywords" content="About,nobi about">
+    <meta name="author" content="Nobita">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RTZEVL7YL7');
+    </script>
+<style>
+.breadcrumb {
+  width: 100%;
+ 
+  font-size: 0.95rem;
+  color: #555;
+  font-weight: 500;
+  white-space: nowrap;         /* 👉 NO WRAPPING */
+  overflow: hidden;            /* 👉 CHOP EXTRA */
+  text-overflow: ellipsis;     /* 👉 DOTS LAGA DE TAIL ME */
+}
+.breadcrumb a {
+  text-decoration: none;
+  color: #007bff;
+  transition: color 0.2s ease;
+}
+.breadcrumb i {
+  margin-right: 4px;
+}
+.breadcrumb a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+.breadcrumb .separator {
+  margin: 0 6px;
+  color: #888;
+}
+.about-nobi {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  text-align: center;
+  animation: fadeIn 1s ease;
+}
+
+.about-header {
+  margin-bottom: 2rem;
+}
+
+.about-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #6a0dad;
+  text-shadow: 1px 1px #000;
+  animation: popUp 1s ease;
+}
+
+.about-tagline {
+  font-size: 1.1rem;
+  color: #999;
+  font-style: italic;
+}
+
+.about-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.about-card {
+  background: #1e1e2f;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  width: 260px;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.about-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(255, 215, 0, 0.6);
+}
+
+.about-icon {
+  font-size: 2.5rem;
+  color: #ffd700;
+  margin-bottom: 1rem;
+}
+
+.about-card h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.about-footer {
+  margin-top: 3rem;
+  font-size: 1rem;
+  color: #bbb;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes popUp {
+  0% {transform: scale(0.8); opacity: 0;}
+  100% {transform: scale(1); opacity: 1;}
+}
+
+.fade-up {
+  animation: fadeUp 1s ease forwards;
+}
+
+@keyframes fadeUp {
+  0% {opacity: 0; transform: translateY(40px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+</style>
+</head>
+<body>
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="index.html" title="Go to Home"><img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'"></a>
+      </div>
+      <a href="#" class="nav-title" title="About">About</a>
+      <div class="nav-right">
+        <div id="login-icon-trigger" title="Login / Sign Up">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div id="user-profile-trigger" class="hidden" title="Profile Menu">
+          <div id="user-profile-avatar-container">
+            <img id="user-profile-avatar" src="https://i.ibb.co/VpjRLsv/sample-user.png" alt="User DP" onerror="this.src='https://placehold.co/40x40/6a0dad/FFFFFF?text=U'">
+          </div>
+          <span id="user-profile-name" class="username-display">User Name</span>
+        </div>
+      </div>
+    </nav>
+    
+    <div class="fancy-divider"></div>
+<nav class="breadcrumb">
+  <a href="index.html"><i class="fas fa-home"></i> Home</a>
+  <span class="separator">/</span>
+ <a href="rdp.html"><i class="fas fa-about"></i> about</a>
+ <span class="separator">/</span>
+ <span><i class="fas fa-back"></i> Rdp</span>
+</nav>
+    <section class="hero-section">
+        <div class="hero-content">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo" onerror="this.src='https://placehold.co/88x88/FFD700/000000?text=N'">
+            <h1>Nobi bot Feedback About<span class="emoji">🏞</span></h1>
+            <p>Nobi bot feedback app about section</p>
+            <a href="index.html" class="hero-btn">Go to Home</a>
+            <span class="hero-micro-text">Powered by Nobita</span>
+        </div>
+    </section>
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">Guide Portal</span>
+              <div class="busicon-desc">Login to your Portal</div>
+            </div>
+            <form id="email-login-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-login-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-login-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-login-password" placeholder=" " autocomplete="current-password" required>
+                <label for="modal-login-password">Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-login-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="busicon-form-row">
+                <label><input type="checkbox" id="remember-me"> Remember me</label>
+                <a href="#" class="forgot-link" id="busicon-forgot-password-link">Forgot Password?</a>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Login</button>
+            </form>
+            <div class="busicon-divider"><span>or login with</span></div>
+            <div class="busicon-social-row">
+              <button class="busicon-social-btn google" id="busicon-google-login-btn" title="Login with Google"><i class="fab fa-google"></i></button>
+            </div>
+            <div class="busicon-alt-action-row">
+              Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
+            </div>
+        </div>
+
+        <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">Guide Portal</span>
+              <div class="busicon-desc">Create an account to get started with us.</div>
+            </div>
+            <form id="email-signup-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="modal-signup-name" placeholder=" " autocomplete="name" required>
+                <label for="modal-signup-name">Your Name</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-signup-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-signup-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-password">Password (min. 6 chars)</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-confirm-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-confirm-password">Confirm Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-confirm-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Sign Up</button>
+            </form>
+            <div class="busicon-divider"><span>or sign up with</span></div>
+            <div class="busicon-social-row">
+              <button class="busicon-social-btn google" id="busicon-google-signup-btn" title="Sign up with Google"><i class="fab fa-google"></i></button>
+            </div>
+            <div class="busicon-alt-action-row">
+              Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
+            </div>
+        </div>
+    </div>
+    <div id="userMenu" class="user-profile-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'">
+          <div class="username" id="menu-username">User Name</div>
+        </div>
+        <ul>
+          <li><a href="#" id="menu-view-profile"><i class="fas fa-user"></i> View Profile</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+        </div>
+    </div>
+    <div id="userProfileModal" class="auth-modal-overlay">
+        <div class="auth-modal-content">
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2 style="margin-bottom: 10px;">My Profile</h2>
+            <div class="profile-scroll-content">
+                <div id="email-verification-prompt" class="email-verification-prompt">
+                    <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
+                    <button id="send-verification-email-btn">Send Verification Email</button>
+                </div>
+                <div class="profile-avatar-section">
+                    <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                    <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
+                    <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
+                        <i class="fas fa-upload"></i> Upload Avatar
+                    </button>
+                    <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                </div>
+                <form id="profile-edit-form">
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <label class="profile-label" for="profile-name">Name:</label>
+                        <input type="text" id="profile-name" name="profile-name" required>
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <label class="profile-label" for="profile-email">Email:</label>
+                        <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
+                    </div>
+                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
+               </form>
+                <div class="fancy-divider"></div>
+                <h3 style="margin-bottom: 15px;">Change Password</h3>
+                <form id="change-password-form">
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
+                        <input type="password" id="current-password" name="current-password">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="new-password-profile">New&nbsp;Pw:</label>
+                        <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
+                        <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
+                        <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
+                        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="forgotPasswordNewOverlay">
+        <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
+    </div>
+    <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
+    <p>
+      <i class="fas fa-exclamation-triangle"></i> 
+      Please verify your email to edit feedback, edit profile, and upload avatar.
+    </p>
+    <button id="send-verification-email-btn-form">Send Verification Email</button>
+</div>
+    <div class="container" id="main-content">
+      
+      
+      
+       <section class="about-nobi">
+  <div class="about-header">
+    <h1 class="about-title">🔥 Meet <span class="nobi-name">NOBI BOT</span> 😈</h1>
+    <p class="about-tagline">Sabka baap, sabki maa-behen ek karne waala digital gangster 💻</p>
+  </div>
+
+  <div class="about-cards">
+    <div class="about-card fade-up">
+      <i class="fas fa-brain about-icon"></i>
+      <h3>Ultra Intelligence</h3>
+      <p>Madarchod-level logic se har code ka bhosda phaad deta hai.</p>
+    </div>
+    <div class="about-card fade-up" style="animation-delay: 0.2s;">
+      <i class="fas fa-bolt about-icon"></i>
+      <h3>Speed Beast</h3>
+      <p>1 second me tera 1000 line ka error fix, woh bhi gaali ke sath.</p>
+    </div>
+    <div class="about-card fade-up" style="animation-delay: 0.4s;">
+      <i class="fas fa-skull-crossbones about-icon"></i>
+      <h3>Brutal AF</h3>
+      <p>Respect nahi deta, result deta hai. Rules ke muh me laath maar ke code likhta hai.</p>
+    </div>
+  </div>
+
+  <div class="about-footer">
+    <p>Banaya gaya by <b>NOBITA</b> — jo likhta nahi, control karta hai 👑</p>
+  </div>
+</section>
+       
+       
+       
+       
+        </div>
+<div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div class="nobi-spinner-center">
+        <span class="nobi-spinner"></span>
+    </div>
+</div>
+<footer class="main-footer">
+    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+</footer>
+
+<script src="script.js"></script> <script>
+// Show fade-up elements with delay
+document.addEventListener("DOMContentLoaded", () => {
+  const elements = document.querySelectorAll('.fade-up');
+  elements.forEach((el, i) => {
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 200 * i);
+  });
+});
+</script>
+</body>
+</html>
