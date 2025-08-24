@@ -8,12 +8,35 @@ function showToast(message, type = 'success') {
         console.warn('Toast container not found. Cannot show toast:', message);
         return;
     }
+    
+    // CHANGE: Agar 3 se zyada toasts hain, toh sabse purane ko hata dein
+    if (container.children.length >= 3) {
+        container.firstChild.remove();
+    }
+
+    const iconMap = {
+        'success': 'fas fa-check-circle',
+        'error': 'fas fa-exclamation-circle',
+        'warning': 'fas fa-exclamation-triangle',
+        'info': 'fas fa-info-circle'
+    };
+    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
+    
+    toast.innerHTML = `
+        <i class="toast-icon ${iconMap[type] || 'fas fa-info-circle'}"></i>
+        <div class="toast-content">
+            <p class="toast-message">${message}</p>
+        </div>
+    `;
+
     container.appendChild(toast);
-    // Toast ko 3 seconds baad remove karein
-    setTimeout(() => { toast.remove(); }, 3000);
+
+    setTimeout(() => { 
+        toast.classList.add('hide');
+        toast.addEventListener('transitionend', () => toast.remove());
+    }, 4000);
 }
 
 // --- POPUP / PROMPT SYSTEM ---
