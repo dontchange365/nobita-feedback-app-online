@@ -9,7 +9,7 @@ function showToast(message, type = 'success') {
         return;
     }
     
-    // CHANGE: Agar 3 se zyada toasts hain, toh sabse purane ko hata dein
+    // Agar 3 se zyada toasts hain, toh sabse purane ko hata dein
     if (container.children.length >= 3) {
         container.firstChild.remove();
     }
