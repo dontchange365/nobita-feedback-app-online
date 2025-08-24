@@ -7,23 +7,31 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
-  <link rel="stylesheet" href="style.css">
-  
+  <link rel="stylesheet" href="file-manager/css/ui.css">
+  <link rel="stylesheet" href="file-manager/css/script.css">
+  <link rel="stylesheet" href="file-manager/css/auth.css">
+  <link rel="stylesheet" href="file-manager/css/navigation.css">
+  <link rel="stylesheet" href="file-manager/css/fileActions.css">
+  <link rel="stylesheet" href="file-manager/css/fileDetails.css">
+  <link rel="stylesheet" href="file-manager/css/editor.css">
+  <link rel="stylesheet" href="file-manager/css/uploader.css">
+  <link rel="stylesheet" href="file-manager/css/github.css">
 </head>
 <body>
   <div id="container">
     <div id="sidebar">
       <div id="sidebar-header">
         <span>📁 FILES</span>
-        <!-- Logout Button and Theme Toggle (added to sidebar-header) -->
-        <button id="logoutBtn" title="Logout">
-  <i class="fas fa-sign-out-alt"></i>Logout
+        
+        <button id="logoutBtn" title="Logout" onclick="logoutAdmin()">
+  <i class="fas fa-sign-out-alt"></i>
 </button>
-        <!-- Inside #sidebar-header, dark mode toggle ke pass -->
-<button id="restartServerBtn" class="restartServerBtn" title="Restart">
-  <i class="fas fa-sync-alt"></i> Restart
+        <button id="restartServerBtn" class="restartServerBtn" title="Restart">
+  <i class="fas fa-sync-alt"></i>
 </button>
-      
+   <button><a href="/admin-panel" class="restartServerBtn" title="Go to Admin Panel">
+  <i class="fas fa-chart-line"></i>
+</a></button>
       </div>
       <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
       <div id="file-search-bar">
@@ -36,7 +44,6 @@
         <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
         <input type="file" id="file-upload" multiple style="display:none;">
         <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
-        <!-- Main GitHub Action Button to open the Push/Pull choice popup -->
         <button id="github-action-btn-main" title="GitHub Actions"><i class="fab fa-github"></i> </button>
       </div>
     </div>
@@ -100,10 +107,8 @@
 .hidden {
     display: none !important;
 }</style>
-  <!-- Toast Container for notifications -->
   <div id="toast-container"></div>
 
-  <!-- GitHub Action Choice Popup -->
   <div id="github-action-popup" class="modal">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
@@ -117,7 +122,6 @@
     </div>
   </div>
 
-  <!-- GitHub Live Log Popup -->
   <div id="github-log-popup" class="modal">
     <div class="modal-content">
       <button id="minimize-log-btn" title="Minimize Log"><i class="fas fa-window-minimize"></i></button>
@@ -129,7 +133,6 @@
     </div>
   </div>
 
-  <!-- Floating GitHub Spinner Button (minimized state) -->
   <div id="github-spinner-btn">
     <div class="github-spinner-icon">
       <i class="fab fa-github"></i>
@@ -170,38 +173,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/rust/rust.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
-  <script src="script.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-  const restartBtn = document.getElementById('restartServerBtn');
-  if(restartBtn){
-    restartBtn.onclick = async function(){
-      if(!confirm('Server restart karega. Are you sure?')) return;
-      restartBtn.disabled = true;
-      restartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-      // Apna ADMIN JWT TOKEN yahan lagana hai!
-      const token = localStorage.getItem('adminToken'); // ya jahan tu store karta hai
-      try {
-        const res = await fetch('/api/admin/restart', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token ? 'Bearer ' + token : ''
-          }
-        });
-        if(res.ok){
-          alert('Server restarting... Site may be offline for a few seconds!');
-        }else{
-          const data = await res.json();
-          alert('Restart failed: ' + (data.message || 'Unknown error'));
-        }
-      } catch(e){
-        alert('Restart error: ' + (e.message || e));
-      }
-      setTimeout(()=>location.reload(), 4000); // Try auto reload after 4 sec
-    };
-  }
-});
-  </script>
+  <script src="file-manager/js/auth.js"></script>
+  <script src="file-manager/js/ui.js"></script>
+  <script src="file-manager/js/fileDetails.js"></script>
+  <script src="file-manager/js/navigation.js"></script>
+  <script src="file-manager/js/fileActions.js"></script>
+  <script src="file-manager/js/script.js"></script>
+  <script src="file-manager/js/editor.js"></script>
+  <script src="file-manager/js/uploader.js"></script>
+  <script src="file-manager/js/github.js"></script>
 </body>
 </html>
