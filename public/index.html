@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
      <title>✨ NOBITA's Feedback Portal ✨</title>
     <meta name="google-site-verification" content="xR7gusf18R8eZM96kOJ6Oks1AODqkJRAt0ieAP9JSPc" />
-    <!-- SEO META SETUP FOR GOOGLE INDEXING -->
     <meta name="description" content="Nobita Feedback System — Brutal, honest, professional feedback platform with custom avatars, admin control, and chatbot logic.">
     <meta name="keywords" content="feedback system,nobita bot,chatbot feedback,nobi feedback,AI bot,feedback app,brutal reviews,anonymous feedback,feedback with rating,animated feedback,cloudinary avatar,Google login app,express feedback,desi bot,roasting system,admin feedback panel,Nobita savage bot,Nobita website,Nobita AI bot,Nobita savage feedback,custom variable bot,responsive feedback app,feedback UI,animated website,feedback with avatar">
     <meta name="author" content="Nobita">
@@ -14,19 +13,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-  gtag('config', 'G-RTZEVL7YL7');
-</script>
- <link rel="stylesheet" href="style.css">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RTZEVL7YL7');
+    </script>
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/feedbacks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/breadcrumbs.css">
 </head>
 <body>
-    <!-- NAVBAR -->
+    <div id="g_id_onload"
+         data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false"
+         data-cancel_on_tap_outside="true"
+         style="display:none;"> </div>
     <nav class="navbar">
       <div class="nav-left">
         <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'">
@@ -44,8 +53,6 @@
         </div>
       </div>
     </nav>
-    <!-- END NAVBAR -->
-
     <div class="fancy-divider"></div>
 
     <section class="hero-section">
@@ -58,8 +65,7 @@
         </div>
     </section>
 
-
-     <div class="fancy-divider"></div>
+    <div class="fancy-divider"></div>
 
     <div id="animated-video-container" onclick="window.location.href='homepage.html'">
         <div class="video-overlay"></div>
@@ -81,8 +87,6 @@
             </path>
         </svg>
         <div id="bubble-container"></div>
-
-        <!-- Blog Content Overlay -->
         <div class="blog-content-overlay">
             <div class="blog-content-wrapper" id="blog-content-display">
                 <h2 class="animated-blog-title">Loading Latest Content...</h2>
@@ -93,10 +97,7 @@
             </div>
         </div>
     </div>
-     <div class="fancy-divider"></div>
-
-
-
+    <div class="fancy-divider"></div>
 
     <div id="auth-modal-overlay" class="auth-modal-overlay">
         <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
@@ -125,9 +126,7 @@
             </form>
             <div class="busicon-divider"><span>or login with</span></div>
             <div class="busicon-social-row">
-              
-              <button class="busicon-social-btn google" id="busicon-google-login-btn" title="Login with Google"><i class="fab fa-google"></i></button>
-             
+              <div id="google-btn-container-login"></div>
             </div>
             <div class="busicon-alt-action-row">
               Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
@@ -167,9 +166,7 @@
             </form>
             <div class="busicon-divider"><span>or sign up with</span></div>
             <div class="busicon-social-row">
-              
-              <button class="busicon-social-btn google" id="busicon-google-signup-btn" title="Sign up with Google"><i class="fab fa-google"></i></button>
-            
+              <div id="google-btn-container-signup"></div>
             </div>
             <div class="busicon-alt-action-row">
               Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
@@ -177,22 +174,14 @@
         </div>
     </div>
 
-    <!-- User Profile Dropdown Menu -->
-    <div id="userMenu" class="user-profile-menu"> <!-- id="userMenu" is used by JS, class="user-profile-menu" for new CSS -->
-      <div class="menu-content"> <!-- This div is part of the new HTML structure from user -->
-        <div class="menu-header">
-          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'"> <!-- Size updated to 82x82 -->
-          <div class="username" id="menu-username">User Name</div> <!-- class="username" for new CSS -->
-        </div>
+    <div id="userMenu" class="user-profile-menu"> <div class="menu-content"> <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'"> <div class="username" id="menu-username">User Name</div> </div>
         <ul>
           <li><a href="#" id="menu-view-profile"><i class="fas fa-user"></i> View Profile</a></li>
           <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
     </div>
-    <!-- End User Profile Dropdown Menu -->
-
-
     <div id="stylishPopupOverlay" class="stylish-popup-overlay">
         <div id="stylishPopupCard" class="stylish-popup-card">
           <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
@@ -206,7 +195,6 @@
         </div>
     </div>
 
-<!-- StylishPopup code ke baad ya userProfileModal ke baad: -->
 <div class="overlay" id="forgotPasswordNewOverlay">
     <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
 </div>
@@ -247,7 +235,7 @@
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
-                    <div class="input-row-profile">
+                    <div class="input-row-profile" id="current-password-group">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
                         <input type="password" id="current-password" name="current-password">
@@ -262,6 +250,9 @@
                         <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
                     </div>
+                    <div class="profile-form-row">
+                      <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                    </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
                         <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
@@ -271,65 +262,70 @@
         </div>
     </div>
 
-   
-        <div id="feedback-form-container" class="main-container">
-            <h1 id="main-title" class="section-title"></h1>
-            <div id="typed-output"></div>
-            <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
-                <p><i class="fas fa-exclamation-triangle"></i> Please verify your email to edit feedback, edit profile, and upload avatar.</p>
-                <button id="send-verification-email-btn-form">Send Verification Email</button>
+    <div id="feedback-form-container" class="main-container">
+        <h1 id="main-title" class="section-title"></h1>
+        <div id="typed-output"></div>
+        <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
+            <p><i class="fas fa-exclamation-triangle"></i> Please verify your email to edit feedback, edit profile, and upload avatar.</p>
+            <button id="send-verification-email-btn-form">Send Verification Email</button>
+        </div>
+        <form id="feedback-form" class="feedback-form-area">
+            <div class="input-wrapper">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" id="name" name="name" placeholder=" " required disabled>
+                <label for="name">Your Name</label>
             </div>
-            <form id="feedback-form" class="feedback-form-area">
-                <div class="input-wrapper">
-                    <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="name" name="name" placeholder=" " required disabled>
-                    <label for="name">Your Name</label>
+            <div class="input-wrapper">
+                <i class="fas fa-comment-alt input-icon"></i>
+                <textarea id="feedback" name="feedback" placeholder=" " required></textarea>
+                <label for="feedback">Your Feedback</label>
+            </div>
+            
+            <div class="input-group">
+                <label>Rate Your Experience:</label>
+                <div class="stars" id="star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
                 </div>
-                <div class="input-wrapper">
-                    <i class="fas fa-comment-alt input-icon"></i>
-                    <textarea id="feedback" name="feedback" placeholder=" " required></textarea>
-                    <label for="feedback">Your Feedback</label>
-                </div>
-                
-                <div class="input-group">
-                    <label>Rate Your Experience:</label>
-                    <div class="stars" id="star-rating">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
-                    </div>
-                    <input type="hidden" id="rating" value="0">
-                </div>
-              <button type="button" id="submit-feedback" style="display: block; margin: 20px auto; text-align: center;">
-  <i class="fas fa-paper-plane"></i> Submit Feedback
-</button>
-            </form>
-        </div>
+                <input type="hidden" id="rating" value="0">
+            </div>
+            <div class="feedback-actions">
+              <button type="button" class="enhance-feedback-btn" id="enhance-feedback-btn"><i class="fas fa-magic"></i> Enhance with AI</button>
+              <button type="button" id="submit-feedback" style="display: block; margin: 20px auto 0 auto; text-align: center;">
+                <i class="fas fa-paper-plane"></i> Submit Feedback
+              </button>
+            </div>
+        </form>
+    </div>
 
-        <div class="fancy-divider"></div>
+    <div class="fancy-divider"></div>
 
-        <div id="feedback-list-container" class="main-container">
-              <div id="average-rating-display"></div>
-              <h2 class="section-title">Recent Feedbacks</h2>
-        </div>
+    <div id="feedback-list-container" class="main-container">
+        <div id="average-rating-display"></div>
+        <h2 class="section-title">Recent Feedbacks</h2>
+    </div>
+    <div id="lazy-load-spinner-container" style="display:none;">
+        <span class="nobi-spinner"></span>
     </div>
     
-    <!-- Fullscreen Loader HTML -->
     <div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
-      <div class="nobi-spinner-center"> <!-- This div will use the .nobi-spinner-center style -->
-        <span class="nobi-spinner"></span>
-      </div>
+        <div class="nobi-spinner-center"> <span class="nobi-spinner"></span>
+        </div>
     </div>
-    <!-- End Fullscreen Loader HTML -->
-<footer class="main-footer">
-    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
-</footer>
-
-
+    <footer class="main-footer">
+        Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+    </footer>
 
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-<script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/breadcrumbs.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" type="module"></script>
+    <script src="js/profile.js" type="module"></script>
+    <script src="js/feedbacks.js" type="module"></script>
 </body>
 </html>

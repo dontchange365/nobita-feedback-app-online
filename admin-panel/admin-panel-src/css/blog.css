@@ -1,0 +1,200 @@
+/* Blog Management */
+.blog-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.blog-item {
+  display: flex;
+  flex-direction: column; /* vertical layout */
+  align-items: flex-start;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--card-radius);
+  box-shadow: var(--elevation-1);
+  background-color: var(--surface);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.blog-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-3);
+}
+
+.dark-mode .blog-item {
+  background-color: var(--dark-surface);
+  border: 2px solid var(--secondary-color);
+}
+
+/* Blog item details */
+.blog-item-details {
+  width: 100%;
+}
+
+/* Blog item actions now below details */
+.blog-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem; /* spacing below details */
+}
+
+/* NEW: Styles for the Save/Edit/Delete buttons */
+.blog-item-actions button {
+    height: 44px;
+    padding: 0 16px;
+    min-width: 80px;
+    border-radius: var(--button-radius);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--elevation-1);
+    transition: all 0.3s ease;
+}
+
+.blog-item-actions button.edit-blog-btn {
+    background-color: var(--primary-color);
+    color: var(--on-primary);
+    border: none;
+}
+
+.blog-item-actions button.delete-blog-btn {
+    background-color: var(--error);
+    color: var(--on-error);
+    border: none;
+}
+
+.blog-item-actions button:hover {
+    box-shadow: var(--elevation-2);
+    transform: translateY(-1px);
+}
+
+/* Floating Add Blog button */
+.add-blog-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--secondary-color), var(--secondary-variant));
+    color: var(--on-secondary);
+    border: none;
+    box-shadow: var(--elevation-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+}
+
+.add-blog-btn:hover {
+    box-shadow: var(--elevation-4);
+    transform: scale(1.1) rotate(90deg);
+}
+
+.add-blog-btn i {
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+/* Modal overlay hidden by default */
+#blog-modal-overlay {
+    display: none;
+}
+
+/* Modal content styling */
+.modal-content.stat-modal-content {
+    max-width: 420px;
+    padding: 1.5rem;
+}
+
+/* Inner container padding */
+.blog-modal-inner {
+    padding: 0;
+}
+
+/* Title styling */
+.blog-modal-inner h3 {
+    margin: 1.5rem 0 0.9rem 0;
+    color: #FFD700;
+    font-size: 1.1rem;
+}
+
+/* Label styling */
+.blog-modal-inner label {
+    color: #FFD700;
+    font-size: 0.98em;
+    display: block;
+    margin-top: 0.6rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Form inputs and textarea */
+#add-blog-form input,
+#add-blog-form textarea {
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.4rem 0 0.8rem 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+}
+
+/* Blog admin list margin */
+#blog-admin-list {
+    margin-top: 20px;
+}
+
+/* Modal actions area */
+.modal-actions {
+    margin-top: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+/* Close button style */
+.modal-btn.cancel {
+    background-color: #aaa;
+    color: #fff;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal-btn.cancel:hover {
+    background-color: #888;
+}
+
+/* Center Add Blog form submit button */
+#add-blog-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#add-blog-form button[type="submit"] {
+    margin-bottom: 8px;
+    background-color: #FFD700;
+    color: #000;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#add-blog-form button[type="submit"]:hover {
+    background-color: #e6c200;
+    transform: scale(1.02);
+}
+
+#add-blog-form button[type="submit"]:active {
+    background-color: #cca800;
+    transform: scale(0.98);
+}

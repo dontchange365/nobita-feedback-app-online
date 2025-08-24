@@ -883,34 +883,45 @@ input:checked + .slider:before { transform: translateX(1.25rem); } /* 20px */
   }
 }
 
-/* Toast container and toast styles */
 #toast-container {
-    position: fixed;
-    bottom: 20px; /* Adjust as needed */
-    right: 20px; /* Adjust as needed */
-    z-index: 100000; /* High z-index to be on top */
-    display: flex;
-    flex-direction: column-reverse; /* Stacks toasts from bottom-up */
-    align-items: flex-end; /* Aligns toasts to the right */
-    gap: 10px; /* Space between toasts */
-    pointer-events: none; /* Allows clicks to pass through to elements behind it */
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column-reverse; /* Display new toasts at the bottom of the container */
+  gap: 8px;
+  pointer-events: none;
+  align-items: flex-end; /* Align toasts to the right side */
 }
 
 .toast {
-    background-color: var(--bg-panel-dark); /* Dark background for visibility */
-    color: var(--text-primary-dark);
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    animation: toastIn 0.3s ease forwards;
-    min-width: 250px;
-    max-width: 350px;
-    text-align: center;
-    pointer-events: auto; /* Allows interaction with the toast itself */
-    font-size: 0.95em;
+  background-color: #333;
+  color: white;
+  padding: 16px;
+  border-radius: var(--button-radius);
+  box-shadow: var(--elevation-3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px;
+  min-height: 48px;
+  pointer-events: auto;
+  max-width: 300px;
 }
 
+/* Updated animation for top-down entry */
+@keyframes toastIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 @keyframes toastIn {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }

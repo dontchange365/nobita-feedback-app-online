@@ -1,0 +1,300 @@
+:root {
+    --bg-body-light: #f1f5f9; --bg-panel-light: #ffffff; --text-primary-light: #0f172a; --text-secondary-light: #64748b; --border-light: #e2e8f0;
+    --bg-body-dark: #0f172a; --bg-panel-dark: #1e293b; --text-primary-dark: #e2e8f0; --text-secondary-dark: #94a3b8; --border-dark: #334155;
+    --accent-pink: #ec4899; --accent-glow: rgba(236, 72, 153, 0.5); --danger-color: #f43f5e; --success-color: #22c55e; --warning-color: #f59e0b;
+}
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+    color: var(--text-primary-light);
+}
+body.dark-mode {
+    background: linear-gradient(135deg, #4c1d95 0%, #881337 100%);
+    color: var(--text-primary-dark);
+}
+.login-container {
+    background-color: var(--bg-panel-light);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.25);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    transition: background-color 0.3s;
+    position: relative;
+    animation: fadeIn 0.8s ease-out forwards;
+    border: 1px solid var(--border-light);
+}
+body.dark-mode .login-container {
+    background-color: var(--bg-panel-dark);
+    border: 1px solid var(--border-dark);
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.login-container h2 {
+    margin-top: 0;
+    color: var(--accent-pink);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+.input-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+    position: relative;
+}
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary-light);
+}
+body.dark-mode .input-group label {
+    color: var(--text-primary-dark);
+}
+.input-group input[type="text"],
+.input-group input[type="password"] {
+    width: calc(100% - 24px);
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    background-color: var(--bg-body-light);
+    color: var(--text-primary-light);
+    font-size: 1rem;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+body.dark-mode .input-group input {
+    background-color: var(--bg-body-dark);
+    border: 1px solid var(--border-dark);
+    color: var(--text-primary-dark);
+}
+.input-group input:focus {
+    outline: none;
+    border-color: var(--accent-pink);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(10%);
+    cursor: pointer;
+    color: var(--text-secondary-light);
+    font-size: 0.9rem;
+    user-select: none;
+}
+body.dark-mode .password-toggle {
+    color: var(--text-secondary-dark);
+}
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    justify-content: space-between;
+}
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-secondary-light);
+}
+body.dark-mode .checkbox-group label {
+    color: var(--text-secondary-dark);
+}
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.6rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent-pink);
+}
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--accent-pink);
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+button[type="submit"]:hover {
+    background-color: #d13a82;
+    transform: translateY(-2px);
+}
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: none;
+}
+button[type="submit"].loading .spinner {
+    display: block;
+}
+button[type="submit"].loading span {
+    display: none;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.theme-switch {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 2.75rem;
+    height: 1.5rem;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 1.5rem;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 1rem;
+    width: 1rem;
+    left: 0.25rem;
+    bottom: 0.25rem;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--accent-pink); }
+input:checked + .slider:before { transform: translateX(1.25rem); }
+#toast-container {
+    position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 1001;
+    display: flex; flex-direction: column-reverse;
+    align-items: flex-end;
+}
+.toast {
+    background-color: var(--bg-panel-dark); color: var(--text-primary-dark);
+    padding: 0.9375rem 1.25rem; border-radius: 0.5rem;
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0,0,0,0.3);
+    margin-top: 0.625rem; opacity: 0; animation: toastIn 0.3s ease forwards;
+    min-width: 250px; max-width: 350px;
+    text-align: center;
+}
+@keyframes toastIn { from { transform: translateY(100%); opacity: 0; } to { opacity: 1; } }
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--danger-color); }
+.toast.warning { background-color: var(--warning-color); color: #fff; }
+#redirect-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+#redirect-popup-content {
+    background-color: var(--bg-panel-light);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    border: 1px solid var(--border-light);
+    animation: popupFadeIn 0.3s ease-out forwards;
+}
+body.dark-mode #redirect-popup-content {
+    background-color: var(--bg-panel-dark);
+    border: 1px solid var(--border-dark);
+}
+#redirect-popup-content h3 {
+    color: var(--accent-pink);
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+}
+#redirect-popup-content p {
+    color: var(--text-primary-light);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+body.dark-mode #redirect-popup-content p {
+    color: var(--text-primary-dark);
+}
+.redirect-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.redirect-buttons button {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.redirect-buttons button i {
+    font-size: 1.2em;
+}
+.redirect-buttons button.admin-hub-btn {
+    background-color: #6366f1;
+    color: white;
+}
+.redirect-buttons button.admin-hub-btn:hover {
+    background-color: #4f52e0;
+    transform: translateY(-2px);
+}
+.redirect-buttons button.file-manager-btn {
+    background-color: #f472b6;
+    color: white;
+}
+.redirect-buttons button.file-manager-btn:hover {
+    background-color: #e859a7;
+    transform: translateY(-2px);
+}
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+#login-form-container {
+    display: block;
+}

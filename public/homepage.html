@@ -5,21 +5,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>Nobita-Homepage</title>
-    <meta name="description" content="Nobita Page - Content Homepage.">
-    <meta name="keywords" content="Nobita, Homepage, update, new content">
+    <meta name="google-site-verification" content="xR7gusf18R8eZM96kOJ6Oks1AODqkJRAt0ieAP9JSPc" />
+    <meta name="description" content="Nobita Feedback System — Brutal, honest, professional feedback platform with custom avatars, admin control, and chatbot logic.">
+    <meta name="keywords" content="feedback system,nobita bot,chatbot feedback,nobi feedback,AI bot,feedback app,brutal reviews,anonymous feedback,feedback with rating,animated feedback,cloudinary avatar,Google login app,express feedback,desi bot,roasting system,admin feedback panel,Nobita savage bot,Nobita website,Nobita AI bot,Nobita savage feedback,custom variable bot,responsive feedback app,feedback UI,animated website,feedback with avatar">
     <meta name="author" content="Nobita">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RTZEVL7YL7');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RTZEVL7YL7');
     </script>
-
+  
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/feedbacks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/breadcrumbs.css">
+   
     <style>
         /* NEW BLOG LIST STYLES */
         #blog-list {
@@ -200,11 +208,19 @@
     </style>
 </head>
 <body>
+    <div id="g_id_onload"
+         data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false"
+         data-cancel_on_tap_outside="true"
+         style="display:none;"> </div>
     <nav class="navbar">
       <div class="nav-left">
-        <a href="index.html" title="Go to Home"><img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'"></a>
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'">
       </div>
-      <a href="#" class="nav-title" title="Nobita Page">Nobita Page</a>
+      <div class="nav-title">Nobita Feedback</div>
       <div class="nav-right">
         <div id="login-icon-trigger" title="Login / Sign Up">
           <i class="fas fa-user-circle"></i>
@@ -232,8 +248,8 @@
         <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
             <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
             <div class="busicon-login-header">
-              <span class="busicon-logo">Nobi</span> <span class="busicon-title">Guide Portal</span>
-              <div class="busicon-desc">Login to your Portal</div>
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <div class="busicon-desc">Login to your Nobita Feedback Portal</div>
             </div>
             <form id="email-login-form" class="busicon-auth-form">
               <div class="input-wrapper">
@@ -255,7 +271,7 @@
             </form>
             <div class="busicon-divider"><span>or login with</span></div>
             <div class="busicon-social-row">
-              <button class="busicon-social-btn google" id="busicon-google-login-btn" title="Login with Google"><i class="fab fa-google"></i></button>
+              <div id="google-btn-container-login"></div>
             </div>
             <div class="busicon-alt-action-row">
               Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
@@ -265,7 +281,7 @@
         <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
             <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
             <div class="busicon-login-header">
-              <span class="busicon-logo">Nobi</span> <span class="busicon-title">Guide Portal</span>
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
               <div class="busicon-desc">Create an account to get started with us.</div>
             </div>
             <form id="email-signup-form" class="busicon-auth-form">
@@ -295,10 +311,10 @@
             </form>
             <div class="busicon-divider"><span>or sign up with</span></div>
             <div class="busicon-social-row">
-              <button class="busicon-social-btn google" id="busicon-google-signup-btn" title="Sign up with Google"><i class="fab fa-google"></i></button>
+              <div id="google-btn-container-signup"></div>
             </div>
             <div class="busicon-alt-action-row">
-              Don’t have an account? <a href="#" id="busicon-already-account-link">Login</a>
+              Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
             </div>
         </div>
     </div>
@@ -361,7 +377,7 @@
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
-                    <div class="input-row-profile">
+                    <div class="input-row-profile" id="current-password-group">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
                         <input type="password" id="current-password" name="current-password">
@@ -372,9 +388,12 @@
                         <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
                     </div>
                     <div class="input-row-profile">
-                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-form-row">
+                      <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
                     </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
@@ -409,7 +428,14 @@
     Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
 </footer>
 
-<script src="script.js"></script>
+  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/breadcrumbs.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" type="module"></script>
+    <script src="js/profile.js" type="module"></script>
+    <script src="js/feedbacks.js" type="module"></script>
 <script>
 // BLOG LIST FAST LOAD (localStorage cache)
 async function loadBlogs() {
@@ -489,7 +515,6 @@ function renderBlogs(blogs) {
 
 // Call loadBlogs when the page loads
 loadBlogs();
-
 </script>
 </body>
 </html>
