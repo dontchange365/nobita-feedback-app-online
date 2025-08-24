@@ -1,41 +1,51 @@
 // editor.js
-// Is file mein sirf code editor se related saari logic hai.
+// Is file mein sirf ACE Editor se related saari logic hai.
 
-// --- POPUP EDITOR LOGIC (CODEMIRROR KE LIYE) ---
-let cmInstance = null; // CodeMirror instance ko globally declare करें
+let aceEditorInstance = null;
 let popupEditorFilePath = null;
 let popupEditorOriginal = '';
 let findReplaceBar = null;
-let findMatches = [], findCurrentIndex = -1, lastFindValue = '';
-let debounceTimer = null;
+let lastFindValue = '';
+let editorHasUnsavedChanges = false; // New flag to track unsaved changes
+
+// New helper function to update the filename UI
+function updateEditorFilenameUI() {
+  const filenameEl = document.querySelector('#popup-editor-content .editor-filename');
+  const filename = filenameEl.textContent.replace(' *', ''); // Remove existing star if any
+  if (editorHasUnsavedChanges) {
+    filenameEl.textContent = `${filename} *`;
+  } else {
+    filenameEl.textContent = filename;
+  }
+}
 
 function getFileMode(filename) {
   const ext = filename.split('.').pop().toLowerCase();
   switch(ext) {
     case 'js': return 'javascript';
-    case 'html': return 'htmlmixed';
+    case 'html': return 'html';
     case 'css': return 'css';
-    case 'json': return {name: "javascript", json: true};
+    case 'json': return 'json';
     case 'py': return 'python';
     case 'xml': return 'xml';
-    case 'md': return 'gfm'; // GitHub Flavored Markdown
-    case 'txt': return 'text/plain';
-    case 'sh': return 'shell';
+    case 'md': return 'markdown';
+    case 'txt': return 'text';
+    case 'sh': return 'sh';
     case 'php': return 'php';
-    case 'java': return 'clike';
-    case 'c': return 'clike';
-    case 'cpp': return 'clike';
-    case 'go': return 'go';
+    case 'java': return 'java';
+    case 'c': return 'c_cpp';
+    case 'cpp': return 'c_cpp';
+    case 'go': return 'golang';
     case 'rb': return 'ruby';
     case 'rs': return 'rust';
-    case 'ts': return 'javascript';
+    case 'ts': return 'typescript';
     case 'jsx': return 'jsx';
     case 'tsx': return 'tsx';
-    case 'vue': return 'htmlmixed';
+    case 'vue': return 'html';
     case 'sql': return 'sql';
     case 'yml':
     case 'yaml': return 'yaml';
-    default: return 'text/plain';
+    default: return 'text';
   }
 }
 
@@ -49,31 +59,36 @@ async function openEditor(name, currentPath) {
     document.querySelector('#popup-editor-content .editor-filename').textContent = name;
     document.getElementById('popup-editor').style.display = 'flex';
 
-    if (cmInstance) {
-      cmInstance.toTextArea();
-      cmInstance = null;
+    if (aceEditorInstance) {
+      aceEditorInstance.destroy();
+      aceEditorInstance = null;
     }
+    
+    aceEditorInstance = ace.edit("code-editor");
+    aceEditorInstance.setTheme("ace/theme/monokai");
+    aceEditorInstance.session.setMode("ace/mode/" + getFileMode(name));
+    aceEditorInstance.setValue(data.content || "", -1);
+    
+    aceEditorInstance.setFontSize('12px');
+    aceEditorInstance.session.setUseWrapMode(true);
 
-    const mode = getFileMode(name);
-
-    cmInstance = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
-      value: data.content,
-      lineNumbers: true,
-      mode: mode,
-      theme: "material-darker",
-      lineWrapping: true,
-      viewportMargin: Infinity,
-      autofocus: true,
-      extraKeys: {
-        "Tab": function(cm) { cm.replaceSelection("  ", "end"); }
+    // CHANGE: Unsaved changes ka flag reset karein aur change event listener add karein
+    editorHasUnsavedChanges = false;
+    aceEditorInstance.getSession().on('change', () => {
+      // Yahan par naya logic hai: current content ko original content se compare karein
+      const currentContent = aceEditorInstance.getValue();
+      if (currentContent === popupEditorOriginal) {
+        editorHasUnsavedChanges = false;
+      } else {
+        editorHasUnsavedChanges = true;
       }
+      updateEditorFilenameUI();
     });
+    updateEditorFilenameUI(); // Initial UI update
 
-    cmInstance.setValue(data.content || "");
-    setTimeout(()=>cmInstance.refresh(),200);
-    setTimeout(()=>cmInstance.focus(),300);
+    aceEditorInstance.resize();
+    aceEditorInstance.focus();
 
-    // Event listeners for editor actions
     document.querySelector('#popup-editor-content .save').onclick = saveEditorFile;
     document.querySelector('#popup-editor-content .cancel').onclick = closeEditorPopup;
     document.querySelector('.findreplace-btn').onclick = renderFindReplaceBar;
@@ -85,12 +100,17 @@ async function openEditor(name, currentPath) {
 }
 
 async function saveEditorFile() {
-  if (!cmInstance || !popupEditorFilePath) return;
-  const val = cmInstance.getValue();
+  if (!aceEditorInstance || !popupEditorFilePath) return;
+  const val = aceEditorInstance.getValue();
   try {
     await performFileManagerApiAction('/file', {method:'PUT', body:{path:popupEditorFilePath, content:val}});
+    
+    // CHANGE: File save hone par unsaved changes ka flag reset karein
+    editorHasUnsavedChanges = false;
+    updateEditorFilenameUI(); // UI update karein taaki star hat jaye
+    
     closeEditorPopup();
-    loadDir(currentPath); // Assuming loadDir is globally available from script.js
+    loadDir(currentPath);
     showToast('File successfully saved!', 'success');
   } catch(e) {
     // Error handling in performFileManagerApiAction
@@ -99,27 +119,25 @@ async function saveEditorFile() {
 
 function closeEditorPopup() {
   document.getElementById('popup-editor').style.display = 'none';
-  if (cmInstance) {
-    cmInstance.toTextArea();
-    cmInstance = null;
+  if (aceEditorInstance) {
+    aceEditorInstance.destroy();
+    aceEditorInstance = null;
   }
   popupEditorFilePath = null;
   popupEditorOriginal = '';
   hideFindReplaceBar();
 }
 
-// Global key listener for Escape
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeEditorPopup();
-    closePopup(); // Assuming closePopup is globally available from script.js
+    closePopup();
   }
 });
 
 
-// --- FIND & REPLACE LOGIC ---
 function renderFindReplaceBar() {
-  if (!cmInstance) return;
+  if (!aceEditorInstance) return;
   if (!findReplaceBar) findReplaceBar = document.getElementById('find-replace-bar');
   
   findReplaceBar.innerHTML = `
@@ -139,99 +157,41 @@ function renderFindReplaceBar() {
 
   let findInput = document.getElementById('find-input');
   let replaceInput = document.getElementById('replace-input');
-  findInput.value = lastFindValue || '';
   setTimeout(()=>findInput.focus(), 60);
 
   findInput.oninput = function() {
     lastFindValue = findInput.value;
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(triggerFind, 1500);
+    findInAce(lastFindValue);
   };
   findInput.onkeydown = function(e) {
-    if(e.key==='Enter') jumpToMatch(1);
+    if(e.key==='Enter') aceEditorInstance.execCommand("findnext");
     if(e.key==='Escape') hideFindReplaceBar();
   };
   replaceInput.onkeydown = function(e) {
-    if(e.key==='Enter') doReplace(replaceInput.value);
+    if(e.key==='Enter') aceEditorInstance.execCommand("replace");
     if(e.key==='Escape') hideFindReplaceBar();
   };
-  findReplaceBar.querySelector('.prev-btn').onclick = ()=>jumpToMatch(-1);
-  findReplaceBar.querySelector('.next-btn').onclick = ()=>jumpToMatch(1);
-  findReplaceBar.querySelector('.replace-btn').onclick = ()=>doReplace(replaceInput.value);
-  findReplaceBar.querySelector('.replace-all-btn').onclick = ()=>doReplaceAll(replaceInput.value);
+  findReplaceBar.querySelector('.prev-btn').onclick = ()=>aceEditorInstance.execCommand("findprevious");
+  findReplaceBar.querySelector('.next-btn').onclick = ()=>aceEditorInstance.execCommand("findnext");
+  findReplaceBar.querySelector('.replace-btn').onclick = ()=>aceEditorInstance.execCommand("replace");
+  findReplaceBar.querySelector('.replace-all-btn').onclick = ()=>aceEditorInstance.execCommand("replaceAll");
   findReplaceBar.querySelector('.close-btn').onclick = hideFindReplaceBar;
-
   document.addEventListener('keydown', escCloseListener);
-  if (findInput.value) triggerFind();
+}
+
+function findInAce(text) {
+  aceEditorInstance.find(text, {
+    regExp: false,
+    caseSensitive: false
+  });
 }
 
 function hideFindReplaceBar() {
   if (!findReplaceBar) findReplaceBar = document.getElementById('find-replace-bar');
   findReplaceBar.style.display = 'none';
-  if (cmInstance) cmInstance.getAllMarks().forEach(mark=>mark.clear());
-  findMatches = []; findCurrentIndex = -1; lastFindValue = '';
-  document.removeEventListener('keydown', escCloseListener);
+  if (aceEditorInstance) aceEditorInstance.exitFindMode();
 }
 
 function escCloseListener(e) {
   if (e.key === 'Escape') hideFindReplaceBar();
-}
-
-function triggerFind() {
-  if (!cmInstance) return;
-  let query = lastFindValue;
-  cmInstance.getAllMarks().forEach(mark=>mark.clear());
-  if (!query) { findMatches = []; findCurrentIndex = -1; return; }
-
-  let content = cmInstance.getValue();
-  let regex;
-  try { regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi"); } catch(e) { return; }
-  let matches = [], match;
-  while ((match = regex.exec(content)) !== null) {
-    let from = cmInstance.posFromIndex(match.index);
-    let to = cmInstance.posFromIndex(match.index + match[0].length);
-    matches.push({from, to});
-    if (match.index === regex.lastIndex) regex.lastIndex++;
-  }
-  findMatches = matches;
-  findCurrentIndex = findMatches.length ? 0 : -1;
-  updateHighlights();
-  if (findCurrentIndex !== -1) jumpToMatch(0);
-}
-
-function updateHighlights() {
-  if (!cmInstance) return;
-  cmInstance.getAllMarks().forEach(mark=>mark.clear());
-  findMatches.forEach((m, i) => {
-    cmInstance.markText(m.from, m.to, {
-      className: "find-highlight" + (i===findCurrentIndex?" current":""),
-      clearOnEnter: true
-    });
-  });
-}
-
-function jumpToMatch(dir) {
-  if (!findMatches.length) return;
-  findCurrentIndex = (findCurrentIndex + dir + findMatches.length) % findMatches.length;
-  updateHighlights();
-  let match = findMatches[findCurrentIndex];
-  cmInstance.setSelection(match.from, match.to);
-  cmInstance.scrollIntoView({from:match.from,to:match.to}, 50);
-}
-
-function doReplace(val) {
-  if (findCurrentIndex===-1 || !findMatches.length) return;
-  let match = findMatches[findCurrentIndex];
-  cmInstance.replaceRange(val, match.from, match.to);
-  setTimeout(triggerFind, 20);
-}
-
-function doReplaceAll(val) {
-  if (!findMatches.length) return;
-  cmInstance.operation(function(){
-    for(let i=findMatches.length-1;i>=0;i--){
-      cmInstance.replaceRange(val, findMatches[i].from, findMatches[i].to);
-    }
-  });
-  setTimeout(triggerFind, 20);
 }
