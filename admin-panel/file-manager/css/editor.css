@@ -1,6 +1,6 @@
 /* editor.css */
 
-/* Popup File Editor (CodeMirror) */
+/* Popup File Editor */
 #popup-editor {
   display: none;
   position: fixed;
@@ -49,8 +49,17 @@
   overflow: hidden;
 }
 
-/* CodeMirror styles */
-.CodeMirror {
+/* FIX: ACE Editor ke liye sahi CSS selector */
+/* font-size, color aur font-family properties yahan se control honge */
+#code-editor .ace_editor, #code-editor .ace_editor * {
+  /* CHANGE: Font size ko aur chhota kar diya gaya hai */
+  font-size: 10px !important;
+  font-family: monospace !important;
+  color: #f1f5f9 !important;
+}
+
+/* ACE Editor ke liye container ko height de */
+#code-editor {
   flex: 1 1 0%;
   height: 100% !important;
   min-height: 0 !important;
@@ -104,6 +113,44 @@
   background: #e11d48;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  background: var(--bg-body); /* Use theme variable */
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border); /* Use theme variable */
+  border-radius: 3px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 800px) {
+  #popup-editor-content {
+    min-width: 96vw;
+    max-width: 100vw;
+    min-height: 55vh;
+    height: 82vh;
+    max-height: 100vh;
+  }
+  #code-editor {
+    font-size: 1.14em;
+    min-height: 0 !important;
+  }
+  .popup-editor-actions {
+    padding: 13px 10px;
+    height: 56px;
+  }
+  #find-replace-bar .fr-input-row,
+  #find-replace-bar .fr-btn-row { flex-wrap: wrap; }
+  #find-replace-bar input { min-width: 60px; }
+  #find-replace-bar .bar-btn, #find-replace-bar .standout, #find-replace-bar .close-btn {
+    min-width: 48px;
+    font-size: 0.97em;
+    padding: 6px 0;
+  }
+}
+
 /* New CSS for Find/Replace Bar */
 #find-replace-bar {
   display: none;
@@ -129,14 +176,14 @@
   justify-content: flex-start;
 }
 #find-replace-bar input {
+  width: 100%;
+  padding: 8px 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border); /* Use theme variable */
   background: var(--bg-panel); /* Use theme variable */
   color: var(--text-primary); /* Use theme variable */
-  border: 1px solid var(--border); /* Use theme variable */
-  border-radius: 6px;
-  padding: 6px 12px;
   font-size: 1em;
-  flex: 1 1 0px;
-  min-width: 90px;
+  box-sizing: border-box;
 }
 #find-replace-bar .bar-btn,
 #find-replace-bar .standout,
@@ -174,41 +221,4 @@
 #find-replace-bar .standout:hover {
   background: #fde047;
   color: #181825;
-}
-/* Highlight style for find-highlight */
-.find-highlight {
-    background: #ffec70 !important;
-    color: #000 !important;
-    border-radius: 4px;
-    box-shadow:0 1px 6px #eab30850;
-}
-.find-highlight.current {
-    background: #fd933d !important;
-    color: #fff !important;
-    border-radius: 4px;
-}
-@media (max-width: 800px) {
-  #popup-editor-content {
-    min-width: 96vw;
-    max-width: 100vw;
-    min-height: 55vh;
-    height: 82vh;
-    max-height: 100vh;
-  }
-  .CodeMirror {
-    font-size: 1.14em;
-    min-height: 0 !important;
-  }
-  .popup-editor-actions {
-    padding: 13px 10px;
-    height: 56px;
-  }
-  #find-replace-bar .fr-input-row,
-  #find-replace-bar .fr-btn-row { flex-wrap: wrap; }
-  #find-replace-bar input { min-width: 60px; }
-  #find-replace-bar .bar-btn, #find-replace-bar .standout, #find-replace-bar .close-btn {
-    min-width: 48px;
-    font-size: 0.97em;
-    padding: 6px 0;
-  }
 }
