@@ -52,19 +52,80 @@ function minimizeGithubLogPopup() {
   updateGithubSpinnerIcon();
 }
 
+// CHANGE: Log rendering logic ko update kiya gaya hai
 function renderGithubLog() {
   const area = document.getElementById('github-log-area');
-  area.textContent = githubLogState.join('\n');
+  area.innerHTML = ''; // Clear for new rendering
+  githubLogState.forEach(item => {
+    const logItem = document.createElement('div');
+    logItem.className = 'log-item';
+    let icon = '';
+    let text = item.message;
+
+    if (item.type === 'start') {
+        icon = '<i class="fas fa-spinner fa-spin"></i>';
+        text = `[${item.status.toUpperCase()}] Pushing file: ${item.file}`;
+    } else if (item.type === 'progress') {
+        icon = '<i class="fas fa-spinner fa-spin"></i>';
+        text = `[${item.status.toUpperCase()}] Pushing file: ${item.file}`;
+    } else if (item.type === 'success') {
+        icon = '<i class="fas fa-check-circle"></i>';
+        text = `Pushed successfully: ${item.file}`;
+    } else if (item.type === 'error') {
+        icon = '<i class="fas fa-times-circle"></i>';
+        text = `Error pushing: ${item.file}`;
+    } else if (item.type === 'message') {
+        // Simple text message, no icon
+        text = item.message;
+    }
+    
+    logItem.innerHTML = `<span class="log-icon">${icon}</span> <span class="log-text">${text}</span>`;
+    area.appendChild(logItem);
+  });
   area.scrollTop = area.scrollHeight;
 }
 
-function githubLog(line) {
-  githubLogState.push(line);
-  if (githubLogState.length > 100) {
-    githubLogState = githubLogState.slice(-100);
+// CHANGE: Log data ko JSON ke roop mein parse kiya gaya hai
+function githubLog(data) {
+  try {
+    const logData = JSON.parse(data);
+    
+    // Find if an item with the same file is already in progress
+    const existingIndex = githubLogState.findIndex(item => item.file === logData.file);
+
+    if (logData.type === 'start' || logData.type === 'progress') {
+        // If it's a new file, add it to the state
+        if (existingIndex === -1) {
+            githubLogState.push(logData);
+        } else {
+            // If the file is already in the list, update its status
+            githubLogState[existingIndex] = logData;
+        }
+    } else if (logData.type === 'success' || logData.type === 'error') {
+        // For success or error, find the item and update its status
+        const itemToUpdate = githubLogState.find(item => item.file === logData.file);
+        if (itemToUpdate) {
+            itemToUpdate.type = logData.type;
+        } else {
+            // Or add it if it somehow wasn't there
+            githubLogState.push(logData);
+        }
+    } else {
+        // Simple message, add it to the end
+        githubLogState.push(logData);
+    }
+    
+    // Keep only the last 100 lines to prevent memory issues
+    if (githubLogState.length > 100) {
+      githubLogState = githubLogState.slice(-100);
+    }
+    renderGithubLog();
+    sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
+  } catch (e) {
+    // If the data is not JSON, handle it as a simple text message
+    githubLogState.push({ type: 'message', message: data });
+    renderGithubLog();
   }
-  renderGithubLog();
-  sessionStorage.setItem('githubLogState', JSON.stringify(githubLogState));
 }
 
 async function startGithubStream(endpoint) {
@@ -72,11 +133,13 @@ async function startGithubStream(endpoint) {
   sessionStorage.removeItem('githubLogState');
   githubProcessStatus = 'loading';
   showGithubLogPopup();
-  githubLog(`[Connecting to GitHub for ${endpoint.includes('push') ? 'push' : 'pull'}...]`);
+  // CHANGE: Initial message ko JSON format mein bhejein
+  githubLog(JSON.stringify({ type: 'message', message: `[Connecting to GitHub for ${endpoint.includes('push') ? 'push' : 'pull'}...]`}));
 
   const adminToken = localStorage.getItem('adminToken');
   if (!adminToken) {
-      githubLog('[ERROR] Admin token not found. Please log in.');
+      // CHANGE: Error message ko JSON format mein bhejein
+      githubLog(JSON.stringify({ type: 'error', message: '[ERROR] Admin token not found. Please log in.' }));
       githubProcessStatus = 'error';
       renderGithubLog();
       showToast('Admin session expired. Please log in.', 'error');
@@ -95,7 +158,8 @@ async function startGithubStream(endpoint) {
       githubProcessStatus = 'complete';
       renderGithubLog();
       githubEventSource.close();
-      githubLog(`[COMPLETE] GitHub ${endpoint.includes('push') ? 'push' : 'pull'} done!`);
+      // CHANGE: Completion message ko JSON format mein bhejein
+      githubLog(JSON.stringify({ type: 'message', message: `[COMPLETE] GitHub ${endpoint.includes('push') ? 'push' : 'pull'} done!` }));
       showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} complete!`, 'success');
       return;
     }
@@ -107,11 +171,13 @@ async function startGithubStream(endpoint) {
     githubProcessStatus = 'error';
     renderGithubLog();
     githubEventSource.close();
-    githubLog('[ERROR] Connection error or server stopped.');
+    // CHANGE: Error message ko JSON format mein bhejein
+    githubLog(JSON.stringify({ type: 'error', message: '[ERROR] Connection error or server stopped.' }));
     showToast(`GitHub ${endpoint.includes('push') ? 'push' : 'pull'} encountered an error.`, 'error');
   };
 }
 
+// ... DOMContentLoaded event listener ...
 document.addEventListener('DOMContentLoaded', () => {
   const githubActionBtn = document.getElementById('github-action-btn-main');
   const githubActionPopup = document.getElementById('github-action-popup');
