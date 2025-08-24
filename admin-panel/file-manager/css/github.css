@@ -221,8 +221,8 @@
   animation: spin 1.2s linear infinite;
   
   /* NEW: Perfect centering ke liye yeh code add karein */
-  top: 10%;
-  left: 10%;
+  top: 0%;
+  left: 0%;
   transform: translate(-50%, -50%);
 }
 
