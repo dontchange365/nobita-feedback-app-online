@@ -35,7 +35,6 @@ const feedbackListContainer = document.getElementById('feedback-list-container')
 const averageRatingDisplayEl = document.getElementById('average-rating-display');
 const lazyLoadSpinner = document.getElementById('lazy-load-spinner-container');
 
-
 starsElements.forEach(star => {
     star.addEventListener('click', () => {
         const value = parseInt(star.dataset.value);
@@ -317,7 +316,7 @@ function addFeedbackToDOM(fbData) {
         </div>`;
         item.insertAdjacentHTML('afterbegin', pinnedBadgeHTML);
     }
-    
+ 
     feedbackListContainer.appendChild(item);
 }
 window.addFeedbackToDOM = addFeedbackToDOM;
@@ -434,49 +433,49 @@ const handleScroll = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn');
-    if (enhanceFeedbackBtn) {
-        enhanceFeedbackBtn.addEventListener('click', async () => {
-            const originalFeedback = feedbackTextarea.value.trim();
-            if (!originalFeedback) {
-                return window.showStylishPopup({iconType: 'warning', title: 'Empty Feedback', message: 'Write some feedback first, then enhance it!', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-            }
-            const originalBtnText = enhanceFeedbackBtn.innerHTML;
-            enhanceFeedbackBtn.disabled = true;
-            enhanceFeedbackBtn.innerHTML = `<span class="nobi-spinner"></span> Enhancing...`;
-            try {
-                const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`;
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Gemini API error:", errorData);
-                    throw new Error(errorData.error?.message || "Failed to enhance feedback due to API error.");
-                }
-                const result = await response.json();
-                let enhancedText = originalFeedback;
-                if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-                    enhancedText = result.candidates[0].content.parts[0].text;
-                    window.showStylishPopup({iconType: 'success', title: 'Feedback Enhanced!', message: 'AI has helped refine your feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-                } else {
-                    console.warn("Gemini API response issue or no text found:", result);
-                    window.showStylishPopup({iconType: 'warning', title: 'Enhancement Issue', message: 'Could not get a refined version from AI. Using original feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-                }
-                feedbackTextarea.value = enhancedText;
-                feedbackTextarea.dispatchEvent(new Event('input'));
-            } catch (error) {
-                console.error("Error enhancing feedback:", error);
-                window.showStylishPopup({iconType: 'error', title: 'Enhancement Failed', message: `An error occurred: ${error.message}. Please try again later.`, buttons: [{text:'OK', action: window.closeStylishPopup}]});
-            } finally {
-                enhanceFeedbackBtn.disabled = false;
-                enhanceFeedbackBtn.innerHTML = originalBtnText;
-            }
-        });
-    } else {
-        console.error("Enhance feedback button not found!");
-    }
+    // const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn');
+    // if (enhanceFeedbackBtn) {
+    //    enhanceFeedbackBtn.addEventListener('click', async () => {
+    //        const originalFeedback = feedbackTextarea.value.trim();
+    //        if (!originalFeedback) {
+    //            return window.showStylishPopup({iconType: 'warning', title: 'Empty Feedback', message: 'Write some feedback first, then enhance it!', buttons: [{text:'OK', action: window.closeStylishPopup}]});
+    //        }
+    //        const originalBtnText = enhanceFeedbackBtn.innerHTML;
+    //        enhanceFeedbackBtn.disabled = true;
+    //        enhanceFeedbackBtn.innerHTML = `<span class="nobi-spinner"></span> Enhancing...`;
+    //        try {
+    //            const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`;
+    //            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+    //            const apiKey = "";
+    //            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    //            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    //            if (!response.ok) {
+    //                const errorData = await response.json();
+    //                console.error("Gemini API error:", errorData);
+    //                throw new Error(errorData.error?.message || "Failed to enhance feedback due to API error.");
+    //            }
+    //            const result = await response.json();
+    //            let enhancedText = originalFeedback;
+    //            if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
+    //                enhancedText = result.candidates[0].content.parts[0].text;
+    //                window.showStylishPopup({iconType: 'success', title: 'Feedback Enhanced!', message: 'AI has helped refine your feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
+    //            } else {
+    //                console.warn("Gemini API response issue or no text found:", result);
+    //                window.showStylishPopup({iconType: 'warning', title: 'Enhancement Issue', message: 'Could not get a refined version from AI. Using original feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
+    //            }
+    //            feedbackTextarea.value = enhancedText;
+    //            feedbackTextarea.dispatchEvent(new Event('input'));
+    //        } catch (error) {
+    //            console.error("Error enhancing feedback:", error);
+    //            window.showStylishPopup({iconType: 'error', title: 'Enhancement Failed', message: `An error occurred: ${error.message}. Please try again later.`, buttons: [{text:'OK', action: window.closeStylishPopup}]});
+    //        } finally {
+    //            enhanceFeedbackBtn.disabled = false;
+    //            enhanceFeedbackBtn.innerHTML = originalBtnText;
+    //        }
+    //    });
+    // } else {
+    //    console.error("Enhance feedback button not found!");
+    // }
 
 
     if (submitButton) submitButton.addEventListener('click', async () => {
