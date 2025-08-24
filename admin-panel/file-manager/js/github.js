@@ -177,7 +177,6 @@ async function startGithubStream(endpoint) {
   };
 }
 
-// ... DOMContentLoaded event listener ...
 document.addEventListener('DOMContentLoaded', () => {
   const githubActionBtn = document.getElementById('github-action-btn-main');
   const githubActionPopup = document.getElementById('github-action-popup');
