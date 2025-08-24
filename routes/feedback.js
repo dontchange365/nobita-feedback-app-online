@@ -1,4 +1,5 @@
 // routes/feedback.js
+
 const express = require('express');
 const router = express.Router();
 const { Feedback, User } = require('../config/database');
@@ -106,8 +107,8 @@ router.post('/api/feedback', async (req, res) => {
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
         
-        // Emit the entire new feedback object via WebSocket
-        req.app.io.emit('new-feedback', newFeedback);
+        // Emit the entire new feedback object via WebSocket using req.io
+        req.io.emit('new-feedback', newFeedback);
         
         sendPushNotificationToAdmin(newFeedback);
         res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
