@@ -29,6 +29,7 @@ const walkAllFiles = (dir, base = '', arr = []) => {
     return arr;
 };
 
+// CHANGE: downloadGithubContents function ko update karein taaki woh structured data bheje
 const downloadGithubContents = async (owner, repo, branch, repoPath, localPath, sendLog) => {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     if (!GITHUB_TOKEN) { throw new Error('GitHub Token is not configured for pull operations.'); }
@@ -40,13 +41,13 @@ const downloadGithubContents = async (owner, repo, branch, repoPath, localPath, 
             responseType: 'arraybuffer'
         });
     } catch (error) {
-        if (error.response && error.response.status === 404) { sendLog(`[SKIPPED] ${repoPath} not found on GitHub.`); return; }
+        if (error.response && error.response.status === 404) { sendLog({ type: 'skipped', file: repoPath, status: 'pull' }); return; }
         throw error;
     }
     const contentType = response.headers['content-type'];
     if (contentType.includes('application/json')) {
         const data = JSON.parse(Buffer.from(response.data).toString('utf8'));
-        sendLog(`[PULLING DIR] ${repoPath}`);
+        sendLog({ type: 'start', file: repoPath, status: 'pull' });
         if (!fs.existsSync(localPath)) { fs.mkdirSync(localPath, { recursive: true }); }
         for (const item of data) {
             const newRepoPath = item.path;
@@ -54,9 +55,9 @@ const downloadGithubContents = async (owner, repo, branch, repoPath, localPath, 
             await downloadGithubContents(owner, repo, branch, newRepoPath, newLocalPath, sendLog);
         }
     } else {
-        sendLog(`[PULLING FILE] ${repoPath}`);
+        sendLog({ type: 'start', file: repoPath, status: 'pull' });
         fs.writeFileSync(localPath, response.data);
-        sendLog(`[✅] ${repoPath} (pulled)`);
+        sendLog({ type: 'success', file: repoPath, status: 'pull' });
     }
 };
 
