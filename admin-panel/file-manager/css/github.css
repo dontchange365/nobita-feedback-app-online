@@ -157,3 +157,52 @@
 #minimize-log-btn:hover {
     color: #fff;
 }
+/* Add these new styles to your github.css file */
+
+#github-log-area {
+    /* ... existing styles ... */
+    font-family: 'Courier New', Courier, monospace; /* CHANGE: Monospaced font for clean alignment */
+    padding: 15px;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border-radius: 5px;
+    color: #c0c0c0;
+    min-height: 200px;
+    display: flex; /* CHANGE: Make it a flex container */
+    flex-direction: column; /* CHANGE: To stack log items vertically */
+    gap: 8px; /* CHANGE: Add spacing between log items */
+}
+
+.log-item {
+    display: flex; /* Make each log item a flex container */
+    align-items: center;
+    gap: 10px; /* Space between icon and text */
+    min-height: 20px;
+    line-height: 1.2;
+}
+
+.log-icon {
+    width: 20px; /* Fixed width for icon container to maintain alignment */
+    text-align: center;
+}
+
+.log-icon .fa-spinner {
+    color: #3b82f6; /* Blue for loading */
+}
+
+.log-icon .fa-check-circle {
+    color: #22c55e; /* Green for success */
+}
+
+.log-icon .fa-times-circle {
+    color: #ef4444; /* Red for error */
+}
+
+.log-text {
+    flex-grow: 1; /* Allow text to fill remaining space */
+    white-space: pre-wrap; /* For line breaks */
+    word-break: break-all; /* Break long words */
+}
