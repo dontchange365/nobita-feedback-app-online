@@ -1993,3 +1993,29 @@ margin: 16px 0;
 .dark-mode .loading-indicator {
     color: rgba(255,255,255,0.7);
 }
+/* New Switch Button Style */
+.switch-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--on-primary);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.switch-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .header-controls .switch-btn {
+    
+  }
+}
