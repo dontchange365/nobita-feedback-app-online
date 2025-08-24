@@ -190,7 +190,8 @@ body.dark-mode {
   cursor: pointer;
 }
 
-/* Toast Notification Styles */
+
+/* --- TOAST NOTIFICATIONS (UPDATED) --- */
 #toast-container {
   position: fixed;
   top: 16px;
@@ -198,43 +199,72 @@ body.dark-mode {
   z-index: 2000;
   display: flex;
   flex-direction: column-reverse; /* Display new toasts at the bottom of the container */
-  gap: 8px;
+  gap: 12px; /* Increased gap */
   pointer-events: none;
   align-items: flex-end; /* Align toasts to the right side */
 }
 
 .toast {
-  background-color: #333;
+  background: var(--bg-panel);
   color: white;
-  padding: 16px;
-  border-radius: var(--button-radius);
-  box-shadow: var(--elevation-3);
+  /* CHANGE: Toast ko chhota karne ke liye padding aur min-height kam kiya gaya hai */
+  padding: 10px 15px;
+  min-height: 45px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
-  gap: 12px;
-  animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 14px;
-  min-height: 48px;
+  gap: 10px; /* Gap ko bhi thoda kam kiya gaya hai */
   pointer-events: auto;
-  max-width: 300px;
+  /* CHANGE: Max-width ko bhi kam kiya gaya hai */
+  max-width: 280px;
+  transition: all 0.4s ease-in-out;
+  animation: toastIn 0.5s ease-out; /* New animation */
+  border: 1px solid var(--border);
 }
 
-/* Updated animation for top-down entry */
+.toast:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    transform: translateY(-2px);
+}
+
+/* Hide animation for removal */
+.toast.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* CHANGE: Icon size ko bhi chhota kiya gaya hai */
+.toast-icon {
+    font-size: 1.5em;
+    flex-shrink: 0; /* Prevents icon from shrinking */
+}
+
+.toast.success { background-color: #2e7d32; border-color: #4caf50; }
+.toast.success .toast-icon { color: #4caf50; }
+
+.toast.error { background-color: #d32f2f; border-color: #f44336; }
+.toast.error .toast-icon { color: #f44336; }
+
+.toast.warning { background-color: #fbc02d; border-color: #ff9800; }
+.toast.warning .toast-icon { color: #ff9800; }
+.toast.warning .toast-message { color: #212121; } /* Dark text for light background */
+
+/* CHANGE: Message font size ko bhi kam kiya gaya hai */
+.toast-message {
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: #fff;
+}
+
+/* Slide-in from top-right animation */
 @keyframes toastIn {
   from {
-    transform: translateY(-100%);
     opacity: 0;
+    transform: translateX(100%);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateX(0);
   }
 }
-@keyframes toastIn {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.toast.success { background-color: var(--success-color); color: white; }
-.toast.error { background-color: var(--danger-color); color: white; }
-.toast.warning { background-color: var(--warning-color); color: var(--text-primary-light); } /* Gold with dark text */
