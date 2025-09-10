@@ -4,43 +4,35 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RDP Installation Guide - Windows App (Step-by-Step) - Nobita Edition</title>
-    <meta name="google-site-verification" content="xR7gusf18R8eZM96kOJ6Oks1AODqkJRAt0ieAP9JSPc" />
-    <meta name="description" content="Nobita Feedback System — Brutal, honest, professional feedback platform with custom avatars, admin control, and chatbot logic.">
-    <meta name="keywords" content="feedback system,nobita bot,chatbot feedback,nobi feedback,AI bot,feedback app,brutal reviews,anonymous feedback,feedback with rating,animated feedback,cloudinary avatar,Google login app,express feedback,desi bot,roasting system,admin feedback panel,Nobita savage bot,Nobita website,Nobita AI bot,Nobita savage feedback,custom variable bot,responsive feedback app,feedback UI,animated website,feedback with avatar">
+    <title>RDP Setup Guide - Nobita Edition</title>
+    <meta name="description" content="Nobita RDP Setup Guide — Free RDP server setup with integrated Nobita Feedback Portal authentication system.">
+    <meta name="keywords" content="RDP setup, free RDP, remote desktop, Nobita, Nobita Feedback, authentication, login, signup, Google login">
     <meta name="author" content="Nobita">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-RTZEVL7YL7');
-    </script>
     <link rel="stylesheet" href="css/ui.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/feedbacks.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/breadcrumbs.css">
+ <!-- Separate CSS file -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RTZEVL7YL7');
+    </script>
 </head>
 <body>
-    <div id="g_id_onload"
-         data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false"
-         data-cancel_on_tap_outside="true"
-         style="display:none;"> </div>
     <nav class="navbar">
       <div class="nav-left">
-        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'">
+        <a href="index.html" title="Go to Home"><img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'"></a>
       </div>
-      <div class="nav-title">Nobita Feedback</div>
+      <a href="rdp.html" class="nav-title" title="RDP Guide Home">RDP Guide</a>
       <div class="nav-right">
         <div id="login-icon-trigger" title="Login / Sign Up">
           <i class="fas fa-user-circle"></i>
@@ -58,19 +50,18 @@
     <section class="hero-section">
         <div class="hero-content">
             <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo" onerror="this.src='https://placehold.co/88x88/FFD700/000000?text=N'">
-            <h1>RDP Connection Guide <span class="emoji">📱</span></h1>
-            <p>Windows Remote Desktop App se connect karne ka complete process</p>
-            <a href="#guide-start" class="hero-btn">Start Connecting</a>
+            <h1>RDP Setup Guide <span class="emoji">🖥️</span></h1>
+            <p>Free RDP Server Setup ka complete step-by-step process</p>
+            <a href="#guide-start" class="hero-btn">Start Guide</a>
             <span class="hero-micro-text">Powered by Nobita</span>
         </div>
     </section>
-
     <div id="auth-modal-overlay" class="auth-modal-overlay">
         <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
             <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
             <div class="busicon-login-header">
-              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
-              <div class="busicon-desc">Login to your Nobita Feedback Portal</div>
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">RDP Guide Portal</span>
+              <div class="busicon-desc">Login to your RDP Guide Portal</div>
             </div>
             <form id="email-login-form" class="busicon-auth-form">
               <div class="input-wrapper">
@@ -92,7 +83,7 @@
             </form>
             <div class="busicon-divider"><span>or login with</span></div>
             <div class="busicon-social-row">
-              <div id="google-btn-container-login"></div>
+              <button class="busicon-social-btn google" id="busicon-google-login-btn" title="Login with Google"><i class="fab fa-google"></i></button>
             </div>
             <div class="busicon-alt-action-row">
               Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
@@ -102,7 +93,7 @@
         <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
             <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
             <div class="busicon-login-header">
-              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">RDP Guide Portal</span>
               <div class="busicon-desc">Create an account to get started with us.</div>
             </div>
             <form id="email-signup-form" class="busicon-auth-form">
@@ -132,7 +123,7 @@
             </form>
             <div class="busicon-divider"><span>or sign up with</span></div>
             <div class="busicon-social-row">
-              <div id="google-btn-container-signup"></div>
+              <button class="busicon-social-btn google" id="busicon-google-signup-btn" title="Sign up with Google"><i class="fab fa-google"></i></button>
             </div>
             <div class="busicon-alt-action-row">
               Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
@@ -151,6 +142,7 @@
         </ul>
       </div>
     </div>
+    <!-- Existing Stylish Popup (used for general alerts/prompts) -->
     <div id="stylishPopupOverlay" class="stylish-popup-overlay">
         <div id="stylishPopupCard" class="stylish-popup-card">
           <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
@@ -161,8 +153,8 @@
           <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
         </div>
     </div>
-    <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content">
+    <div id="userProfileModal" class="auth-modal-overlay"> 
+        <div class="auth-modal-content"> 
             <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
             <h2 style="margin-bottom: 10px;">My Profile</h2>
             <div class="profile-scroll-content">
@@ -198,7 +190,7 @@
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
-                    <div class="input-row-profile" id="current-password-group">
+                    <div class="input-row-profile">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
                         <input type="password" id="current-password" name="current-password">
@@ -209,12 +201,9 @@
                         <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
                     </div>
                     <div class="input-row-profile">
-                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
                         <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
-                    </div>
-                    <div class="profile-form-row">
-                      <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
                     </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
@@ -224,6 +213,8 @@
             </div>
         </div>
     </div>
+
+    <!-- NEW FORGOT PASSWORD POPUP - Integrated Design -->
     <div class="overlay" id="forgotPasswordNewOverlay">
         <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
     </div>
@@ -234,255 +225,236 @@
     </p>
     <button id="send-verification-email-btn-form">Send Verification Email</button>
 </div>
+    <!-- END NEW FORGOT PASSWORD POPUP -->
+
     <div class="container" id="guide-start">
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">1</div>
-                <div class="highlight">Play Store Se Window App Install Karo</div>
-            </div>
-            <div class="step-content">
-                <p>
-                    Apne phone pe Play Store kholo aur <span class="highlight">Window App</span> search karke install karlo.
-                </p>
-                <p>
-                    Fake app mat install karna, sirf official Microsoft ka app!
-                </p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/ch9VRS1g/61085088-161c-4dc0-8ad6-08a503547475.jpg" class="screenshot-img" alt="Step 1 Screenshot">
-                </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Google Search Process</div>
+        </div>
+        <div class="step-content">
+            <p>Sabse pehle aapko Google par search karna hai. Browser open karo aur search bar mein ye exact words type karo:</p>
+            <p><span class="highlight">"Free Rdp Expert server Rdphosting"</span></p>
+            <p>Search results mein RdpHostings.com Expert server wala website ka link dikhega. Is official website pe click karo. Ye trusted aur reliable service hai jo free RDP provide karti hai.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/mPSnftQ/IMG-3548.png" class="screenshot-img" alt="Step 1 Screenshot 1"><br>
+                <img src="https://i.ibb.co/7dpzqDSY/IMG-3547.png" class="screenshot-img" alt="Step 1 Screenshot 2">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">2</div>
-                <div class="highlight">App Open Karke “Accept” Par Tap Karo</div>
-            </div>
-            <div class="step-content">
-                <p>App open karo, sabse pehle <span class="highlight">Accept</span> button par click karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/spZT6jwb/Screenshot-20250609-152309-Windows-App.jpg" class="screenshot-img" alt="Step 2 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Website Navigation</div>
+        </div>
+        <div class="step-content">
+            <p>RdpHostings website open hone ke baad, homepage par carefully dekhiye. Yahan aapko different sections dikhenge.</p>
+            <p>Main page par <span class="highlight">"Expert server"</span> ka section dhundiye. Ye section usually homepage par prominently display hota hai. Isme free RDP server ke options milte hain. Agar Expert wala nhi show krta aur uski jagah Solo server Show krta h to tu glt jgh pr h</p>
+            <p>Expert server section mein jakar signup area locate karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/C5Byb6J6/IMG-3560.jpg" class="screenshot-img" alt="Step 2 Screenshot">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">3</div>
-                <div class="highlight">Intro/Welcome Screen Par “Skip” Dabao</div>
-            </div>
-            <div class="step-content">
-                <p>Koi bhi intro aaye toh <span class="highlight">Skip</span> kar do – seedha aage badho!</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/ksVcGZPx/Screenshot-20250609-152542-Windows-App.jpg" class="screenshot-img" alt="Step 3 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Signup Process - Important</div>
+        </div>
+        <div class="step-content">
+            <p>Expert server area mein <span class="highlight">"Sign up"</span> button par click karo. Ek naya page khulega jahan signup form dikhega.</p>
+            <div class="important">Dhyan rakho: Jab signup page khule, to aapko Category aur Action ke dropdown options dikhenge. In dropdown options par bilkul click mat karo! Ye bohot important hai.</div>
+            <p>In dropdown menus ko completely ignore karo aur direct <span class="highlight">"Hostname"</span> field mein jao.</p>
+            <p>Hostname field mein exactly ye type karo: <strong>Nobitardp</strong></p>
+            <p>Ye hostname fill karne ke baad neeche <span class="highlight">"Continue"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/0RyYvwQS/IMG-3561.jpg" class="screenshot-img" alt="Step 3 Screenshot">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">4</div>
-                <div class="highlight">Kone Wale <br>“Cross” (X) Icon Pe Click Karo</div>
-            </div>
-            <div class="step-content">
-                <p>Top right corner me <br><br><span class="highlight">cross (X) icon</span> hoga, usko dabao.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/TBGc4g1c/Screenshot-20250609-152633-Windows-App.jpg" class="screenshot-img" alt="Step 4 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">Configuration Settings</div>
+        </div>
+        <div class="step-content">
+            <p>Continue button click karne ke baad configuration page open hoga. Is page par aapko teen (3) checkboxes dikhenge.</p>
+            <p>Ye teen checkboxes server ke specifications aur features ke liye hain. Sabko tick karna zaroori hai:</p>
+            <p>✅ Pehla checkbox tick karo</p>
+            <p>✅ Doosra checkbox tick karo</p>
+            <p>✅ Teesra checkbox tick karo</p>
+            <p>Teeno checkboxes select karne ke baad <span class="highlight">"Checkout"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/jZBqC504/IMG-3562.jpg" class="screenshot-img" alt="Step 4 Screenshot">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">5</div>
-                <div class="highlight">User Icon Pr Click Karo</div>
-            </div>
-            <div class="step-content">
-                <p>Plus icon ke bagal me jo <br><span class="highlight">User/Profile icon</span> hai, uspar tap karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/hJRQP2wf/Screenshot-20250609-153050-Windows-App.jpg" class="screenshot-img" alt="Step 5 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Account Details Fill Karna</div>
+        </div>
+        <div class="step-content">
+            <p>Ab aapke saamne account creation form aayega. Sari details carefully aur sahi fill karo:</p>
+            <p><strong>Full Name:</strong> Apna complete real name likho</p>
+            <p><strong>Email Address:</strong> Working email ID daalo jo aap regularly check karte ho</p>
+            <p><strong>Phone Number:</strong> Apna real mobile number daalo (verification ke liye zaroori hai)</p>
+            <p><strong>Address:</strong> Complete address fill karo</p>
+            <p><strong>Password:</strong> Strong password create karo aur yaad rakhne wala</p>
+            <div class="important">Phone number bilkul real daalo kyunki verification ke time jarurat pad sakti hai. Fake number mat daalo.</div>
+            <p>Sab kuch fill karne ke baad <span class="highlight">"Complete Order"</span> par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/Txg618sk/IMG-3553.png" class="screenshot-img" alt="Step 5 Screenshot">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">6</div>
-                <div class="highlight">Credentials Option Pr Click Karo</div>
-            </div>
-            <div class="step-content">
-                <p>Ab “<span class="highlight">Credentials</span>” wale option pr click karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/XxcxX5RG/Screenshot-20250609-153205-Windows-App.jpg" class="screenshot-img" alt="Step 6 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">6</div>
+            <div class="step-title">Order Confirmation & Email Check</div>
+        </div>
+        <div class="step-content">
+            <p>Order complete hone ke baad aapko screen par <span class="highlight">Order Number</span> dikhega. Is number ka screenshot le lo backup ke liye.</p>
+            <p>Ab apna email check karo. RdpHostings se 2-3 emails aayenge. Email check karne ka proper tareeka:</p>
+            <p><strong>Step 1:</strong> Primary inbox check karo</p>
+            <p><strong>Step 2:</strong> Agar nahi mila to Social tab check karo</p>
+            <p><strong>Step 3:</strong> Promotions tab bhi dekho</p>
+            <p><strong>Step 4:</strong> Last mein Spam/Junk folder check karo</p>
+            <p>Email mil jayega, bas thoda wait karna pad sakta hai.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/NnFk0c43/IMG-3556.jpg" class="screenshot-img" alt="Step 6 Screenshot">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">7</div>
-                <div class="highlight">Add Credentials Pr Click Karo</div>
-            </div>
-            <div class="step-content">
-                <p>“<span class="highlight">Add credentials</span>” par tap karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/Df1rynPn/Screenshot-20250609-153259-Windows-App.jpg" class="screenshot-img" alt="Step 7 Screenshot">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">7</div>
+            <div class="step-title">Email Verification Process</div>
+        </div>
+        <div class="step-content">
+            <p>Emails mein se <span class="highlight">"Email Confirmation"</span> wala email dhundho. Ye verification ke liye important hai.</p>
+            <p>Email open karo aur andar confirmation link dikhega. Is link ko handle karne ke do tareeke hain:</p>
+            <p><strong>Method 1:</strong> Direct link par click karo. Agar browser mein open ho jaye to perfect.</p>
+            <p><strong>Method 2:</strong> Agar link click se nahi khul raha, to link ko copy karo aur naye browser tab mein paste karke open karo.</p>
+            <div class="success">Successful verification ke baad ye message dikhega: "Your email address has been verified"</div>
+            <p>Verification success page par <span class="highlight">"Continue to Client Area"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/QFFfv567/IMG-3557.png" class="screenshot-img" alt="Step 7 Screenshot 1"><br>
+                <img src="https://i.ibb.co/chqv0Szq/IMG-3558.png" class="screenshot-img" alt="Step 7 Screenshot 2">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">8</div>
-                <div class="highlight">Username & Password Daalo (Expert/Your Password)</div>
-            </div>
-            <div class="step-content">
-                <p>
-                    Username me <span class="highlight">Expert</span> daalo aur password me wahi jo RdpHostings se mila tha.
-                </p>
-                <p>
-                    <br><span class="highlight">Password har din change hota hai, galat password pe connection fail hoga!</span>
-                </p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/Df1rynPn/Screenshot-20250609-153259-Windows-App.jpg" class="screenshot-img" alt="Step 8 Screenshot 1"><br>
-                    <img src="https://i.ibb.co/whjrNNqS/Screenshot-20250609-153416-Windows-App.jpg" class="screenshot-img" alt="Step 8 Screenshot 2">
-                </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">8</div>
+            <div class="step-title">Client Area Mein Server Status</div>
+        </div>
+        <div class="step-content">
+            <p>Client area dashboard open होने ke baad <span class="highlight">"View All"</span> button dhundho aur click karo.</p>
+            <p>Services page open hoga jahan aapka Expert server dikhega. Abhi server status <span class="highlight">"Pending"</span> show kar raha hoga.</p>
+            <p>Pending ka matlab hai server setup ho raha hai. Ye process 5 se 30 minute tak le sakti hai.</p>
+            <div class="important">Patience rakho aur page ko bar-bar refresh mat karo. Server ready hone par automatically email aa jayega.</div>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/NnQXfkQC/IMG-3563.jpg" class="screenshot-img" alt="Step 8 Screenshot 1"><br>
+                <img src="https://i.ibb.co/V0vDqcgS/IMG-3568.jpg" class="screenshot-img" alt="Step 8 Screenshot 2">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">9</div>
-                <div class="highlight">Home Pe Wapas Jao Aur Plus Icon Dabao</div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">9</div>
+            <div class="step-title">Server Ready Email</div>
+        </div>
+        <div class="step-content">
+            <div class="important">
+                NOTE: <b>RDP READY wala email 24 hours ke andar ही आता है</b> – patience rakh, baar baar refresh karke Pdeshaan nhi hona hai!
             </div>
-            <div class="step-content">
-                <p>Ab home screen pe wapas jao aur <span class="highlight">plus icon</span> pe click karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/pvYWWCy3/Screenshot-20250609-152749-Windows-App.jpg" class="screenshot-img" alt="Step 9 Screenshot">
-                </div>
+            <p>Jab server completely ready ho jayega, tab aapko email aayega. Email ka subject hoga:</p>
+            <p><span class="highlight">"Your RDP Server Is Ready To Login!"</span></p>
+            <p>Ye email bohot important hai kyunki isme aapki server details hongi:</p>
+            <p><strong>IP Address:</strong> Server ka unique address</p>
+            <p><strong>Username:</strong> Login karne ke liye username</p>
+            <div class="success">Is puri email ka screenshot le lo aur safe jagah save karo. Ye details future mein kaam aayengi.</div>
+            <p>IP address aur username ko separately bhi note kar lo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/4wG0k2FL/IMG-3566.jpg" class="screenshot-img" alt="Step 9 Screenshot 1"><br>
+                <img src="https://i.ibb.co/F4S2BssN/IMG-3567.jpg" class="screenshot-img" alt="Step 9 Screenshot 2">
             </div>
         </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">10</div>
-                <div class="highlight">PC Connection Select Karke OK Dabao</div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">10</div>
+            <div class="step-title">Password Retrieve Karna</div>
+        </div>
+        <div class="step-content">
+            <p>Server ready hone ke baad password get karne ke liye is specific link par jao:</p>
+            <div class="url-box">
+                <a href="https://rdphostings.com/rdp/clientarea.php?action=services" target="_blank" rel="noopener noreferrer">https://rdphostings.com/rdp/clientarea.php?action=services</a>
             </div>
-            <div class="step-content">
-                <p><span class="highlight">PC Connection</span> ka option select karo aur OK dabao.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/ycmZL5z7/Screenshot-20250609-152844-Windows-App.jpg" class="screenshot-img" alt="Step 10 Screenshot">
+            <p>Ye link copy karo aur browser mein paste karke open karo. Agar login page aaye to apne account details se login karo.</p>
+            <p>Services page mein apna server dhundho aur click karo. Server details page mein ye milega:</p>
+            <p><strong>IP Address:</strong> Confirm karo ki ye email wala same hai</p>
+            <p><strong>Current Password:</strong> Ye daily change hota hai</p>
+            <div class="important">
+                Password roz change hota hai! Har time connect karne se pehle yahan se current password check karo.
+            </div>
+            <p>Password carefully copy karo aur safely save karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/V0vDqcgS/IMG-3568.jpg" class="screenshot-img" alt="Step 10 Screenshot">
+                <div class="success">
+                    Congratulations! Aapka free RDP server completely ready hai. Connection process ke liye next tutorial follow karo.
                 </div>
             </div>
-        </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">11</div>
-                <div class="highlight">PC Name Me IP Address Daalo</div>
-            </div>
-            <div class="step-content">
-                <p>
-                    “PC Name” field me apna <span class="highlight">RDP IP address</span> daalo jo RdpHostings se mila tha.
-                </p>
-                <p>
-                    <span class="highlight">IP nikalne ka example:</span>
-                </p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/5X98py9M/Screenshot-20250609-154557-Windows-App.jpg" class="screenshot-img" alt="Step 11 Screenshot 1"><br>
-                    <img src="https://i.ibb.co/V0vDqcgS/IMG-3568.jpg" class="screenshot-img" alt="Step 11 Screenshot 2">
-                </div>
-            </div>
-        </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">12</div>
-                <div class="highlight">RDP List Me Show Ho Jayegi</div>
-            </div>
-            <div class="step-content">
-                <p>
-                    Home screen pe tumhari <span class="highlight">RDP connection list</span> me aa jayegi.
-                </p>
-                <p>
-                    Ab us par tap karne ke liye ready ho jao!
-                </p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/Jw1DkCD8/Screenshot-20250609-154911-Windows-App.jpg" class="screenshot-img" alt="Step 12 Screenshot">
-                </div>
-            </div>
-        </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">13</div>
-                <div class="highlight">RDP Tap Karte Hi “Allow” Prompt Aayega</div>
-            </div>
-            <div class="step-content">
-                <p>Tap karte hi <span class="highlight">“Allow”</span>ka permission prompt aayega — bina dare allow kar de!</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/Vpwrd8Xr/Screenshot-20250609-154450-Permission-controller.jpg" class="screenshot-img" alt="Step 13 Screenshot">
-                </div>
-            </div>
-        </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">14</div>
-                <div class="highlight">“Connect” Button Dabao</div>
-            </div>
-            <div class="step-content">
-                <p>Ab <span class="highlight">“Connect” button</span> dikh raha hoga, us par click karo.</p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/gLtBbG7N/Screenshot-20250609-154459-Windows-App.jpg" class="screenshot-img" alt="Step 14 Screenshot">
-                </div>
-            </div>
-        </div>
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">15</div>
-                <div class="highlight">BOOM! RDP Desktop Open — Kaam Ho Gaya!</div>
-            </div>
-            <div class="step-content">
-                <p>
-                    BOOM! Windows desktop aa gaya — ab tu full control me hai.
-                </p>
-                <p>
-                    <span class="highlight">Enjoy apni FREE RDP!</span>
-                </p>
-                <div class="screenshot-box">
-                    <img src="https://i.ibb.co/TpGnRxv/Screenshot-20250609-154519-Windows-App.jpg" class="screenshot-img" alt="Step 15 Screenshot">
-                </div>
-            </div>
-        </div>
 
-        <div class="final-message-card">
-            <h3>🎉 RDP Successfully Connected!</h3>
-            <p>
-                Saare steps follow kiye toh RDP ab <span class="highlight">full power me</span> hai.<br>
-                <b>Tips:</b> Daily password RdpHostings se check karte rehna, aur connection stable rakh.<br>
-                Koi dikkat aaye toh steps dobara padh, raasta hai!
-            </p>
-            <div class="buttons">
-               <a href="rdp-connect" class="next-btn">Next Page <i class="fas fa-arrow-right"></i></a>
-                <a href="/" class="next-btn">Prev Page <i class="fas fa-arrow-left"></i></a>
-               
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">11</div>
+            <div class="step-title">Windows Remote Desktop App</div>
+        </div>
+        <div class="step-content">
+            <p>RDP server connect karne ke liye app install karna zaroori hai. App store (Play Store ya App Store) open karo.</p>
+            <p>Search mein type karo: <span class="highlight">"Microsoft Remote Desktop"</span></p>
+            <p>Official Microsoft app dhundho. Ye free app hai aur Microsoft ka original app hai.</p>
+            <p><strong>Install</strong> button par click karo aur app download hone ka wait karo.</p>
+            <p>App install ho jayega but abhi open mat karo. Setup process complete ho gaya hai.</p>
+
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/ch9VRS1g/61085088-161c-4dc0-8ad6-08a503547475.jpg" class="screenshot-img" alt="Step 11 Screenshot">
             </div>
         </div>
     </div>
-    
-    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
-        <div id="stylishPopupCard" class="stylish-popup-card">
-          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
-          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
-          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
-          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
-          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
-          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+    <div class="final-message-card">
+        <h3>🎉 Setup Successfully Complete!</h3>
+        <p>Aapka free RDP server ab bilkul ready hai. Ab aap remote desktop connection kar sakte ho.</p>
+        <p style="margin-top: 15px; color: var(--text-color-light); opacity:0.7; font-weight: 400;">
+            <strong>Important:</strong> Apni credentials safe rakho aur daily password update check karna mat bhoolna.
+        </p>
+        <div class="buttons">
+            <a href="rdp-connect.html" class="next-btn">Next Page <i class="fas fa-arrow-right"></i></a>
+            <a href="index.html" class="help-btn">Help ❓<i class="fas fa-question-circle"></i></a>
         </div>
     </div>
-    <div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
-        <div class="nobi-spinner-center">
-            <span class="nobi-spinner"></span>
-        </div>
-    </div>
-    
-    <footer class="main-footer">
-        Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
-    </footer>
+</div>
 
-    <script src="js/ui.js" defer></script>
+<div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div class="nobi-spinner-center">
+        <span class="nobi-spinner"></span>
+    </div>
+</div>
+<footer class="main-footer">
+    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+</footer>
+
+ <script src="js/ui.js" defer></script>
     <script src="js/main.js" type="module"></script>
     <script src="js/profile.js" type="module"></script>
     <script src="js/feedbacks.js" type="module"></script>
     <script src="js/animations.js" defer></script>
     <script src="js/breadcrumbs.js" defer></script>
+
 </body>
 </html>
