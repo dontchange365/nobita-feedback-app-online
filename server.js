@@ -92,6 +92,11 @@ app.get('/admin-panel/file-manager.html', authenticateAdminToken, (req, res) => 
     res.sendFile(path.join(__dirname, 'admin-panel', 'file-manager.html'));
 });
 
+// NEW ROUTE: Protect the avatar uploader page
+app.get('/admin-panel/upload-avatars.html', authenticateAdminToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-panel', 'upload-avatars.html'));
+});
+
 app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         res.status(404).json({message: "API endpoint not found."});
