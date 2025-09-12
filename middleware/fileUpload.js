@@ -1,7 +1,10 @@
 // middleware/fileUpload.js
+
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const dotenv = require('dotenv');
+
 dotenv.config();
 
 cloudinary.config({
@@ -10,16 +13,8 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// Multer in-memory storage, for processing file as a buffer
 const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage, 
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => { 
-        file.mimetype.startsWith('image/') ? cb(null, true) : cb(new Error('Only image files are allowed!'), false); 
-    } 
-});
+const upload = multer({ storage: storage });
 
-module.exports = {
-    upload,
-    cloudinary
-};
+module.exports = { upload, cloudinary };
