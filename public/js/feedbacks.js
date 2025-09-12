@@ -111,7 +111,7 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
         const existingMsgP = feedbackListContainer.querySelector('p.no-feedback-message');
         if (existingMsgP) existingMsgP.remove();
     }
-    
+
     // Append the new feedbacks
     feedbacksArray.forEach(addFeedbackToDOM);
 }
@@ -126,9 +126,9 @@ async function fetchFeedbacks() {
     try {
         const url = `${window.API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
         const responseData = await window.apiRequest(url, 'GET');
-        
+
         const feedbacksArray = responseData.feedbacks;
-        
+
         // Render new feedbacks (append=true)
         // Note: The first render will still be done in this function.
         const isFirstLoad = window.currentPage === 1;
@@ -198,7 +198,7 @@ function addFeedbackToDOM(fbData) {
     const charForAvatar = (fbData.name?.[0]?.toUpperCase() || 'G');
     let avatarSource = fbData.avatarUrl;
     if (!avatarSource && fbData.guestId) {
-        avatarSource = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent((fbData.name || 'guest').toLowerCase() + fbData.guestId)}&flip=true&radius=50&scale=90`;
+        avatarSource = `https://api.dicebear.com/8.x/adventurer/svg?seed=${encodeURIComponent((fbData.name || 'guest').toLowerCase() + fbData.guestId)}&flip=true&radius=50&doodle=true&scale=90`;
     } else if (!avatarSource) {
         avatarSource = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`;
     }
@@ -249,12 +249,12 @@ function addFeedbackToDOM(fbData) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
     detailsDiv.append(strongName, starsDiv, pFb, tsDiv);
-    
+
     item.append(avatarImg, detailsDiv);
 
     const isFeedbackOwner = window.currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === window.currentUser.userId;
     const canEdit = isFeedbackOwner && (window.currentUser.loginMethod === 'google' || (window.currentUser.loginMethod === 'email' && window.currentUser.isVerified));
-    
+
     if (fbData.userId && typeof fbData.userId === 'object') {
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-feedback-btn';
@@ -265,7 +265,7 @@ function addFeedbackToDOM(fbData) {
         if (isFeedbackOwner && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
             editBtn.title = "Verify your email to edit this feedback.";
         }
-        
+
         editBtn.onclick = e => {
             e.stopPropagation();
             if (!isFeedbackOwner) {
@@ -284,7 +284,7 @@ function addFeedbackToDOM(fbData) {
         };
         item.appendChild(editBtn);
     }
-    
+
     if (fbData.replies?.length > 0) {
         const reply = fbData.replies[fbData.replies.length - 1];
         if (reply?.text) {
@@ -316,7 +316,7 @@ function addFeedbackToDOM(fbData) {
         </div>`;
         item.insertAdjacentHTML('afterbegin', pinnedBadgeHTML);
     }
- 
+
     feedbackListContainer.appendChild(item);
 }
 window.addFeedbackToDOM = addFeedbackToDOM;
@@ -361,12 +361,22 @@ window.resetFeedbackForm = resetFeedbackForm;
 
 // NEW: Handles the post-submission process including asking for notifications
 async function handleFeedbackSubmitSuccess(data) {
+    if (data && data.feedback) {
+        // --- FIX IS HERE ---
+        if (data.feedback.guestId) {
+            localStorage.setItem('nobi_guestId', data.feedback.guestId);
+        }
+        if (data.feedback.name) {
+            localStorage.setItem('nobi_guestName', data.feedback.name);
+        }
+        // --- END FIX ---
+    }
     window.showStylishPopup({ iconType: 'success', title: 'Feedback Submitted!', message: data.message || 'Thank you for your feedback!', buttons: [{text:'Great!', action: window.closeStylishPopup}] });
     resetFeedbackForm();
     window.currentPage = 1;
     window.hasMoreFeedbacks = true;
     if (feedbackListContainer) feedbackListContainer.innerHTML = '';
-    
+
     if (averageRatingDisplayEl) feedbackListContainer.appendChild(averageRatingDisplayEl);
     const h2Title = document.createElement('h2');
     h2Title.textContent = 'Recent Feedbacks';
@@ -418,7 +428,7 @@ const handleScroll = () => {
     const scrollPosition = window.scrollY;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
-    
+
     // Throttle scroll event by a simple timestamp check
     const now = Date.now();
     if (now - lastScrollTime < DEBOUNCE_DELAY) {
@@ -492,13 +502,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!nameValue) {
                 return window.showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Please enter your name to submit feedback as a guest.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
             }
-            if (!guestId || (guestId && storedGuestName !== nameValue)) {
+
+            // --- FIX IS HERE ---
+            if (!guestId) {
                 guestId = generateUUID();
                 localStorage.setItem('nobi_guestId', guestId);
-                localStorage.setItem('nobi_guestName', nameValue);
-                storedGuestName = nameValue;
-                console.log(`New/Updated Guest Session: ID=${guestId}, Name=${nameValue}`);
             }
+            localStorage.setItem('nobi_guestName', nameValue);
+            // --- END FIX ---
+
             if (nameInputInFeedbackForm.value !== nameValue) nameInputInFeedbackForm.value = nameValue;
         }
 
@@ -520,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const spinnerText = (isEditing && isSubmissionByLoggedInUser) ? "Updating Feedback..." : "Submitting Feedback...";
         try {
             const data = await window.apiRequest(url, method, feedbackPayload, false, submitButton, spinnerText);
-            
+
             // Replaced the simple success popup with the new handler
             await handleFeedbackSubmitSuccess(data);
 
@@ -535,12 +547,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial check and fetch
     window.resetFeedbackForm();
-    
+
     // Initial fetch of the first page
     window.currentPage = 1;
     window.hasMoreFeedbacks = true;
     fetchFeedbacks();
-    
+
     // Add scroll event listener for lazy loading
     window.addEventListener('scroll', handleScroll);
 });
