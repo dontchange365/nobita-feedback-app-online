@@ -64,6 +64,7 @@ const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const fileManagerRoutes = require('./routes/fileManager');
+const { authenticateAdminToken } = require('./middleware/auth'); // FIX: yeh line add ki hai taaki authenticateAdminToken import ho sake
 
 app.use('/', authRoutes);
 app.use('/', feedbackRoutes);
