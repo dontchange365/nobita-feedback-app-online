@@ -113,25 +113,25 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
     try {
         const feedback = await Feedback.findById(feedbackId);
         if (!feedback) return res.status(404).json({ message: 'Feedback not found.' });
-        let newAvatarUrl;
+        if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
+        const newAvatarUrl = getRandomCloudinaryAvatarUrl();
+        let query = {};
         if (feedback.userId) {
             const user = await User.findById(feedback.userId);
-            if (user) {
-                if (!user.name) return res.status(400).json({ message: 'User name missing for avatar generation.' });
-                newAvatarUrl = getRandomCloudinaryAvatarUrl();
-                user.avatarUrl = newAvatarUrl;
-                await user.save();
-                await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: newAvatarUrl } });
-                const updatedFeedback = await Feedback.findById(feedbackId);
-                return res.status(200).json(updatedFeedback);
-            }
+            if (!user) return res.status(404).json({ message: 'User not found.' });
+            user.avatarUrl = newAvatarUrl;
+            await user.save();
+            query = { userId: user._id };
+        } else {
+            query = { name: feedback.name, timestamp: { $lte: feedback.timestamp } };
         }
-        if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
-        newAvatarUrl = getRandomCloudinaryAvatarUrl();
-        feedback.avatarUrl = newAvatarUrl;
-        await feedback.save();
-        res.status(200).json(feedback);
-    } catch (error) { console.error(`ADMIN AVATAR CHANGE ERR ON FEEDBACK ${feedbackId}:`, error); res.status(500).json({ message: 'Failed to change avatar due to server error.', error: error.message }); }
+        await Feedback.updateMany(query, { $set: { avatarUrl: newAvatarUrl } });
+        const updatedFeedback = await Feedback.findById(feedbackId);
+        res.status(200).json(updatedFeedback);
+    } catch (error) { 
+        console.error(`ADMIN AVATAR CHANGE ERR ON FEEDBACK ${feedbackId}:`, error);
+        res.status(500).json({ message: 'Failed to change avatar due to server error.', error: error.message }); 
+    }
 });
 
 router.patch('/api/admin/feedbacks/:id/mark-read', authenticateAdminToken, async (req, res) => {
