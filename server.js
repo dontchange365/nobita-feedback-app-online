@@ -57,13 +57,13 @@ app.use((req, res, next) => {
 // Let's create a new static route for just the admin panel assets
 // This will allow us to protect the main HTML file with middleware.
 app.use('/admin-panel-src', express.static(path.join(__dirname, 'admin-panel')));
-app.use(express.static(__dirname));
+// CHANGE: Public directory ko static files ke liye serve karein
+app.use(express.static(path.join(__dirname, 'public')));
 
 const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const fileManagerRoutes = require('./routes/fileManager');
-const { authenticateAdminToken } = require('./middleware/auth');
 
 app.use('/', authRoutes);
 app.use('/', feedbackRoutes);
