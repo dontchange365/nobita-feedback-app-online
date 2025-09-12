@@ -4,7 +4,7 @@ const router = express.Router();
 const { User, Feedback } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
 const { upload, cloudinary } = require('../middleware/fileUpload');
-const { getDiceBearAvatarUrl } = require('../utils/avatarGenerator');
+const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
 const { createUserPayload } = require('../utils/helpers');
 const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService');
 const bcrypt = require('bcryptjs');
@@ -33,7 +33,7 @@ router.post('/api/auth/signup', async (req, res) => {
             return res.status(400).json({ message: "This email is already registered." });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const userAvatar = getDiceBearAvatarUrl(name, Date.now().toString());
+        const userAvatar = getRandomCloudinaryAvatarUrl();
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email', isVerified: false, emailVerificationToken: verificationToken, emailVerificationExpires: Date.now() + 10 * 60 * 1000, hasCustomAvatar: false });
         await newUser.save();
@@ -76,7 +76,7 @@ router.post('/api/auth/google-signin', async (req, res) => {
             user = await User.findOne({ email: email.toLowerCase() });
             if (user) {
                 if (user.loginMethod === 'email') { user.googleId = googleId; if (!user.hasCustomAvatar) { user.avatarUrl = googleAvatar || user.avatarUrl; } user.isVerified = true; user.emailVerificationToken = undefined; user.emailVerificationExpires = undefined; }
-            } else { user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || getDiceBearAvatarUrl(name), loginMethod: 'google', isVerified: true, hasCustomAvatar: false }); }
+            } else { user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || getRandomCloudinaryAvatarUrl(), loginMethod: 'google', isVerified: true, hasCustomAvatar: false }); }
             await user.save();
         } else { if (googleAvatar && !user.hasCustomAvatar) { user.avatarUrl = googleAvatar; await user.save(); } if (!user.isVerified) { user.isVerified = true; await user.save(); } }
         if (linkGuestId) { await Feedback.updateMany({ guestId: linkGuestId, userId: null }, { $set: { userId: user._id, name: user.name, avatarUrl: user.avatarUrl, guestId: null } }); }
@@ -178,7 +178,6 @@ router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, 
             if (typeof name !== 'undefined') {
                 if (!name || !name.trim()) return res.status(400).json({ message: 'Name cannot be empty.' });
                 user.name = name.trim();
-                if (!user.hasCustomAvatar && user.avatarUrl && user.avatarUrl.includes('api.dicebear.com')) { user.avatarUrl = getDiceBearAvatarUrl(name, Date.now().toString()); }
             }
             if (typeof avatarUrl !== 'undefined' && avatarUrl) { user.avatarUrl = avatarUrl; user.hasCustomAvatar = true; }
         }
@@ -245,3 +244,4 @@ router.get('/api/vapid-public-key', (req, res) => {
 });
 
 module.exports = router;
+

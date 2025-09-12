@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { Feedback, User } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
-const { getDiceBearAvatarUrl } = require('../utils/avatarGenerator');
+const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
 const { sendPushNotificationToAdmin } = require('../services/pushNotification');
 const jwt = require('jsonwebtoken');
 
@@ -62,7 +62,7 @@ router.get('/api/feedbacks', async (req, res) => {
             { $unwind: '$replies' },
             { $count: 'totalReplies' }
         ]);
-        
+
         const responseData = {
             feedbacks: feedbacks.docs,
             totalFeedbacks: totalFeedbacks,
@@ -101,15 +101,15 @@ router.post('/api/feedback', async (req, res) => {
             if (!guestIdFromBody) return res.status(400).json({ message: 'Guest identifier is missing for this session.' });
             feedbackData.name = guestNameFromBody;
             feedbackData.guestId = guestIdFromBody;
-            feedbackData.avatarUrl = getDiceBearAvatarUrl(guestNameFromBody, guestIdFromBody);
+            feedbackData.avatarUrl = getRandomCloudinaryAvatarUrl();
             feedbackData.userId = null;
         }
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
-        
+
         // Emit the entire new feedback object via WebSocket using req.io
         req.io.emit('new-feedback', newFeedback);
-        
+
         sendPushNotificationToAdmin(newFeedback);
         res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
     } catch (error) { console.error("Feedback save error:", error); if (error.name === 'ValidationError') return res.status(400).json({ message: `Validation Error: ${error.message}` }); res.status(500).json({ message: 'Failed to save feedback.', error: error.message }); }

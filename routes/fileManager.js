@@ -6,6 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const { authenticateAdminToken } = require('../middleware/auth');
 const githubService = require('../services/githubService');
+const { upload, cloudinary } = require('../middleware/fileUpload');
 
 const BASE_DIR = path.resolve(__dirname, '..');
 
@@ -210,6 +211,40 @@ router.post('/api/admin/create-page-from-template', authenticateAdminToken, asyn
         await fs.promises.writeFile(filePath, templateContent);
         res.status(200).json({ message: `Page "${fileName}" created successfully in public folder.` });
     } catch (error) { console.error('Error creating page from template:', error); res.status(500).json({ message: 'Failed to create page from template.', error: error.message }); }
+});
+
+router.post('/api/admin/avatars/upload', authenticateAdminToken, upload.array('avatars', 10), async (req, res) => {
+    return res.status(400).json({ error: 'This route is deprecated. Please use the new single file upload route.' });
+});
+
+router.post('/api/admin/avatars/upload-single', authenticateAdminToken, upload.single('avatar'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file selected for upload.' });
+    }
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        return res.status(500).json({ error: 'Cloudinary environment variables are not set.' });
+    }
+    try {
+        const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream({
+                folder: 'nobita_avatars_library',
+                public_id: path.parse(req.file.originalname).name,
+                tags: ['avatar_library'],
+                resource_type: 'image'
+            }, (error, result) => {
+                if (error) {
+                    console.error('Cloudinary upload error:', error);
+                    return reject(error);
+                }
+                resolve(result.secure_url);
+            });
+            stream.end(req.file.buffer);
+        });
+        res.status(200).json({ message: 'Avatar uploaded successfully!', url: result });
+    } catch (error) {
+        console.error('Single upload error:', error);
+        res.status(500).json({ error: 'Failed to upload avatar.' });
+    }
 });
 
 module.exports = router;

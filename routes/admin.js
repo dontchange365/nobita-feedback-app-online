@@ -4,7 +4,7 @@ const router = express.Router();
 const { User, Feedback, Blog, AdminSettings } = require('../config/database');
 const { authenticateAdminToken } = require('../middleware/auth');
 const { createUserPayload } = require('../utils/helpers');
-const { getDiceBearAvatarUrl } = require('../utils/avatarGenerator');
+const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
 const { sendPushNotificationToUser } = require('../services/pushNotification');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -118,7 +118,7 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
             const user = await User.findById(feedback.userId);
             if (user) {
                 if (!user.name) return res.status(400).json({ message: 'User name missing for avatar generation.' });
-                newAvatarUrl = getDiceBearAvatarUrl(user.name, Date.now().toString());
+                newAvatarUrl = getRandomCloudinaryAvatarUrl();
                 user.avatarUrl = newAvatarUrl;
                 await user.save();
                 await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: newAvatarUrl } });
@@ -127,7 +127,7 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
             }
         }
         if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
-        newAvatarUrl = getDiceBearAvatarUrl(feedback.name, Date.now().toString());
+        newAvatarUrl = getRandomCloudinaryAvatarUrl();
         feedback.avatarUrl = newAvatarUrl;
         await feedback.save();
         res.status(200).json(feedback);
@@ -229,24 +229,24 @@ router.get('/api/admin/push-to-github/stream', authenticateAdminToken, async (re
     res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     res.flushHeaders();
     function sendLog(data) { res.write(`data: ${JSON.stringify(data)}\n\n`); }
-    
+
     sendLog({ type: 'message', message: '[Connecting to GitHub...]' });
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const REPO_OWNER = githubService.GITHUB_REPO_OWNER;
     const REPO_NAME = githubService.GITHUB_REPO_NAME;
     const BRANCH = githubService.GITHUB_BRANCH;
     const pushMessage = req.query.message || 'Auto push from NOBI FILE MANAGER 😈';
-    
+
     if (!GITHUB_TOKEN) { sendLog({ type: 'error', message: '[ERROR] GitHub Token is not configured.' }); sendLog({ type: 'message', message: '[GITHUB_DONE]' }); return res.end(); }
-    
+
     try {
       const allFiles = githubService.walkAllFiles(BASE_DIR);
       sendLog({ type: 'message', message: `[Found ${allFiles.length} files, pushing to GitHub...]` });
-      
+
       let pushed = 0;
       for (const file of allFiles) {
         sendLog({ type: 'start', file: file.path, status: 'push' });
-        
+
         let sha = undefined;
         try {
           const meta = await axios.get(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}?ref=${BRANCH}`, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
@@ -254,7 +254,7 @@ router.get('/api/admin/push-to-github/stream', authenticateAdminToken, async (re
         } catch (e) {
           if (e.response && e.response.status !== 404) { console.warn(`Error checking SHA for ${file.path}:`, e.response?.data || e.message); }
         }
-        
+
         try {
           await axios.put(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(file.path)}`, { message: pushMessage, content: Buffer.from(file.content).toString('base64'), branch: BRANCH, ...(sha ? { sha } : {}) }, { headers: { Authorization: `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' } });
           pushed++;
@@ -277,15 +277,15 @@ router.get('/api/admin/pull-from-github/stream', authenticateAdminToken, async (
     res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     res.flushHeaders();
     function sendLog(data) { res.write(`data: ${JSON.stringify(data)}\n\n`); }
-    
+
     sendLog({ type: 'message', message: '[Connecting to GitHub for pull...]' });
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const REPO_OWNER = githubService.GITHUB_REPO_OWNER;
     const REPO_NAME = githubService.GITHUB_REPO_NAME;
     const BRANCH = githubService.GITHUB_BRANCH;
-    
+
     if (!GITHUB_TOKEN) { sendLog({ type: 'error', message: '[ERROR] GitHub Token is not configured.' }); sendLog({ type: 'message', message: '[GITHUB_DONE]' }); return res.end(); }
-    
+
     try {
         await githubService.downloadGithubContents(REPO_OWNER, REPO_NAME, BRANCH, '', BASE_DIR, sendLog);
         sendLog({ type: 'message', message: '[COMPLETE] Files successfully pulled from GitHub!' });
