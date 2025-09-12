@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Avatars | Admin Panel</title>
+    <link rel="stylesheet" href="/admin-panel-src/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; background-color: #001f3f; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        h1 { text-align: center; color: #00bfff; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #fff; }
+        input[type="file"] { width: 100%; padding: 10px; background-color: #003366; border: 1px solid #0055aa; border-radius: 4px; color: #fff; }
+        .btn-upload { display: block; width: 100%; padding: 12px; background-color: #00bfff; color: #001f3f; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
+        .btn-upload:hover { background-color: #0099cc; }
+        .progress-container { width: 100%; background-color: #003366; border-radius: 4px; overflow: hidden; margin-top: 20px; }
+        .progress-bar { height: 25px; background-color: #00bfff; width: 0; text-align: center; line-height: 25px; color: #001f3f; font-weight: bold; transition: width 0.3s; }
+        #results { margin-top: 30px; }
+        #results h2 { color: #fff; border-bottom: 2px solid #0055aa; padding-bottom: 10px; margin-bottom: 20px; }
+        .urls-container { background-color: #003366; padding: 15px; border-radius: 4px; position: relative; }
+        #outputUrls { color: #fff; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; padding: 8px 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .copy-btn:hover { background-color: #218838; }
+        .status-message { text-align: center; margin-top: 20px; font-size: 1em; }
+        .status-message.success { color: #28a745; }
+        .status-message.error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar" id="mySidebar"></aside>
+        <div class="main-content">
+            <h1>Cloudinary Avatar Uploader</h1>
+            <div class="form-group">
+                <label for="avatarNamePrefix">Avatar Name Prefix (Optional):</label>
+                <input type="text" id="avatarNamePrefix" placeholder="e.g., nobi-avatar">
+            </div>
+            <div class="form-group">
+                <label for="files">Select Multiple Avatars:</label>
+                <input type="file" id="files" multiple accept="image/*">
+            </div>
+            <button class="btn-upload" id="uploadButton"><i class="fas fa-cloud-upload-alt"></i> Upload to Cloudinary</button>
+
+            <div class="progress-container" style="display: none;">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+
+            <div id="statusMessage" class="status-message"></div>
+
+            <div id="results" style="display: none;">
+                <h2>Uploaded Avatars</h2>
+                <div class="urls-container">
+                    <button class="copy-btn" id="copyButton"><i class="fas fa-copy"></i> Copy URLs</button>
+                    <pre id="outputUrls"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/admin-panel-src/sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/admin-panel-src/upload-avatars.js"></script>
+</body>
+</html>
