@@ -85,25 +85,47 @@ router.post('/api/feedback', async (req, res) => {
     let feedbackData = { feedback, rating: parseInt(rating), userIp, isEdited: false, readByAdmin: false, };
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    let isGuest = !token;
+
     try {
-        if (token) {
+        if (isGuest) {
+            if (!guestNameFromBody) return res.status(400).json({ message: 'Name is required for guest feedback.' });
+
+            let guestAvatarUrl;
+            if (guestIdFromBody) {
+                // Find existing guest feedback to get the avatar
+                const existingFeedback = await Feedback.findOne({ guestId: guestIdFromBody }).sort({ timestamp: -1 });
+                if (existingFeedback) {
+                    guestAvatarUrl = existingFeedback.avatarUrl;
+                } else {
+                    // If guestId is provided but no feedback found, maybe first submission got lost. Assign a new avatar.
+                    guestAvatarUrl = getRandomCloudinaryAvatarUrl();
+                }
+                // FIX: Add this line to ensure guestId is saved with the new feedback
+                feedbackData.guestId = guestIdFromBody;
+            } else {
+                // New guest, assign a new guestId and avatar
+                guestAvatarUrl = getRandomCloudinaryAvatarUrl();
+                feedbackData.guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            feedbackData.name = guestNameFromBody;
+            feedbackData.avatarUrl = guestAvatarUrl;
+            feedbackData.userId = null;
+
+        } else { // Logged-in user
             let decodedUserPayload;
             try { decodedUserPayload = jwt.verify(token, JWT_SECRET); } catch (jwtError) { return res.status(403).json({ message: "Your session is invalid or has expired." }); }
             const loggedInUser = await User.findById(decodedUserPayload.userId);
             if (!loggedInUser) { return res.status(404).json({ message: "Authenticated user not found." }); }
+
             feedbackData.name = loggedInUser.name;
             feedbackData.avatarUrl = loggedInUser.avatarUrl;
             feedbackData.userId = loggedInUser._id;
             if (loggedInUser.loginMethod === 'google' && loggedInUser.googleId) { feedbackData.googleIdSubmitter = loggedInUser.googleId; }
             feedbackData.guestId = null;
-        } else {
-            if (!guestNameFromBody) return res.status(400).json({ message: 'Name is required for guest feedback.' });
-            if (!guestIdFromBody) return res.status(400).json({ message: 'Guest identifier is missing for this session.' });
-            feedbackData.name = guestNameFromBody;
-            feedbackData.guestId = guestIdFromBody;
-            feedbackData.avatarUrl = getRandomCloudinaryAvatarUrl();
-            feedbackData.userId = null;
         }
+
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
 
