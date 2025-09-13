@@ -167,18 +167,26 @@
 }
 
 .profile-avatar-action-btn {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     background-color: var(--primary-color); 
     color: var(--secondary-color);
     padding: 8px 15px; 
     border-radius: 25px; 
     cursor: pointer; 
     font-size: 0.9em;
+    font-family: 'Poppins', sans-serif;
     font-weight: 500; 
     transition: background-color 0.2s, transform 0.1s;
     display: inline-flex; 
     align-items: center; 
+    justify-content: center;
     gap: 8px;
     border: 1px solid var(--secondary-color);
+    line-height: normal; /* Add this to normalize line-height */
+    text-align: center;
+    white-space: nowrap;
 }
 
 .profile-avatar-action-btn:hover {
