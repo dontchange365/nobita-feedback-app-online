@@ -63,12 +63,14 @@ const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback');
 const adminRoutes = require('./routes/admin');
 const fileManagerRoutes = require('./routes/fileManager');
+const avatarRoutes = require('./routes/avatars'); // New import for avatar routes
 const { authenticateAdminToken } = require('./middleware/auth');
 
 app.use('/', authRoutes);
 app.use('/', feedbackRoutes);
 app.use('/', adminRoutes);
 app.use('/', fileManagerRoutes);
+app.use('/', avatarRoutes); // Use the new avatar router
 
 app.get('/:page', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.endsWith('.js') || req.path.endsWith('.css') || req.path.endsWith('.ico') || req.path.endsWith('.png') || req.path.endsWith('.svg')) return next();
