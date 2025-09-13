@@ -224,11 +224,8 @@
 }
 
 #upload-avatar-now-btn {
-    background: linear-gradient(45deg, var(--success-color), #218838);
-    color: #fff; padding: 10px 20px; border: none; border-radius: 8px;
-    font-size: 0.9em; font-weight: 500; cursor: pointer;
-    transition: all 0.2s ease; display: flex; align-items: center;
-    justify-content: center; gap: 8px;
+    /* अब यह .profile-avatar-action-btn की styling inherit करेगा */
+    margin-top: 10px;
 }
 
 #upload-avatar-now-btn:hover {
