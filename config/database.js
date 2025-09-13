@@ -65,6 +65,13 @@ const adminSettingsSchema = new mongoose.Schema({
   lastSeenFeedbackTimestamp: { type: Date, default: Date.now }
 });
 
+// NEW SCHEMA for tracking avatar usage
+const avatarUsageSchema = new mongoose.Schema({
+  url: { type: String, required: true, unique: true },
+  usageCount: { type: Number, default: 0 }
+});
+
+
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB connection successful!');
@@ -79,5 +86,6 @@ module.exports = {
   Feedback: mongoose.model('Feedback', feedbackSchema),
   Blog: mongoose.model('Blog', blogSchema),
   NotificationSubscription: mongoose.model('NotificationSubscription', notificationSubscriptionSchema),
-  AdminSettings: mongoose.model('AdminSettings', adminSettingsSchema)
+  AdminSettings: mongoose.model('AdminSettings', adminSettingsSchema),
+  AvatarUsage: mongoose.model('AvatarUsage', avatarUsageSchema) // NEW export
 };
