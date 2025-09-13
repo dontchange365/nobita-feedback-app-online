@@ -17,8 +17,7 @@
     <link rel="stylesheet" href="css/feedbacks.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/breadcrumbs.css">
- <!-- Separate CSS file -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+ <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -142,7 +141,6 @@
         </ul>
       </div>
     </div>
-    <!-- Existing Stylish Popup (used for general alerts/prompts) -->
     <div id="stylishPopupOverlay" class="stylish-popup-overlay">
         <div id="stylishPopupCard" class="stylish-popup-card">
           <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
@@ -164,9 +162,12 @@
                 </div>
                 <div class="profile-avatar-section">
                     <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="profile-avatar-action-btn"><i class="fas fa-cloud-upload-alt"></i> Upload Avatar</label>
+                        <label id="choose-default-avatar-btn" class="profile-avatar-action-btn"><i class="fas fa-magic"></i> Choose Default</label>
+                    </div>
                     <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                    <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
-                    <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
+                    <button type="button" id="upload-avatar-now-btn" class="profile-avatar-action-btn" style="display:none; margin-top: 10px;">
                         <i class="fas fa-upload"></i> Upload Avatar
                     </button>
                     <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
@@ -186,11 +187,11 @@
                         <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
                     </div>
                     <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
-               </form>
+                </form>
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
-                    <div class="input-row-profile">
+                    <div class="input-row-profile" id="current-password-group">
                         <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
                         <input type="password" id="current-password" name="current-password">
@@ -205,6 +206,9 @@
                         <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
                     </div>
+                    <div class="profile-form-row">
+                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                    </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
                         <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
@@ -214,7 +218,6 @@
         </div>
     </div>
 
-    <!-- NEW FORGOT PASSWORD POPUP - Integrated Design -->
     <div class="overlay" id="forgotPasswordNewOverlay">
         <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
     </div>
@@ -225,8 +228,6 @@
     </p>
     <button id="send-verification-email-btn-form">Send Verification Email</button>
 </div>
-    <!-- END NEW FORGOT PASSWORD POPUP -->
-
     <div class="container" id="guide-start">
     <div class="step-container">
         <div class="step-header">
