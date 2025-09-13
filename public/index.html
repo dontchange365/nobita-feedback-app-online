@@ -208,8 +208,11 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
                 </div>
                 <div class="profile-avatar-section">
                     <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
+                        <button type="button" id="choose-default-avatar-btn" class="choose-default-avatar-btn"><i class="fas fa-paint-brush"></i> Choose Default</button>
+                    </div>
                     <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                    <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Upload Custom Avatar</label>
                     <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
                         <i class="fas fa-upload"></i> Upload Avatar
                     </button>
@@ -218,11 +221,6 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
                         <span class="progress-text" id="progress-text">0%</span>
                     </div>
                 </div>
-                <button type="button" id="showAvatarGalleryBtn" class="avatar-gallery-section-toggle">
-                    <i class="fas fa-images"></i> Choose Default Avatar
-                </button>
-                <div id="avatarGallerySection" class="avatar-gallery-container">
-                    </div>
                 <form id="profile-edit-form">
                     <div class="input-row-profile">
                         <span class="input-icon"><i class="fas fa-user"></i></span>
@@ -321,6 +319,21 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
     <footer class="main-footer">
         Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
     </footer>
+    <div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
     <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
     <script src="js/animations.js" defer></script>
