@@ -449,7 +449,21 @@
 <footer class="main-footer">
     Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
 </footer>
-
+<div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
  <script src="js/ui.js" defer></script>
     <script src="js/main.js" type="module"></script>
     <script src="js/profile.js" type="module"></script>
