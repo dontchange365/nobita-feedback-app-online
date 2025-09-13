@@ -1,392 +1,386 @@
-// profile.js
-// This file contains all the JavaScript logic specific to the user profile and modals.
-// It is designed to be loaded alongside main.js.
+// js/profile.js
 
-// The main `currentUser` object will be available globally from `main.js`.
-// The API constants (like API_UPDATE_PROFILE_URL, API_CHANGE_PASSWORD_URL, CLOUDINARY_UPLOAD_URL) are also available.
-// The utility functions (`apiRequest`, `showStylishPopup`, `closeStylishPopup`, etc.) are globally available.
+import { showStylishPopup } from './ui.js';
+import { defaultAvatars } from './defaultAvatars.js';
 
-// --- Profile Modal UI Functions ---
-function updateProfileModalUI(user) {
-    if (!user) return;
-    const profileNameInput = document.getElementById('profile-name');
-    const profileEmailInput = document.getElementById('profile-email');
-    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
-    const avatarUploadInput = document.getElementById('avatar-upload-input');
-    const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
-    const changePasswordForm = document.getElementById('change-password-form');
-    const changePasswordBtn = document.getElementById('change-password-btn');
-    const currentPasswordGroup = document.getElementById('current-password-group');
-    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
+let profileUpdateTimeout;
+let selectedDefaultAvatarUrl = null;
 
-    const isEmailUserUnverified = user.loginMethod === 'email' && !user.isVerified;
-    const isGoogleUser = user.loginMethod === 'google';
-    const hasCustomAvatar = user.hasCustomAvatar;
+const profileModal = document.getElementById('userProfileModal');
+const profileEditForm = document.getElementById('profile-edit-form');
+const saveChangesBtn = document.getElementById('save-profile-changes-btn');
+const profileNameInput = document.getElementById('profile-name');
+const profileAvatarDisplay = document.getElementById('profile-display-avatar');
+const avatarUploadInput = document.getElementById('avatar-upload-input');
+const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
+const uploadProgressBar = document.getElementById('upload-progress-bar');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const currentPasswordGroup = document.getElementById('current-password-group');
+const changePasswordForm = document.getElementById('change-password-form');
+const changePasswordBtn = document.getElementById('change-password-btn');
 
-    // FIX: Simplified logic to check if a password has been set.
-    // We now directly check for the existence of the user.password property.
-    const hasPasswordSet = user.hasPassword;
-
-    if (profileNameInput) {
-        profileNameInput.value = user.name;
-        profileNameInput.disabled = (isGoogleUser && !hasCustomAvatar) || isEmailUserUnverified;
-        profileNameInput.title = isGoogleUser ? (hasCustomAvatar ? "You can change your name, but it may reset if you log in with Google again." : "Your name is managed by Google.") : (isEmailUserUnverified ? "Verify your email to edit your name." : "Edit your name");
-    }
-    if (profileEmailInput) profileEmailInput.value = user.email;
-
-    if (saveProfileChangesBtn) {
-        // Updated logic: Save button is disabled if name hasn't changed, regardless of login method
-        saveProfileChangesBtn.disabled = (profileNameInput && profileNameInput.value.trim() === user.name) || isEmailUserUnverified;
-    }
-    if (avatarUploadInput) avatarUploadInput.disabled = isEmailUserUnverified;
-    if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-
-    // NEW LOGIC FOR PASSWORD SECTION
-    if (changePasswordForm) {
-        // Always show the form now, as a user can always set or change a password.
-        changePasswordForm.style.display = 'block';
-
-        // Show/hide current password field based on whether a password exists
-        if (currentPasswordGroup) {
-            currentPasswordGroup.style.display = hasPasswordSet ? 'block' : 'none';
-        }
-
-        // Set button text dynamically
-        changePasswordBtn.textContent = hasPasswordSet ? "Change Password" : "Create Password";
-
-        // Disable button if email isn't verified (if applicable)
-        changePasswordBtn.disabled = isEmailUserUnverified;
-    }
-
-    if (profileDisplayAvatar) profileDisplayAvatar.src = user.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(user.name.charAt(0).toUpperCase())}`;
-}
-window.updateProfileModalUI = updateProfileModalUI;
-
-function updateProfileModalUILogout() {
-    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
-    const changePasswordBtn = document.getElementById('change-password-btn');
-    const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
-    const avatarUploadInput = document.getElementById('avatar-upload-input');
-    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-
-    [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => {
-        if (el) el.disabled = true;
-    });
-
-    if (profileDisplayAvatar) profileDisplayAvatar.src = 'https://placehold.co/120x120/6a0dad/FFFFFF?text=U';
-
-    // Reset password inputs
-    const pwInputs = [document.getElementById('current-password'), document.getElementById('new-password-profile'), document.getElementById('confirm-new-password-profile')];
-    pwInputs.forEach(input => {
-        if (input) {
-            input.value = '';
-            input.dispatchEvent(new Event('input'));
-        }
-    });
-
-    // Hide avatar upload button and progress bar
-    if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-    const uploadProgressBar = document.getElementById('upload-progress-bar');
-    if (uploadProgressBar) uploadProgressBar.style.display = 'none';
-}
-window.updateProfileModalUILogout = updateProfileModalUILogout;
-
+// NEW: Avatar Gallery elements
+const avatarGalleryContainer = document.getElementById('avatarGallerySection');
+const showGalleryBtn = document.getElementById('showAvatarGalleryBtn');
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- PROFILE MODAL FORMS ---
+    // Check if the user is on a page where the profile feature is available
+    if (!profileModal) return;
 
-    // Send Verification Email button in profile modal
-    const sendVerificationEmailBtn = document.getElementById('send-verification-email-btn');
-    if (sendVerificationEmailBtn) {
-        sendVerificationEmailBtn.addEventListener('click', async () => {
-            if (window.requestAndShowVerificationEmail) {
-                await window.requestAndShowVerificationEmail();
+    // Existing event listeners...
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('[data-modal-close]')) {
+            const modalId = e.target.getAttribute('data-modal-close');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                if (modalId === 'userProfileModal') {
+                    resetProfileModalState();
+                }
             }
-        });
-    }
+        }
+    });
 
-    // Profile Edit Form Submission
-    const profileEditForm = document.getElementById('profile-edit-form');
-    const profileNameInput = document.getElementById('profile-name');
-    const profileEmailInput = document.getElementById('profile-email');
-    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
-    const userProfileModal = document.getElementById('userProfileModal'); // Add modal element here
+    profileEditForm.addEventListener('input', () => {
+        clearTimeout(profileUpdateTimeout);
+        profileUpdateTimeout = setTimeout(() => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const currentName = user ? user.name : '';
+            const currentAvatar = user ? user.avatarUrl : '';
 
-    if (profileEditForm) {
-        profileEditForm.addEventListener('input', () => {
-            const isEmailVerifiedAndEditable = window.currentUser && window.currentUser.loginMethod === 'email' && window.currentUser.isVerified;
-            const isGoogleWithCustomAvatar = window.currentUser && window.currentUser.loginMethod === 'google' && window.currentUser.hasCustomAvatar;
-            const isNameChanged = profileNameInput.value.trim() !== window.currentUser.name;
+            const isNameChanged = profileNameInput.value.trim() !== currentName;
+            const isAvatarChanged = profileAvatarDisplay.src !== currentAvatar;
 
-            if (isEmailVerifiedAndEditable || isGoogleWithCustomAvatar) {
-                saveProfileChangesBtn.disabled = !isNameChanged;
+            if (isNameChanged || isAvatarChanged) {
+                saveChangesBtn.style.display = 'block';
             } else {
-                saveProfileChangesBtn.disabled = true;
+                saveChangesBtn.style.display = 'none';
             }
-        });
+        }, 300);
+    });
 
-        profileEditForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            if (!window.currentUser) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to save changes.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-            if (window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
-                return window.showStylishPopup({
-                    iconType: 'warning',
-                    title: 'Email Verification Required',
-                    message: 'Please verify your email to update your profile. Would you like to resend the verification email?',
-                    buttons: [
-                        { text: 'Send Verification Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => await window.requestAndShowVerificationEmail() },
-                        { text: 'Later', action: window.closeStylishPopup }
-                    ]
-                });
-            }
+    profileEditForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = profileNameInput.value.trim();
+        const newAvatar = profileAvatarDisplay.src;
+        await updateProfile(newName, newAvatar);
+    });
 
-            const newName = profileNameInput.value.trim();
-            if (!newName) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Name cannot be empty.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
+    avatarUploadInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profileAvatarDisplay.src = e.target.result;
+                uploadAvatarNowBtn.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-            if (window.currentUser.loginMethod === 'google' && !window.currentUser.hasCustomAvatar && newName !== window.currentUser.name) {
-                return window.showStylishPopup({ iconType: 'info', title: 'Google User', message: 'Your name is managed by your Google account and cannot be changed here.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
+    uploadAvatarNowBtn.addEventListener('click', async () => {
+        const file = avatarUploadInput.files[0];
+        if (!file) return;
 
-            if (newName === window.currentUser.name) {
-                saveProfileChangesBtn.disabled = true;
-                return;
-            }
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-            try {
-                const data = await window.apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { name: newName }, false, saveProfileChangesBtn, "Saving...");
-                if (data.token) localStorage.setItem('nobita_jwt', data.token);
-                window.currentUser = { ...window.currentUser, ...data.user };
-                localStorage.setItem('nobi_user_profile', JSON.stringify(window.currentUser));
+        await uploadAvatar(formData);
+    });
 
-                const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-                if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
+    changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password-profile').value;
+        const confirmNewPassword = document.getElementById('confirm-new-password-profile').value;
+        await changePassword(currentPassword, newPassword, confirmNewPassword);
+    });
 
-                if (window.updateUIAfterLogin) window.updateUIAfterLogin();
-                window.showStylishPopup({ iconType: 'success', title: 'Profile Updated!', message: data.message || 'Your profile name has been updated successfully!', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-                if(userProfileModal) userProfileModal.classList.remove('active'); // Auto-close modal on success
-            } catch (error) {
-                // Error handled by apiRequest
-            }
-        });
-    }
-
-    // Avatar Upload Logic
-    const avatarUploadInput = document.getElementById('avatar-upload-input');
-    const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
-    const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-    const uploadProgressBar = document.getElementById('upload-progress-bar');
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-
-    if (avatarUploadInput) {
-        avatarUploadInput.addEventListener('change', () => {
-            if (avatarUploadInput.files.length > 0) {
-                if (window.currentUser && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
-                    window.showStylishPopup({
-                        iconType: 'warning',
-                        title: 'Email Verification Required',
-                        message: 'Please verify your email to upload a new avatar. Would you like to resend the verification email?',
-                        buttons: [
-                            { text: 'Send Email', addSpinnerOnClick: true, spinnerText:'Sending...', action: async () => await window.requestAndShowVerificationEmail() },
-                            { text: 'Later', action: window.closeStylishPopup }
-                        ]
-                    });
-                    avatarUploadInput.value = '';
-                    return;
-                }
-
-                const file = avatarUploadInput.files[0];
-                const reader = new FileReader();
-                reader.onload = e => {
-                    if (profileDisplayAvatar) profileDisplayAvatar.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-
-                if (uploadAvatarNowBtn) {
-                    uploadAvatarNowBtn.style.display = 'block';
-                    uploadAvatarNowBtn.disabled = false;
-                    uploadAvatarNowBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Avatar';
-                }
-                if (saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
+    // NEW: Show/Hide Avatar Gallery
+    if (showGalleryBtn) {
+        showGalleryBtn.addEventListener('click', () => {
+            if (avatarGalleryContainer.style.display === 'block') {
+                avatarGalleryContainer.style.display = 'none';
+                showGalleryBtn.innerHTML = `<i class="fas fa-images"></i> Choose Default Avatar`;
             } else {
-                if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-                if (window.currentUser) {
-                    if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
-                    if (profileEditForm) profileEditForm.dispatchEvent(new Event('input'));
-                }
+                renderDefaultAvatars();
+                avatarGalleryContainer.style.display = 'block';
+                showGalleryBtn.innerHTML = `<i class="fas fa-times-circle"></i> Hide Gallery`;
             }
-        });
-    }
-
-    if (uploadAvatarNowBtn) {
-        uploadAvatarNowBtn.addEventListener('click', async () => {
-            if (!window.currentUser) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to upload an avatar.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-            if (window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
-                return window.showStylishPopup({ iconType: 'warning', title: 'Email Verification Required!', message: 'Please verify your email to upload an avatar.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-            }
-
-            if (avatarUploadInput.files.length === 0) {
-                return window.showStylishPopup({ iconType: 'warning', title: 'No File Selected', message: 'Please select an image file to upload.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-
-            const file = avatarUploadInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-
-            const originalBtnHTML = uploadAvatarNowBtn.innerHTML;
-            uploadAvatarNowBtn.disabled = true;
-            uploadAvatarNowBtn.innerHTML = `<span class="nobi-spinner"></span> Uploading...`;
-            if(uploadProgressBar) uploadProgressBar.style.display = 'block';
-            if(progressFill) progressFill.style.width = '0%';
-            if(progressText) progressText.textContent = '0%';
-
-            try {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
-
-                xhr.upload.onprogress = e => {
-                    if (e.lengthComputable) {
-                        const percent = (e.loaded / e.total) * 100;
-                        if(progressFill) progressFill.style.width = percent + '%';
-                        if(progressText) progressText.textContent = Math.round(percent) + '%';
-                    }
-                };
-
-                await new Promise((resolve, reject) => {
-                    xhr.onload = async () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            const cloudRes = JSON.parse(xhr.responseText);
-                            const imgUrl = cloudRes.secure_url;
-
-                            try {
-                                const beRes = await window.apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { avatarUrl: imgUrl }, false);
-
-                                if (beRes.token) localStorage.setItem('nobita_jwt', beRes.token);
-                                window.currentUser = { ...window.currentUser, ...beRes.user };
-                                localStorage.setItem('nobi_user_profile', JSON.stringify(window.currentUser));
-
-                                if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl;
-                                if (window.updateUIAfterLogin) window.updateUIAfterLogin();
-                                if (window.fetchFeedbacks) await window.fetchFeedbacks();
-
-                                avatarUploadInput.value = '';
-                                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-
-                                window.showStylishPopup({ iconType: 'success', title: 'Avatar Updated!', message: 'Your new avatar has been uploaded and saved.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-                                if(userProfileModal) userProfileModal.classList.remove('active'); // Auto-close modal on success
-                                resolve();
-                            } catch (beError) {
-                                reject(beError);
-                            }
-                        } else {
-                            const errRes = JSON.parse(xhr.responseText);
-                            reject(new Error(errRes.error.message || 'Cloudinary upload failed.'));
-                        }
-                    };
-
-                    xhr.onerror = () => reject(new Error('Network error during avatar upload.'));
-                    xhr.send(formData);
-                });
-
-            } catch (error) {
-                window.showStylishPopup({ iconType: 'error', title: 'Upload Error!', message: error.message || 'Failed to upload avatar. Please try again.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            } finally {
-                uploadAvatarNowBtn.disabled = false;
-                uploadAvatarNowBtn.innerHTML = originalBtnHTML;
-                if(uploadProgressBar) uploadProgressBar.style.display = 'none';
-            }
-        });
-    }
-
-    // Change Password Form Submission
-    const changePasswordForm = document.getElementById('change-password-form');
-    const currentPasswordInput = document.getElementById('current-password');
-    const newPasswordProfileInput = document.getElementById('new-password-profile');
-    const confirmNewPasswordProfileInput = document.getElementById('confirm-new-password-profile');
-    const changePasswordBtn = document.getElementById('change-password-btn');
-
-    if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            if (!window.currentUser) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Not Logged In', message: 'You must be logged in to change your password.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-
-            const curPw = currentPasswordInput.value;
-            const newPw = newPasswordProfileInput.value;
-            const confNewPw = confirmNewPasswordProfileInput.value;
-
-            // NEW: Check if this is a "Create Password" flow
-            const isCreatePassword = !window.currentUser.hasPassword;
-
-            if (!newPw || !confNewPw) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'All password fields are required.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-            if (!isCreatePassword && !curPw) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'Current password is required.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-            if (newPw !== confNewPw) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Password Mismatch!', message: 'The new passwords do not match.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-            if (newPw.length < 6) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Weak Password!', message: 'Your new password must be at least 6 characters long.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-            }
-
-            try {
-                const payload = { newPassword: newPw };
-                if (!isCreatePassword) {
-                    payload.currentPassword = curPw;
-                }
-
-                const data = await window.apiRequest(API_CHANGE_PASSWORD_URL, 'POST', payload, false, changePasswordBtn, isCreatePassword ? "Creating Password..." : "Changing Password...");
-                window.showStylishPopup({ iconType: 'success', title: 'Password Updated!', message: data.message || 'Your password has been successfully saved.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-
-                // Update the global state and local storage with the new user data and token
-                if (data.token) localStorage.setItem('nobita_jwt', data.token);
-                window.currentUser = { ...window.currentUser, ...data.user };
-                localStorage.setItem('nobi_user_profile', JSON.stringify(window.currentUser));
-
-                if(userProfileModal) userProfileModal.classList.remove('active'); // Auto-close modal on success
-                [currentPasswordInput, newPasswordProfileInput, confirmNewPasswordProfileInput].forEach(inp => {
-                    if (inp) {
-                        inp.value = '';
-                        inp.dispatchEvent(new Event('input'));
-                    }
-                });
-                if (window.updateUIAfterLogin) window.updateUIAfterLogin();
-            } catch (error) {
-                // Error handled by apiRequest
-            }
-        });
-    }
-
-    // Close profile modal when clicking overlay or specific close buttons
-    if (userProfileModal) {
-        userProfileModal.addEventListener('click', e => {
-            if (e.target === userProfileModal) {
-                userProfileModal.classList.remove('active');
-            }
-        });
-        userProfileModal.querySelectorAll('[data-modal-close]').forEach(trigger => {
-            trigger.addEventListener('click', () => {
-                const targetModal = document.getElementById(trigger.getAttribute('data-modal-close'));
-                if (targetModal) targetModal.classList.remove('active');
-                const pwInputs = [document.getElementById('current-password'), document.getElementById('new-password-profile'), document.getElementById('confirm-new-password-profile')];
-                pwInputs.forEach(input => {
-                    if (input) {
-                        input.value = '';
-                        input.dispatchEvent(new Event('input'));
-                    }
-                });
-            });
         });
     }
 });
+
+// NEW: Function to render default avatars
+function renderDefaultAvatars() {
+    const defaultAvatarsGrid = document.createElement('div');
+    defaultAvatarsGrid.className = 'default-avatars-grid';
+
+    // Get current user avatar to show it first
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    let currentAvatarUrl = currentUser.avatarUrl;
+
+    // Check if the current avatar is one of the default ones
+    const isCurrentAvatarDefault = defaultAvatars.some(avatar => avatar.url === currentAvatarUrl);
+
+    // Filter out the current avatar if it's in the default list
+    const filteredAvatars = defaultAvatars.filter(avatar => avatar.url !== currentAvatarUrl);
+
+    // If the current avatar is a default one, show it first
+    if (isCurrentAvatarDefault) {
+        const currentAvatarItem = document.createElement('div');
+        currentAvatarItem.className = 'default-avatar-item selected';
+        currentAvatarItem.dataset.avatarUrl = currentAvatarUrl;
+        currentAvatarItem.innerHTML = `<img src="${currentAvatarUrl}" alt="Selected Avatar">`;
+        defaultAvatarsGrid.appendChild(currentAvatarItem);
+    }
+
+    // Add remaining default avatars
+    filteredAvatars.forEach(avatar => {
+        const avatarItem = document.createElement('div');
+        avatarItem.className = 'default-avatar-item';
+        avatarItem.dataset.avatarUrl = avatar.url;
+        avatarItem.innerHTML = `<img src="${avatar.url}" alt="Default Avatar">`;
+        defaultAvatarsGrid.appendChild(avatarItem);
+    });
+
+    // Handle clicks on avatars in the gallery
+    defaultAvatarsGrid.addEventListener('click', (e) => {
+        const selectedAvatarItem = e.target.closest('.default-avatar-item');
+        if (selectedAvatarItem) {
+            // Remove 'selected' class from all other items
+            document.querySelectorAll('.default-avatar-item').forEach(item => item.classList.remove('selected'));
+            // Add 'selected' class to the clicked item
+            selectedAvatarItem.classList.add('selected');
+            // Update the main profile display with the new avatar
+            const newAvatarUrl = selectedAvatarItem.dataset.avatarUrl;
+            profileAvatarDisplay.src = newAvatarUrl;
+            selectedDefaultAvatarUrl = newAvatarUrl;
+            // Hide custom upload elements if a default avatar is selected
+            avatarUploadInput.value = '';
+            uploadAvatarNowBtn.style.display = 'none';
+            // Show Save Changes button
+            saveChangesBtn.style.display = 'block';
+        }
+    });
+
+    // Clear and append the new grid
+    avatarGalleryContainer.innerHTML = '';
+    const galleryTitle = document.createElement('h4');
+    galleryTitle.textContent = "Choose a default avatar";
+    avatarGalleryContainer.appendChild(galleryTitle);
+    avatarGalleryContainer.appendChild(defaultAvatarsGrid);
+}
+
+// Function to update user profile
+async function updateProfile(newName, newAvatarUrl) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        showStylishPopup('Error', 'Please log in to update your profile.', 'error');
+        return;
+    }
+    const token = localStorage.getItem('token');
+    const oldAvatarUrl = user.avatarUrl;
+
+    // Use selectedDefaultAvatarUrl if a default avatar was chosen, otherwise use the current display avatar.
+    const finalAvatarUrl = selectedDefaultAvatarUrl || newAvatarUrl;
+
+    if (newName === user.name && finalAvatarUrl === oldAvatarUrl) {
+        showStylishPopup('Info', 'No changes detected.', 'info');
+        return;
+    }
+
+    const payload = {
+        name: newName,
+        avatarUrl: finalAvatarUrl
+    };
+
+    saveChangesBtn.disabled = true;
+    saveChangesBtn.innerHTML = `<span class="nobi-spinner"></span> Saving...`;
+
+    try {
+        const response = await fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.token);
+            updateProfileUI(data.user);
+            showStylishPopup('Success!', data.message, 'success');
+        } else {
+            showStylishPopup('Error!', data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Update profile error:', error);
+        showStylishPopup('Error!', 'An error occurred while updating profile.', 'error');
+    } finally {
+        saveChangesBtn.disabled = false;
+        saveChangesBtn.innerHTML = `Save Changes`;
+        saveChangesBtn.style.display = 'none';
+        selectedDefaultAvatarUrl = null; // Reset the selected URL
+    }
+}
+
+// Function to upload avatar
+async function uploadAvatar(formData) {
+    const token = localStorage.getItem('token');
+    uploadAvatarNowBtn.disabled = true;
+    uploadAvatarNowBtn.innerHTML = `<span class="nobi-spinner"></span> Uploading...`;
+    uploadProgressBar.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = '0%';
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/user/upload-avatar', true);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressFill.style.width = percentComplete.toFixed(0) + '%';
+                progressText.textContent = percentComplete.toFixed(0) + '%';
+            }
+        });
+
+        const response = await new Promise((resolve, reject) => {
+            xhr.onload = () => {
+                const data = JSON.parse(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(data);
+                } else {
+                    reject(data);
+                }
+            };
+            xhr.onerror = () => reject(new Error('Network error.'));
+            xhr.send(formData);
+        });
+
+        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('token', response.token);
+        updateProfileUI(response.user);
+        showStylishPopup('Success!', response.message, 'success');
+
+    } catch (error) {
+        console.error('Upload avatar error:', error);
+        showStylishPopup('Error!', error.message || 'An error occurred during upload.', 'error');
+    } finally {
+        uploadAvatarNowBtn.disabled = false;
+        uploadAvatarNowBtn.innerHTML = `<i class="fas fa-upload"></i> Upload Avatar`;
+        uploadAvatarNowBtn.style.display = 'none';
+        uploadProgressBar.style.display = 'none';
+    }
+}
+
+// Function to handle password change
+async function changePassword(currentPassword, newPassword, confirmNewPassword) {
+    // Basic validation
+    if (!newPassword || newPassword.length < 6) {
+        showStylishPopup('Error', 'New password must be at least 6 characters long.', 'error');
+        return;
+    }
+    if (newPassword !== confirmNewPassword) {
+        showStylishPopup('Error', 'New passwords do not match.', 'error');
+        return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user.loginMethod === 'email' && user.hasPassword === false) {
+        // If user is Google login but needs to set a password
+    } else {
+        if (!currentPassword) {
+            showStylishPopup('Error', 'Current password is required to change password.', 'error');
+            return;
+        }
+    }
+
+    const token = localStorage.getItem('token');
+    const payload = { currentPassword, newPassword };
+
+    changePasswordBtn.disabled = true;
+    changePasswordBtn.innerHTML = `<span class="nobi-spinner"></span> Updating...`;
+
+    try {
+        const response = await fetch('/api/user/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.token);
+            updateProfileUI(data.user);
+            showStylishPopup('Success!', data.message, 'success');
+            changePasswordForm.reset();
+        } else {
+            showStylishPopup('Error!', data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Change password error:', error);
+        showStylishPopup('Error!', 'An error occurred while changing password.', 'error');
+    } finally {
+        changePasswordBtn.disabled = false;
+        changePasswordBtn.innerHTML = `Change Password`;
+    }
+}
+
+// Function to update the UI with new user data
+function updateProfileUI(user) {
+    if (user && user.isVerified) {
+        document.getElementById('email-verification-prompt').style.display = 'none';
+        document.getElementById('feedback-verification-prompt')?.style.display = 'none';
+        document.getElementById('send-verification-email-btn-form')?.disabled = true;
+    } else {
+        document.getElementById('email-verification-prompt').style.display = 'flex';
+        document.getElementById('feedback-verification-prompt')?.style.display = 'flex';
+        document.getElementById('send-verification-email-btn-form')?.disabled = false;
+    }
+    document.getElementById('profile-name').value = user.name;
+    document.getElementById('profile-email').value = user.email;
+    document.getElementById('profile-display-avatar').src = user.avatarUrl;
+    document.getElementById('menu-avatar').src = user.avatarUrl;
+    document.getElementById('user-profile-avatar').src = user.avatarUrl;
+    document.getElementById('menu-username').textContent = user.name;
+    document.getElementById('user-profile-name').textContent = user.name;
+    const currentPasswordInput = document.getElementById('current-password');
+    if (currentPasswordInput) {
+        if (user.loginMethod === 'google' && !user.hasPassword) {
+            currentPasswordGroup.style.display = 'none';
+            document.getElementById('new-password-profile').placeholder = 'Create new password';
+            document.getElementById('confirm-new-password-profile').placeholder = 'Confirm new password';
+            document.getElementById('change-password-btn').textContent = 'Create Password';
+        } else {
+            currentPasswordGroup.style.display = 'flex';
+            document.getElementById('new-password-profile').placeholder = '';
+            document.getElementById('confirm-new-password-profile').placeholder = '';
+            document.getElementById('change-password-btn').textContent = 'Change Password';
+        }
+    }
+}
+
+function resetProfileModalState() {
+    saveChangesBtn.style.display = 'none';
+    uploadAvatarNowBtn.style.display = 'none';
+    uploadProgressBar.style.display = 'none';
+    profileEditForm.reset();
+    changePasswordForm.reset();
+    selectedDefaultAvatarUrl = null;
+    // Hide the gallery section when closing the modal
+    if (avatarGalleryContainer) {
+        avatarGalleryContainer.style.display = 'none';
+        showGalleryBtn.innerHTML = `<i class="fas fa-images"></i> Choose Default Avatar`;
+    }
+}
+
+export { updateProfileUI };
