@@ -33,7 +33,7 @@ router.post('/api/auth/signup', async (req, res) => {
             return res.status(400).json({ message: "This email is already registered." });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const userAvatar = await getLeastUsedAvatarUrl(); // Use the new function
+        const userAvatar = await getLeastUsedAvatarUrl();
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email', isVerified: false, emailVerificationToken: verificationToken, emailVerificationExpires: Date.now() + 10 * 60 * 1000, hasCustomAvatar: false });
         await newUser.save();
@@ -126,7 +126,7 @@ router.post('/api/auth/request-password-reset', async (req, res) => {
         const htmlMessage = NOBITA_EMAIL_TEMPLATE("🔐 Password Reset", user.name, "🔁 Reset Your Password", resetUrl, user.avatarUrl, 'reset-request');
         await sendEmail({ email: user.email, subject: 'Your Password Reset Link (Nobita Feedback App)', html: htmlMessage });
         res.status(200).json({ message: "A password reset link has been sent to your email (if valid and linked)." });
-    } catch (error) { console.error('Request password reset API error:', error); res.status(500).json({ message: "Something went wrong processing the password reset request." }); }
+    } catch (error) { console.error('Request password reset API error:', error); res.status(500).json({ message: "Something went wrong while processing the password reset request." }); }
 });
 
 router.post('/api/auth/reset-password', async (req, res) => {
@@ -173,13 +173,23 @@ router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, 
         if (!user) return res.status(404).json({ message: 'User not found.' });
         if (user.loginMethod === 'google') {
             if (typeof name !== 'undefined' && name !== user.name) { user.name = name.trim(); }
-            if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) { user.avatarUrl = avatarUrl; user.hasCustomAvatar = true; }
+            if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) { 
+                await getAndIncrementAvatarUsage(user.avatarUrl); // Decrement old avatar usage (optional but good practice)
+                user.avatarUrl = avatarUrl; 
+                user.hasCustomAvatar = true; 
+                await getAndIncrementAvatarUsage(avatarUrl); // Increment new avatar usage
+            }
         } else {
             if (typeof name !== 'undefined') {
                 if (!name || !name.trim()) return res.status(400).json({ message: 'Name cannot be empty.' });
                 user.name = name.trim();
             }
-            if (typeof avatarUrl !== 'undefined' && avatarUrl) { user.avatarUrl = avatarUrl; user.hasCustomAvatar = true; }
+            if (typeof avatarUrl !== 'undefined' && avatarUrl) { 
+                await getAndIncrementAvatarUsage(user.avatarUrl); // Decrement old avatar usage (optional but good practice)
+                user.avatarUrl = avatarUrl; 
+                user.hasCustomAvatar = true; 
+                await getAndIncrementAvatarUsage(avatarUrl); // Increment new avatar usage
+            }
         }
         await user.save();
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl, name: user.name } });
