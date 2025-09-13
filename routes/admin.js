@@ -4,20 +4,20 @@ const router = express.Router();
 const { User, Feedback, Blog, AdminSettings } = require('../config/database');
 const { authenticateAdminToken } = require('../middleware/auth');
 const { createUserPayload } = require('../utils/helpers');
-const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
+const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { sendPushNotificationToUser } = require('../services/pushNotification');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path'); // Path module yahan import karna zaroori hai
-const fs = require('fs'); // fs module yahan import karna zaroori hai
-const axios = require('axios'); // axios module yahan import karna zaroori hai
-const githubService = require('../services/githubService'); // githubService import karein
+const path = require('path');
+const fs = require('fs');
+const axios = require('axios');
+const githubService = require('../services/githubService');
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
-const BASE_DIR = path.resolve(__dirname, '..'); // Base directory yahan define karein
+const BASE_DIR = path.resolve(__dirname, '..');
 
 router.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
@@ -114,7 +114,10 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
         const feedback = await Feedback.findById(feedbackId);
         if (!feedback) return res.status(404).json({ message: 'Feedback not found.' });
         if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
-        const newAvatarUrl = getRandomCloudinaryAvatarUrl();
+        
+        // Use the new smart avatar selection function
+        const newAvatarUrl = await getLeastUsedAvatarUrl();
+        
         let query = {};
         if (feedback.userId) {
             const user = await User.findById(feedback.userId);
@@ -126,6 +129,10 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
             query = { name: feedback.name, timestamp: { $lte: feedback.timestamp } };
         }
         await Feedback.updateMany(query, { $set: { avatarUrl: newAvatarUrl } });
+        
+        // Also increment the usage count of the new avatar
+        await getAndIncrementAvatarUsage(newAvatarUrl);
+        
         const updatedFeedback = await Feedback.findById(feedbackId);
         res.status(200).json(updatedFeedback);
     } catch (error) { 
@@ -199,7 +206,7 @@ router.get('/api/admin/notifications', authenticateAdminToken, async (req, res) 
             name: fb.name,
             feedback: fb.feedback,
             timestamp: fb.timestamp,
-            avatarUrl: fb.avatarUrl // Include avatarUrl
+            avatarUrl: fb.avatarUrl
         }));
 
         res.json(notificationData);
