@@ -161,8 +161,8 @@
           <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
         </div>
     </div>
-    <div id="userProfileModal" class="auth-modal-overlay"> 
-        <div class="auth-modal-content"> 
+    <div id="userProfileModal" class="auth-modal-overlay">
+        <div class="auth-modal-content">
             <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
             <h2 style="margin-bottom: 10px;">My Profile</h2>
             <div class="profile-scroll-content">
@@ -197,7 +197,7 @@
                         <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
                     </div>
                     <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
-                </form>
+               </form>
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
@@ -217,7 +217,7 @@
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
                     </div>
                     <div class="profile-form-row">
-                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                      <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
                     </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
@@ -230,13 +230,21 @@
     <div class="overlay" id="forgotPasswordNewOverlay">
         <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
     </div>
-    <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
-    <p>
-      <i class="fas fa-exclamation-triangle"></i> 
-      Please verify your email to edit feedback, edit profile, and upload avatar.
-    </p>
-    <button id="send-verification-email-btn-form">Send Verification Email</button>
-</div>
+    <div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
     <div class="container" id="guide-start">
         <div class="step-container">
             <div class="step-header">
