@@ -18,6 +18,7 @@ function updateProfileModalUI(user) {
     const changePasswordBtn = document.getElementById('change-password-btn');
     const currentPasswordGroup = document.getElementById('current-password-group');
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
+    const chooseDefaultAvatarBtn = document.getElementById('choose-default-avatar-btn');
 
     const isEmailUserUnverified = user.loginMethod === 'email' && !user.isVerified;
     const isGoogleUser = user.loginMethod === 'google';
@@ -59,6 +60,11 @@ function updateProfileModalUI(user) {
     }
 
     if (profileDisplayAvatar) profileDisplayAvatar.src = user.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(user.name.charAt(0).toUpperCase())}`;
+
+    if (chooseDefaultAvatarBtn) {
+        chooseDefaultAvatarBtn.classList.remove('popup-button', 'primary');
+        chooseDefaultAvatarBtn.classList.add('profile-avatar-action-btn');
+    }
 }
 window.updateProfileModalUI = updateProfileModalUI;
 
@@ -421,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696647/nobita_avatars_library/nobita-avatar-1757696646696-41.jpg",
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696648/nobita_avatars_library/nobita-avatar-1757696647866-42.jpg",
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696650/nobita_avatars_library/nobita-avatar-1757696649856-43.jpg",
-        "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696652/nobita_avatars_library/nobita-avatar-1757696651735-44.jpg",
+        "https://res.com/dyv7xav3e/image/upload/v1757696652/nobita_avatars_library/nobita-avatar-1757696651735-44.jpg",
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696654/nobita_avatars_library/nobita-avatar-1757696653808-45.jpg",
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696656/nobita_avatars_library/nobita-avatar-1757696655693-46.jpg",
         "https://res.cloudinary.com/dyv7xav3e/image/upload/v1757696657/nobita_avatars_library/nobita-avatar-1757696656819-47.png",
