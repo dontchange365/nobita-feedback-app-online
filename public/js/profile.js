@@ -292,7 +292,7 @@ async function changePassword(currentPassword, newPassword, confirmNewPassword) 
     }
 
     const user = JSON.parse(localStorage.getItem('user'));
-    if (user.loginMethod === 'email' && user.hasPassword === false) {
+    if (user.loginMethod === 'google' && user.hasPassword === false) {
         // If user is Google login but needs to set a password
     } else {
         if (!currentPassword) {
