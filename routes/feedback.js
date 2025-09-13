@@ -93,18 +93,14 @@ router.post('/api/feedback', async (req, res) => {
 
             let guestAvatarUrl;
             if (guestIdFromBody) {
-                // Find existing guest feedback to get the avatar
                 const existingFeedback = await Feedback.findOne({ guestId: guestIdFromBody }).sort({ timestamp: -1 });
                 if (existingFeedback) {
                     guestAvatarUrl = existingFeedback.avatarUrl;
                 } else {
-                    // If guestId is provided but no feedback found, maybe first submission got lost. Assign a new avatar.
                     guestAvatarUrl = await getLeastUsedAvatarUrl();
                 }
-                // FIX: Add this line to ensure guestId is saved with the new feedback
                 feedbackData.guestId = guestIdFromBody;
             } else {
-                // New guest, assign a new guestId and avatar
                 guestAvatarUrl = await getLeastUsedAvatarUrl();
                 feedbackData.guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             }
@@ -130,7 +126,6 @@ router.post('/api/feedback', async (req, res) => {
         const newFeedback = new Feedback(feedbackData);
         await newFeedback.save();
 
-        // Emit the entire new feedback object via WebSocket using req.io
         req.io.emit('new-feedback', newFeedback);
 
         sendPushNotificationToAdmin(newFeedback);
