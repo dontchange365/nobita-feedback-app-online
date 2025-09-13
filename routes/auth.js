@@ -4,7 +4,7 @@ const router = express.Router();
 const { User, Feedback } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
 const { upload, cloudinary } = require('../middleware/fileUpload');
-const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
+const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { createUserPayload } = require('../utils/helpers');
 const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService');
 const bcrypt = require('bcryptjs');
@@ -33,7 +33,7 @@ router.post('/api/auth/signup', async (req, res) => {
             return res.status(400).json({ message: "This email is already registered." });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const userAvatar = getRandomCloudinaryAvatarUrl();
+        const userAvatar = await getLeastUsedAvatarUrl(); // Use the new function
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email', isVerified: false, emailVerificationToken: verificationToken, emailVerificationExpires: Date.now() + 10 * 60 * 1000, hasCustomAvatar: false });
         await newUser.save();
@@ -75,8 +75,8 @@ router.post('/api/auth/google-signin', async (req, res) => {
         if (!user) {
             user = await User.findOne({ email: email.toLowerCase() });
             if (user) {
-                if (user.loginMethod === 'email') { user.googleId = googleId; if (!user.hasCustomAvatar) { user.avatarUrl = googleAvatar || user.avatarUrl; } user.isVerified = true; user.emailVerificationToken = undefined; user.emailVerificationExpires = undefined; }
-            } else { user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || getRandomCloudinaryAvatarUrl(), loginMethod: 'google', isVerified: true, hasCustomAvatar: false }); }
+                if (user.loginMethod === 'email') { user.googleId = googleId; if (!user.hasCustomAvatar) { user.avatarUrl = googleAvatar || await getLeastUsedAvatarUrl(); } user.isVerified = true; user.emailVerificationToken = undefined; user.emailVerificationExpires = undefined; }
+            } else { user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || await getLeastUsedAvatarUrl(), loginMethod: 'google', isVerified: true, hasCustomAvatar: false }); }
             await user.save();
         } else { if (googleAvatar && !user.hasCustomAvatar) { user.avatarUrl = googleAvatar; await user.save(); } if (!user.isVerified) { user.isVerified = true; await user.save(); } }
         if (linkGuestId) { await Feedback.updateMany({ guestId: linkGuestId, userId: null }, { $set: { userId: user._id, name: user.name, avatarUrl: user.avatarUrl, guestId: null } }); }
@@ -106,7 +106,7 @@ router.post('/api/auth/request-email-verification', authenticateToken, async (re
         await user.save();
         const verifyUrl = `${FRONTEND_URL}/verify-email.html?token=${verificationToken}`;
         const emailHtml = NOBITA_EMAIL_TEMPLATE("📩 Email Verification", user.name, "✅ Verify Your Email", verifyUrl, user.avatarUrl, 'verify-request');
-        try { await sendEmail({ email: user.email, subject: 'Your Email Verification Link (Nobita Feedback App)', html: emailHtml }); } catch (emailError) { console.error("Error sending verification email:", emailError.message); }
+        try { await sendEmail({ email: user.email, subject: 'Nobita Feedback App: Email Verification', html: emailHtml }); } catch (emailError) { console.error("Error sending verification email:", emailError.message); }
         res.status(200).json({ message: "Verification link has been sent to your email." });
     } catch (error) { console.error('Request email verification API error:', error); res.status(500).json({ message: "Something went wrong processing the email verification request." }); }
 });
@@ -244,4 +244,3 @@ router.get('/api/vapid-public-key', (req, res) => {
 });
 
 module.exports = router;
-
