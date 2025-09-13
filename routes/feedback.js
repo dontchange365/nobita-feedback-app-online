@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { Feedback, User } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
-const { getRandomCloudinaryAvatarUrl } = require('../utils/avatarGenerator');
+const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { sendPushNotificationToAdmin } = require('../services/pushNotification');
 const jwt = require('jsonwebtoken');
 
@@ -99,19 +99,20 @@ router.post('/api/feedback', async (req, res) => {
                     guestAvatarUrl = existingFeedback.avatarUrl;
                 } else {
                     // If guestId is provided but no feedback found, maybe first submission got lost. Assign a new avatar.
-                    guestAvatarUrl = getRandomCloudinaryAvatarUrl();
+                    guestAvatarUrl = await getLeastUsedAvatarUrl();
                 }
                 // FIX: Add this line to ensure guestId is saved with the new feedback
                 feedbackData.guestId = guestIdFromBody;
             } else {
                 // New guest, assign a new guestId and avatar
-                guestAvatarUrl = getRandomCloudinaryAvatarUrl();
+                guestAvatarUrl = await getLeastUsedAvatarUrl();
                 feedbackData.guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             }
 
             feedbackData.name = guestNameFromBody;
             feedbackData.avatarUrl = guestAvatarUrl;
             feedbackData.userId = null;
+            await getAndIncrementAvatarUsage(guestAvatarUrl);
 
         } else { // Logged-in user
             let decodedUserPayload;
