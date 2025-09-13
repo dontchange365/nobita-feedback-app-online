@@ -166,20 +166,27 @@
     flex-wrap: wrap;
 }
 
-.upload-avatar-btn, .choose-default-avatar-btn {
-    background-color: var(--primary-color); color: var(--secondary-color);
-    padding: 8px 15px; border-radius: 25px; cursor: pointer; font-size: 0.9em;
-    font-weight: 500; transition: background-color 0.2s, transform 0.1s;
-    display: inline-flex; align-items: center; gap: 8px;
+.profile-avatar-action-btn {
+    background-color: var(--primary-color); 
+    color: var(--secondary-color);
+    padding: 8px 15px; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    font-size: 0.9em;
+    font-weight: 500; 
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px;
     border: 1px solid var(--secondary-color);
 }
 
-.upload-avatar-btn:hover, .choose-default-avatar-btn:hover {
+.profile-avatar-action-btn:hover {
     background-color: #550a8a;
     transform: translateY(-2px);
 }
 
-.upload-avatar-btn i, .choose-default-avatar-btn i {
+.profile-avatar-action-btn i {
     font-size: 1.1em;
 }
 
@@ -297,7 +304,7 @@
     #userProfileModal .auth-modal-content { max-width: 99vw !important; padding: 10px 2vw 10px 2vw !important; }
     .profile-scroll-content { max-height: 60vh; padding: 5px 10px 10px 10px; }
     .user-profile-menu{ width:calc(100vw - 40px); right:10px; top: 70px; }
-    .upload-avatar-btn, .choose-default-avatar-btn { font-size: 0.85em; padding: 7px 12px; }
+    .profile-avatar-action-btn { font-size: 0.85em; padding: 7px 12px; }
     #userProfileModal button, #userProfileModal input[type="button"] {
         min-width: 100px;
         font-size: 0.9em;
