@@ -678,7 +678,7 @@
         <h3 class="creator-name">👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</h3>
         <p class="creator-username"><a href="https://ig.me/m/chatbot.nobi" target="_blank">@nobita_huu</a></p>
         <p class="creator-bio">𝘛𝘖 𝘌𝘝𝘌𝘙𝘠𝘖𝘕𝘌 𝘞𝘏𝘖 𝘏𝘈𝘚 𝘛𝘏𝘌 𝘚𝘈𝘔𝘌 𝘕𝘈𝘔𝘌 𝘈𝘚 𝘔𝘌,<br>
-            𝘐 𝘈𝘔 𝘛𝘏𝘌 𝘉𝘌𝘛𝘛𝘌𝘙 𝘝𝘌𝘙𝘚𝘐𝘖𝘕!<br>
+            𝘐 A𝘔 𝘛𝘏𝘌 𝘉𝘌𝘛𝘛𝘌𝘙 𝘝𝘌𝘙𝘚𝘐𝘖𝘕!<br>
             𝘌𝘟 𝘍𝘠𝘛𝘌𝘙 𝘕𝘖𝘉𝘐𝘛𝘈🤟</p>
         <div class="social-links">
             <a href="https://instagram.com/nobita_huu" class="social-link">
@@ -886,7 +886,21 @@
     <footer class="main-footer">
         Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
     </footer>
-
+    <div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
     <script>
         // Initialize Particles.js
         particlesJS('particles-js', {
