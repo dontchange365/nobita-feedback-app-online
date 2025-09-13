@@ -87,5 +87,5 @@ module.exports = {
   Blog: mongoose.model('Blog', blogSchema),
   NotificationSubscription: mongoose.model('NotificationSubscription', notificationSubscriptionSchema),
   AdminSettings: mongoose.model('AdminSettings', adminSettingsSchema),
-  AvatarUsage: mongoose.model('AvatarUsage', avatarUsageSchema) // NEW export
+  AvatarUsage: mongoose.model('AvatarUsage', avatarUsageSchema)
 };
