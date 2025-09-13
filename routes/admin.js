@@ -115,7 +115,6 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
         if (!feedback) return res.status(404).json({ message: 'Feedback not found.' });
         if (!feedback.name) return res.status(400).json({ message: 'Guest name missing for avatar generation.' });
         
-        // Use the new smart avatar selection function
         const newAvatarUrl = await getLeastUsedAvatarUrl();
         
         let query = {};
@@ -130,7 +129,6 @@ router.put('/api/admin/feedback/:feedbackId/change-avatar', authenticateAdminTok
         }
         await Feedback.updateMany(query, { $set: { avatarUrl: newAvatarUrl } });
         
-        // Also increment the usage count of the new avatar
         await getAndIncrementAvatarUsage(newAvatarUrl);
         
         const updatedFeedback = await Feedback.findById(feedbackId);
