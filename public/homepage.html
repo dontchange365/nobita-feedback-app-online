@@ -340,8 +340,8 @@
           <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
         </div>
     </div>
-    <div id="userProfileModal" class="auth-modal-overlay">
-        <div class="auth-modal-content">
+    <div id="userProfileModal" class="auth-modal-overlay"> 
+        <div class="auth-modal-content"> 
             <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
             <h2 style="margin-bottom: 10px;">My Profile</h2>
             <div class="profile-scroll-content">
@@ -351,9 +351,12 @@
                 </div>
                 <div class="profile-avatar-section">
                     <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="profile-avatar-action-btn"><i class="fas fa-cloud-upload-alt"></i> Upload Avatar</label>
+                        <label id="choose-default-avatar-btn" class="profile-avatar-action-btn"><i class="fas fa-magic"></i> Choose Default</label>
+                    </div>
                     <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
-                    <label for="avatar-upload-input" class="upload-avatar-btn"><i class="fas fa-camera"></i> Change Avatar</label>
-                    <button type="button" id="upload-avatar-now-btn" class="popup-button primary" style="display:none; margin-top: 10px;">
+                    <button type="button" id="upload-avatar-now-btn" class="profile-avatar-action-btn" style="display:none; margin-top: 10px;">
                         <i class="fas fa-upload"></i> Upload Avatar
                     </button>
                     <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
@@ -373,7 +376,7 @@
                         <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
                     </div>
                     <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
-               </form>
+                </form>
                 <div class="fancy-divider"></div>
                 <h3 style="margin-bottom: 15px;">Change Password</h3>
                 <form id="change-password-form">
@@ -388,12 +391,12 @@
                         <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
                     </div>
                     <div class="input-row-profile">
-                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
                         <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
                         <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
                     </div>
                     <div class="profile-form-row">
-                      <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
                     </div>
                     <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
                         <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
