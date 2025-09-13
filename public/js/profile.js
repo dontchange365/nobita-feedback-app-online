@@ -18,7 +18,6 @@ function updateProfileModalUI(user) {
     const changePasswordBtn = document.getElementById('change-password-btn');
     const currentPasswordGroup = document.getElementById('current-password-group');
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
-    const chooseDefaultAvatarBtn = document.getElementById('choose-default-avatar-btn');
 
     const isEmailUserUnverified = user.loginMethod === 'email' && !user.isVerified;
     const isGoogleUser = user.loginMethod === 'google';
@@ -60,11 +59,6 @@ function updateProfileModalUI(user) {
     }
 
     if (profileDisplayAvatar) profileDisplayAvatar.src = user.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(user.name.charAt(0).toUpperCase())}`;
-
-    if (chooseDefaultAvatarBtn) {
-        chooseDefaultAvatarBtn.classList.remove('popup-button', 'primary');
-        chooseDefaultAvatarBtn.classList.add('profile-avatar-action-btn');
-    }
 }
 window.updateProfileModalUI = updateProfileModalUI;
 
@@ -74,6 +68,9 @@ function updateProfileModalUILogout() {
     const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
     const avatarUploadInput = document.getElementById('avatar-upload-input');
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
+    
+    // Yahan chooseDefaultAvatarBtn ko bhi logout state mein reset karein
+    const chooseDefaultAvatarBtn = document.getElementById('choose-default-avatar-btn');
 
     [saveProfileChangesBtn, changePasswordBtn, uploadAvatarNowBtn, avatarUploadInput].forEach(el => {
         if (el) el.disabled = true;
@@ -187,6 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadProgressBar = document.getElementById('upload-progress-bar');
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
+    const uploadAvatarLabel = document.getElementById('upload-avatar-label');
+    const chooseDefaultAvatarBtn = document.getElementById('choose-default-avatar-btn');
 
     if (avatarUploadInput) {
         avatarUploadInput.addEventListener('change', () => {
@@ -212,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 reader.readAsDataURL(file);
 
+                // FIX: hide the label and show the "Upload Avatar" button
+                if (uploadAvatarLabel) uploadAvatarLabel.style.display = 'none';
                 if (uploadAvatarNowBtn) {
                     uploadAvatarNowBtn.style.display = 'block';
                     uploadAvatarNowBtn.disabled = false;
@@ -219,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (saveProfileChangesBtn) saveProfileChangesBtn.disabled = true;
             } else {
+                // FIX: show the label and hide the "Upload Avatar" button
+                if (uploadAvatarLabel) uploadAvatarLabel.style.display = 'inline-flex';
                 if (uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
                 if (window.currentUser) {
                     if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl || `https://placehold.co/120x120/6a0dad/FFFFFF?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
@@ -473,6 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (chooseDefaultAvatarBtn) {
         chooseDefaultAvatarBtn.addEventListener('click', showDefaultAvatarModal);
+    }
+    
+    // FIX: Add this part to ensure the default avatar button always has the correct styling on page load.
+    if (chooseDefaultAvatarBtn) {
+        chooseDefaultAvatarBtn.classList.remove('popup-button', 'primary');
+        chooseDefaultAvatarBtn.classList.add('profile-avatar-action-btn');
     }
 
     if (prevDefaultAvatarBtn) {
