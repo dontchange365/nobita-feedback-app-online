@@ -1,6 +1,7 @@
 // This file contains all UI-related functions to keep main.js clean.
 // It relies on functions from main.js (like apiRequest, handleAuthResponse etc.)
 
+// 
 // Shows fullscreen loading spinner
 function showFullScreenLoader() {
     const loader = document.getElementById('nobi-fullscreen-loader');
@@ -23,7 +24,8 @@ function openLoginModal() {
 
     const authModalOverlay = document.getElementById('auth-modal-overlay');
     const busiconLoginContainer = document.getElementById('busicon-login-container');
-    const busiconSignupContainer = document.getElementById('busicon-signup-container');
+    const busiconSignupContainer 
+    = document.getElementById('busicon-signup-container');
     const googleLoginBtnContainer = document.getElementById('google-btn-container-login');
 
     if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) {
@@ -36,11 +38,13 @@ function openLoginModal() {
             googleLoginBtnContainer.innerHTML = ''; 
             google.accounts.id.renderButton(googleLoginBtnContainer, {
                 type: "standard",
-                theme: "filled_blue",
+        
+            theme: "filled_blue",
                 size: "large",
                 text: "continue_with",
                 shape: "pill",
                 logo_alignment: "left",
+  
                 width: 320
             });
             googleLoginBtnContainer.style.display = 'block';
@@ -57,7 +61,8 @@ function openSignupModal() {
     
     const authModalOverlay = document.getElementById('auth-modal-overlay');
     const busiconLoginContainer = document.getElementById('busicon-login-container');
-    const busiconSignupContainer = document.getElementById('busicon-signup-container');
+    const busiconSignupContainer = 
+    document.getElementById('busicon-signup-container');
     const googleSignupBtnContainer = document.getElementById('google-btn-container-signup');
 
     if (authModalOverlay && busiconLoginContainer && busiconSignupContainer) {
@@ -70,11 +75,13 @@ function openSignupModal() {
             googleSignupBtnContainer.innerHTML = '';
             google.accounts.id.renderButton(googleSignupBtnContainer, {
                 type: "standard",
-                theme: "filled_blue",
+        
+            theme: "filled_blue",
                 size: "large",
                 text: "continue_with",
                 shape: "pill",
                 logo_alignment: "left",
+   
                 width: 320
             });
             googleSignupBtnContainer.style.display = 'block';
@@ -92,7 +99,8 @@ function closeAuthModal() {
     if (authModalOverlay) {
         authModalOverlay.classList.remove('active');
         if (busiconLoginContainer) busiconLoginContainer.style.display = 'none';
-        if (busiconSignupContainer) busiconSignupContainer.style.display = 'none';
+        if 
+    (busiconSignupContainer) busiconSignupContainer.style.display = 'none';
     }
 }
 window.closeAuthModal = closeAuthModal;
@@ -114,7 +122,8 @@ window.togglePass = togglePass;
 // Custom Stylish Popup display function
 function showStylishPopup(options = {}) {
     const stylishPopupOverlay = document.getElementById('stylishPopupOverlay');
-    const stylishPopupTitleEl = document.getElementById('stylishPopupTitle');
+    const stylishPopupTitleEl = 
+    document.getElementById('stylishPopupTitle');
     const stylishPopupMessageEl = document.getElementById('stylishPopupMessage');
     const stylishPopupIconEl = document.getElementById('stylishPopupIcon');
     const stylishPopupButtonContainer = document.getElementById('stylishPopupButtonContainer');
@@ -128,7 +137,8 @@ function showStylishPopup(options = {}) {
         return;
     }
 
-    // Resetting the class list to prevent double icons
+    // Resetting the class 
+    list to prevent double icons
     stylishPopupIconEl.className = 'popup-icon-area'; // Keep base class
 
     // Mapping iconType to Font Awesome classes
@@ -138,6 +148,7 @@ function showStylishPopup(options = {}) {
         'info': 'fa-info-circle',
         'warning': 'fa-exclamation-triangle',
         'confirm': 'fa-question-circle',
+    
         'forgot_password': 'fa-key',
         'verify_email': 'fa-envelope-open-text',
         'celebrate': 'fa-star',
@@ -149,7 +160,8 @@ function showStylishPopup(options = {}) {
     let iconClassToUse = options.icon || iconsFA[options.iconType] || 'fa-info-circle';
 
     // Add the determined icon class to the element
-    stylishPopupIconEl.innerHTML = `<i class="fas ${iconClassToUse}"></i>`;
+    stylishPopupIconEl.innerHTML = `<i class="fas 
+    ${iconClassToUse}"></i>`;
 
 
     stylishPopupTitleEl.textContent = options.title || 'Notice';
@@ -164,23 +176,28 @@ function showStylishPopup(options = {}) {
     if (options.buttons && options.buttons.length > 0) {
         options.buttons.forEach(btnConfig => {
             const button = document.createElement('button');
+   
             button.textContent = btnConfig.text;
             button.className = `popup-button ${btnConfig.className || ''}`.trim();
             if (btnConfig.id) button.id = btnConfig.id;
             
             button.onclick = async () => {
-                let originalBtnHTML;
+        
+            let originalBtnHTML;
                 if (btnConfig.addSpinnerOnClick) {
                     originalBtnHTML = button.innerHTML;
                     button.disabled = true;
-                    button.innerHTML = `<span class="nobi-spinner"></span> ${btnConfig.spinnerText || 'Processing...'}`;
+        
+                button.innerHTML = `<span class="nobi-spinner"></span> ${btnConfig.spinnerText || 'Processing...'}`;
                 }
                 try {
                     await btnConfig.action(button);
-                } catch (e) {
+        
+            } catch (e) {
                     console.error("Error in popup button action:", e);
                 } finally {
-                    if (btnConfig.addSpinnerOnClick && stylishPopupOverlay.classList.contains('active') && document.body.contains(button)) {
+                    if (btnConfig.addSpinnerOnClick && stylishPopupOverlay.classList.contains('active') && document.body.contains(button)) 
+    {
                         button.disabled = false;
                         button.innerHTML = originalBtnHTML;
                     }
@@ -214,7 +231,8 @@ function closeStylishPopup() {
 window.closeStylishPopup = closeStylishPopup;
 
 /**
- * Fetches the user's current verification status from the backend
+ * Fetches the user's current verification status 
+ * from the backend
  * and updates the visibility of the email verification prompt on the UI.
  * This should be called on page load and after any user authentication event.
  */
@@ -226,7 +244,8 @@ async function checkUserVerificationStatus() {
     }
 
     const token = localStorage.getItem('nobita_jwt');
-    if (!token) {
+    if (!token) 
+    {
         // User is not logged in, ensure the prompt is hidden
         verificationPrompt.style.display = 'none';
         return;
@@ -235,7 +254,8 @@ async function checkUserVerificationStatus() {
     try {
         // Use the existing apiRequest helper to call the API_VALIDATE_TOKEN_URL
         // This assumes API_VALIDATE_TOKEN_URL points to an endpoint like /api/auth/me
-        const response = await window.apiRequest(window.API_VALIDATE_TOKEN_URL, 'GET');
+        const response = 
+    await window.apiRequest(window.API_VALIDATE_TOKEN_URL, 'GET');
 
         if (response.success && response.user) {
             // Update the global currentUser object with fresh data
@@ -244,11 +264,13 @@ async function checkUserVerificationStatus() {
             localStorage.setItem(window.USER_PROFILE_CACHE_KEY, JSON.stringify(window.currentUser));
 
             if (window.currentUser.isVerified) {
-                verificationPrompt.style.display = 'none'; // Hide if user is verified
+        
+            verificationPrompt.style.display = 'none'; // Hide if user is verified
             } else {
                 verificationPrompt.style.display = 'block'; // Show if user is not verified
             }
         } else {
+      
             // If token is invalid or user data cannot be fetched, hide the prompt
             console.warn("Failed to validate token or retrieve user profile:", response.message || "Unknown error.");
             verificationPrompt.style.display = 'none';
@@ -256,6 +278,7 @@ async function checkUserVerificationStatus() {
             // localStorage.removeItem('nobita_jwt');
         }
     } catch (error) {
+  
         console.error('Error in checkUserVerificationStatus:', error);
         // On network error or other API issues, decide whether to show or hide.
         // For safety, defaulting to showing if API call fails or there's an issue.
@@ -296,17 +319,20 @@ function renderForgotForm(emailValue = '', errorText = '') {
     if (!popupContentDiv) return;
 
     popupContentDiv.innerHTML = `
+     
         <button class="close" onclick="closeForgotPasswordNewPopup()">&times;</button>
         <div class="icon">🔑</div>
         <h2>Forgot Password?</h2>
         <p>Enter your registered email address below.<br>We’ll send you a reset link!</p>
         <div class="input-wrapper">
             <span class="mail-icon">
-                <svg width="21" height="21" viewBox="0 0 20 20" fill="none">
+                <svg 
+        width="21" height="21" viewBox="0 0 20 20" fill="none">
                     <rect x="3" y="5" width="14" height="10" rx="2.5" stroke="#7b2ff2" stroke-width="1.6"/>
                     <path d="M4.5 6.5L10 11L15.5 6.5" stroke="#7b2ff2" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
-            </span>
+    
+        </span>
             <input type="email" placeholder="Email Address" id="forgotPasswordEmailInput" autocomplete="off" value="${emailValue.replace(/\"/g,'&quot;')}" />
         </div>
         <div class="error-message" id="forgotPasswordErrorBox" style="display:${errorText?'block':'none'};">${errorText||''}</div>
@@ -317,7 +343,8 @@ function renderForgotForm(emailValue = '', errorText = '') {
 window.renderForgotForm = renderForgotForm;
 
 function renderForgotSuccess() {
-    const popupContentDiv = document.getElementById('forgotPasswordNewPopupContent');
+    const popupContentDiv 
+    = document.getElementById('forgotPasswordNewPopupContent');
     if (!popupContentDiv) return;
 
     popupContentDiv.innerHTML = `
@@ -326,10 +353,12 @@ function renderForgotSuccess() {
         <div class="success-box">
             <span class="success-icon">
                 <svg width="44" height="44" viewBox="0 0 52 52" fill="none">
-                    <circle cx="26" cy="26" r="25" stroke="white" stroke-width="3" fill="none"/>
+         
+            <circle cx="26" cy="26" r="25" stroke="white" stroke-width="3" fill="none"/>
                     <path d="M15 27l8 8 14-16" stroke="white" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </span>
+      
             <div class="success-msg">Reset Link Sent</div>
             <div class="success-sub">We’ve sent a password reset link to your email.<br>Please check your inbox & spam.</div>
             <button class="okay-btn" onclick="closeForgotPasswordNewPopup()">OKAY</button>
@@ -340,7 +369,8 @@ window.renderForgotSuccess = renderForgotSuccess;
 
 // Updates UI elements after a user logs in
 function updateUIAfterLogin() {
-    const navLoginIconTrigger = document.getElementById('login-icon-trigger');
+    const 
+    navLoginIconTrigger = document.getElementById('login-icon-trigger');
     const userProfileTrigger = document.getElementById('user-profile-trigger');
     const userProfileAvatarImg = document.getElementById('user-profile-avatar');
     const userProfileNameSpan = document.getElementById('user-profile-name');
@@ -357,14 +387,28 @@ function updateUIAfterLogin() {
     if (userProfileTrigger) {
         userProfileTrigger.classList.remove('hidden');
         if (userProfileAvatarImg) {
-            userProfileAvatarImg.src = window.currentUser.avatarUrl || `https://placehold.co/40x40/6a0dad/FFFFFF?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
+            
+    userProfileAvatarImg.src = window.currentUser.avatarUrl || `https://placehold.co/40x40/6a0dad/FFFFFF?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
         }
         if (userProfileNameSpan) userProfileNameSpan.textContent = window.currentUser.name;
     }
 
     if (menuAvatarImg) menuAvatarImg.src = window.currentUser.avatarUrl || `https://placehold.co/82x82/FFD700/23235a?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
-    if (menuUsernameSpan) menuUsernameSpan.textContent = window.currentUser.name;
-
+    
+    // CHANGE START: Check for verified user and add icon to menu username
+    if (menuUsernameSpan) {
+        menuUsernameSpan.textContent = window.currentUser.name;
+        if (window.currentUser.isVerified) {
+            const verifiedIcon = document.createElement('img');
+            verifiedIcon.src = '/images/blue-tick.svg';
+            verifiedIcon.alt = 'Verified';
+            verifiedIcon.className = 'menu-verified-icon';
+            verifiedIcon.style.cssText = 'height:18px; width:18px; margin-left: 5px; vertical-align: middle;';
+            menuUsernameSpan.appendChild(verifiedIcon);
+        }
+    }
+    // CHANGE END
+    
     if (nameInputInFeedbackForm) {
         nameInputInFeedbackForm.value = window.currentUser.name;
         nameInputInFeedbackForm.disabled = true;
@@ -376,6 +420,7 @@ function updateUIAfterLogin() {
     const emailVerificationPrompt = document.getElementById('email-verification-prompt');
     const commonPromptDisplay = isEmailUserUnverified ? 'flex' : 'none';
     if (emailVerificationPrompt) {
+    
         emailVerificationPrompt.style.display = commonPromptDisplay;
     }
     if (feedbackVerificationPrompt) {
@@ -402,6 +447,7 @@ function updateUIAfterLogin() {
     if(profileForgotPasswordLink) {
         profileForgotPasswordLink.addEventListener('click', e => {
             e.preventDefault();
+            
             // Pass the user's email to the render function to pre-fill the input
             window.openForgotModal(window.currentUser.email);
         });
@@ -418,7 +464,8 @@ function updateUIAfterLogout() {
     const userMenu = document.getElementById('userMenu');
     const userProfileModal = document.getElementById('userProfileModal');
     const emailVerificationPrompt = document.getElementById('email-verification-prompt');
-    const menuVerifyEmailOption = document.getElementById('menu-verify-email-option');
+    const menuVerifyEmailOption 
+    = document.getElementById('menu-verify-email-option');
     const nameInputInFeedbackForm = document.getElementById('name');
     const feedbackVerificationPrompt = document.getElementById('feedback-verification-prompt');
     const feedbackFormContainer = document.getElementById('feedback-form-container');
@@ -439,7 +486,8 @@ function updateUIAfterLogout() {
     if (menuVerifyEmailOption) menuVerifyEmailOption.style.display = 'none';
 
     if (nameInputInFeedbackForm) {
-        const storedGuestName = localStorage.getItem(window.GUEST_NAME_KEY);
+        const storedGuestName 
+    = localStorage.getItem(window.GUEST_NAME_KEY);
         nameInputInFeedbackForm.value = storedGuestName || '';
         nameInputInFeedbackForm.disabled = false;
         nameInputInFeedbackForm.placeholder = ' ';
@@ -458,7 +506,6 @@ function updateUIAfterLogout() {
 
     const submitButton = document.getElementById('submit-feedback');
     if (submitButton) submitButton.disabled = false;
-    
     // NEW: Remove event listener on logout to prevent memory leaks
     if(profileForgotPasswordLink) {
         // Need to add an event listener here to remove it
