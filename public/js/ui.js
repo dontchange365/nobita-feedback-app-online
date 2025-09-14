@@ -471,7 +471,17 @@ function updateUIAfterLogout() {
     const feedbackFormContainer = document.getElementById('feedback-form-container');
     const profileForgotPasswordLink = document.getElementById('profile-forgot-password-link');
 
-    if (navLoginIconTrigger) navLoginIconTrigger.classList.remove('hidden');
+    if (navLoginIconTrigger) {
+        navLoginIconTrigger.classList.remove('hidden');
+        // CHANGE START: Add event listener here to fix the bug
+        navLoginIconTrigger.addEventListener('click', e => {
+            e.stopPropagation();
+            window.openLoginModal();
+            if (userMenu) userMenu.classList.remove('active');
+            window.closeForgotPasswordNewPopup();
+        });
+        // CHANGE END
+    }
     if (userProfileTrigger) {
         userProfileTrigger.classList.add('hidden');
         if (userProfileAvatarImg) userProfileAvatarImg.src = 'https://i.ibb.co/VpjRLsv/sample-user.png';
