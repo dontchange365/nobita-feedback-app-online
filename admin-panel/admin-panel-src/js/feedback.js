@@ -216,7 +216,7 @@ window.renderDetailScreen = function(feedbackId) {
     const detailContainer = document.getElementById('detail-container');
     let userTag = '';
     const blueTickPath = '/images/blue-tick.svg',
-        redTickPath = '/images/red-tick.png';
+        redTickPath = '/images/red-tick.svg';
     if (fb.userId && typeof fb.userId === 'object') {
         if (fb.userId.isVerified) userTag = `<img src="${blueTickPath}" alt="V" title="Verified" style="height:1.25rem;">`;
         else if (fb.userId.loginMethod === 'email') userTag = `<img src="${redTickPath}" alt="NV" title="Not Verified" style="height:1.25rem;">`;
