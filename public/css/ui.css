@@ -436,6 +436,15 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 .user-profile-menu .menu-header .username {
   font-weight: 700; font-size: 1.13em; color: #FFD700;
   text-shadow: 0 1px 6px #3B82F6bb; letter-spacing: .4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-verified-icon {
+  height: 18px;
+  width: 18px;
+  margin-left: 5px;
+  vertical-align: middle;
 }
 .user-profile-menu ul {
   list-style: none; margin: 0; padding: 14px 0 8px 0;
