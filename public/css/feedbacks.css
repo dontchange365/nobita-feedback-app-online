@@ -6,8 +6,7 @@
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
-    padding: 
-100px 10%;
+    padding: 100px 10%;
     max-width: 1600px;
     margin: 0 auto;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -40,7 +39,7 @@
 .average-rating-container {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-padding: 25px 30px;
+    padding: 25px 30px;
     margin-bottom: 30px;
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -67,8 +66,7 @@ padding: 25px 30px;
     background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
     z-index: -1;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 
-0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     padding: 2px;
@@ -97,8 +95,7 @@ padding: 25px 30px;
     font-size: 4em;
     font-weight: 700;
     color: var(--secondary-color);
-    text-shadow: 0 0 15px rgba(255, 215, 
-0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
     line-height: 1;
     margin-bottom: 10px;
     animation: pulseText 2s infinite alternate;
@@ -126,7 +123,7 @@ padding: 25px 30px;
     padding: 4px 10px;
     border-radius: 15px;
     font-size: 0.75em;
-font-weight: bold;
+    font-weight: bold;
     margin-left: 8px;
     vertical-align: middle;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -154,7 +151,6 @@ font-weight: bold;
 }
 
 .avatar-img {
-  
     width: 52px;
     height: 52px;
     border-radius: 50%;
@@ -188,8 +184,7 @@ font-weight: bold;
     font-weight: bold;
 }
 
-.feedback-details strong.rating-5 { color: 
-var(--rating-5-color); }
+.feedback-details strong.rating-5 { color: var(--rating-5-color); }
 .feedback-details strong.rating-4 { color: var(--rating-4-color); }
 .feedback-details strong.rating-3 { color: var(--rating-3-color); }
 .feedback-details strong.rating-2 { color: var(--rating-2-color); }
@@ -216,8 +211,7 @@ var(--rating-5-color); }
     line-height: 1;
     position: relative;
     top: -0.1em;
-    /* Using a transparent PNG file to avoid the square background 
-*/
+    /* Using a transparent PNG file to avoid the square background */
     background-image: url('../images/blue-tick.svg');
     background-size: contain;
     background-repeat: no-repeat;
@@ -252,7 +246,6 @@ var(--rating-5-color); }
 }
 
 .feedback-details p {
- 
     margin-top: 4px;
     margin-bottom: 7px;
     word-wrap: break-word;
@@ -282,8 +275,7 @@ var(--rating-5-color); }
     bottom: 0;
     font-size: 2em;
     color: var(--accent-color);
-    line-height: 
-1;
+    line-height: 1;
 }
 
 .feedback-timestamp {
@@ -317,8 +309,7 @@ var(--rating-5-color); }
 
 .admin-reply::before {
     content: '“';
-    position: 
-absolute;
+    position: absolute;
     left: 5px;
     top: 0;
     font-size: 1.8em;
@@ -339,8 +330,7 @@ absolute;
 .admin-reply-content strong {
     color: #9B59B6;
     font-size: 0.95em;
-    display: 
-inline;
+    display: inline;
 }
 
 .admin-reply-content .reply-timestamp {
@@ -361,8 +351,7 @@ inline;
     padding: 4px;
     opacity: 0.75;
     z-index: 10;
-    
-transition: color 0.25s ease, transform 0.15s;
+    transition: color 0.25s ease, transform 0.15s;
 }
 
 .edit-feedback-btn:hover {
@@ -395,7 +384,7 @@ transition: color 0.25s ease, transform 0.15s;
     border-radius: 10px;
     margin-bottom: 20px;
     font-size: 0.95em;
-text-align: center;
+    text-align: center;
     display: none;
     flex-direction: column;
     gap: 10px;
@@ -431,8 +420,7 @@ text-align: center;
 
 .feedback-item.pinned {
     border-color: #FFD700;
-    box-shadow: 0 0 25px rgba(255, 
-215, 0, 0.45), 0 0 8px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.45), 0 0 8px rgba(255, 255, 255, 0.2);
     background: #3a3a7aee;
 }
 
@@ -466,8 +454,7 @@ text-align: center;
     position: absolute;
     top: 12px;
     right: -2px;
-    background: linear-gradient(135deg, 
-#ffd700, #f9b119);
+    background: linear-gradient(135deg, #ffd700, #f9b119);
     color: #332400;
     font-weight: 700;
     font-size: 0.9em;
@@ -493,17 +480,8 @@ text-align: center;
     width: 100%;
     text-align: center;
     padding: 20px;
-    grid-column: 1 / 
--1; /* This makes it span the full width of the grid */
+    grid-column: 1 / -1; /* This makes it span the full width of the grid */
 }
-/* --- START OF NEW CODE --- */
-.verified-icon-inline {
-    width: 18px; /* आइकन की चौड़ाई */
-    height: 18px; /* आइकन की ऊँचाई */
-    vertical-align: middle; /* नाम के साथ सही से अलाइन करने के लिए */
-    margin-left: 5px; /* नाम और आइकन के बीच में स्पेस */
-}
-/* --- END OF NEW CODE --- */
 
 /* Responsive adjustments for feedbacks section */
 @media (max-width: 768px) {
@@ -516,8 +494,7 @@ text-align: center;
     .feedback-details p { font-size: 1em; }
     .average-rating-container { padding: 20px; }
     .average-number { font-size: 3.5em; }
-    .average-stars { 
-font-size: 2em; }
+    .average-stars { font-size: 2em; }
 }
 @media (max-width: 480px) {
     #feedback-list-container { gap: 10px; }
@@ -528,8 +505,7 @@ font-size: 2em; }
     .avatar-img { width: 45px; height: 45px; }
     .feedback-details strong { font-size: 1em; }
     .feedback-stars { font-size: 1.3em; }
-    .feedback-details p 
-{ font-size: 0.9em; }
+    .feedback-details p { font-size: 0.9em; }
     .admin-reply { font-size: 0.8em; padding: 7px 9px; }
     .edit-feedback-btn { font-size: 1.1em; }
     .email-verification-prompt { padding: 12px; font-size: 0.9em; }
