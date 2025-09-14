@@ -1,3 +1,4 @@
+--- FILE: nobita-feedback-app-online/public/css/ui.css ---
 /* --- Global UI & Layout Styles --- */
 :root {
     --primary-color: #6a0dad;
@@ -295,7 +296,8 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
   position: relative;
 }
 .busicon-auth-form .input-icon {
-  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  position: absolute; left: 14px;
+  top: 50%; transform: translateY(-50%);
   color: var(--secondary-color); font-size: 1.15em;
 }
 .busicon-auth-form input[type="text"],
@@ -373,7 +375,8 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 }
 .busicon-social-btn {
   width: 46px; height: 46px; border-radius: 11px; border: 1.7px solid rgba(255, 215, 0, 0.3);
-  background: #23235a; color: var(--secondary-color); font-size: 1.32em; display: flex;
+  background: #23235a; color: var(--secondary-color); font-size: 1.32em;
+  display: flex;
   align-items: center; justify-content: center; cursor: pointer; transition: background .15s, border .15s, transform 0.1s;
 }
 .busicon-social-btn:hover {
@@ -424,7 +427,8 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 }
 .user-profile-menu .menu-header img {
   width: 82px; height: 82px; border-radius: 50%; margin-bottom: 4px;
-  border: 3px solid var(--secondary-color); /* Updated border color to match theme */
+  border: 3px solid var(--secondary-color);
+  /* Updated border color to match theme */
   box-shadow: 0 0 15px 2px rgba(255, 215, 0, 0.7); /* Subtle, attractive glow */
   transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover */
   animation: avatarGlow 2.2s infinite alternate; object-fit: cover;
@@ -436,6 +440,13 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 .user-profile-menu .menu-header .username {
   font-weight: 700; font-size: 1.13em; color: #FFD700;
   text-shadow: 0 1px 6px #3B82F6bb; letter-spacing: .4px;
+}
+/* NEW FIX: Profile Menu Username aur Blue Tick ke liye flexbox */
+.user-profile-menu .menu-header .username {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 .user-profile-menu ul {
   list-style: none; margin: 0; padding: 14px 0 8px 0;
@@ -465,7 +476,8 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
     transition: opacity 0.25s;
 }
 .stylish-popup-overlay.active {
-    opacity: 1; pointer-events: all; display: flex !important;
+    opacity: 1; pointer-events: all;
+    display: flex !important;
 }
 .stylish-popup-card {
     background: linear-gradient(135deg,#23235a 80%,#2e1e5f 100%);
@@ -565,7 +577,8 @@ button:active, .next-btn:active, .help-btn:active, .hero-btn:active, .corner-tri
 }
 .page-content-wrapper { width: 100%; padding-top: 20px; display: flex; flex-direction: column; align-items: center; }
 .owner-info { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0; transform: translateY(-15px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
-.owner-info.animate-in { opacity: 1; transform: translateY(0); }
+.owner-info.animate-in { opacity: 1;
+transform: translateY(0); }
 .owner-avatar { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--secondary-color); box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2); object-fit: cover; transition: transform 0.2s ease-out; }
 .owner-avatar:hover { transform: translateY(-3px) scale(1.05); }
 .owner-text { color: #A9A9A9; font-size: 0.95em; font-weight: 500; text-shadow: 0 0 6px rgba(0,0,0,0.3); font-family: 'Poppins', sans-serif; }
@@ -630,7 +643,8 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
 #enhance-feedback-btn:hover { background: linear-gradient(45deg, #EC4899, #8B5CF6); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); }
 #enhance-feedback-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #6c757d; box-shadow: none; }
 #feedback-list-container h2 { color: var(--secondary-color); margin-bottom: 18px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.18); padding-bottom: 10px; font-size: 1.8em; font-weight: 500; text-shadow: 0 0 9px rgba(255,215,0,0.25); grid-column: 1 / -1; position: relative; }
-#feedback-list-container h2::after { content: ""; display: block; width: 65px; height: 6px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); border-radius: 7px; margin-top: 8px; animation: underlineMove 1.8s infinite alternate; position: absolute; bottom: -10px; left: 0; transform: translateX(0); }
+#feedback-list-container h2::after { content: ""; display: block; width: 65px; height: 6px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); border-radius: 7px; margin-top: 8px; animation: underlineMove 1.8s infinite alternate; position: absolute;
+bottom: -10px; left: 0; transform: translateX(0); }
 .feedback-actions {
   display: flex;
   flex-direction: column;
@@ -653,7 +667,8 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
 .step-container::before { content: ''; position: absolute; inset: -3px; border-radius: 25px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); z-index: -1; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 3px; }
 .step-container:hover { transform: translateY(-5px) scale(1.005); box-shadow: 0 18px 45px rgba(0,0,0,0.25); }
 .step-header { display: flex; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); }
-.step-number { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: var(--text-color-light); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; margin-right: 20px; box-shadow: 0 5px 15px rgba(106,13,173,0.4); border: 2px solid var(--secondary-color); }
+.step-number { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: var(--text-color-light); width: 50px;
+height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; margin-right: 20px; box-shadow: 0 5px 15px rgba(106,13,173,0.4); border: 2px solid var(--secondary-color); }
 .step-title { font-size: 1.6em; color: var(--secondary-color); font-weight: 600; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
 .step-content { font-size: 1.05em; line-height: 1.7; color: var(--text-color-light); opacity: 0.9; }
 .step-content p { margin-bottom: 15px; }
@@ -661,7 +676,8 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
 .important { background: rgba(255, 193, 7, 0.2); border: 1px solid var(--warning-color); border-radius: 10px; padding: 18px; margin: 20px 0; color: var(--warning-color); font-weight: 500; box-shadow: inset 0 0 10px rgba(255, 193, 7, 0.1); }
 .important::before { content: "⚠️ "; font-weight: bold; font-size: 1.1em; color: #ffda73; }
 .success { background: rgba(40, 167, 69, 0.2); border: 1px solid var(--success-color); border-radius: 10px; padding: 18px; margin: 20px 0; color: var(--success-color); font-weight: 500; box-shadow: inset 0 0 10px rgba(40, 167, 69, 0.1); }
-.success::before { content: "✅ "; font-weight: bold; font-size: 1.1em; color: #5cb85c; }
+.success::before { content: "✅ "; font-weight: bold; font-size: 1.1em; color: #5cb85c;
+}
 .url-box { background: var(--input-bg); border: 2px solid var(--card-border-color); border-radius: 10px; padding: 18px; font-family: 'Courier New', monospace; color: var(--text-color-light); margin: 15px 0; word-break: break-all; font-size: 1em; font-weight: 500; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
 .screenshot-box { background: rgba(0,0,0,0.15); border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 35px; text-align: center; color: rgba(255,255,255,0.6); margin: 20px 0; font-size: 1.1em; font-weight: 500; }
 .screenshot-img { width: 100%; max-width: 480px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 2px solid var(--primary-color); }
@@ -676,7 +692,8 @@ button#submit-feedback { background: linear-gradient(45deg, var(--accent-color),
 .next-btn:hover .fas { transform: translateX(5px); }
 .next-btn::before { content: none; }
 .help-btn { display: inline-flex; background: linear-gradient(135deg, var(--accent-color), #2563EB); color: #fff; padding: 14px 34px; font-size: 1.05em; font-weight: 600; border: none; border-radius: 28px; box-shadow: 0 4px 12px rgba(59,130,246,0.35); cursor: pointer; text-decoration: none; transition: all 0.25s ease; position: relative; overflow: hidden; align-items: center; justify-content: center; gap: 8px; }
-.help-btn:hover { background: linear-gradient(135deg, #2563EB, var(--accent-color)); transform: translateY(-3px) scale(1.05); box-shadow: 0 6px 18px rgba(59,130,246,0.5); color: var(--text-color-light); }
+.help-btn:hover { background: linear-gradient(135deg, #2563EB, var(--accent-color)); transform: translateY(-3px) scale(1.05);
+box-shadow: 0 6px 18px rgba(59,130,246,0.5); color: var(--text-color-light); }
 .help-btn .fas { font-size: 1.1em; transition: transform 0.3s ease; }
 .help-btn:hover .fas { transform: translateX(5px); }
 .help-btn::after { content: none; }
@@ -717,7 +734,8 @@ footer.main-footer {
 #animated-video-container {
     position: relative; width: 100%; max-width: 1200px;
     height: 30vh; overflow: hidden; background: linear-gradient(135deg, #ff8c00, #ff4d4d, #9400d3);
-    background-size: 200% 200%; animation: gradientAnimation 15s ease infinite;
+    background-size: 200% 200%;
+    animation: gradientAnimation 15s ease infinite;
     margin: 10px 0 5px 0; padding: 0 0px; border-radius: 25px;
     border: 4px solid transparent; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -758,7 +776,8 @@ footer.main-footer {
 .bubble:nth-child(2n) { background-color: rgba(255, 215, 0, 0.4); }
 .bubble:nth-child(3n) { background-color: rgba(255, 99, 71, 0.4); }
 .blog-content-overlay {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 80%; max-height: 80%; text-align: center; color: #fff;
     z-index: 6; pointer-events: none; display: flex;
     flex-direction: column; justify-content: center; align-items: center;
@@ -772,7 +791,8 @@ footer.main-footer {
     font-size: clamp(1.8em, 6vw, 3.5em); color: #FFD700; margin-bottom: 5px;
     line-height: 1.2; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 .animated-blog-summary {
@@ -844,6 +864,7 @@ footer.main-footer {
     .final-message-card h3 { font-size: 1.5em; }
     .final-message-card p { font-size: 0.95em; }
     .owner-avatar { width: 60px; height: 60px; }
+    
     #feedback-form-container h1 { font-size: 2em; }
     .star { font-size: 2.8em; }
     .profile-scroll-content { max-height: 65vh; }
@@ -854,7 +875,8 @@ footer.main-footer {
 }
 @media (max-width: 480px) {
     .navbar { padding: 6px 10px; gap: 6px; }
-    .nav-title { font-size: 1em; letter-spacing: 0.2px; }
+    .nav-title { font-size: 1em;
+    letter-spacing: 0.2px; }
     #user-profile-avatar-container, .nav-logo, #login-icon-trigger { width: 34px; height: 34px; }
     #login-icon-trigger .fas { font-size: 1.5em; }
     #user-profile-name { font-size: 0.8em; max-width: 60px; margin-left: 4px; }
@@ -869,6 +891,7 @@ footer.main-footer {
     .next-btn, .help-btn { width: 100%; max-width: none; margin: 0; box-sizing: border-box; font-size: 1.06em; }
     .main-footer { font-size: 0.92em; padding: 12px 0 7px 0; }
     .header h1 { font-size: 1.7em; }
+    
     .step-title { font-size: 1.4em; }
     .step-content { font-size: 0.95em; }
     .screenshot-box { padding: 25px; }
@@ -876,13 +899,15 @@ footer.main-footer {
     .final-message-card p { font-size: 0.95em; }
     .busicon-modal-content { padding: 20px 15px 15px 15px !important; max-width: calc(100vw - 30px); }
     .busicon-login-header { margin-bottom: 18px; }
-    .busicon-auth-form input[type="text"], .busicon-auth-form input[type="email"], .busicon-auth-form input[type="password"] { padding: 12px 12px 12px 40px; font-size: 0.95em; }
+    .busicon-auth-form input[type="text"], .busicon-auth-form input[type="email"], .busicon-auth-form input[type="password"] { padding: 12px 12px 12px 40px;
+    font-size: 0.95em; }
     .busicon-auth-form .input-icon { font-size: 1.05em; left: 12px; }
     .busicon-auth-form label { left: 40px; font-size: 0.95em; }
     .busicon-auth-form input:focus + label, .busicon-auth-form input:not(:placeholder-shown) + label { font-size: 0.8em; left: 10px; }
     .busicon-auth-btn { padding: 12px; font-size: 1.05em; }
     .busicon-social-btn { width: 42px; height: 42px; font-size: 1.2em; }
     #userProfileModal .auth-modal-content { max-width: 99vw !important; padding: 10px 2vw 10px 2vw !important; }
+    
     #feedback-form-container h1 { font-size: 1.7em; }
     .star { font-size: 2.3em; }
     .owner-info { margin-bottom: 15px; }
@@ -891,6 +916,7 @@ footer.main-footer {
     .upload-avatar-btn { font-size: 0.85em; padding: 7px 12px; }
     .main-container, #feedback-list-container { padding: 10px; }
     .average-rating-container { padding: 20px; }
+    
     .average-number { font-size: 3.5em; }
     .average-stars { font-size: 2em; }
     .stylish-popup-card {
