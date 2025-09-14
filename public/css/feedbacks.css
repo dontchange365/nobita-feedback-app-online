@@ -212,7 +212,7 @@
     position: relative;
     top: -0.1em;
     /* Using a transparent PNG file to avoid the square background */
-    background-image: url('../images/tick.png');
+    background-image: url('../images/blue-tick.svg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
