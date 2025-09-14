@@ -148,7 +148,7 @@ async function fetchFeedbacks() {
         window.totalFeedbacksCount = responseData.totalFeedbacks;
         window.currentAverageRating = responseData.averageRating;
 
-        if (window.hasMoreFeedbacks) {
+        if (window.hasMoreData) {
             console.log(`Page ${window.currentPage - 1} loaded. Loading more feedbacks...`);
         } else {
            
@@ -157,7 +157,7 @@ async function fetchFeedbacks() {
 
     } catch (err) {
         console.error("Failed to fetch feedbacks:", err);
-        window.hasMoreFeedbacks = false; // Stop trying to fetch on error
+        window.hasMoreData = false; // Stop trying to fetch on error
         if (window.currentPage === 1) {
             // Handle initial load failure
             renderFeedbackData([]);
@@ -225,6 +225,15 @@ function addFeedbackToDOM(fbData) {
     let nameDisplay = fbData.name || 'Guest';
     let typeTag = '', verTag = 
 '';
+    
+    // --- START OF NEW CODE ---
+    let blueTick = '';
+    if (fbData.userId && typeof fbData.userId === 'object' && fbData.userId.isVerified) {
+        blueTick = `<img class="verified-icon-inline" src="/images/blue-tick.svg" alt="Verified" title="Verified User">`;
+    } else if (fbData.googleIdSubmitter) {
+         blueTick = `<img class="verified-icon-inline" src="/images/blue-tick.svg" alt="Verified" title="Verified User">`;
+    }
+    // --- END OF NEW CODE ---
 
     if (fbData.userId && typeof fbData.userId === 'object') {
         nameDisplay = fbData.userId.name || fbData.name;
@@ -241,7 +250,7 @@ class="unverified-tag-feedback" title="Email Not Verified">✖ Unverified</span>
         verTag = `<span class="unverified-tag-feedback" title="Guest Submission${fbData.guestId ? ` (ID: ${fbData.guestId.substring(0,6)}...)` : ''}">Guest</span>`;
     }
 
-    strongName.innerHTML = `${nameDisplay} ${typeTag} ${verTag}`;
+    strongName.innerHTML = `${nameDisplay} ${typeTag} ${verTag} ${blueTick}`; // Blue Tick add kiya
 
     if (fbData.rating) strongName.classList.add(`rating-${fbData.rating}`);
     if (fbData.isEdited && fbData.userId) {
@@ -467,7 +476,7 @@ const handleScroll = () => {
     }
     lastScrollTime = now;
 
-    if (scrollPosition + windowHeight >= documentHeight - 500 && !window.isLoadingFeedbacks && window.hasMoreFeedbacks) {
+    if (scrollPosition + windowHeight >= documentHeight - 500 && !window.isLoadingFeedbacks && window.hasMoreData) {
         console.log("Fetching next page...");
         fetchFeedbacks();
     }
@@ -594,7 +603,7 @@ window.showStylishPopup({ iconType: 'error', title: 'Missing Information', messa
     window.resetFeedbackForm();
 // Initial fetch of the first page
     window.currentPage = 1;
-    window.hasMoreFeedbacks = true;
+    window.hasMoreData = true;
     fetchFeedbacks();
 
     // Add scroll event listener for lazy loading
