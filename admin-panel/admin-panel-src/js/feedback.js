@@ -174,7 +174,7 @@ window.renderFeedbackCard = function(fb, index, animationOffset = 0) {
     const rating = safeRating(fb.rating);
     const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
     const feedbackTime = niceTime(fb.timestamp || fb.createdAt);
-    const verificationBadge = (fb.userId && fb.userId.isVerified) ? `<img class="verification-badge" src="/images/blue-tick.png" alt="Verified">` : '';
+    const verificationBadge = (fb.userId && fb.userId.isVerified) ? `<img class="verification-badge" src="/images/blue-tick.svg" alt="Verified">` : '';
 
     const animDelay = (animationOffset + index) * 30;
 
@@ -215,7 +215,7 @@ window.renderDetailScreen = function(feedbackId) {
     };
     const detailContainer = document.getElementById('detail-container');
     let userTag = '';
-    const blueTickPath = '/images/blue-tick.png',
+    const blueTickPath = '/images/blue-tick.svg',
         redTickPath = '/images/red-tick.png';
     if (fb.userId && typeof fb.userId === 'object') {
         if (fb.userId.isVerified) userTag = `<img src="${blueTickPath}" alt="V" title="Verified" style="height:1.25rem;">`;
