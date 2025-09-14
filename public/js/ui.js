@@ -1,4 +1,3 @@
---- FILE: nobita-feedback-app-online/public/js/ui.js ---
 // This file contains all UI-related functions to keep main.js clean.
 // It relies on functions from main.js (like apiRequest, handleAuthResponse etc.)
 
@@ -364,14 +363,7 @@ function updateUIAfterLogin() {
     }
 
     if (menuAvatarImg) menuAvatarImg.src = window.currentUser.avatarUrl || `https://placehold.co/82x82/FFD700/23235a?text=${encodeURIComponent(window.currentUser.name.charAt(0).toUpperCase())}`;
-    if (menuUsernameSpan) {
-        let usernameText = window.currentUser.name;
-        // NEW FIX: Add blue tick for verified users in the profile menu
-        if (window.currentUser.isVerified) {
-            usernameText = `${usernameText} <img src="/images/blue-tick.svg" alt="Verified" style="height:1.2rem; vertical-align:middle; margin-left:5px;">`;
-        }
-        menuUsernameSpan.innerHTML = usernameText;
-    }
+    if (menuUsernameSpan) menuUsernameSpan.textContent = window.currentUser.name;
 
     if (nameInputInFeedbackForm) {
         nameInputInFeedbackForm.value = window.currentUser.name;
@@ -466,6 +458,7 @@ function updateUIAfterLogout() {
 
     const submitButton = document.getElementById('submit-feedback');
     if (submitButton) submitButton.disabled = false;
+    
     // NEW: Remove event listener on logout to prevent memory leaks
     if(profileForgotPasswordLink) {
         // Need to add an event listener here to remove it
