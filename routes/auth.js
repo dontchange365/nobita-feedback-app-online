@@ -223,16 +223,49 @@ router.post('/api/user/change-password', authenticateToken, isEmailVerified, asy
 router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.single('avatar'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
     try {
-        const result = await new Promise((resolve, reject) => { cloudinary.uploader.upload_stream({ folder: 'nobita_feedback_avatars', transformation: [ { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" }, { quality: "auto:eco" } ] }, (error, result) => { if (error) return reject(new Error(error.message)); if (!result || !result.secure_url) return reject(new Error('Cloudinary did not return a URL.')); resolve(result); }).end(req.file.buffer); });
-        const userId = req.user.userId; const user = await User.findById(userId);
+        const userId = req.user.userId;
+        const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found.' });
-        user.avatarUrl = result.secure_url; user.hasCustomAvatar = true;
+
+        const result = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream({
+                folder: 'nobita_feedback_avatars',
+                transformation: [
+                    { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" },
+                    { quality: "auto:eco" }
+                ]
+            }, (error, result) => {
+                if (error) return reject(new Error(error.message));
+                if (!result || !result.secure_url) return reject(new Error('Cloudinary did not return a URL.'));
+                resolve(result);
+            }).end(req.file.buffer);
+        });
+
+        // Purani avatar file ko delete karein agar woh custom avatar hai aur publicId मौजूद है
+        if (user.hasCustomAvatar && user.publicId) {
+            try {
+                await cloudinary.uploader.destroy(user.publicId);
+                console.log(`Successfully deleted old avatar with public ID: ${user.publicId}`);
+            } catch (error) {
+                console.error(`Error deleting old avatar from Cloudinary:`, error);
+            }
+        }
+        
+        user.avatarUrl = result.secure_url;
+        user.publicId = result.public_id; 
+        user.hasCustomAvatar = true;
         await user.save();
+        
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
+        
         const updatedUserForToken = createUserPayload(user);
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
+
         res.status(200).json({ message: 'Avatar uploaded successfully!', avatarUrl: user.avatarUrl, token: newToken });
-    } catch (error) { console.error('Avatar upload route error:', error); res.status(500).json({ message: 'Error uploading avatar.', error: error.message }); }
+    } catch (error) {
+        console.error('Avatar upload route error:', error);
+        res.status(500).json({ message: 'Error uploading avatar.', error: error.message });
+    }
 });
 
 router.post('/api/user/subscribe-notifications', authenticateToken, async (req, res) => {
