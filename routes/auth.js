@@ -10,7 +10,8 @@ const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { OAuth2Client } from 'google-auth-library');
+// CHANGE: Yahan se extra closing parenthesis ')' hata diya gaya hai.
+const { OAuth2Client } from 'google-auth-library';
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -237,7 +238,7 @@ router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUp
         }
         
         user.avatarUrl = req.file.path;
-        user.avatarPublicId = req.file.filename; // Cloudinary public_id ko save karein
+        user.avatarPublicId = req.file.filename;
         user.hasCustomAvatar = true;
         await user.save();
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
@@ -256,7 +257,6 @@ router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUp
         res.status(500).json({ message: 'Error uploading avatar.', error: error.message });
     }
 });
-// CHANGE END
 
 router.post('/api/user/subscribe-notifications', authenticateToken, async (req, res) => {
     const subscription = req.body.subscription;
