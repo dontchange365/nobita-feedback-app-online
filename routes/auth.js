@@ -241,7 +241,7 @@ router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, uploa
             }).end(req.file.buffer);
         });
 
-        // Purani avatar file ko delete karein agar woh custom avatar hai aur publicId मौजूद है
+        // Purane avatar ko delete karein agar woh custom avatar hai aur publicId मौजूद है
         if (user.hasCustomAvatar && user.publicId) {
             try {
                 await cloudinary.uploader.destroy(user.publicId);
