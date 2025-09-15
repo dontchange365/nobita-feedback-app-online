@@ -242,24 +242,25 @@ router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUp
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        const oldPublicId = user.avatarPublicId; // Get old public ID before updating
+        // CHANGE START: Delete old avatar from Cloudinary if it's a custom avatar
+        if (user.avatarPublicId) {
+            cloudinary.uploader.destroy(user.avatarPublicId, (error, result) => {
+                if (error) console.error("Old avatar deletion from Cloudinary failed:", error);
+                else console.log("Old avatar deleted from Cloudinary successfully:", result);
+            });
+        }
+        // CHANGE END
 
         // Update the user's avatar information
         user.avatarUrl = req.file.path;
+        // CHANGE START: Public ID ko update karna
         user.avatarPublicId = req.file.filename;
+        // CHANGE END
         user.hasCustomAvatar = true;
         await user.save();
 
         // Update all related feedbacks with the new avatar URL
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
-
-        // Safely delete old avatar from Cloudinary
-        if (oldPublicId) {
-            cloudinary.uploader.destroy(oldPublicId, (error, result) => {
-                if (error) console.error("Old avatar deletion from Cloudinary failed:", error);
-                else console.log("Old avatar deleted from Cloudinary successfully:", result);
-            });
-        }
         
         const updatedUserForToken = createUserPayload(user);
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
