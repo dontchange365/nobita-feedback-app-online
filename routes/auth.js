@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { User, Feedback } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
-const { upload, cloudinary } = require('../middleware/fileUpload');
+const { upload, cloudinary, newUpload } = require('../middleware/fileUpload');
 const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { createUserPayload } = require('../utils/helpers');
 const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService');
@@ -165,30 +165,34 @@ router.post('/api/auth/verify-email', async (req, res) => {
     } catch (error) { console.error('Verify email API error:', error); res.status(500).json({ message: "Something went wrong while verifying the email." }); }
 });
 
+// CHANGE START: Updated profile update route for avatar logic
 router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
     try {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found.' });
+
         if (user.loginMethod === 'google') {
-            if (typeof name !== 'undefined' && name !== user.name) { user.name = name.trim(); }
-            if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) { 
-                await getAndIncrementAvatarUsage(user.avatarUrl); // Decrement old avatar usage (optional but good practice)
-                user.avatarUrl = avatarUrl; 
-                user.hasCustomAvatar = true; 
-                await getAndIncrementAvatarUsage(avatarUrl); // Increment new avatar usage
+            if (typeof name !== 'undefined' && name !== user.name) {
+                user.name = name.trim();
+            }
+            if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) {
+                // If a new avatar is provided, and it's from default list, don't delete old one
+                // This will be handled by the new dedicated upload route for custom images
+                user.avatarUrl = avatarUrl;
+                user.hasCustomAvatar = true;
+                await getAndIncrementAvatarUsage(avatarUrl);
             }
         } else {
             if (typeof name !== 'undefined') {
                 if (!name || !name.trim()) return res.status(400).json({ message: 'Name cannot be empty.' });
                 user.name = name.trim();
             }
-            if (typeof avatarUrl !== 'undefined' && avatarUrl) { 
-                await getAndIncrementAvatarUsage(user.avatarUrl); // Decrement old avatar usage (optional but good practice)
-                user.avatarUrl = avatarUrl; 
-                user.hasCustomAvatar = true; 
-                await getAndIncrementAvatarUsage(avatarUrl); // Increment new avatar usage
+            if (typeof avatarUrl !== 'undefined' && avatarUrl) {
+                user.avatarUrl = avatarUrl;
+                user.hasCustomAvatar = true;
+                await getAndIncrementAvatarUsage(avatarUrl);
             }
         }
         await user.save();
@@ -196,8 +200,12 @@ router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, 
         const updatedUserForToken = createUserPayload(user);
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ message: 'Profile updated successfully!', user: updatedUserForToken, token: newToken });
-    } catch (error) { console.error('Profile update error:', error); res.status(500).json({ message: 'Failed to update profile.', error: error.message }); }
+    } catch (error) {
+        console.error('Profile update error:', error);
+        res.status(500).json({ message: 'Failed to update profile.', error: error.message });
+    }
 });
+// CHANGE END
 
 router.post('/api/user/change-password', authenticateToken, isEmailVerified, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
@@ -220,53 +228,55 @@ router.post('/api/user/change-password', authenticateToken, isEmailVerified, asy
     } catch (error) { console.error('Password change/create error:', error); res.status(500).json({ message: 'Failed to change/create password.', error: error.message }); }
 });
 
-router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, upload.single('avatar'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
+// CHANGE START: New avatar upload route to handle custom uploads
+router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUpload.single('avatar'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+    }
+    const userId = req.user.userId;
     try {
-        const userId = req.user.userId;
         const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: 'User not found.' });
-
-        const result = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream({
-                folder: 'nobita_feedback_avatars',
-                transformation: [
-                    { width: 150, height: 150, crop: "fill", gravity: "face", radius: "max" },
-                    { quality: "auto:eco" }
-                ]
-            }, (error, result) => {
-                if (error) return reject(new Error(error.message));
-                if (!result || !result.secure_url) return reject(new Error('Cloudinary did not return a URL.'));
-                resolve(result);
-            }).end(req.file.buffer);
-        });
-
-        // Purane avatar ko delete karein agar woh custom avatar hai aur publicId मौजूद है
-        if (user.hasCustomAvatar && user.publicId) {
-            try {
-                await cloudinary.uploader.destroy(user.publicId);
-                console.log(`Successfully deleted old avatar with public ID: ${user.publicId}`);
-            } catch (error) {
-                console.error(`Error deleting old avatar from Cloudinary:`, error);
-            }
+        if (!user) {
+            // Delete the new avatar from Cloudinary if user not found
+            await cloudinary.uploader.destroy(req.file.public_id);
+            return res.status(404).json({ message: 'User not found.' });
         }
-        
-        user.avatarUrl = result.secure_url;
-        user.publicId = result.public_id; 
+
+        const oldPublicId = user.avatarPublicId; // Get old public ID before updating
+
+        // Update the user's avatar information
+        user.avatarUrl = req.file.path;
+        user.avatarPublicId = req.file.filename;
         user.hasCustomAvatar = true;
         await user.save();
-        
+
+        // Update all related feedbacks with the new avatar URL
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
+
+        // Safely delete old avatar from Cloudinary
+        if (oldPublicId) {
+            cloudinary.uploader.destroy(oldPublicId, (error, result) => {
+                if (error) console.error("Old avatar deletion from Cloudinary failed:", error);
+                else console.log("Old avatar deleted from Cloudinary successfully:", result);
+            });
+        }
         
         const updatedUserForToken = createUserPayload(user);
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
-
+        
         res.status(200).json({ message: 'Avatar uploaded successfully!', avatarUrl: user.avatarUrl, token: newToken });
     } catch (error) {
         console.error('Avatar upload route error:', error);
+        // If DB update fails, we should try to delete the newly uploaded file to avoid orphaned images
+        if (req.file?.public_id) {
+            cloudinary.uploader.destroy(req.file.public_id).catch(err => {
+                console.error("Failed to delete newly uploaded file after DB error:", err);
+            });
+        }
         res.status(500).json({ message: 'Error uploading avatar.', error: error.message });
     }
 });
+// CHANGE END
 
 router.post('/api/user/subscribe-notifications', authenticateToken, async (req, res) => {
     const subscription = req.body.subscription;
