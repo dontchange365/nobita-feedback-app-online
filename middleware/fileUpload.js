@@ -17,13 +17,13 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// CHANGE START: New Cloudinary storage configuration
 const newStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: (req, file) => {
         return {
             folder: 'nobita_feedback_avatars',
-            public_id: `${req.user.userId}_${Date.now()}`,
+            // CHANGE: Public ID ko user ki DB ID ke roop mein set karein
+            public_id: req.user.userId,
             transformation: [{
                 width: 150,
                 height: 150,
@@ -38,6 +38,5 @@ const newStorage = new CloudinaryStorage({
 });
 
 const newUpload = multer({ storage: newStorage });
-// CHANGE END
 
 module.exports = { upload, cloudinary, newUpload };
