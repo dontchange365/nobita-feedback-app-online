@@ -10,8 +10,8 @@ const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-// CHANGE: Yahan se extra closing parenthesis ')' hata diya gaya hai.
-const { OAuth2Client } from 'google-auth-library';
+// FIX: Is line se extra closing parenthesis ')' hata diya gaya hai.
+const { OAuth2Client } = require('google-auth-library');
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
