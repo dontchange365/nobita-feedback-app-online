@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Avatar Upload Logic
+    // CHANGE START: Updated avatar upload logic
     const avatarUploadInput = document.getElementById('avatar-upload-input');
     const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
@@ -240,12 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (avatarUploadInput.files.length === 0) {
                 return window.showStylishPopup({ iconType: 'warning', title: 'No File Selected', message: 'Please select an image file to upload.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
             }
-
+            
             const file = avatarUploadInput.files[0];
             const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
+            formData.append('avatar', file); // 'avatar' is the field name on backend
 
             const originalBtnHTML = uploadAvatarNowBtn.innerHTML;
             uploadAvatarNowBtn.disabled = true;
@@ -253,10 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(uploadProgressBar) uploadProgressBar.style.display = 'block';
             if(progressFill) progressFill.style.width = '0%';
             if(progressText) progressText.textContent = '0%';
-
+            
             try {
                 const xhr = new XMLHttpRequest();
-                xhr.open('POST', CLOUDINARY_UPLOAD_URL, true);
+                xhr.open('POST', '/api/user/upload-avatar', true);
+                
+                const token = localStorage.getItem('nobita_jwt');
+                if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
                 xhr.upload.onprogress = e => {
                     if (e.lengthComputable) {
@@ -265,36 +266,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         if(progressText) progressText.textContent = Math.round(percent) + '%';
                     }
                 };
-
+                
                 await new Promise((resolve, reject) => {
                     xhr.onload = async () => {
                         if (xhr.status >= 200 && xhr.status < 300) {
-                            const cloudRes = JSON.parse(xhr.responseText);
-                            const imgUrl = cloudRes.secure_url;
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.token) localStorage.setItem('nobita_jwt', data.token);
+                            
+                            window.currentUser = { ...window.currentUser, ...data.user };
+                            localStorage.setItem('nobi_user_profile', JSON.stringify(window.currentUser));
+                            
+                            if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl;
+                            if (window.updateUIAfterLogin) window.updateUIAfterLogin();
+                            if (window.fetchFeedbacks) await window.fetchFeedbacks();
+                            
+                            avatarUploadInput.value = '';
+                            if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
 
-                            try {
-                                const beRes = await window.apiRequest(API_UPDATE_PROFILE_URL, 'PUT', { avatarUrl: imgUrl }, false);
-
-                                if (beRes.token) localStorage.setItem('nobita_jwt', beRes.token);
-                                window.currentUser = { ...window.currentUser, ...beRes.user };
-                                localStorage.setItem('nobi_user_profile', JSON.stringify(window.currentUser));
-
-                                if (profileDisplayAvatar) profileDisplayAvatar.src = window.currentUser.avatarUrl;
-                                if (window.updateUIAfterLogin) window.updateUIAfterLogin();
-                                if (window.fetchFeedbacks) await window.fetchFeedbacks();
-
-                                avatarUploadInput.value = '';
-                                if(uploadAvatarNowBtn) uploadAvatarNowBtn.style.display = 'none';
-
-                                window.showStylishPopup({ iconType: 'success', title: 'Avatar Updated!', message: 'Your new avatar has been uploaded and saved.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
-                                if(userProfileModal) userProfileModal.classList.remove('active'); // Auto-close modal on success
-                                resolve();
-                            } catch (beError) {
-                                reject(beError);
-                            }
+                            window.showStylishPopup({ iconType: 'success', title: 'Avatar Updated!', message: 'Your new avatar has been uploaded and saved.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
+                            if(userProfileModal) userProfileModal.classList.remove('active');
+                            resolve();
                         } else {
                             const errRes = JSON.parse(xhr.responseText);
-                            reject(new Error(errRes.error.message || 'Cloudinary upload failed.'));
+                            reject(new Error(errRes.message || 'Avatar upload failed.'));
                         }
                     };
 
@@ -311,6 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // CHANGE END
 
     // Change Password Form Submission
     const changePasswordForm = document.getElementById('change-password-form');
@@ -337,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return window.showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'All password fields are required.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
             }
             if (!isCreatePassword && !curPw) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'Current password is required.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
+                return window.showStylishPopup({ iconType: 'error', title: 'Empty Fields!', message: 'Current password is required to change password.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
             }
             if (newPw !== confNewPw) {
                 return window.showStylishPopup({ iconType: 'error', title: 'Password Mismatch!', message: 'The new passwords do not match.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
