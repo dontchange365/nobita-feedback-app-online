@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   googleId: { type: String, sparse: true, unique: true },
   avatarUrl: { type: String },
+  publicId: { type: String, default: null }, // NEW: publicId field add karein
   hasCustomAvatar: { type: Boolean, default: false },
   loginMethod: { type: String, enum: ['email', 'google'], required: true },
   createdAt: { type: Date, default: Date.now },
