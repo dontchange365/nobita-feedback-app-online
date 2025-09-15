@@ -22,8 +22,9 @@ const newStorage = new CloudinaryStorage({
     params: (req, file) => {
         return {
             folder: 'nobita_feedback_avatars',
-            // CHANGE: Public ID ko user ki DB ID ke roop mein set karein
+            // CHANGE START: Public ID ko user ki userId ke roop mein set karein
             public_id: req.user.userId,
+            // CHANGE END
             transformation: [{
                 width: 150,
                 height: 150,
