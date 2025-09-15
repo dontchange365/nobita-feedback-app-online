@@ -180,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // CHANGE START: Updated avatar upload logic
     const avatarUploadInput = document.getElementById('avatar-upload-input');
     const uploadAvatarNowBtn = document.getElementById('upload-avatar-now-btn');
     const profileDisplayAvatar = document.getElementById('profile-display-avatar');
@@ -305,7 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    // CHANGE END
 
     // Change Password Form Submission
     const changePasswordForm = document.getElementById('change-password-form');
