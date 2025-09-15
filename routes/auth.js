@@ -10,7 +10,7 @@ const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { OAuth2Client } = require('google-auth-library');
+const { OAuth2Client } from 'google-auth-library');
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -165,7 +165,6 @@ router.post('/api/auth/verify-email', async (req, res) => {
     } catch (error) { console.error('Verify email API error:', error); res.status(500).json({ message: "Something went wrong while verifying the email." }); }
 });
 
-// CHANGE START: Updated profile update route for avatar logic
 router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, res) => {
     const { name, avatarUrl } = req.body;
     const userId = req.user.userId;
@@ -178,8 +177,6 @@ router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, 
                 user.name = name.trim();
             }
             if (typeof avatarUrl !== 'undefined' && avatarUrl && avatarUrl !== user.avatarUrl) {
-                // If a new avatar is provided, and it's from default list, don't delete old one
-                // This will be handled by the new dedicated upload route for custom images
                 user.avatarUrl = avatarUrl;
                 user.hasCustomAvatar = true;
                 await getAndIncrementAvatarUsage(avatarUrl);
@@ -205,7 +202,6 @@ router.put('/api/user/profile', authenticateToken, isEmailVerified, async (req, 
         res.status(500).json({ message: 'Failed to update profile.', error: error.message });
     }
 });
-// CHANGE END
 
 router.post('/api/user/change-password', authenticateToken, isEmailVerified, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
@@ -228,7 +224,6 @@ router.post('/api/user/change-password', authenticateToken, isEmailVerified, asy
     } catch (error) { console.error('Password change/create error:', error); res.status(500).json({ message: 'Failed to change/create password.', error: error.message }); }
 });
 
-// CHANGE START: New avatar upload route to handle custom uploads
 router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUpload.single('avatar'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
@@ -237,38 +232,22 @@ router.post('/api/user/upload-avatar', authenticateToken, isEmailVerified, newUp
     try {
         const user = await User.findById(userId);
         if (!user) {
-            // Delete the new avatar from Cloudinary if user not found
             await cloudinary.uploader.destroy(req.file.public_id);
             return res.status(404).json({ message: 'User not found.' });
         }
-
-        // CHANGE START: Delete old avatar from Cloudinary if it's a custom avatar
-        if (user.avatarPublicId) {
-            cloudinary.uploader.destroy(user.avatarPublicId, (error, result) => {
-                if (error) console.error("Old avatar deletion from Cloudinary failed:", error);
-                else console.log("Old avatar deleted from Cloudinary successfully:", result);
-            });
-        }
-        // CHANGE END
-
-        // Update the user's avatar information
+        
         user.avatarUrl = req.file.path;
-        // CHANGE START: Public ID ko update karna
-        user.avatarPublicId = req.file.filename;
-        // CHANGE END
+        user.avatarPublicId = req.file.filename; // Cloudinary public_id ko save karein
         user.hasCustomAvatar = true;
         await user.save();
-
-        // Update all related feedbacks with the new avatar URL
         await Feedback.updateMany({ userId: user._id }, { $set: { avatarUrl: user.avatarUrl } });
         
         const updatedUserForToken = createUserPayload(user);
         const newToken = jwt.sign(updatedUserForToken, JWT_SECRET, { expiresIn: '7d' });
         
-        res.status(200).json({ message: 'Avatar uploaded successfully!', avatarUrl: user.avatarUrl, token: newToken });
+        res.status(200).json({ message: 'Avatar uploaded successfully!', user: updatedUserForToken, token: newToken });
     } catch (error) {
         console.error('Avatar upload route error:', error);
-        // If DB update fails, we should try to delete the newly uploaded file to avoid orphaned images
         if (req.file?.public_id) {
             cloudinary.uploader.destroy(req.file.public_id).catch(err => {
                 console.error("Failed to delete newly uploaded file after DB error:", err);
