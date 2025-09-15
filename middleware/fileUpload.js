@@ -17,4 +17,27 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-module.exports = { upload, cloudinary };
+// CHANGE START: New Cloudinary storage configuration
+const newStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: (req, file) => {
+        return {
+            folder: 'nobita_feedback_avatars',
+            public_id: `${req.user.userId}_${Date.now()}`,
+            transformation: [{
+                width: 150,
+                height: 150,
+                crop: "fill",
+                gravity: "face",
+                radius: "max"
+            }, {
+                quality: "auto:eco"
+            }],
+        };
+    },
+});
+
+const newUpload = multer({ storage: newStorage });
+// CHANGE END
+
+module.exports = { upload, cloudinary, newUpload };
