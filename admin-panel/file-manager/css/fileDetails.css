@@ -1,0 +1,96 @@
+/* fileDetails.css */
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 11px 15px;
+  cursor: pointer;
+  transition: .1s;
+  border-bottom: 1px solid var(--border); /* Use theme variable */
+  min-width: 0;
+  gap: 5px;
+  color: var(--text-primary); /* Use theme variable */
+}
+
+.item.selected {
+  background: var(--bg-panel); /* Use theme variable */
+}
+
+.item:hover {
+  background: var(--bg-panel); /* Use theme variable */
+}
+
+.item .icon {
+  font-size: 1.5em;
+  margin-right: 14px;
+}
+
+.item.folder .icon {
+  color: #38bdf8; /* Keep specific color */
+}
+
+.item.file .icon {
+  color: #f472b6; /* Keep specific color */
+}
+
+/* More button (3-dots) */
+.item .more-btn {
+  margin-left: auto;
+  color: #a3e635;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.item .more-btn:hover {
+  background-color: var(--border); /* Use theme variable */
+}
+
+/* More Menu Styles */
+.more-menu {
+  position: fixed;
+  background: var(--bg-panel); /* Use theme variable */
+  border-radius: 10px;
+  padding: 9px 0;
+  min-width: 150px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  animation: fadeIn 0.15s ease-out;
+  transform-origin: top right;
+}
+
+.more-menu .more-item {
+  padding: 10px 15px;
+  color: var(--text-primary); /* Use theme variable */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95em;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.more-menu .more-item:hover {
+  background-color: var(--border); /* Use theme variable */
+  color: var(--accent-pink); /* Use theme variable */
+}
+
+.more-menu .more-item i {
+  width: 20px;
+  text-align: center;
+}
+
+/* Animation for fade-in (for more-menu) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

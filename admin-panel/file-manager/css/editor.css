@@ -1,0 +1,224 @@
+/* editor.css */
+
+/* Popup File Editor */
+#popup-editor {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(20, 19, 32, 0.89);
+  align-items: center;
+  justify-content: center;
+}
+
+#popup-editor-content {
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  min-height: 380px;
+  max-height: 88vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-panel); /* Use theme variable */
+  padding: 28px 0 0 0;
+  border-radius: 17px;
+  box-shadow: 0 8px 36px rgba(0,0,0,0.7);
+  min-width: 88vw;
+  max-width: 95vw;
+  color: var(--text-primary); /* Use theme variable */
+}
+
+#popup-editor-content .editor-filename {
+  font-weight: bold;
+  color: var(--accent-pink); /* Use accent color for filename */
+  font-size: 1.11em;
+  background: var(--bg-body); /* Use theme variable */
+  padding: 13px 23px 10px 23px;
+  border-bottom: 1px solid var(--border); /* Use theme variable */
+  flex-shrink: 0;
+}
+
+#editor-wrapper {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* FIX: ACE Editor ke liye sahi CSS selector */
+/* font-size, color aur font-family properties yahan se control honge */
+#code-editor .ace_editor, #code-editor .ace_editor * {
+  /* CHANGE: Font size ko aur chhota kar diya gaya hai */
+  font-size: 10px !important;
+  font-family: monospace !important;
+  color: #f1f5f9 !important;
+}
+
+/* ACE Editor ke liye container ko height de */
+#code-editor {
+  flex: 1 1 0%;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  border-radius: 12px;
+  margin-bottom: 0;
+}
+
+/* Popup Editor Actions Bar (Footer style) */
+.popup-editor-actions {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-body); /* Use theme variable */
+  border-top: 1px solid var(--border); /* Use theme variable */
+  position: relative;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14px 18px;
+  z-index: 2;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.popup-editor-actions button {
+  flex: 1 1 0%;
+  border-radius: 9px;
+  border: none;
+  font-size: 1.12em;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 11px 0;
+  transition: 0.13s;
+}
+
+.popup-editor-actions .save {
+  background: var(--success-color); /* Use theme variable */
+  color: var(--text-primary-light); /* Ensure readability */
+}
+
+.popup-editor-actions .save:hover {
+  background: #22c55e;
+}
+
+.popup-editor-actions .cancel {
+  background: var(--danger-color); /* Use theme variable */
+  color: #fff;
+}
+
+.popup-editor-actions .cancel:hover {
+  background: #e11d48;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  background: var(--bg-body); /* Use theme variable */
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border); /* Use theme variable */
+  border-radius: 3px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 800px) {
+  #popup-editor-content {
+    min-width: 96vw;
+    max-width: 100vw;
+    min-height: 55vh;
+    height: 82vh;
+    max-height: 100vh;
+  }
+  #code-editor {
+    font-size: 1.14em;
+    min-height: 0 !important;
+  }
+  .popup-editor-actions {
+    padding: 13px 10px;
+    height: 56px;
+  }
+  #find-replace-bar .fr-input-row,
+  #find-replace-bar .fr-btn-row { flex-wrap: wrap; }
+  #find-replace-bar input { min-width: 60px; }
+  #find-replace-bar .bar-btn, #find-replace-bar .standout, #find-replace-bar .close-btn {
+    min-width: 48px;
+    font-size: 0.97em;
+    padding: 6px 0;
+  }
+}
+
+/* New CSS for Find/Replace Bar */
+#find-replace-bar {
+  display: none;
+  background: var(--bg-body); /* Use theme variable */
+  border-bottom: 1.5px solid var(--border); /* Use theme variable */
+  padding: 10px 17px 5px 17px;
+  z-index: 99999;
+  border-radius: 0 0 15px 15px;
+  color: var(--text-primary); /* Use theme variable */
+  font-size: 1.08em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+}
+#find-replace-bar .fr-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+#find-replace-bar .fr-btn-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+#find-replace-bar input {
+  width: 100%;
+  padding: 8px 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border); /* Use theme variable */
+  background: var(--bg-panel); /* Use theme variable */
+  color: var(--text-primary); /* Use theme variable */
+  font-size: 1em;
+  box-sizing: border-box;
+}
+#find-replace-bar .bar-btn,
+#find-replace-bar .standout,
+#find-replace-bar .close-btn {
+  min-width: 70px;
+  flex: 1 1 0px;
+  text-align: center;
+  background: #6366f1; /* Keep specific color */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 0;
+  font-size: 1em;
+  cursor: pointer;
+  transition: 0.13s;
+  font-weight: 500;
+}
+#find-replace-bar .bar-btn:hover,
+#find-replace-bar .standout:hover {
+  background: #4f52e0;
+}
+#find-replace-bar .close-btn {
+  background: var(--bg-body); /* Use theme variable */
+  color: var(--danger-color); /* Use theme variable */
+  min-width: 40px;
+  font-size: 1.2em;
+  padding: 7px 0;
+}
+#find-replace-bar .standout {
+  background: var(--warning-color); /* Use theme variable */
+  color: var(--text-primary-light); /* Ensure readability */
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.25);
+}
+#find-replace-bar .standout:hover {
+  background: #fde047;
+  color: #181825;
+}

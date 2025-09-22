@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>👉𝙉𝙊𝘽𝙄 𝘽𝙊𝙏🤟 - The Fyter Bot</title>
+    <meta name="google-site-verification" content="xR7gusf18R8eZM96kOJ6Oks1AODqkJRAt0ieAP9JSPc" />
+    <meta name="description" content="Nobita Feedback System — Brutal, honest, professional feedback platform with custom avatars, admin control, and chatbot logic.">
+    <meta name="keywords" content="feedback system,nobita bot,chatbot feedback,nobi feedback,AI bot,feedback app,brutal reviews,anonymous feedback,feedback with rating,animated feedback,cloudinary avatar,Google login app,express feedback,desi bot,roasting system,admin feedback panel,Nobita savage bot,Nobita website,Nobita AI bot,Nobita savage feedback,custom variable bot,responsive feedback app,feedback UI,animated website,feedback with avatar">
+    <meta name="author" content="Nobita">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto:wght@300,400,500,700&family=Poppins:wght@300;400;500;600;700&family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RTZEVL7YL7');
+    </script>
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/feedbacks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/breadcrumbs.css">
+    <style>
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+        font-family: 'Roboto', sans-serif;
+        background: var(--dark);
+        color: var(--light);
+        line-height: 1.6;
+    }
+    
+    .footer {
+        background-color: #1F1F3F;
+        color: #F1F2F6;
+        padding: 1rem 0;
+        text-align: center;
+        width: 100%;
+    }
+
+    .footer-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .footer-copyright {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin: 2;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    img.landing-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 2rem;
+        border: 3px solid var(--primary);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        animation: pulse 2s infinite;
+        transition: all 0.3s ease;
+    }
+
+    img.landing-icon:hover {
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        transform: scale(1.05);
+    }
+
+    img.logo-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--primary);
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        animation: float 3s ease-in-out infinite;
+        transition: all 0.3s ease;
+    }
+
+    img.logo-icon:hover {
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+        transform: scale(1.1) translateY(-5px);
+        border-color: var(--secondary);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+        100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0); box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); }
+        50% { transform: translateY(-10px); box-shadow: 0 0 25px rgba(0, 255, 255, 0.8); }
+        100% { transform: translateY(0); box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); }
+    }
+    
+    img.logo-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0); }
+    }
+
+    .creator-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-image: url('https://i.ibb.co/FsSs4SG/creator-avatar.png');
+        background-size: cover;
+        background-position: center;
+        margin: 0 auto 20px;
+        border: 3px solid var(--primary);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .creator-avatar:hover {
+        border-color: var(--secondary);
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .section-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-right: 1rem;
+    }
+
+    .command-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-right: 1.5rem;
+    }
+
+    .landing-icon {
+        font-size: 6rem !important;
+        color: var(--primary);
+        margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+        font-size: 2.5rem !important;
+    }
+
+    .feature-card i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .social-link i {
+        font-size: 2rem;
+        color: var(--primary);
+        transition: all 0.3s ease;
+    }
+
+    .social-link:hover i {
+        color: var(--secondary);
+        transform: scale(1.2);
+    }
+    
+    .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .command-card {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .command-content {
+        flex: 1;
+    }
+    
+    .command-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .command-desc {
+        color: var(--light);
+        font-size: 0.9rem;
+    }
+    
+    .feature-card h3, .feature-card p {
+        text-align: center;
+    }
+
+    .installation-steps {
+        list-style: none;
+        padding: 0;
+    }
+
+    .installation-steps li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .installation-steps li i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-right: 1rem;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .commands-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    .creator-section {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .creator-name {
+        font-size: 2rem;
+        margin: 1rem 0;
+        color: var(--primary);
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    .creator-username {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .creator-username a {
+        color: var(--secondary);
+        text-decoration: none;
+    }
+
+    .creator-bio {
+        font-size: 1rem;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+        color: var(--light);
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .social-link {
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --primary: #00FFFF;
+        --secondary: #FF00FF;
+        --dark: #0F0F1F;
+        --light: #F1F2F6;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        width: 100%;
+    }
+
+    .landing-page {
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(135deg, var(--dark) 0%, #1F1F3F 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: transform 1s ease-in-out;
+    }
+
+    .landing-icon {
+        font-size: 5rem;
+        margin-bottom: 2rem;
+        color: var(--primary);
+        animation: pulse 2s infinite;
+    }
+
+    .landing-page.hide {
+        transform: translateY(-100%);
+    }
+
+    .begin-button {
+        padding: 1.5rem 4rem;
+        font-size: 1.8rem;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: 50px;
+        color: var(--dark);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .header {
+        width: 95%;
+        max-width: 900px;
+        text-align: center;
+        padding: 3rem 0;
+        position: relative;
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .logo-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .logo {
+        font-size: 2.5rem;
+        font-weight: 700;
+        font-family: 'Orbitron', sans-serif;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    .section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+        width: 95%; /* Adjust width for better fit on small screens */
+        max-width: 900px;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        justify-content: center; /* Centering for section headers */
+        text-align: center;
+    }
+    .section-header h2 {
+        text-align: center;
+    }
+    .section-content {
+        padding: 0;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #particles-js {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+    .support-button {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: 50px;
+        color: var(--dark);
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 600;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+    
+    .main-footer {
+        background-color: #1a1a2e;
+        color: #fff;
+        text-align: center;
+        padding: 15px 0;
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        font-size: 0.9rem;
+    }
+    </style>
+</head>
+<body>
+    <div id="g_id_onload"
+         data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false"
+         data-cancel_on_tap_outside="true"
+         style="display:none;"> </div>
+    <div id="particles-js"></div>
+
+    <nav class="navbar">
+      <div class="nav-left">
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'">
+      </div>
+      <div class="nav-title">Nobita Feedback</div>
+      <div class="nav-right">
+        <div id="login-icon-trigger" title="Login / Sign Up">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div id="user-profile-trigger" class="hidden" title="Profile Menu">
+          <div id="user-profile-avatar-container">
+            <img id="user-profile-avatar" src="https://i.ibb.co/VpjRLsv/sample-user.png" alt="User DP" onerror="this.src='https://placehold.co/40x40/6a0dad/FFFFFF?text=U'">
+          </div>
+          <span id="user-profile-name" class="username-display">User Name</span>
+        </div>
+      </div>
+    </nav>
+    <div class="fancy-divider"></div>
+    
+    <div class="landing-page">
+        <img src="https://i.ibb.co/gRPS8Wg/your-image.jpg" class="landing-icon" alt="Nobi Bot">
+        <button class="begin-button">
+            <i class="fas fa-power-off"></i>
+            Begin
+        </button>
+    </div>
+
+    <header class="header">
+        <div class="logo-container">
+            <img src="https://i.ibb.co/gRPS8Wg/your-image.jpg" class="logo-icon" alt="Nobi Bot">
+            <h1 class="logo">𝘕𝘖𝘉𝘐 𝘉𝘖𝘛ㅤ</h1>
+        </div>
+        <p class="tagline">
+            <i class="fas fa-bolt"></i>
+            𝘚𝘗𝘈𝘔 पर मजबूर करने वाला
+            <i class="fas fa-bolt"></i>
+        </p>
+    </header>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-info-circle section-icon"></i>
+            <h2 class="section-title">What is Nobi Bot?</h2>
+        </div>
+        <div class="section-content">
+            <p>Nobi Bot is an abuser bot designed for chaos and domination in Instagram DMs and group chats (GC). It specializes in bullying dominant fighters, destroying clans, and disrupting GCs.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-bullseye section-icon"></i>
+            <h2 class="section-title">Purpose</h2>
+        </div>
+        <div class="section-content">
+            <p>Nobi Bot was created to counter bullies, dominate toxic fighters, and provide an edge in chaotic or fun interactions. It's particularly useful for executing "flying" operations.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-shield-alt section-icon"></i>
+            <h2 class="section-title">Key Features</h2>
+        </div>
+        <div class="section-content">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-eye-slash command-icon"></i>
+                    <h3>Temp Hide</h3>
+                    <p>Use the command: Nobi papa hide me to hide yourself in a specific GC or DM. Note: Changing the GC name can bypass temporary hide</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-user-secret command-icon"></i>
+                    <h3>Permanent Hide</h3>
+                    <p>For permanent hiding (hide everywhere), contact the owner <a href="https://ig.me/m/chatbot.nobi" target="_blank"><br>@nobita_huu</a></p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cogs command-icon"></i>
+                    <h3>Where does it work?</h3>
+                    <p>Nobi Bot works exclusively on Instagram DMs and GCs.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-exclamation-triangle command-icon"></i>
+                    <h3>Warning</h3>
+                    <p>All credit and responsibility for using Nobi Bot go to:</p>
+                    <ul>
+                        <li><strong>GC Admin:</strong> The admin of the group chat is primarily held accountable for bot activities.</li>
+                        <li><strong>The Adder:</strong> The person who added Nobi Bot to the group chat is also credited or blamed for its actions.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-user-plus section-icon"></i>
+            <h2 class="section-title">How to add bot in your GCs.</h2>
+        </div>
+        <div class="section-content">
+            <ul class="installation-steps">
+                <li><i class="fas fa-check-circle"></i>Follow the bot account</li>
+                <li><i class="fas fa-check-circle"></i>Follow @nobita_huu</li>
+                <li><i class="fas fa-check-circle"></i>Add bot to your group chat</li>
+                <li><i class="fas fa-check-circle"></i>Configure your settings</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-terminal section-icon"></i>
+            <h2 class="section-title">Commands</h2>
+        </div>
+        <div class="commands-grid">
+            <div class="command-card">
+                <i class="fas fa-magic command-icon"></i>
+                <div class="command-content">
+                    <div class="command-name">Nobi papa hide me</div>
+                    <div class="command-desc">to temporarily disappear from bot actions in the current group chat or DM instantly.</div>
+                </div>
+            </div>
+            <div class="command-card">
+                <i class="fas fa-ban command-icon"></i>
+                <div class="command-content">
+                    <div class="command-name">Ban @username</div>
+                    <div class="command-desc">Generate Banning Methods (Depends on Your OG)</div>
+                </div>
+            </div>
+            <div class="command-card">
+                <i class="fas fa-bullseye command-icon"></i>
+                <div class="command-content">
+                    <div class="command-name">Target @username</div>
+                    <div class="command-desc">2 Mintue non stop Abuse on Tagged user</div>
+                </div>
+            </div>
+            <div class="command-card">
+                <i class="fas fa-bomb command-icon"></i>
+                <div class="command-content">
+                    <div class="command-name">Spam @username</div>
+                    <div class="command-desc">2 Mint non stop Spam on tagged user</div>
+                </div>
+            </div>
+            <div class="command-card">
+                <i class="fas fa-fire command-icon"></i>
+                <div class="command-content">
+                    <div class="command-name">Fuck @username</div>
+                    <div class="command-desc">2 mintue non stop Nudes Spam on tagged user</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <i class="fas fa-headset section-icon"></i>
+            <h2 class="section-title">Support</h2>
+        </div>
+        <div class="section-content">
+            <p>Get in touch with our team for assistance and support.</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fab fa-instagram"></i>
+                    <h3>Insta Chat</h3>
+                    <p>Direct Chat with Owner on Insta</p>
+                    <a href="https://ig.me/m/nobita_huu" class="support-button">DM</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Email Support</h3>
+                    <p>Submit a Tiket on Mail</p>
+                    <a href="mailto:nobita_huu@gmail.com?subject=Hey&body=Hey%20Nobi%2C%0A" class="support-button">Email</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fab fa-whatsapp"></i>
+                    <h3>WhatsApp</h3>
+                    <p>Massage on WhatsApp</p>
+                    <a href="https://alvo.chat/5sah" class="support-button">WhatsApp</a>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>DM the Bot</h3>
+                    <p>DM the Nobi Bot directly using this button</p>
+                    <a href="https://ig.me/m/chatbot.nobi" class="support-button">DM the Nobi Bot</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section creator-section">
+        <div class="creator-avatar"></div>
+        <h3 class="creator-name">👉𝙉𝙊𝘽𝙄𝙏𝘼🤟</h3>
+        <p class="creator-username"><a href="https://ig.me/m/chatbot.nobi" target="_blank">@nobita_huu</a></p>
+        <p class="creator-bio">𝘛𝘖 𝘌𝘝𝘌𝘙𝘠𝘖𝘕𝘌 𝘞𝘏𝘖 𝘏𝘈𝘚 𝘛𝘏𝘌 𝘚𝘈𝘔𝘌 𝘕𝘈𝘔𝘌 𝘈𝘚 𝘔𝘌,<br>
+            𝘐 A𝘔 𝘛𝘏𝘌 𝘉𝘌𝘛𝘛𝘌𝘙 𝘝𝘌𝘙𝘚𝘐𝘖𝘕!<br>
+            𝘌𝘟 𝘍𝘠𝘛𝘌𝘙 𝘕𝘖𝘉𝘐𝘛𝘈🤟</p>
+        <div class="social-links">
+            <a href="https://instagram.com/nobita_huu" class="social-link">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://instagram.com/nobita_huu" class="social-link">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://instagram.com/chatbot.nobi" class="social-link">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </section>
+
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <div class="busicon-desc">Login to your Nobita Feedback Portal</div>
+            </div>
+            <form id="email-login-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-login-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-login-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-login-password" placeholder=" " autocomplete="current-password" required>
+                <label for="modal-login-password">Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-login-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="busicon-form-row">
+                <label><input type="checkbox" id="remember-me"> Remember me</label>
+                <a href="#" class="forgot-link" id="busicon-forgot-password-link">Forgot Password?</a>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Login</button>
+            </form>
+            <div class="busicon-divider"><span>or login with</span></div>
+            <div class="busicon-social-row">
+              <div id="google-btn-container-login"></div>
+            </div>
+            <div class="busicon-alt-action-row">
+              Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
+            </div>
+        </div>
+
+        <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <div class="busicon-desc">Create an account to get started with us.</div>
+            </div>
+            <form id="email-signup-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="modal-signup-name" placeholder=" " autocomplete="name" required>
+                <label for="modal-signup-name">Your Name</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-signup-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-signup-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-password">Password (min. 6 chars)</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-confirm-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-confirm-password">Confirm Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-confirm-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Sign Up</button>
+            </form>
+            <div class="busicon-divider"><span>or sign up with</span></div>
+            <div class="busicon-social-row">
+              <div id="google-btn-container-signup"></div>
+            </div>
+            <div class="busicon-alt-action-row">
+              Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
+            </div>
+        </div>
+    </div>
+    <div id="userMenu" class="user-profile-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'">
+          <div class="username" id="menu-username">User Name</div>
+        </div>
+        <ul>
+          <li><a href="#" id="menu-view-profile"><i class="fas fa-user"></i> View Profile</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+        </div>
+    </div>
+    <div id="userProfileModal" class="auth-modal-overlay"> 
+        <div class="auth-modal-content"> 
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2 style="margin-bottom: 10px;">My Profile</h2>
+            <div class="profile-scroll-content">
+                <div id="email-verification-prompt" class="email-verification-prompt">
+                    <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
+                    <button id="send-verification-email-btn">Send Verification Email</button>
+                </div>
+                <div class="profile-avatar-section">
+                    <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="profile-avatar-action-btn"><i class="fas fa-cloud-upload-alt"></i> Upload Avatar</label>
+                        <label id="choose-default-avatar-btn" class="profile-avatar-action-btn"><i class="fas fa-magic"></i> Choose Default</label>
+                    </div>
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                    <button type="button" id="upload-avatar-now-btn" class="profile-avatar-action-btn" style="display:none; margin-top: 10px;">
+                        <i class="fas fa-upload"></i> Upload Avatar
+                    </button>
+                    <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                </div>
+                <form id="profile-edit-form">
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <label class="profile-label" for="profile-name">Name:</label>
+                        <input type="text" id="profile-name" name="profile-name" required>
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <label class="profile-label" for="profile-email">Email:</label>
+                        <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
+                    </div>
+                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
+                </form>
+                <div class="fancy-divider"></div>
+                <h3 style="margin-bottom: 15px;">Change Password</h3>
+                <form id="change-password-form">
+                    <div class="input-row-profile" id="current-password-group">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
+                        <input type="password" id="current-password" name="current-password">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="new-password-profile">New&nbsp;Pw:</label>
+                        <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
+                        <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-form-row">
+                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                    </div>
+                    <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
+                        <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
+                        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="overlay" id="forgotPasswordNewOverlay">
+        <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
+    </div>
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+        </div>
+    </div>
+
+    <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
+        <p>
+            <i class="fas fa-exclamation-triangle"></i> 
+            Please verify your email to edit feedback, edit profile, and upload avatar.
+        </p>
+        <button id="send-verification-email-btn-form">Send Verification Email</button>
+    </div>
+
+    <div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+        <div class="nobi-spinner-center">
+            <span class="nobi-spinner"></span>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+    </footer>
+    <div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Initialize Particles.js
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#00FFFF'
+                },
+                shape: {
+                    type: 'circle'
+                },
+                opacity: {
+                    value: 0.5,
+                    random: true,
+                    anim: {
+                        enable: true,
+                        speed: 1
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00FFFF',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'repulse'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    repulse: {
+                        distance: 100,
+                        duration: 0.4
+                    },
+                    push: {
+                        particles_nb: 4
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Landing Page Animation
+        document.querySelector('.begin-button').addEventListener('click', function() {
+            document.querySelector('.landing-page').classList.add('hide');
+            setTimeout(() => {
+                document.querySelector('.main-container').classList.add('show');
+                animateSections();
+            }, 1000);
+        });
+
+        // Scroll Animations
+        function animateSections() {
+            const sections = document.querySelectorAll('.section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.6s ease-out';
+                observer.observe(section);
+            });
+        }
+
+        // Enhanced Card Hover Effects
+        document.querySelectorAll('.feature-card, .command-card').forEach(card => {
+            card.addEventListener('mouseenter', (e) => {
+                const glowEffect = document.createElement('div');
+                glowEffect.classList.add('glow-effect');
+                card.appendChild(glowEffect);
+                
+                setTimeout(() => {
+                    glowEffect.remove();
+                }, 1000);
+
+                card.style.transform = 'translateY(-5px) scale(1.02)';
+                card.style.boxShadow = '0 10px 20px rgba(0,255,255,0.2)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.boxShadow = 'none';
+            });
+        });
+
+        // Smooth Scroll for Navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Dynamic Text Color Effect for Logo
+        const logo = document.querySelector('.logo');
+        let hue = 0;
+        setInterval(() => {
+            hue = (hue + 1) % 360;
+            logo.style.filter = `hue-rotate(${hue}deg)`;
+        }, 50);
+
+        // Support Button Hover Effect
+        document.querySelectorAll('.support-button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'scale(1.1)';
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+
+        // Command Cards Animation
+        function animateCommands() {
+            const commands = document.querySelectorAll('.command-card');
+            commands.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        // Initialize all animations when page loads
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            if (!document.querySelector('.landing-page')) {
+                animateSections();
+                animateCommands();
+            }
+        });
+
+        // Add loading animation for external links
+        document.querySelectorAll('a[target="_blank"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.target.classList.add('loading');
+                setTimeout(() => {
+                    e.target.classList.remove('loading');
+                }, 500);
+            });
+        });
+        
+    </script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" type="module"></script>
+    <script src="js/profile.js" type="module"></script>
+    <script src="js/feedbacks.js" type="module"></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/breadcrumbs.js" defer></script>
+</body>
+</html>

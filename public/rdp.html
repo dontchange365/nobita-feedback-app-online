@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RDP Setup Guide - Nobita Edition</title>
+    <meta name="description" content="Nobita RDP Setup Guide — Free RDP server setup with integrated Nobita Feedback Portal authentication system.">
+    <meta name="keywords" content="RDP setup, free RDP, remote desktop, Nobita, Nobita Feedback, authentication, login, signup, Google login">
+    <meta name="author" content="Nobita">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/feedbacks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/breadcrumbs.css">
+ <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RTZEVL7YL7');
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="index.html" title="Go to Home"><img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'"></a>
+      </div>
+      <a href="rdp.html" class="nav-title" title="RDP Guide Home">RDP Guide</a>
+      <div class="nav-right">
+        <div id="login-icon-trigger" title="Login / Sign Up">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div id="user-profile-trigger" class="hidden" title="Profile Menu">
+          <div id="user-profile-avatar-container">
+            <img id="user-profile-avatar" src="https://i.ibb.co/VpjRLsv/sample-user.png" alt="User DP" onerror="this.src='https://placehold.co/40x40/6a0dad/FFFFFF?text=U'">
+          </div>
+          <span id="user-profile-name" class="username-display">User Name</span>
+        </div>
+      </div>
+    </nav>
+    <div class="fancy-divider"></div>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo" onerror="this.src='https://placehold.co/88x88/FFD700/000000?text=N'">
+            <h1>RDP Setup Guide <span class="emoji">🖥️</span></h1>
+            <p>Free RDP Server Setup ka complete step-by-step process</p>
+            <a href="#guide-start" class="hero-btn">Start Guide</a>
+            <span class="hero-micro-text">Powered by Nobita</span>
+        </div>
+    </section>
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">RDP Guide Portal</span>
+              <div class="busicon-desc">Login to your RDP Guide Portal</div>
+            </div>
+            <form id="email-login-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-login-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-login-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-login-password" placeholder=" " autocomplete="current-password" required>
+                <label for="modal-login-password">Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-login-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="busicon-form-row">
+                <label><input type="checkbox" id="remember-me"> Remember me</label>
+                <a href="#" class="forgot-link" id="busicon-forgot-password-link">Forgot Password?</a>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Login</button>
+            </form>
+            <div class="busicon-divider"><span>or login with</span></div>
+            <div class="busicon-social-row">
+              <button class="busicon-social-btn google" id="busicon-google-login-btn" title="Login with Google"><i class="fab fa-google"></i></button>
+            </div>
+            <div class="busicon-alt-action-row">
+              Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
+            </div>
+        </div>
+
+        <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">RDP Guide Portal</span>
+              <div class="busicon-desc">Create an account to get started with us.</div>
+            </div>
+            <form id="email-signup-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="modal-signup-name" placeholder=" " autocomplete="name" required>
+                <label for="modal-signup-name">Your Name</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-signup-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-signup-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-password">Password (min. 6 chars)</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-confirm-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-confirm-password">Confirm Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-confirm-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Sign Up</button>
+            </form>
+            <div class="busicon-divider"><span>or sign up with</span></div>
+            <div class="busicon-social-row">
+              <button class="busicon-social-btn google" id="busicon-google-signup-btn" title="Sign up with Google"><i class="fab fa-google"></i></button>
+            </div>
+            <div class="busicon-alt-action-row">
+              Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
+            </div>
+        </div>
+    </div>
+    <div id="userMenu" class="user-profile-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'">
+          <div class="username" id="menu-username">User Name</div>
+        </div>
+        <ul>
+          <li><a href="#" id="menu-view-profile"><i class="fas fa-user"></i> View Profile</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+        </div>
+    </div>
+    <div id="userProfileModal" class="auth-modal-overlay"> 
+        <div class="auth-modal-content"> 
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2 style="margin-bottom: 10px;">My Profile</h2>
+            <div class="profile-scroll-content">
+                <div id="email-verification-prompt" class="email-verification-prompt">
+                    <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
+                    <button id="send-verification-email-btn">Send Verification Email</button>
+                </div>
+                <div class="profile-avatar-section">
+                    <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="profile-avatar-action-btn"><i class="fas fa-cloud-upload-alt"></i> Upload Avatar</label>
+                        <label id="choose-default-avatar-btn" class="profile-avatar-action-btn"><i class="fas fa-magic"></i> Choose Default</label>
+                    </div>
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                    <button type="button" id="upload-avatar-now-btn" class="profile-avatar-action-btn" style="display:none; margin-top: 10px;">
+                        <i class="fas fa-upload"></i> Upload Avatar
+                    </button>
+                    <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                </div>
+                <form id="profile-edit-form">
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <label class="profile-label" for="profile-name">Name:</label>
+                        <input type="text" id="profile-name" name="profile-name" required>
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <label class="profile-label" for="profile-email">Email:</label>
+                        <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
+                    </div>
+                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
+                </form>
+                <div class="fancy-divider"></div>
+                <h3 style="margin-bottom: 15px;">Change Password</h3>
+                <form id="change-password-form">
+                    <div class="input-row-profile" id="current-password-group">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
+                        <input type="password" id="current-password" name="current-password">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="new-password-profile">New&nbsp;Pw:</label>
+                        <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
+                        <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-form-row">
+                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                    </div>
+                    <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
+                        <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
+                        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="forgotPasswordNewOverlay">
+        <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
+    </div>
+    <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
+    <p>
+      <i class="fas fa-exclamation-triangle"></i> 
+      Please verify your email to edit feedback, edit profile, and upload avatar.
+    </p>
+    <button id="send-verification-email-btn-form">Send Verification Email</button>
+</div>
+    <div class="container" id="guide-start">
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Google Search Process</div>
+        </div>
+        <div class="step-content">
+            <p>Sabse pehle aapko Google par search karna hai. Browser open karo aur search bar mein ye exact words type karo:</p>
+            <p><span class="highlight">"Free Rdp Expert server Rdphosting"</span></p>
+            <p>Search results mein RdpHostings.com Expert server wala website ka link dikhega. Is official website pe click karo. Ye trusted aur reliable service hai jo free RDP provide karti hai.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/mPSnftQ/IMG-3548.png" class="screenshot-img" alt="Step 1 Screenshot 1"><br>
+                <img src="https://i.ibb.co/7dpzqDSY/IMG-3547.png" class="screenshot-img" alt="Step 1 Screenshot 2">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Website Navigation</div>
+        </div>
+        <div class="step-content">
+            <p>RdpHostings website open hone ke baad, homepage par carefully dekhiye. Yahan aapko different sections dikhenge.</p>
+            <p>Main page par <span class="highlight">"Expert server"</span> ka section dhundiye. Ye section usually homepage par prominently display hota hai. Isme free RDP server ke options milte hain. Agar Expert wala nhi show krta aur uski jagah Solo server Show krta h to tu glt jgh pr h</p>
+            <p>Expert server section mein jakar signup area locate karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/C5Byb6J6/IMG-3560.jpg" class="screenshot-img" alt="Step 2 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Signup Process - Important</div>
+        </div>
+        <div class="step-content">
+            <p>Expert server area mein <span class="highlight">"Sign up"</span> button par click karo. Ek naya page khulega jahan signup form dikhega.</p>
+            <div class="important">Dhyan rakho: Jab signup page khule, to aapko Category aur Action ke dropdown options dikhenge. In dropdown options par bilkul click mat karo! Ye bohot important hai.</div>
+            <p>In dropdown menus ko completely ignore karo aur direct <span class="highlight">"Hostname"</span> field mein jao.</p>
+            <p>Hostname field mein exactly ye type karo: <strong>Nobitardp</strong></p>
+            <p>Ye hostname fill karne ke baad neeche <span class="highlight">"Continue"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/0RyYvwQS/IMG-3561.jpg" class="screenshot-img" alt="Step 3 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">Configuration Settings</div>
+        </div>
+        <div class="step-content">
+            <p>Continue button click karne ke baad configuration page open hoga. Is page par aapko teen (3) checkboxes dikhenge.</p>
+            <p>Ye teen checkboxes server ke specifications aur features ke liye hain. Sabko tick karna zaroori hai:</p>
+            <p>✅ Pehla checkbox tick karo</p>
+            <p>✅ Doosra checkbox tick karo</p>
+            <p>✅ Teesra checkbox tick karo</p>
+            <p>Teeno checkboxes select karne ke baad <span class="highlight">"Checkout"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/jZBqC504/IMG-3562.jpg" class="screenshot-img" alt="Step 4 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Account Details Fill Karna</div>
+        </div>
+        <div class="step-content">
+            <p>Ab aapke saamne account creation form aayega. Sari details carefully aur sahi fill karo:</p>
+            <p><strong>Full Name:</strong> Apna complete real name likho</p>
+            <p><strong>Email Address:</strong> Working email ID daalo jo aap regularly check karte ho</p>
+            <p><strong>Phone Number:</strong> Apna real mobile number daalo (verification ke liye zaroori hai)</p>
+            <p><strong>Address:</strong> Complete address fill karo</p>
+            <p><strong>Password:</strong> Strong password create karo aur yaad rakhne wala</p>
+            <div class="important">Phone number bilkul real daalo kyunki verification ke time jarurat pad sakti hai. Fake number mat daalo.</div>
+            <p>Sab kuch fill karne ke baad <span class="highlight">"Complete Order"</span> par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/Txg618sk/IMG-3553.png" class="screenshot-img" alt="Step 5 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">6</div>
+            <div class="step-title">Order Confirmation & Email Check</div>
+        </div>
+        <div class="step-content">
+            <p>Order complete hone ke baad aapko screen par <span class="highlight">Order Number</span> dikhega. Is number ka screenshot le lo backup ke liye.</p>
+            <p>Ab apna email check karo. RdpHostings se 2-3 emails aayenge. Email check karne ka proper tareeka:</p>
+            <p><strong>Step 1:</strong> Primary inbox check karo</p>
+            <p><strong>Step 2:</strong> Agar nahi mila to Social tab check karo</p>
+            <p><strong>Step 3:</strong> Promotions tab bhi dekho</p>
+            <p><strong>Step 4:</strong> Last mein Spam/Junk folder check karo</p>
+            <p>Email mil jayega, bas thoda wait karna pad sakta hai.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/NnFk0c43/IMG-3556.jpg" class="screenshot-img" alt="Step 6 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">7</div>
+            <div class="step-title">Email Verification Process</div>
+        </div>
+        <div class="step-content">
+            <p>Emails mein se <span class="highlight">"Email Confirmation"</span> wala email dhundho. Ye verification ke liye important hai.</p>
+            <p>Email open karo aur andar confirmation link dikhega. Is link ko handle karne ke do tareeke hain:</p>
+            <p><strong>Method 1:</strong> Direct link par click karo. Agar browser mein open ho jaye to perfect.</p>
+            <p><strong>Method 2:</strong> Agar link click se nahi khul raha, to link ko copy karo aur naye browser tab mein paste karke open karo.</p>
+            <div class="success">Successful verification ke baad ye message dikhega: "Your email address has been verified"</div>
+            <p>Verification success page par <span class="highlight">"Continue to Client Area"</span> button par click karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/QFFfv567/IMG-3557.png" class="screenshot-img" alt="Step 7 Screenshot 1"><br>
+                <img src="https://i.ibb.co/chqv0Szq/IMG-3558.png" class="screenshot-img" alt="Step 7 Screenshot 2">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">8</div>
+            <div class="step-title">Client Area Mein Server Status</div>
+        </div>
+        <div class="step-content">
+            <p>Client area dashboard open होने ke baad <span class="highlight">"View All"</span> button dhundho aur click karo.</p>
+            <p>Services page open hoga jahan aapka Expert server dikhega. Abhi server status <span class="highlight">"Pending"</span> show kar raha hoga.</p>
+            <p>Pending ka matlab hai server setup ho raha hai. Ye process 5 se 30 minute tak le sakti hai.</p>
+            <div class="important">Patience rakho aur page ko bar-bar refresh mat karo. Server ready hone par automatically email aa jayega.</div>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/NnQXfkQC/IMG-3563.jpg" class="screenshot-img" alt="Step 8 Screenshot 1"><br>
+                <img src="https://i.ibb.co/V0vDqcgS/IMG-3568.jpg" class="screenshot-img" alt="Step 8 Screenshot 2">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">9</div>
+            <div class="step-title">Server Ready Email</div>
+        </div>
+        <div class="step-content">
+            <div class="important">
+                NOTE: <b>RDP READY wala email 24 hours ke andar ही आता है</b> – patience rakh, baar baar refresh karke Pdeshaan nhi hona hai!
+            </div>
+            <p>Jab server completely ready ho jayega, tab aapko email aayega. Email ka subject hoga:</p>
+            <p><span class="highlight">"Your RDP Server Is Ready To Login!"</span></p>
+            <p>Ye email bohot important hai kyunki isme aapki server details hongi:</p>
+            <p><strong>IP Address:</strong> Server ka unique address</p>
+            <p><strong>Username:</strong> Login karne ke liye username</p>
+            <div class="success">Is puri email ka screenshot le lo aur safe jagah save karo. Ye details future mein kaam aayengi.</div>
+            <p>IP address aur username ko separately bhi note kar lo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/4wG0k2FL/IMG-3566.jpg" class="screenshot-img" alt="Step 9 Screenshot 1"><br>
+                <img src="https://i.ibb.co/F4S2BssN/IMG-3567.jpg" class="screenshot-img" alt="Step 9 Screenshot 2">
+            </div>
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">10</div>
+            <div class="step-title">Password Retrieve Karna</div>
+        </div>
+        <div class="step-content">
+            <p>Server ready hone ke baad password get karne ke liye is specific link par jao:</p>
+            <div class="url-box">
+                <a href="https://rdphostings.com/rdp/clientarea.php?action=services" target="_blank" rel="noopener noreferrer">https://rdphostings.com/rdp/clientarea.php?action=services</a>
+            </div>
+            <p>Ye link copy karo aur browser mein paste karke open karo. Agar login page aaye to apne account details se login karo.</p>
+            <p>Services page mein apna server dhundho aur click karo. Server details page mein ye milega:</p>
+            <p><strong>IP Address:</strong> Confirm karo ki ye email wala same hai</p>
+            <p><strong>Current Password:</strong> Ye daily change hota hai</p>
+            <div class="important">
+                Password roz change hota hai! Har time connect karne se pehle yahan se current password check karo.
+            </div>
+            <p>Password carefully copy karo aur safely save karo.</p>
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/V0vDqcgS/IMG-3568.jpg" class="screenshot-img" alt="Step 10 Screenshot">
+                <div class="success">
+                    Congratulations! Aapka free RDP server completely ready hai. Connection process ke liye next tutorial follow karo.
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="step-container">
+        <div class="step-header">
+            <div class="step-number">11</div>
+            <div class="step-title">Windows Remote Desktop App</div>
+        </div>
+        <div class="step-content">
+            <p>RDP server connect karne ke liye app install karna zaroori hai. App store (Play Store ya App Store) open karo.</p>
+            <p>Search mein type karo: <span class="highlight">"Microsoft Remote Desktop"</span></p>
+            <p>Official Microsoft app dhundho. Ye free app hai aur Microsoft ka original app hai.</p>
+            <p><strong>Install</strong> button par click karo aur app download hone ka wait karo.</p>
+            <p>App install ho jayega but abhi open mat karo. Setup process complete ho gaya hai.</p>
+
+            <div class="screenshot-box">
+                <img src="https://i.ibb.co/ch9VRS1g/61085088-161c-4dc0-8ad6-08a503547475.jpg" class="screenshot-img" alt="Step 11 Screenshot">
+            </div>
+        </div>
+    </div>
+    <div class="final-message-card">
+        <h3>🎉 Setup Successfully Complete!</h3>
+        <p>Aapka free RDP server ab bilkul ready hai. Ab aap remote desktop connection kar sakte ho.</p>
+        <p style="margin-top: 15px; color: var(--text-color-light); opacity:0.7; font-weight: 400;">
+            <strong>Important:</strong> Apni credentials safe rakho aur daily password update check karna mat bhoolna.
+        </p>
+        <div class="buttons">
+            <a href="rdp-connect.html" class="next-btn">Next Page <i class="fas fa-arrow-right"></i></a>
+            <a href="index.html" class="help-btn">Help ❓<i class="fas fa-question-circle"></i></a>
+        </div>
+    </div>
+</div>
+
+<div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div class="nobi-spinner-center">
+        <span class="nobi-spinner"></span>
+    </div>
+</div>
+<footer class="main-footer">
+    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+</footer>
+<div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
+ <script src="js/ui.js" defer></script>
+    <script src="js/main.js" type="module"></script>
+    <script src="js/profile.js" type="module"></script>
+    <script src="js/feedbacks.js" type="module"></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/breadcrumbs.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,512 @@
+/* --- Feedback List and Item Styles --- */
+#blog-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 50px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 100px 10%;
+    max-width: 1600px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#feedback-list-container {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(7px);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: left;
+    box-shadow: var(--shadow-deep);
+    width: 90%;
+    max-width: 750px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 26px;
+    border-radius: 22px;
+    padding: 30px 18px;
+}
+
+#feedback-list-container.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.average-rating-container {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-color-light);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    position: relative;
+    z-index: 2;
+    backdrop-filter: blur(8px);
+    background-clip: padding-box;
+}
+
+.average-rating-container::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+    z-index: -1;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    padding: 2px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.3);
+}
+
+.average-rating-container.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.average-rating-container h3 {
+    color: var(--secondary-color);
+    font-size: 1.4em;
+    margin: 0;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 8px;
+}
+
+.average-number {
+    font-family: 'Poppins', sans-serif;
+    font-size: 4em;
+    font-weight: 700;
+    color: var(--secondary-color);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 0 0 25px rgba(255, 215, 0, 0.5);
+    line-height: 1;
+    margin-bottom: 10px;
+    animation: pulseText 2s infinite alternate;
+}
+
+.average-stars {
+    font-size: 2.5em;
+    color: var(--secondary-color);
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+.total-feedbacks-count {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    margin-top: 15px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.badge-total {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.feedback-item {
+    background: #23235aee;
+    border: 2.5px solid var(--secondary-color);
+    border-radius: 18px;
+    box-shadow: 0 6px 28px rgba(106, 13, 173, 0.13);
+    padding: 24px 22px;
+    transition: box-shadow .19s, transform .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.3s;
+}
+
+.feedback-item:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 12px 36px rgba(255,215,0,0.3), 0 0 0 3px rgba(255,215,0,0.15);
+    border-color: var(--primary-color);
+}
+
+.avatar-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid var(--secondary-color);
+    box-shadow: 0 0 18px var(--secondary-color), 0 0 5px rgba(255,255,255,0.2);
+    object-fit: cover;
+    transition: transform 0.2s ease-out;
+}
+
+.avatar-img:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.avatar-img.verified-user {
+    animation: pulseBorder 1.5s infinite alternate;
+}
+
+.feedback-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.feedback-details strong {
+    color: var(--secondary-color);
+    font-size: 1.18em;
+    display: inline;
+    margin-bottom: 4px;
+    text-transform: capitalize;
+    font-weight: bold;
+}
+
+.feedback-details strong.rating-5 { color: var(--rating-5-color); }
+.feedback-details strong.rating-4 { color: var(--rating-4-color); }
+.feedback-details strong.rating-3 { color: var(--rating-3-color); }
+.feedback-details strong.rating-2 { color: var(--rating-2-color); }
+.feedback-details strong.rating-1 { color: var(--rating-1-color); }
+
+.user-type-indicator {
+    font-size: 0.65em;
+    color: white;
+    padding: 1.5px 5.5px;
+    border-radius: 3.5px;
+    margin-left: 7px;
+    vertical-align: middle;
+    font-weight: normal;
+}
+
+/* Updated Verified Tag CSS */
+.verified-tag-feedback {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    margin-left: 7px;
+    vertical-align: middle;
+    flex-shrink: 0;
+    line-height: 1;
+    position: relative;
+    top: -0.1em;
+    /* Using a transparent PNG file to avoid the square background */
+    background-image: url('../images/blue-tick.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Hiding the Font Awesome icon because we are using an image */
+.verified-tag-feedback .fas.fa-check-circle {
+    display: none;
+}
+
+.unverified-tag-feedback {
+    background-color: var(--warning-color);
+    color: #333;
+    padding: 1.5px 5.5px;
+    border-radius: 3.5px;
+    font-size: 0.6em;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.google-user-indicator {
+    background-color: var(--google-blue);
+}
+
+.feedback-stars {
+    color: var(--secondary-color);
+    font-size: 1.5em;
+    letter-spacing: 2.5px;
+    margin-bottom: 5.5px;
+    text-shadow: 0 0 7px rgba(255,215,0,0.45);
+}
+
+.feedback-details p {
+    margin-top: 4px;
+    margin-bottom: 7px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    color: var(--text-color-light);
+    line-height: 1.55;
+    font-size: 1.13em;
+    font-style: italic;
+    position: relative;
+    padding: 0 15px;
+}
+
+.feedback-details p::before {
+    content: '“';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 2em;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+.feedback-details p::after {
+    content: '”';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-size: 2em;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+.feedback-timestamp {
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: 4px;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.feedback-timestamp .far.fa-clock {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.admin-reply {
+    margin-top: 10px;
+    padding: 9px 11px;
+    background-color: rgba(255, 215, 0, 0.09);
+    border-left: 3.5px solid var(--secondary-color);
+    border-radius: 7px;
+    font-size: 0.85em;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    position: relative;
+}
+
+.admin-reply::before {
+    content: '“';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    font-size: 1.8em;
+    color: var(--secondary-color);
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.admin-reply-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #9B59B6;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.admin-reply-content strong {
+    color: #9B59B6;
+    font-size: 0.95em;
+    display: inline;
+}
+
+.admin-reply-content .reply-timestamp {
+    font-size: 0.65em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-left: 7px;
+}
+
+.edit-feedback-btn {
+    background: none;
+    border: none;
+    color: #5bc0de;
+    cursor: pointer;
+    font-size: 1.25em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px;
+    opacity: 0.75;
+    z-index: 10;
+    transition: color 0.25s ease, transform 0.15s;
+}
+
+.edit-feedback-btn:hover {
+    color: #31b0d5;
+    transform: scale(1.08) rotate(4deg);
+    opacity: 1;
+}
+
+.edit-feedback-btn[disabled] {
+    display: none !important;
+}
+
+.edited-tag {
+    background-color: #f0ad4e;
+    color: white;
+    padding: 2.5px 7px;
+    border-radius: 4.5px;
+    font-size: 0.65em;
+    font-weight: bold;
+    margin-left: 7px;
+    vertical-align: middle;
+    animation: fadeIn 0.45s ease-out;
+}
+
+.email-verification-prompt {
+    background-color: rgba(255, 193, 7, 0.2);
+    border: 1px solid var(--warning-color);
+    color: var(--warning-color);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.email-verification-prompt p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--text-color-light);
+}
+
+.email-verification-prompt button {
+    background-color: var(--warning-color);
+    color: #333;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.email-verification-prompt button:hover {
+    background-color: #e0a800;
+    transform: translateY(-1px);
+}
+
+.email-verification-prompt button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.feedback-item.pinned {
+    border-color: #FFD700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.45), 0 0 8px rgba(255, 255, 255, 0.2);
+    background: #3a3a7aee;
+}
+
+.pin-feedback-btn {
+    background: none;
+    border: none;
+    color: #ffc107;
+    cursor: pointer;
+    font-size: 1.25em;
+    position: absolute;
+    top: 10px;
+    right: 45px;
+    padding: 4px;
+    opacity: 0.75;
+    z-index: 10;
+    transition: color 0.25s ease, transform 0.15s;
+}
+
+.pin-feedback-btn:hover {
+    color: #ffda73;
+    transform: scale(1.08) rotate(-4deg);
+    opacity: 1;
+}
+
+.pin-feedback-btn.unpin .fa-thumbtack::before {
+    content: "\f08d";
+    color: var(--success-color);
+}
+
+.pinned-badge {
+    position: absolute;
+    top: 12px;
+    right: -2px;
+    background: linear-gradient(135deg, #ffd700, #f9b119);
+    color: #332400;
+    font-weight: 700;
+    font-size: 0.9em;
+    padding: 6px 16px 6px 12px;
+    border-radius: 20px 0 0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    z-index: 2;
+    letter-spacing: 0.2px;
+    gap: 6px;
+    border: 1px solid #c79300;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.2);
+}
+
+.pin-svg svg {
+    display: inline-block;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
+}
+/* New CSS for the local lazy load spinner */
+#lazy-load-spinner-container {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    grid-column: 1 / -1; /* This makes it span the full width of the grid */
+}
+
+/* Responsive adjustments for feedbacks section */
+@media (max-width: 768px) {
+    #feedback-list-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px 15px;
+    }
+    .feedback-item { padding: 18px; }
+    .feedback-details p { font-size: 1em; }
+    .average-rating-container { padding: 20px; }
+    .average-number { font-size: 3.5em; }
+    .average-stars { font-size: 2em; }
+}
+@media (max-width: 480px) {
+    #feedback-list-container { gap: 10px; }
+    .average-rating-container { padding: 20px; }
+    .average-number { font-size: 3.5em; }
+    .average-stars { font-size: 2em; }
+    .feedback-item { padding: 15px; gap: 10px; }
+    .avatar-img { width: 45px; height: 45px; }
+    .feedback-details strong { font-size: 1em; }
+    .feedback-stars { font-size: 1.3em; }
+    .feedback-details p { font-size: 0.9em; }
+    .admin-reply { font-size: 0.8em; padding: 7px 9px; }
+    .edit-feedback-btn { font-size: 1.1em; }
+    .email-verification-prompt { padding: 12px; font-size: 0.9em; }
+}

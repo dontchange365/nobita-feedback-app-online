@@ -1,0 +1,98 @@
+/* navigation.css */
+
+/* Breadcrumb Bar */
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 12px 16px;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 1.10em;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #222;
+  background: var(--bg-panel); /* Use theme variable */
+  border-bottom: 2px solid var(--border); /* Use theme variable */
+  position: fixed;
+  top: 58px;
+  left: 0;
+  width: 100vw;
+  z-index: 20;
+  height: 48px;
+  box-sizing: border-box;
+  color: var(--text-primary); /* Use theme variable */
+}
+
+.breadcrumb-bar::-webkit-scrollbar {
+  height: 7px;
+}
+
+.breadcrumb-bar::-webkit-scrollbar-thumb {
+  background: var(--border); /* Use theme variable */
+  border-radius: 8px;
+}
+
+.breadcrumb-link {
+  color: #59f87b; /* Keep bright green for links */
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: color 0.15s;
+  padding: 5px 9px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.breadcrumb-link:hover {
+  color: #1dd75b;
+  background: var(--bg-body); /* Use theme variable */
+}
+
+.breadcrumb-sep {
+  color: var(--text-secondary); /* Use theme variable */
+  font-weight: 400;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.breadcrumb-root {
+  color: #ffd700; /* Keep gold for root */
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Floating Back Button Styles */
+#floating-back-btn {
+  position: fixed;
+  bottom: 150px;
+  right: 20px;
+  background-color: #6366f1; /* Keep specific color */
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 999999;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#floating-back-btn:hover {
+  background-color: #4f52e0;
+}
+
+@media (max-width: 800px) {
+  #floating-back-btn {
+    bottom: calc(env(safe-area-inset-bottom, 0) + 160px);
+    right: 15px;
+  }
+}

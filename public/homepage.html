@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>Nobita-Homepage</title>
+    <meta name="google-site-verification" content="xR7gusf18R8eZM96kOJ6Oks1AODqkJRAt0ieAP9JSPc" />
+    <meta name="description" content="Nobita Feedback System — Brutal, honest, professional feedback platform with custom avatars, admin control, and chatbot logic.">
+    <meta name="keywords" content="feedback system,nobita bot,chatbot feedback,nobi feedback,AI bot,feedback app,brutal reviews,anonymous feedback,feedback with rating,animated feedback,cloudinary avatar,Google login app,express feedback,desi bot,roasting system,admin feedback panel,Nobita savage bot,Nobita website,Nobita AI bot,Nobita savage feedback,custom variable bot,responsive feedback app,feedback UI,animated website,feedback with avatar">
+    <meta name="author" content="Nobita">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RTZEVL7YL7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RTZEVL7YL7');
+    </script>
+  
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/feedbacks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/breadcrumbs.css">
+   
+    <style>
+        /* NEW BLOG LIST STYLES */
+        #blog-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 50px; /* Increased gap between cards */
+            width: 100%;
+          justify-content: center;
+    flex-wrap: wrap;
+            padding: 100px 10%; /* Increased padding for "wider" feel */
+            max-width: 1600px; /* Increased max-width to allow more spread */
+            margin: 0 auto;
+            /* background-color: #1a1a2e; Removed specific background color */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+.blog-card {
+  background: #1e1e3f;
+  border-radius: 18px;
+  padding: 30px 24px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 30px #0005;
+  color: #fff;
+  transition: transform 0.2s ease-in-out;
+}
+        .pro-post-card {
+            background-color: #2b2e5c; /* Slightly darker to stand out from body if body background is the same */
+            border-radius: 15px; /* Slightly more rounded corners */
+            padding: 30px; /* Increased padding inside cards */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15); /* More prominent border */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px; /* Slightly increased min height */
+        }
+
+        .pro-post-card:hover {
+            transform: translateY(-10px); /* More pronounced lift */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); /* Even stronger shadow on hover */
+            background-color: #35386d; /* Lighter on hover for better effect */
+        }
+
+        .blog-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #007bff;
+            color: white;
+            padding: 7px 18px; /* Slightly larger badge */
+            border-bottom-left-radius: 15px; /* Matches card border-radius */
+            font-size: 0.8em; /* Slightly larger font */
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px; /* More letter spacing */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transform: translateX(10px);
+        }
+
+        .blog-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Increased gap */
+            font-size: 0.9em; /* Slightly larger meta text */
+            color: #b0b0b0; /* Lighter grey for meta */
+            margin-bottom: 18px; /* More space below meta */
+        }
+
+        .blog-meta i {
+            color: #FFD700;
+        }
+
+        .blog-meta b {
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        .blog-title {
+            font-size: 1.8em; /* Larger title */
+            font-weight: 700;
+            color: #FFD700;
+            margin-bottom: 12px;
+            line-height: 1.2; /* Tighter line height for title */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .blog-summary {
+            font-size: 1em; /* Slightly larger summary text */
+            color: #e0e0e0;
+            opacity: 0.9; /* Slightly less opaque for better readability */
+            margin-bottom: 25px; /* More space before read more */
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .read-more-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px; /* Increased gap */
+            color: #007bff;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1em; /* Slightly larger font */
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .read-more-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .read-more-btn:hover {
+            color: #FFD700;
+            transform: translateX(8px); /* More pronounced arrow movement */
+        }
+
+        .read-more-btn:hover i {
+            transform: translateX(5px);
+        }
+
+        /* Empty/Loading Blog List Message */
+        #blog-list > p {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px; /* Increased padding */
+            color: #FFD700;
+            font-size: 1.3em; /* Slightly larger font */
+        }
+
+        /* Responsive Adjustments for Blog Section */
+        @media (max-width: 768px) {
+            #blog-list {
+                grid-template-columns: 1fr;
+                padding: 40px 5%; /* Adjusted padding for smaller screens */
+                gap: 25px; /* Adjusted gap for smaller screens */
+            }
+
+            .pro-post-card {
+                padding: 25px; /* Adjusted padding */
+            }
+
+            .blog-title {
+                font-size: 1.5em;
+            }
+
+            .blog-summary {
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #blog-list {
+                padding: 22px 0px; /* Further reduced padding for very small screens */
+            }
+
+            .pro-post-card {
+                min-height: 200px;
+            }
+
+            .blog-title {
+                font-size: 1.3em;
+            }
+            .blog-summary {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="g_id_onload"
+         data-client_id="609784004025-li543jevd5e9u3a58ihvr98a2jpqfb8b.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false"
+         data-cancel_on_tap_outside="true"
+         style="display:none;"> </div>
+    <nav class="navbar">
+      <div class="nav-left">
+        <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="nav-logo" alt="Nobita" onerror="this.src='https://placehold.co/42x42/FFD700/000000?text=N'">
+      </div>
+      <div class="nav-title">Nobita Feedback</div>
+      <div class="nav-right">
+        <div id="login-icon-trigger" title="Login / Sign Up">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div id="user-profile-trigger" class="hidden" title="Profile Menu">
+          <div id="user-profile-avatar-container">
+            <img id="user-profile-avatar" src="https://i.ibb.co/VpjRLsv/sample-user.png" alt="User DP" onerror="this.src='https://placehold.co/40x40/6a0dad/FFFFFF?text=U'">
+          </div>
+          <span id="user-profile-name" class="username-display">User Name</span>
+        </div>
+      </div>
+    </nav>
+    <div class="fancy-divider"></div>
+
+    <section class="hero-section">
+        <div class="hero-content">
+            <img src="https://i.ibb.co/FsSs4SG/creator-avatar.png" class="hero-logo" alt="Nobita Logo" onerror="this.src='https://placehold.co/88x88/FFD700/000000?text=N'">
+            <h1>Homepage<span class="emoji">🚀</span></h1>
+            <p>We are working hard to bring you awesome content!</p>
+            <a href="index.html" class="hero-btn">Go to Home</a>
+            <span class="hero-micro-text">Powered by Nobita</span>
+        </div>
+    </section>
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <div id="busicon-login-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-login-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <div class="busicon-desc">Login to your Nobita Feedback Portal</div>
+            </div>
+            <form id="email-login-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-login-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-login-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-login-password" placeholder=" " autocomplete="current-password" required>
+                <label for="modal-login-password">Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-login-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="busicon-form-row">
+                <label><input type="checkbox" id="remember-me"> Remember me</label>
+                <a href="#" class="forgot-link" id="busicon-forgot-password-link">Forgot Password?</a>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Login</button>
+            </form>
+            <div class="busicon-divider"><span>or login with</span></div>
+            <div class="busicon-social-row">
+              <div id="google-btn-container-login"></div>
+            </div>
+            <div class="busicon-alt-action-row">
+              Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
+            </div>
+        </div>
+
+        <div id="busicon-signup-container" class="auth-modal-content busicon-modal-content" style="display: none;">
+            <span class="close-modal-btn" id="close-busicon-signup-modal-btn">&times;</span>
+            <div class="busicon-login-header">
+              <span class="busicon-logo">Nobi</span> <span class="busicon-title">NOBITA FEEDBACK</span>
+              <div class="busicon-desc">Create an account to get started with us.</div>
+            </div>
+            <form id="email-signup-form" class="busicon-auth-form">
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="modal-signup-name" placeholder=" " autocomplete="name" required>
+                <label for="modal-signup-name">Your Name</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="modal-signup-email" placeholder=" " autocomplete="email" required>
+                <label for="modal-signup-email">Email</label>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-password">Password (min. 6 chars)</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+                <input type="password" id="modal-signup-confirm-password" placeholder=" " autocomplete="new-password" required minlength="6">
+                <label for="modal-signup-confirm-password">Confirm Password</label>
+                <span class="show-hide-pass" onclick="togglePass('modal-signup-confirm-password', this)"><i class="fas fa-eye-slash"></i></span>
+              </div>
+              <button type="submit" class="busicon-auth-btn">Sign Up</button>
+            </form>
+            <div class="busicon-divider"><span>or sign up with</span></div>
+            <div class="busicon-social-row">
+              <div id="google-btn-container-signup"></div>
+            </div>
+            <div class="busicon-alt-action-row">
+              Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
+            </div>
+        </div>
+    </div>
+    <div id="userMenu" class="user-profile-menu">
+      <div class="menu-content">
+        <div class="menu-header">
+          <img id="menu-avatar" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="User DP" onerror="this.src='https://placehold.co/82x82/FFD700/23235a?text=U'">
+          <div class="username" id="menu-username">User Name</div>
+        </div>
+        <ul>
+          <li><a href="#" id="menu-view-profile"><i class="fas fa-user"></i> View Profile</a></li>
+          <li><a href="#" id="menu-logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="stylishPopupOverlay" class="stylish-popup-overlay">
+        <div id="stylishPopupCard" class="stylish-popup-card">
+          <button class="close-popup-btn-styled" id="closeStylishPopupBtn">&times;</button>
+          <div class="popup-icon-area" id="stylishPopupIcon"><i class="fas fa-info-circle"></i></div>
+          <h2 class="popup-title" id="stylishPopupTitle">Attention!</h2>
+          <p class="popup-message" id="stylishPopupMessage">Default message.</p>
+          <div class="popup-form-area" id="stylishPopupFormArea" style="display: none;"></div>
+          <div class="popup-button-container" id="stylishPopupButtonContainer"></div>
+        </div>
+    </div>
+    <div id="userProfileModal" class="auth-modal-overlay"> 
+        <div class="auth-modal-content"> 
+            <span class="close-modal-btn" data-modal-close="userProfileModal">&times;</span>
+            <h2 style="margin-bottom: 10px;">My Profile</h2>
+            <div class="profile-scroll-content">
+                <div id="email-verification-prompt" class="email-verification-prompt">
+                    <p><i class="fas fa-exclamation-triangle"></i> Your email is not yet verified. Please verify your email to use all features.</p>
+                    <button id="send-verification-email-btn">Send Verification Email</button>
+                </div>
+                <div class="profile-avatar-section">
+                    <img id="profile-display-avatar" src="https://placehold.co/120x120/6a0dad/FFFFFF?text=?" alt="User Avatar" onerror="this.src='https://placehold.co/120x120/6a0dad/FFFFFF?text=U'">
+                    <div class="avatar-buttons">
+                        <label for="avatar-upload-input" class="profile-avatar-action-btn"><i class="fas fa-cloud-upload-alt"></i> Upload Avatar</label>
+                        <label id="choose-default-avatar-btn" class="profile-avatar-action-btn"><i class="fas fa-magic"></i> Choose Default</label>
+                    </div>
+                    <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;">
+                    <button type="button" id="upload-avatar-now-btn" class="profile-avatar-action-btn" style="display:none; margin-top: 10px;">
+                        <i class="fas fa-upload"></i> Upload Avatar
+                    </button>
+                    <div class="upload-progress-bar" id="upload-progress-bar" style="display:none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                </div>
+                <form id="profile-edit-form">
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-user"></i></span>
+                        <label class="profile-label" for="profile-name">Name:</label>
+                        <input type="text" id="profile-name" name="profile-name" required>
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <label class="profile-label" for="profile-email">Email:</label>
+                        <input type="email" id="profile-email" name="profile-email" disabled title="Email cannot be changed">
+                    </div>
+                    <button type="submit" id="save-profile-changes-btn" style="width:100%; margin-top:10px;">Save Changes</button>
+                </form>
+                <div class="fancy-divider"></div>
+                <h3 style="margin-bottom: 15px;">Change Password</h3>
+                <form id="change-password-form">
+                    <div class="input-row-profile" id="current-password-group">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <label class="profile-label" for="current-password">Current&nbsp;Pw:</label>
+                        <input type="password" id="current-password" name="current-password">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="new-password-profile">New&nbsp;Pw:</label>
+                        <input type="password" id="new-password-profile" name="new-password-profile" minlength="6">
+                    </div>
+                    <div class="input-row-profile">
+                        <span class="input-icon"><i class="fas fa-key"></i></span>
+                        <label class="profile-label" for="confirm-new-password-profile">Confirm&nbsp;Pw:</label>
+                        <input type="password" id="confirm-new-password-profile" name="confirm-new-password-profile" minlength="6">
+                    </div>
+                    <div class="profile-form-row">
+                        <a href="#" class="forgot-link" id="profile-forgot-password-link">Forgot Password?</a>
+                    </div>
+                    <div class="profile-password-btns-row" style="display: flex; gap: 10px; margin-top:15px;">
+                        <button type="submit" class="popup-button primary" id="change-password-btn" style="flex-grow:1;">Change Password</button>
+                        <button type="button" class="popup-button secondary" data-modal-close="userProfileModal" style="flex-grow:1;">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="forgotPasswordNewOverlay">
+        <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
+    </div>
+    <div id="feedback-verification-prompt" class="email-verification-prompt" style="display:none;">
+    <p>
+      <i class="fas fa-exclamation-triangle"></i>
+      Please verify your email to edit feedback, edit profile, and upload avatar.
+    </p>
+    <button id="send-verification-email-btn-form">Send Verification Email</button>
+</div>
+
+<div id="blog-list">
+  <p style="text-align:center; padding: 2rem; color: #FFD700;">Loading blogs...</p>
+</div>
+
+<div id="nobi-fullscreen-loader" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(25,15,44,0.63);backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div class="nobi-spinner-center">
+        <span class="nobi-spinner"></span>
+    </div>
+</div>
+<footer class="main-footer" id="mainFooter">
+    Made with ❤️ by <b style="color:var(--secondary-color);">NOBITA</b> 💪
+</footer>
+<div id="defaultAvatarModal" class="stylish-popup-overlay">
+        <div class="stylish-popup-card" style="max-width:350px;">
+            <button class="close-popup-btn-styled close-default-modal-btn">&times;</button>
+            <h2 class="popup-title">Choose Your Avatar</h2>
+            <div class="default-avatar-container">
+                <button class="default-nav-btn" id="prevDefaultAvatarBtn"><i class="fas fa-chevron-left"></i></button>
+                <img id="default-avatar-display" src="" alt="Default Avatar">
+                <button class="default-nav-btn" id="nextDefaultAvatarBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="popup-button-container">
+                <button class="popup-button secondary close-default-modal-btn">Cancel</button>
+                <button class="popup-button primary" id="saveDefaultAvatarBtn">Save</button>
+            </div>
+        </div>
+    </div>
+  <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="js/animations.js" defer></script>
+    <script src="js/breadcrumbs.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" type="module"></script>
+    <script src="js/profile.js" type="module"></script>
+    <script src="js/feedbacks.js" type="module"></script>
+<script>
+// BLOG LIST FAST LOAD (localStorage cache)
+async function loadBlogs() {
+  let blogs = [];
+  const blogListElement = document.getElementById('blog-list');
+
+  // Try to load from local storage first
+  if(localStorage.getItem('nobi_blogs')){
+    try {
+      blogs = JSON.parse(localStorage.getItem('nobi_blogs'));
+      if (blogs.length > 0) { // Only render if there's data in cache
+          renderBlogs(blogs);
+      }
+    } catch(e) {
+      console.error("Error parsing cached blogs:", e);
+      // Clear invalid cache
+      localStorage.removeItem('nobi_blogs');
+    }
+  }
+
+  // If no blogs from cache, show explicit loading message
+  if(!blogs.length) {
+    blogListElement.innerHTML = '<p style="color:#FFD700;text-align:center;margin:32px;">Loading blogs...</p>';
+  }
+
+  // Always try to fetch latest from server
+  try {
+    const res = await fetch('/api/blogs');
+    if(res.ok) {
+      const latest = await res.json();
+      // Only update cache and re-render if new data is different
+      if (JSON.stringify(latest) !== localStorage.getItem('nobi_blogs')) {
+        localStorage.setItem('nobi_blogs', JSON.stringify(latest));
+        renderBlogs(latest);
+      } else if (blogs.length === 0 && latest.length > 0) {
+        // If nothing was in cache initially but server has data, render it
+        renderBlogs(latest);
+      } else if (latest.length === 0 && blogs.length > 0) {
+        // If server returns no blogs, but cache had some, clear cache and update UI
+        localStorage.removeItem('nobi_blogs');
+        renderBlogs([]); // Render empty state
+      }
+    } else {
+      console.error("Failed to fetch latest blogs from server:", res.status, res.statusText);
+      if (!blogs.length) { // If nothing from cache, show error message
+        blogListElement.innerHTML = '<p style="color:#f43f5e;text-align:center;margin:32px;">Failed to load blogs from server.</p>';
+      }
+    }
+  } catch (error) {
+    console.error("Network error fetching blogs:", error);
+    if (!blogs.length) { // If no blogs were loaded from cache
+      blogListElement.innerHTML = '<p style="color:#f43f5e;text-align:center;margin:32px;">Network error: Could not load blogs.</p>';
+    }
+  }
+}
+
+function renderBlogs(blogs) {
+  const cont = document.getElementById('blog-list');
+  if (!blogs.length) { cont.innerHTML = '<p style="color:#FFD700;text-align:center;margin:32px;">No blogs found.</p>'; return; }
+  cont.innerHTML = blogs.map(blog => `
+    <a href="${blog.link}" style="text-decoration:none;display:block;">
+      <div class="pro-post-card">
+        <span class="blog-badge">${blog.badge || ''}</span>
+        <div class="blog-meta">
+          <i class="fas fa-user-circle"></i>
+          <b>${blog.author || 'Nobita'}</b>
+          <i class="far fa-calendar-alt"></i>
+          <span>${(new Date(blog.date)).toLocaleDateString('en-IN',{ day: '2-digit', month: 'short', year: 'numeric'})}</span>
+        </div>
+        <div class="blog-title">${blog.title}</div>
+        <div class="blog-summary">${blog.summary}</div>
+        <span class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></span>
+      </div>
+    </a>
+  `).join('');
+}
+
+// Call loadBlogs when the page loads
+loadBlogs();
+</script>
+</body>
+</html>

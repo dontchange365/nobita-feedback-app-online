@@ -1,0 +1,140 @@
+/* fileActions.css */
+
+/* Checkbox for selection */
+.item input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-secondary); /* Use theme variable */
+  border-radius: 4px;
+  background-color: var(--bg-body); /* Use theme variable */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.item input[type="checkbox"]:checked {
+  background-color: var(--success-color); /* Use theme variable */
+  border-color: var(--success-color); /* Use theme variable */
+}
+
+.item input[type="checkbox"]:checked::after {
+  content: '\2713';
+  color: var(--text-primary-light); /* Ensure visible checkmark */
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Bulk Actions Bar */
+#bulk-actions-bar {
+  position: fixed;
+  left: 0;
+  bottom: 74px;
+  width: 100vw;
+  padding: 7px 16px;
+  display: none;
+  gap: 10px;
+  z-index: 22;
+  background: var(--bg-panel); /* Use theme variable */
+  border-top: 1px solid var(--border); /* Use theme variable */
+  box-sizing: border-box;
+}
+
+#bulk-actions-bar.active {
+  display: flex;
+}
+
+#bulk-actions-bar button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: background-color 0.15s;
+}
+
+#bulk-actions-bar button.select-all {
+  background: #6366f1; /* Keep specific color */
+  color: #fff;
+}
+
+#bulk-actions-bar button.select-all:hover {
+  background: #4f52e0;
+}
+
+#bulk-actions-bar button.deselect-all {
+  background: #fbbf24; /* Keep specific color */
+  color: #181825;
+}
+
+#bulk-actions-bar button.deselect-all:hover {
+  background: #eab308;
+}
+
+#bulk-actions-bar button.delete-selected {
+  background: #ef4444; /* Keep specific color */
+  color: #fff;
+}
+
+#bulk-actions-bar button.delete-selected:hover {
+  background: #dc2626;
+}
+
+
+#sidebar-footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-top: 2px solid var(--border); /* Use theme variable */
+  background: var(--bg-panel); /* Use theme variable */
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  bottom: env(safe-area-inset-bottom, 0);
+  z-index: 20;
+  box-sizing: border-box;
+  height: 68px;
+}
+
+#sidebar-footer button {
+  flex: 1;
+  padding: 11px 0;
+  background: #4ade80; /* Keep specific color */
+  border: none;
+  border-radius: 8px;
+  color: #222;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1.5em;
+  transition: .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#sidebar-footer button.add-folder {
+  background: #6366f1; /* Keep specific color */
+  color: #fff;
+}
+
+#sidebar-footer button.add-file {
+  background: #f472b6; /* Keep specific color */
+  color: #fff;
+}
+
+#sidebar-footer button.upload-files {
+  background: #fbbf24; /* Keep specific color */
+  color: #181825;
+}
+
+#sidebar-footer button.refresh {
+  background: var(--bg-body); /* Use theme variable */
+  color: var(--text-primary); /* Use theme variable */
+}

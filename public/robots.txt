@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nobibot-host.onrender.com/sitemap.xml

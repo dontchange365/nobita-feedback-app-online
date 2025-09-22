@@ -1,0 +1,262 @@
+/* github.css */
+
+/* General Modal Styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #282c34; /* Darker background for modals */
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 500px; /* Max width for action popup */
+  max-height: 80%; /* Limit height for action popup */
+  display: flex;
+  flex-direction: column;
+  color: #e0e0e0; /* Light text color */
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid #61dafb; /* Accent border */
+  position: relative; /* For close button positioning */
+}
+
+.modal-content h3 {
+  color: #61dafb;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.6em;
+  text-align: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-btn:hover,
+.close-btn:focus {
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* GitHub Action Buttons */
+.github-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 10px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.github-action-btn[data-action="push"] {
+  background: linear-gradient(135deg, #24292f, #4a515a); /* Dark GitHub colors */
+  color: white;
+}
+
+.github-action-btn[data-action="pull"] {
+  background: linear-gradient(135deg, #007bff, #0056b3); /* Blue for pull */
+  color: white;
+}
+
+.github-action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+  opacity: 0.9;
+}
+
+.github-action-btn i {
+  font-size: 1.5em;
+}
+
+/* GitHub Log Popup Styles */
+#github-log-popup .modal-content {
+  max-width: 700px; /* Wider for logs */
+  padding: 50px;
+}
+
+#github-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+}
+
+#github-log-header h2 {
+  margin: 0;
+  color: #61dafb; /* Accent color for heading */
+  font-size: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#github-log-area {
+  flex-grow: 1; /* Allows the textarea to fill available space */
+  background: #1e1e1e; /* Even darker for the log area */
+  border: 1px solid #333;
+  padding: 15px;
+  font-size: 0.9em;
+  line-height: 1.4;
+  overflow-y: auto; /* Scrollable */
+  white-space: pre-wrap; /* Preserve whitespace and wrap text */
+  word-wrap: break-word; /* Break long words */
+  border-radius: 5px;
+  color: #c0c0c0;
+  min-height: 200px; /* Minimum height for log area */
+  
+  /* NEW STYLES FOR ALIGNMENT AND LOOK */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Spacing between log items */
+  font-family: 'Courier New', Courier, monospace; /* For better alignment */
+}
+
+/* NEW STYLES for individual log items */
+.log-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px; /* Padding inside each log item */
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.log-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.log-icon {
+  width: 20px; /* Fixed width for icon to maintain alignment */
+  text-align: center;
+  flex-shrink: 0; /* Prevents icon from shrinking */
+}
+
+.log-icon .fa-spinner {
+    color: #3b82f6; /* Blue for loading */
+}
+
+.log-icon .fa-check-circle {
+    color: #22c55e; /* Green for success */
+}
+
+.log-icon .fa-times-circle {
+    color: #ef4444; /* Red for error */
+}
+
+.log-text {
+    flex-grow: 1; /* Allows text to fill remaining space */
+    white-space: pre-wrap; /* For line breaks */
+    word-break: break-all; /* Breaks long file paths */
+    color: #c0c0c0;
+}
+
+
+/* GitHub Spinner Button in corner */
+#github-spinner-btn {
+  display: none; /* Hidden by default */
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+}
+
+.github-spinner-icon {
+  width: 50px; /* Increased size */
+  height: 50px;
+  border-radius: 50%;
+  background: #24292f; /* GitHub dark background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.github-spinner-icon:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.github-spinner-icon i {
+  color: white;
+  font-size: 1.8em; /* Icon size */
+  z-index: 1; /* Make sure icon is above spinner anim */
+}
+
+.spinner-anim {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #57e;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+  
+  /* NEW: Perfect centering ke liye yeh code add karein */
+  top: -3%;
+  left: -3%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Spinner Status Colors */
+.github-spinner-icon.loading .spinner-anim {
+  border-top-color: #57e; /* Blue for loading */
+  animation: spin 1.2s linear infinite;
+}
+.github-spinner-icon.complete .spinner-anim {
+  border-top-color: #2ecc40; /* Green for complete */
+  animation: none; /* Stop animation */
+}
+.github-spinner-icon.error .spinner-anim {
+  border-top-color: #e74c3c; /* Red for error */
+  animation: none; /* Stop animation */
+}
+
+/* Minimize button */
+#minimize-log-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.8em;
+    cursor: pointer;
+    position: absolute;
+    top: 8px;
+    right: 55px; /* Adjust based on close button position */
+    transition: color 0.3s ease;
+}
+#minimize-log-btn:hover {
+    color: #fff;
+}

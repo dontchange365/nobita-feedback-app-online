@@ -1,0 +1,210 @@
+/* --- Animations for the whole website --- */
+
+/* Background gradient animation */
+@keyframes bgmove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* Animated light spot on body */
+@keyframes lightSpotMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(10%, 10%); }
+}
+
+/* Hero section blob animation */
+@keyframes blobMove {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -20px) scale(1.1); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Hero section emoji bounce */
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-5px); }
+}
+
+/* Auth modal pop-up animation */
+@keyframes popfade {
+    0% { opacity:0; transform:scale(.7) translateY(20px);}
+    100% {opacity:1; transform:scale(1) translateY(0);}
+}
+
+/* User profile menu pop-up animation */
+@keyframes profilePop {
+    0% {opacity:0; transform:scale(.85) translateY(40px);}
+    100% {opacity:1; transform:scale(1.05) translateY(0);}
+}
+
+/* User profile avatar glow */
+@keyframes avatarGlow {
+    0% { box-shadow: 0 0 10px #FFD70077, 0 0 2px #8B5CF655;}
+    100% { box-shadow: 0 0 28px #FFD700cc, 0 0 8px #8B5CF6;}
+}
+
+/* Stylish popup animation */
+@keyframes popupShow {
+    0% { opacity:0; transform: scale(0.84) translateY(20px);}
+    100% { opacity:1; transform: scale(1) translateY(0);}
+}
+
+/* Stylish popup icon pulse */
+@keyframes iconPulse {
+    0% { transform: scale(1);}
+    100% { transform: scale(1.10);}
+}
+
+/* Section title underline animation */
+@keyframes underlineMove {
+    0% {width:45px;}
+    100%{width:90px;}
+}
+
+/* Feedback star pop-in animation */
+@keyframes starPopIn {
+    0% { opacity: 0; transform: scale(0.5) rotate(15deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* Average rating pulse animation */
+@keyframes pulseText {
+    0% { transform: scale(1); text-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+    100% { transform: scale(1.05); text-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+}
+
+/* Verified user avatar pulse border */
+@keyframes pulseBorder {
+    0% { border-color: var(--secondary-color); box-shadow: 0 0 18px var(--secondary-color); }
+    100% { border-color: var(--accent-color); box-shadow: 0 0 25px var(--accent-color); }
+}
+
+/* Edited tag fade in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Forgot password popup animation */
+@keyframes pop {
+    0% { opacity:0; transform: scale(0.85) translateY(20px); }
+    100% { opacity:1; transform: scale(1) translateY(0); }
+}
+
+/* Forgot password popup icon swing animation */
+@keyframes swing {
+    0% { transform: rotate(-6deg);}
+    100% {transform: rotate(6deg);}
+}
+
+/* Forgot password success box fade in */
+@keyframes fade {
+    0% { opacity: 0; transform: scale(.92);}
+    100% { opacity: 1; transform: scale(1);}
+}
+
+/* Forgot password success icon pulse */
+@keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 7px #36ea9a22, 0 6px 32px #36ea9a1c; }
+    50% { box-shadow: 0 0 0 14px #36ea9a33, 0 12px 44px #7b2ff222;}
+}
+
+/* Nobi spinner spin animation */
+@keyframes nobi-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Spinner for forgot password modal */
+@keyframes spin {
+    0% {transform: rotate(0deg);}
+    100%{transform: rotate(360deg);}
+}
+
+/* Animated video container animations */
+@keyframes borderGlow {
+    0% { border-color: rgba(255, 215, 0, 0.3); box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+    50% { border-color: rgba(255, 215, 0, 0.8); box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+    100% { border-color: rgba(255, 215, 0, 0.3); box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; }
+    50% { opacity: 0.9; }
+    100% { opacity: 0.8; }
+}
+
+@keyframes floatAndBounce {
+    0% {
+        left: var(--x-start);
+        top: var(--y-start);
+        transform: translate(-50%, -50%) scale(var(--scale-start));
+        box-shadow: 0 0 10px var(--bubble-color-shadow);
+    }
+    25% {
+        left: var(--x-point1);
+        top: var(--y-point1);
+        transform: translate(-50%, -50%) scale(var(--scale-point1));
+        box-shadow: 0 0 15px var(--bubble-color-shadow);
+    }
+    50% {
+        left: var(--x-point2);
+        top: var(--y-point2);
+        transform: translate(-50%, -50%) scale(var(--scale-point2));
+        box-shadow: 0 0 20px var(--bubble-color-shadow);
+    }
+    75% {
+        left: var(--x-point3);
+        top: var(--y-point3);
+        transform: translate(-50%, -50%) scale(var(--scale-point3));
+        box-shadow: 0 0 15px var(--bubble-color-shadow);
+    }
+    100% {
+        left: var(--x-start);
+        top: var(--y-start);
+        transform: translate(-50%, -50%) scale(var(--scale-start));
+        box-shadow: 0 0 10px var(--bubble-color-shadow);
+    }
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOutSlideDown {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(20px); }
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOutScale {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+/* Lazy loading animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes feedbackItemFadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}

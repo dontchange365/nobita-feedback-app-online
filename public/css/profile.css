@@ -1,0 +1,369 @@
+/* --- User Profile Modal and Menu Styles --- */
+
+#userProfileModal .auth-modal-content {
+    background: var(--bg-gradient-end);
+    border-radius: 12px;
+    padding: 26px 12px 24px 12px;
+    color: var(--text-color-light);
+    max-width: 400px;
+    width: 96vw;
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden !important;
+    box-shadow: 0 2px 30px rgba(26,15,70,0.13);
+    position: relative;
+}
+
+#userProfileModal .auth-modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 14px;
+    background: var(--border-gradient);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.45;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden !important;
+}
+
+#userProfileModal .auth-modal-content::after {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden !important;
+}
+
+#userProfileModal .close-modal-btn {
+    position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 26px;
+    color: var(--secondary-color); background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%; width: 35px; height: 35px; display: flex;
+    justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    line-height: 1; padding:5px;
+    transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+#userProfileModal .close-modal-btn:hover {
+    color: var(--primary-color); background: var(--secondary-color);
+    transform: rotate(90deg) scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+#userProfileModal .input-wrapper {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+#userProfileModal .input-wrapper input,
+#userProfileModal .input-wrapper textarea {
+    width: 100%; padding: 16px 12px 12px 44px; font-size: 1.1em; border-radius: 11px;
+    border: 2px solid rgba(255, 215, 0, 0.5); background: rgba(255,255,255,0.08);
+    outline: none; transition: border .22s, box-shadow .22s; box-sizing: border-box; color: var(--text-color-light);
+}
+
+#userProfileModal .input-wrapper .input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--secondary-color); font-size: 1.12em; z-index: 2;
+}
+
+#userProfileModal .input-wrapper label {
+    position: absolute; left: 44px; top: 14px; pointer-events: none; font-size: 1.02em;
+    color: var(--label-inactive-color); transition: all 0.22s; background: none; padding: 0 4px;
+}
+
+#userProfileModal .input-wrapper input:focus + label,
+#userProfileModal .input-wrapper input:not(:placeholder-shown) + label {
+    top: -10px; left: 10px; font-size: .91em; color: var(--secondary-color);
+    background: var(--bg-gradient-end); padding: 0 6px; z-index: 3;
+}
+
+#userProfileModal .input-wrapper input:focus {
+    border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.input-row-profile {
+    display: flex; align-items: center; margin-bottom: 15px; background: var(--input-row-profile-bg);
+    border-radius: 8px; padding: 8px 12px; border: 1px solid var(--card-border-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-row-profile:focus-within {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.input-row-profile .input-icon {
+    position: static; transform: none; margin-right: 10px; color: var(--secondary-color);
+    font-size: 1.1em; flex-shrink: 0;
+}
+
+.input-row-profile .profile-label {
+    margin-right: 8px; color: var(--text-color-light); font-size: 0.95em;
+    white-space: nowrap; flex-shrink: 0;
+}
+
+.input-row-profile input {
+    flex-grow: 1; background: transparent; border: none; outline: none;
+    color: var(--text-color-light); padding: 8px 0; font-size: 0.95em;
+    width: auto;
+}
+
+.input-row-profile input:disabled {
+    color: rgba(255,255,255,0.5);
+    cursor: not-allowed;
+}
+
+.input-row-profile input:disabled + .profile-label,
+.input-row-profile input:disabled ~ .input-icon {
+    opacity: 0.6;
+}
+
+.profile-scroll-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 5px 15px 15px 15px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-color) rgba(0,0,0,0.2);
+}
+
+.profile-scroll-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-scroll-content::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+
+.profile-scroll-content::-webkit-scrollbar-thumb {
+    background-color: var(--secondary-color);
+    border-radius: 3px;
+}
+
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+#profile-display-avatar {
+    width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+    border: 4px solid var(--secondary-color); box-shadow: 0 0 15px rgba(255,215,0,0.5);
+    margin-bottom: 15px; transition: transform 0.2s ease-out;
+    background-color: var(--primary-color); display: flex;
+    justify-content: center; align-items: center; font-size: 3em; color: var(--text-color-light);
+}
+
+#profile-display-avatar:hover {
+    transform: translateY(-3px) scale(1.03);
+}
+
+.avatar-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.profile-avatar-action-btn {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--primary-color); 
+    color: var(--secondary-color);
+    padding: 8px 15px; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    font-size: 0.9em;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500; 
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--secondary-color);
+    line-height: normal; /* Add this to normalize line-height */
+    text-align: center;
+    white-space: nowrap;
+}
+
+.profile-avatar-action-btn:hover {
+    background-color: #550a8a;
+    transform: translateY(-2px);
+}
+
+.profile-avatar-action-btn i {
+    font-size: 1.1em;
+}
+
+.upload-progress-bar {
+    width: 80%;
+    height: 15px;
+    background-color: var(--progress-bg);
+    border-radius: 8px;
+    margin-top: 15px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--progress-fill-color);
+    border-radius: 8px;
+    transition: width 0.3s ease-out;
+}
+
+.progress-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: white; font-size: 0.75em; font-weight: bold;
+    text-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#upload-avatar-now-btn {
+    /* अब यह .profile-avatar-action-btn की styling inherit करेगा */
+    margin-top: 10px;
+}
+
+#upload-avatar-now-btn:hover {
+    background: linear-gradient(45deg, #218838, var(--success-color));
+    transform: translateY(-2px); box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+}
+
+#upload-avatar-now-btn:disabled {
+    opacity: 0.6; cursor: not-allowed; background: #6c757d; box-shadow: none;
+}
+
+#profile-edit-form, #change-password-form {
+    width: 100%;
+}
+
+.profile-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 25px 0;
+}
+
+#userProfileModal .auth-modal-content {
+    max-width: 370px !important;
+    width: 95vw !important;
+    margin: 0 auto !important;
+    padding: 20px 10px 18px 10px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    transform: none !important;
+}
+
+#userProfileModal .auth-modal-content * {
+    font-size: 0.97em !important;
+}
+
+#userProfileModal .auth-modal-content::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px !important;
+    border-radius: 16px !important;
+    background: var(--border-gradient);
+    z-index: -1;
+    filter: blur(5px);
+    opacity: 0.30;
+    pointer-events: none;
+    box-sizing: border-box !important;
+}
+
+#userProfileModal button, #userProfileModal input[type="button"] {
+    background: linear-gradient(92deg,#FFD700,#8B5CF6);
+    color: #251b3a; border: none; border-radius: 7px;
+    font-weight: 600; font-size: 1em; padding: 10px 28px;
+    margin: 8px 6px 0 0; cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+    box-shadow: 0 1px 5px rgba(139,92,246,0.10); min-width: 130px;
+    text-align: center; outline: none; display: inline-flex;
+    align-items: center; justify-content: center;
+}
+
+#userProfileModal button:hover, #userProfileModal input[type="button"]:hover {
+    background: linear-gradient(92deg,#8B5CF6,#FFD700); color: #fff;
+    box-shadow: 0 4px 18px rgba(255,215,0,0.18);
+}
+
+#userProfileModal { overflow-x: hidden !important; }
+
+/* Responsive adjustments for profile */
+@media (max-width: 768px) {
+    .profile-scroll-content { max-height: 65vh; }
+    #userProfileModal button, #userProfileModal input[type="button"] {
+        min-width: 120px;
+        padding: 9px 24px;
+        font-size: 0.95em;
+    }
+}
+
+@media (max-width: 480px) {
+    #userProfileModal .auth-modal-content { max-width: 99vw !important; padding: 10px 2vw 10px 2vw !important; }
+    .profile-scroll-content { max-height: 60vh; padding: 5px 10px 10px 10px; }
+    .user-profile-menu{ width:calc(100vw - 40px); right:10px; top: 70px; }
+    .profile-avatar-action-btn { font-size: 0.85em; padding: 7px 12px; }
+    #userProfileModal button, #userProfileModal input[type="button"] {
+        min-width: 100px;
+        font-size: 0.9em;
+        padding: 8px 20px;
+    }
+}
+
+/* Profile Forgot Password link style */
+#userProfileModal .forgot-link {
+    display: inline-block;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--secondary-color); /* same as login/signup */
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+#userProfileModal .forgot-link:hover {
+    color: #ff9900; /* hover color - thoda hatke */
+    text-decoration: underline;
+    transform: translateY(-1px);
+}
+
+/* --- Default Avatar Modal Styles --- */
+.default-avatar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 25px 0;
+}
+
+#default-avatar-display {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid var(--secondary-color);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+    object-fit: cover;
+    transition: transform 0.25s ease-out;
+}
+
+.default-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--secondary-color);
+    font-size: 2.5em;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    padding: 0 5px;
+}
+
+.default-nav-btn:hover {
+    color: var(--primary-color);
+    transform: scale(1.15);
+}

@@ -1,0 +1,20 @@
+/* auth.css */
+
+#sidebar-header button#logoutBtn { /* Specific style for logout button */
+    background: var(--danger-color); /* Red for logout */
+    color: white;
+    font-size: 0.9em; /* Smaller font for logout */
+    padding: 7px 12px;
+}
+#sidebar-header button#logoutBtn:hover {
+    background: #c23049; /* Darker red on hover */
+}
+#sidebar-header button#restartServerBtn { /* Specific style for restart button */
+    background: var(--danger-color); /* Red for restart */
+    color: white;
+    font-size: 0.9em; /* Smaller font for restart */
+    padding: 7px 12px;
+}
+#sidebar-header button#restartServerBtn:hover {
+  background: var(--bg-body); /* Subtle hover effect */
+}

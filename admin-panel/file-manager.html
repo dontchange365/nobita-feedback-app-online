@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NOBI FILE MANAGER 😈💻</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <link rel="stylesheet" href="file-manager/css/ui.css">
+  <link rel="stylesheet" href="file-manager/css/script.css">
+  <link rel="stylesheet" href="file-manager/css/auth.css">
+  <link rel="stylesheet" href="file-manager/css/navigation.css">
+  <link rel="stylesheet" href="file-manager/css/fileActions.css">
+  <link rel="stylesheet" href="file-manager/css/fileDetails.css">
+  <link rel="stylesheet" href="file-manager/css/editor.css">
+  <link rel="stylesheet" href="file-manager/css/uploader.css">
+  <link rel="stylesheet" href="file-manager/css/github.css">
+</head>
+<body>
+  <div id="container">
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <span>📁 FILES</span>
+        
+        <button id="logoutBtn" title="Logout" onclick="logoutAdmin()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+        <button id="restartServerBtn" class="restartServerBtn" title="Restart">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <button><a href="/admin-panel" class="restartServerBtn" title="Go to Admin Panel">
+          <i class="fas fa-chart-line"></i>
+        </a></button>
+      </div>
+      <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
+      <div id="file-search-bar">
+        <input type="text" id="search-input" placeholder="Search files/folders...">
+      </div>
+      <div id="file-list"></div>
+      <div id="sidebar-footer">
+        <button class="add-folder" title="Add Folder"><i class="fas fa-folder-plus"></i></button>
+        <button class="add-file" title="Add File"><i class="fas fa-file"></i></button>
+        <button class="upload-files" onclick="document.getElementById('file-upload').click()" title="Upload Files"><i class="fas fa-upload"></i></button>
+        <input type="file" id="file-upload" multiple style="display:none;">
+        <button class="refresh" title="Refresh"><i class="fas fa-arrows-rotate"></i></button>
+        <button id="github-action-btn-main" title="GitHub Actions"><i class="fab fa-github"></i> </button>
+      </div>
+    </div>
+    <div id="main"></div>
+  </div>
+  <div id="popup">
+    <div id="popup-content"></div>
+  </div>
+  <div id="popup-editor">
+    <div id="popup-editor-content">
+      <div class="editor-filename"></div>
+      <div id="find-replace-bar" style="display:none;"></div>
+      
+      <div id="editor-wrapper">
+        <div id="code-editor" name="code"></div>
+      </div>
+      <div class="popup-editor-actions">
+        <button type="button" class="save">Save</button>
+        <button type="button" class="cancel">Cancel</button>
+        <button type="button" class="findreplace-btn" title="Find & Replace"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <button id="floating-back-btn" title="Go Back">⬅️</button>
+
+  <div id="bulk-actions-bar">
+    <button class="select-all" onclick="selectAllFiles()">Select All</button>
+    <button class="deselect-all" onclick="deselectAllFiles()">Deselect All</button>
+    <button class="delete-selected" onclick="bulkDelete()">Delete Selected</button>
+  </div>
+<style>/* Editor Choice Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.modal-content {
+    background-color: #2a2a2a; /* Dark background */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: #e0e0e0;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.modal-content button {
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none !important;
+}</style>
+  <div id="toast-container"></div>
+
+  <div id="github-action-popup" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h3>Choose GitHub Action</h3>
+      <button class="github-action-btn" data-action="push">
+        <i class="fab fa-github"></i> Push to GitHub
+      </button>
+      <button class="github-action-btn" data-action="pull">
+        <i class="fas fa-download"></i> Pull from GitHub
+      </button>
+    </div>
+  </div>
+
+  <div id="github-log-popup" class="modal">
+    <div class="modal-content">
+      <button id="minimize-log-btn" title="Minimize Log"><i class="fas fa-window-minimize"></i></button>
+      <span class="close-btn" id="close-github-log-popup">&times;</span>
+      <div id="github-log-header">
+        <h2>GitHub Log</h2>
+      </div>
+      <div id="github-log-area"></div>
+    </div>
+  </div>
+
+  <div id="github-spinner-btn">
+    <div class="github-spinner-icon">
+      <i class="fab fa-github"></i>
+      <div class="spinner-anim"></div>
+    </div>
+  </div>
+<div id="editorChoiceModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">Choose Editor</h3>
+            <p class="mb-4">Which editor would you like to use for this file?</p>
+            <div class="flex flex-col gap-3 mb-4">
+                <button id="chooseAceBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    ACE Editor
+                </button>
+                <button id="chooseCodeMirrorBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    CodeMirror
+                </button>
+            </div>
+            <div class="flex items-center justify-center">
+                <input type="checkbox" id="alwaysUseEditor" class="mr-2">
+                <label for="alwaysUseEditor" class="text-sm">Always use this editor</label>
+            </div>
+            <button id="closeEditorChoiceModal" class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+    </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-javascript.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-html.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-css.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-json.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-python.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-xml.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-markdown.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-sh.js"></script>
+
+  <script src="file-manager/js/auth.js"></script>
+  <script src="file-manager/js/ui.js"></script>
+  <script src="file-manager/js/fileDetails.js"></script>
+  <script src="file-manager/js/navigation.js"></script>
+  <script src="file-manager/js/fileActions.js"></script>
+  <script src="file-manager/js/script.js"></script>
+  <script src="file-manager/js/editor.js"></script>
+  <script src="file-manager/js/uploader.js"></script>
+  <script src="file-manager/js/github.js"></script>
+</body>
+</html>
