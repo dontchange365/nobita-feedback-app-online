@@ -110,14 +110,14 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
             <form id="email-login-form" class="busicon-auth-form">
                 <div class="input-wrapper">
                     <span class="input-icon"><i class="fas fa-envelope"></i></span>
-                    <input type="email" id="modal-login-email" placeholder=" " autocomplete="email" required>
-                    <label for="modal-login-email">Email</label>
+                    <input type="email" id="modal-login-email-user" placeholder=" " autocomplete="email" name="user-email" required>
+                    <label for="modal-login-email-user">Email</label>
                 </div>
                 <div class="input-wrapper">
                     <span class="input-icon"><i class="fas fa-lock"></i></span>
-                    <input type="password" id="modal-login-password" placeholder=" " autocomplete="current-password" required>
-                    <label for="modal-login-password">Password</label>
-                    <span class="show-hide-pass" onclick="togglePass('modal-login-password', this)"><i class="fas fa-eye-slash"></i></span>
+                    <input type="password" id="modal-login-password-user" placeholder=" " autocomplete="current-password" name="user-password" required>
+                    <label for="modal-login-password-user">Password</label>
+                    <span class="show-hide-pass" onclick="togglePass('modal-login-password-user', this)"><i class="fas fa-eye-slash"></i></span>
                 </div>
                 <div class="busicon-form-row">
                     <label><input type="checkbox" id="remember-me"> Remember me</label>

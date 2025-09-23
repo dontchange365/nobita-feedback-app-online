@@ -397,8 +397,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- AUTH MODAL FORM SUBMISSIONS ---
     const busiconEmailLoginForm = document.getElementById('email-login-form');
-    const busiconModalLoginEmailInput = document.getElementById('modal-login-email');
-    const busiconModalLoginPasswordInput = document.getElementById('modal-login-password');
+    const busiconModalLoginEmailInput = document.getElementById('modal-login-email-user');
+    const busiconModalLoginPasswordInput = document.getElementById('modal-login-password-user');
     const busiconForgotPasswordLink = document.getElementById('busicon-forgot-password-link');
     const busiconCreateAccountLink = document.getElementById('busicon-create-account-link');
     const busiconEmailSignupForm = document.getElementById('email-signup-form');

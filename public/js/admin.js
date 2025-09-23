@@ -2,8 +2,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('admin-login-form');
     const loginFormContainer = document.getElementById('login-form-container');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
+    const usernameInput = document.getElementById('admin-username');
+    const passwordInput = document.getElementById('admin-password');
     const rememberMeCheckbox = document.getElementById('remember-me');
     const togglePassword = document.getElementById('toggle-password');
     const themeToggle = document.getElementById('theme-toggle');
@@ -135,7 +135,7 @@ function toggleTheme(e) {
 
 function loadRememberedCredentials() {
     if (localStorage.getItem('adminRememberMe') === 'true') {
-        document.getElementById('username').value = localStorage.getItem('adminUsername') || '';
+        document.getElementById('admin-username').value = localStorage.getItem('adminUsername') || '';
         document.getElementById('remember-me').checked = true;
     }
 }
