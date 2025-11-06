@@ -1,16 +1,8 @@
-// services/emailService.js (MODIFIED for Vercel Microservice)
-const axios = require('axios'); // <-- NEW: Axios is required to call Vercel API
+// services/emailService.js
+const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
-// Note: nodemailer is no longer required in this file, but axios is added.
-
 dotenv.config();
 
-// Render Environment Variable: Vercel API का URL जो तुम Render ENV में सेट करोगे
-const VERCEL_EMAIL_API = process.env.VERCEL_EMAIL_API_URL; 
-
-// ----------------------------------------------------------------------
-// 💡 Original NOBITA_EMAIL_TEMPLATE (Preserved)
-// ----------------------------------------------------------------------
 const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic") => {
   let messageHTML = '';
   if (type === 'reset-request') { messageHTML = `A password reset request has been initiated for your account.<br>Click the button below to reset your password.`; } 
@@ -61,47 +53,32 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type 
 </div>`;
 };
 
-
-// ----------------------------------------------------------------------
-// 💡 sendEmail FUNCTION (Uses Vercel API)
-// ----------------------------------------------------------------------
 async function sendEmail(options) {
-    if (!VERCEL_EMAIL_API) {
-        console.error("❌ VERCEL_EMAIL_API_URL is not set in Render environment. Email service disabled.");
-        throw new Error("Email service is disabled. VERCEL_EMAIL_API_URL environment variable is missing.");
+    const { EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT } = process.env;
+    if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
+        console.error("Email service environment variables are not fully set.");
+        throw new Error("Email service is not properly configured. Please contact the administrator.");
     }
-
-    // Payload jo hum Vercel ko bhejenge
-    const payload = {
-        recipient: options.email,
-        subject: options.subject,
-        html: options.html,
-        message: options.message || options.subject,
+    const transporter = nodemailer.createTransport({
+        host: EMAIL_HOST, 
+        port: parseInt(EMAIL_PORT), 
+        secure: parseInt(EMAIL_PORT) === 465,
+        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+        tls: { rejectUnauthorized: false }
+    });
+    const mailOptions = { 
+        from: `"Nobita Feedback App" <${EMAIL_USER}>`, 
+        to: options.email, 
+        subject: options.subject, 
+        text: options.message, 
+        html: options.html 
     };
-    
     try {
-        console.log(`📡 Sending email request to Vercel API for: ${options.email}`);
-        
-        // Render se Vercel ko POST request (Axios use karke)
-        const response = await axios.post(VERCEL_EMAIL_API, payload);
-
-        // Vercel ka response.data = { success: true, message: ..., messageId: ... }
-        if (response.data.success) {
-            console.log('✅ Email successfully offloaded to Vercel and sent.');
-            // Tumhara main app ab is success ko aage use kar sakta hai
-            return response.data; 
-        } else {
-            // Vercel ne 200 OK diya, par email Bhejane mein fail hua
-            console.error('❌ Vercel reported failure:', response.data.message);
-            throw new Error(`Email failed: ${response.data.message}`);
-        }
-
+        let info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully! Message ID: %s', info.messageId);
     } catch (error) {
-        // Network error ya Vercel ne 500/400 status code diya
-        const errMsg = error.response?.data?.details || error.message;
-        console.error('🔥 CRITICAL ERROR hitting Vercel API:', errMsg);
-        // Throw error taaki tumhara auth route isko catch kar sake
-        throw new Error(`Vercel API connection or server error: ${errMsg}`);
+        console.error('Error sending email with Nodemailer:', error);
+        throw error;
     }
 }
 
