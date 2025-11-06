@@ -1,8 +1,82 @@
 // services/emailService.js
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
+const { google } = require('googleapis'); // <-- Google APIs required for OAuth2
+
 dotenv.config();
 
+// --------------------------------------------------------
+// Part 1: OAuth2 Client Setup
+// --------------------------------------------------------
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = 'https://developers.google.com/oauthplayground'; // Static URI for token generation
+const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+const GMAIL_USER = process.env.EMAIL_USER;
+
+const oAuth2Client = new google.auth.OAuth2(
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI
+);
+
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+// --------------------------------------------------------
+// Part 2: Transporter Creation (Async)
+// --------------------------------------------------------
+async function createTransporter() {
+    try {
+        const accessToken = await oAuth2Client.getAccessToken(); // Fetch new Access Token using Refresh Token
+        
+        return nodemailer.createTransport({
+            service: 'gmail', // Use 'gmail' service to simplify configuration
+            auth: {
+                type: 'OAuth2',
+                user: GMAIL_USER,
+                clientId: CLIENT_ID,
+                clientSecret: CLIENT_SECRET,
+                refreshToken: REFRESH_TOKEN,
+                accessToken: accessToken.token, // Use the dynamically fetched access token
+            },
+        });
+    } catch (error) {
+        console.error("Failed to create OAuth2 transporter:", error);
+        throw new Error("Email service authentication failed. Check OAuth tokens.");
+    }
+}
+
+// --------------------------------------------------------
+// Part 3: Send Email Function (Updated)
+// --------------------------------------------------------
+async function sendEmail(options) {
+    if (!GMAIL_USER || !REFRESH_TOKEN) {
+        console.error("OAuth Email service environment variables are not fully set.");
+        throw new Error("Email service is not properly configured. Please contact the administrator.");
+    }
+
+    const transporter = await createTransporter(); // Wait for transporter to be created
+
+    const mailOptions = { 
+        from: `"Nobita Feedback App" <${GMAIL_USER}>`, 
+        to: options.email, 
+        subject: options.subject, 
+        text: options.message, 
+        html: options.html 
+    };
+
+    try {
+        let info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully! Message ID: %s', info.messageId);
+    } catch (error) {
+        console.error('Error sending email with OAuth2 Nodemailer:', error);
+        throw error;
+    }
+}
+
+// --------------------------------------------------------
+// Part 4: Email Template (Keep this the same)
+// --------------------------------------------------------
 const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic") => {
   let messageHTML = '';
   if (type === 'reset-request') { messageHTML = `A password reset request has been initiated for your account.<br>Click the button below to reset your password.`; } 
@@ -52,34 +126,5 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type 
   </table>
 </div>`;
 };
-
-async function sendEmail(options) {
-    const { EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT } = process.env;
-    if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
-        console.error("Email service environment variables are not fully set.");
-        throw new Error("Email service is not properly configured. Please contact the administrator.");
-    }
-    const transporter = nodemailer.createTransport({
-        host: EMAIL_HOST, 
-        port: parseInt(EMAIL_PORT), 
-        secure: parseInt(EMAIL_PORT) === 465,
-        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-        tls: { rejectUnauthorized: false }
-    });
-    const mailOptions = { 
-        from: `"Nobita Feedback App" <${EMAIL_USER}>`, 
-        to: options.email, 
-        subject: options.subject, 
-        text: options.message, 
-        html: options.html 
-    };
-    try {
-        let info = await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully! Message ID: %s', info.messageId);
-    } catch (error) {
-        console.error('Error sending email with Nodemailer:', error);
-        throw error;
-    }
-}
 
 module.exports = { sendEmail, NOBITA_EMAIL_TEMPLATE };
