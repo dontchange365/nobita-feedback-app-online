@@ -1,9 +1,16 @@
 // services/emailService.js
-const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
+// const nodemailer = require('nodemailer'); // <-- No longer needed for direct send
+// const { google } = require('googleapis'); // <-- No longer needed for direct send
 dotenv.config();
 
+// Vercel Serverless Function का URL जहाँ से ईमेल भेजे जाएंगे
+const EMAIL_API_URL = process.env.VERCEL_EMAIL_API_URL; 
+const EMAIL_API_KEY = process.env.VERCEL_EMAIL_API_KEY; // Security key
+
 const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic") => {
+  // ... (NOBITA_EMAIL_TEMPLATE is unchanged)
+  // यह टेम्पलेट HTML अभी भी यहीं रहेगा
   let messageHTML = '';
   if (type === 'reset-request') { messageHTML = `A password reset request has been initiated for your account.<br>Click the button below to reset your password.`; } 
   else if (type === 'reset-confirm') { messageHTML = `Your password has been successfully reset.<br>You can now log in with your new password.`; } 
@@ -53,31 +60,40 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type 
 </div>`;
 };
 
+
 async function sendEmail(options) {
-    const { EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT } = process.env;
-    if (!EMAIL_USER || !EMAIL_PASS || !EMAIL_HOST || !EMAIL_PORT) {
-        console.error("Email service environment variables are not fully set.");
-        throw new Error("Email service is not properly configured. Please contact the administrator.");
+    if (!EMAIL_API_URL || !EMAIL_API_KEY) {
+        console.error("Vercel Email API Configuration is missing.");
+        throw new Error("Email service is not properly configured (Vercel API Missing ENV). Please contact the administrator.");
     }
-    const transporter = nodemailer.createTransport({
-        host: EMAIL_HOST, 
-        port: parseInt(EMAIL_PORT), 
-        secure: parseInt(EMAIL_PORT) === 465,
-        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-        tls: { rejectUnauthorized: false }
-    });
-    const mailOptions = { 
-        from: `"Nobita Feedback App" <${EMAIL_USER}>`, 
-        to: options.email, 
-        subject: options.subject, 
-        text: options.message, 
-        html: options.html 
-    };
+    
+    // Nobita App (Render) Vercel API को कॉल करेगा
     try {
-        let info = await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully! Message ID: %s', info.messageId);
+        const response = await fetch(EMAIL_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Authorization header security key के लिए 
+                'Authorization': `Bearer ${EMAIL_API_KEY}`
+            },
+            body: JSON.stringify({
+                to: options.email,
+                subject: options.subject,
+                html: options.html,
+                text: options.message || 'This is a fallback text message.'
+                // From address Vercel Function में hardcode/ENV से लिया जाएगा
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Unknown Vercel API Error' }));
+            throw new Error(`Failed to send email via Vercel API. Status: ${response.status}. Message: ${errorData.message}`);
+        }
+
+        const successData = await response.json();
+        console.log('Email successfully requested via Vercel API! ID: %s', successData.messageId || 'N/A');
     } catch (error) {
-        console.error('Error sending email with Nodemailer:', error);
+        console.error('Error sending email via Vercel API:', error);
         throw error;
     }
 }
