@@ -6,10 +6,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
+// --- RATE LIMITING & SCHEDULER IMPORTS ---
 const rateLimit = require('express-rate-limit'); 
-// --- NAYA IMPORT ---
-const { startScheduler } = require('./scheduler/ai_responder');
-// --- NAYA IMPORT ---
+const { startScheduler } = require('./scheduler/ai_responder'); 
+// --- RATE LIMITING & SCHEDULER IMPORTS ---
 
 // Add these two lines to create and use an http server
 const { createServer } = require('http');
@@ -19,6 +19,11 @@ require('./config/environment');
 require('./config/database');
 
 const app = express();
+// --- FIX: TRUST PROXY HEADERS START ---
+// YEH LINE 'X-Forwarded-For' ERROR KO THEEK KAREGI TAAKI RATE LIMITING SAHI KAAM KARE.
+app.set('trust proxy', true); 
+// --- FIX: TRUST PROXY HEADERS END ---
+
 const PORT = process.env.PORT || 3000;
 
 // Create an HTTP server and pass the Express app to it
@@ -57,28 +62,24 @@ app.use((req, res, next) => {
 });
 
 // --- RATE LIMITING MIDDLEWARE START ---
-// Global API limiter (Strict for Auth/API)
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 100, // 100 requests per windowMs
     message: "Too many requests from this IP, please try again after 15 minutes."
 });
 
-// Stricter limiter for high-cost operations (e.g., reset, signup, login)
 const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 60 minutes
-    max: 10, // Limit each IP to 10 requests per hour
+    max: 10, // 10 requests per hour
     message: "Too many authentication attempts from this IP, please try again after an hour."
 });
 
-// Feedback Submission Limiter (Less strict, more throughput expected)
 const feedbackLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 30, // 30 submissions per IP every 15 minutes
     message: "Too many feedback submissions from this IP, please wait a while."
 });
 
-// Make limiters available globally via app.locals (used in auth/feedback routes)
 app.locals.apiLimiter = apiLimiter;
 app.locals.authLimiter = authLimiter;
 app.locals.feedbackLimiter = feedbackLimiter;
@@ -88,24 +89,11 @@ app.use('/api/', apiLimiter);
 // --- RATE LIMITING MIDDLEWARE END ---
 
 
-// --- CACHING DISABLED FOR STATIC FILES START ---
-// Caching disabled for development by setting maxAge: 0
-const noCacheOptions = {
-    maxAge: 0, // This sets Cache-Control: no-cache, no-store, must-revalidate
-    setHeaders: (res, path) => {
-        // Explicitly set headers to ensure no caching for all browsers
-        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.set('Pragma', 'no-cache');
-        res.set('Expires', '0');
-    }
-};
+// Serve admin panel static files properly
+app.use('/admin-panel', express.static(path.join(__dirname, 'admin-panel')));
 
-// Serve admin panel static files properly (No Caching)
-app.use('/admin-panel', express.static(path.join(__dirname, 'admin-panel'), noCacheOptions));
-
-// Serve frontend static files properly (No Caching)
-app.use(express.static(path.join(__dirname, 'public'), noCacheOptions));
-// --- CACHING DISABLED FOR STATIC FILES END ---
+// Serve frontend static files properly
+app.use(express.static(path.join(__dirname, 'public')));
 
 const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback');
@@ -121,7 +109,6 @@ app.use('/', fileManagerRoutes);
 app.use('/', avatarRoutes); // Use the new avatar router
 
 app.get('/:page', (req, res, next) => {
-    // Note: Since we disabled caching on static assets, this part is for HTML files.
     if (req.path.startsWith('/api/') || req.path.endsWith('.js') || req.path.endsWith('.css') || req.path.endsWith('.ico') || req.path.endsWith('.png') || req.path.endsWith('.svg')) return next();
     const file = path.join(__dirname, 'public', `${req.params.page}.html`);
     fs.access(file, (err) => {
@@ -164,6 +151,7 @@ app.get('*', (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Nobita's server with File Manager is running on port ${PORT}: http://localhost:${PORT}`);
     // --- SCHEDULER START ---
+    // Start the AI scheduler once the server is listening
     startScheduler(io); 
-    // --- SCHEDULER START ---
+    // --- SCHEDULER END ---
 });
