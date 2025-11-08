@@ -21,7 +21,7 @@ require('./config/database');
 const app = express();
 // --- FIX: TRUST PROXY HEADERS START ---
 // YEH LINE 'X-Forwarded-For' ERROR KO THEEK KAREGI TAAKI RATE LIMITING SAHI KAAM KARE.
-app.set('trust proxy', true); 
+app.set('trust proxy', 1); // FIX: true se 1 kiya taaki rate limit bypass na ho
 // --- FIX: TRUST PROXY HEADERS END ---
 
 const PORT = process.env.PORT || 3000;
