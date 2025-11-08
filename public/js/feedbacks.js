@@ -160,33 +160,61 @@ async function fetchFeedbacks() {
 }
 window.fetchFeedbacks = fetchFeedbacks;
 
+// --- UPDATED updateAverageRating FUNCTION (CSS STARS) START ---
 function updateAverageRating(avg, count) {
     if(!averageRatingDisplayEl) return;
 
     const avgNum = parseFloat(avg);
-    let starsHtml = '☆☆☆☆☆';
-
-    if (!isNaN(avgNum) && avgNum > 0) {
-        const full = Math.floor(avgNum);
-        const halfVal = avgNum % 1;
-        let halfChar = '';
-        if (halfVal >= 0.25 && halfVal < 0.75) halfChar = '◐';
-        else if (halfVal >= 0.75) halfChar = '★';
-        starsHtml = '★'.repeat(full) + halfChar + '☆'.repeat(Math.max(0, 5 - full - (halfChar ? 1 : 0)));
+    let sentimentText = 'No ratings yet';
+    let sentimentClass = '';
+    let fillPercentage = 0; // New variable for CSS width
+    
+    // Determine Sentiment Text and Class 
+    if (count > 0 && !isNaN(avgNum)) {
+        if (avgNum >= 4.5) {
+            sentimentText = 'Outstanding! (Excellent)';
+            sentimentClass = 'excellent';
+        } else if (avgNum >= 3.5) {
+            sentimentText = 'Great! (Good)';
+            sentimentClass = 'good';
+        } else if (avgNum >= 2.5) {
+            sentimentText = 'Average (Okay)';
+            sentimentClass = 'average';
+        } else {
+            sentimentText = 'Needs Improvement (Poor)';
+            sentimentClass = 'poor';
+        }
+    } else {
+        sentimentClass = 'average';
     }
+
+    // CALCULATE CSS FILL PERCENTAGE
+    if (count > 0 && !isNaN(avgNum)) {
+        // Calculate width as a percentage of 5 stars
+        fillPercentage = (avgNum / 5) * 100;
+        if (fillPercentage > 100) fillPercentage = 100; 
+    }
+    
+    // CREATE HTML FOR CSS STARS
+    const cssStarsHtml = `
+        <div class="css-stars-wrapper">
+            <div class="css-stars-empty">★★★★★</div>
+            <div class="css-stars-fill" style="width: ${fillPercentage.toFixed(1)}%;">★★★★★</div>
+        </div>
+    `;
 
     averageRatingDisplayEl.innerHTML = `
         <div class="average-rating-container animate-in">
             <h3>Overall Average Rating</h3>
             <div class="average-number">${isNaN(avgNum) ? '0.0' : avgNum.toFixed(1)}</div>
-            <div class="average-stars">${starsHtml}</div>
+            <div class="sentiment-text ${sentimentClass}">${sentimentText}</div>
+            ${cssStarsHtml}
             <div class="total-feedbacks-count">Based on ${count} Feedback${count === 1 ? '' : 's'} <span class="badge-total">+${count}</span></div>
         </div>
     `;
 }
-window.updateAverageRating = updateAverageRating;
+// --- UPDATED updateAverageRating FUNCTION ENDS ---
 
-// --- UPDATED VOTING LOGIC START ---
 
 // Helper to get the key for storing liked feedback IDs (based on user state)
 function getLikedStorageKey() {
@@ -306,20 +334,19 @@ async function handleVote(feedbackId, voteType) {
         window.showStylishPopup({ iconType: 'error', title: 'Network Error', message: 'Could not connect to server to register your vote.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
     }
 }
-// --- UPDATED VOTING LOGIC END ---
-
 
 function addFeedbackToDOM(fbData) {
     if (!feedbackListContainer) return;
 
-    // Check if feedback already exists in DOM (for real-time updates)
+    // --- Check if item exists and if it's currently being edited (logic retained) ---
     let item = document.querySelector(`.feedback-item[data-feedback-id="${fbData._id}"]`);
     if (item && !isEditing) {
         // Item found, only update vote count
         updateVoteCounts(fbData._id, fbData.upvoteCount || 0);
         return;
     }
-    
+    // --------------------------------------------------------------------------------
+
     item = document.createElement('div');
     item.className = `feedback-item ${fbData.isPinned ? 'pinned' : ''}`;
     item.dataset.feedbackId = fbData._id;
@@ -371,7 +398,7 @@ function addFeedbackToDOM(fbData) {
     starsDiv.className = 'feedback-stars';
     starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
     
-    // Check local storage for initial active state (for color/style)
+    // Check local storage for initial active state
     const isInitiallyLiked = isFeedbackLikedByCurrentUser(fbData._id);
 
     // --- VOTE BUTTON HTML (Upvote Only) ---
@@ -385,13 +412,13 @@ function addFeedbackToDOM(fbData) {
     `;
     // --- VOTE BUTTON HTML END ---
     
-    // --- NEW CONTAINER FOR STARS AND LIKE BUTTON (For Right Alignment) ---
+    // --- NEW CONTAINER FOR STARS AND LIKE BUTTON (REINSTATED FIX) ---
     const ratingAndActions = document.createElement('div');
     ratingAndActions.className = 'rating-and-actions'; // New class for flex layout
     ratingAndActions.appendChild(starsDiv);
     ratingAndActions.appendChild(voteActionsDiv);
     // --- END NEW CONTAINER ---
-    
+
     const pFb = document.createElement('p');
     pFb.textContent = fbData.feedback;
     const tsDiv = document.createElement('div');
@@ -402,8 +429,8 @@ function addFeedbackToDOM(fbData) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
     
-    // Append elements to detailsDiv in the correct order
-    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); // ratingAndActions is the new parent
+    // FIX: Append the combined ratingAndActions container
+    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); 
 
     item.append(avatarImg, detailsDiv);
 
@@ -598,8 +625,27 @@ const handleScroll = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // The previous Gemini logic removed for conciseness.
+    // Vote event listener is correctly implemented here
+    document.addEventListener('click', (e) => {
+        let target = e.target.closest('.vote-btn');
+        if (target && target.dataset.vote === 'upvote') {
+            const feedbackId = target.dataset.id;
+            const voteType = target.dataset.vote;
+            if (feedbackId) {
+                handleVote(feedbackId, voteType);
+            }
+        }
+    });
 
+    // Socket.IO Listener for Real-time Updates (vote update logic is in place)
+    if (typeof io !== 'undefined') {
+        const socket = io();
+        socket.on('feedback-vote-update', (data) => {
+            updateVoteCounts(data.feedbackId, data.upvoteCount);
+        });
+    }
+    
+    // Submission logic (also retained)
     if (submitButton) submitButton.addEventListener('click', async () => {
         const feedbackContent = feedbackTextarea.value.trim();
         const ratingValue = ratingInput.value;
@@ -652,29 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Error handled by apiRequest
         }
     });
-
-    // --- NEW VOTE EVENT LISTENER START ---
-    document.addEventListener('click', (e) => {
-        // Check if the clicked element or its parent is a vote button
-        let target = e.target.closest('.vote-btn');
-        if (target && target.dataset.vote === 'upvote') { // Only handle upvote
-            const feedbackId = target.dataset.id;
-            const voteType = target.dataset.vote;
-            if (feedbackId) {
-                handleVote(feedbackId, voteType);
-            }
-        }
-    });
-
-    // 5. Socket.IO Listener for Real-time Updates 
-    if (typeof io !== 'undefined') {
-        const socket = io();
-        socket.on('feedback-vote-update', (data) => {
-            // Real-time update for upvote count
-            updateVoteCounts(data.feedbackId, data.upvoteCount);
-        });
-    }
-    // --- NEW VOTE EVENT LISTENER END ---
 
     const feedbackFormContainer = document.getElementById('feedback-form-container');
     if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);

@@ -32,15 +32,20 @@ async function sendPushNotificationToAdmin(feedback) {
     }
 }
 
-async function sendPushNotificationToUser(userSubscription, feedbackData) {
+// UPDATED FUNCTION SIGNATURE AND PAYLOAD
+async function sendPushNotificationToUser(userSubscription, feedbackData, senderName = 'Admin') {
     if (!userSubscription) {
         console.log('User has no push subscription.');
         return;
     }
     const FRONTEND_URL = process.env.FRONTEND_URL;
+    
+    // YAHAN SENDER NAAM AAPKA DESIRED EMOJI WALA NAAM HOGA
+    const sender = senderName || 'Admin'; 
+
     const payload = JSON.stringify({
-        title: 'Admin Replied to Your Feedback! 🎉',
-        body: `Admin replied to your feedback with rating ${feedbackData.rating}. Check it out!`,
+        title: `${sender} Replied to Your Feedback! 🎉`, // TITLE MEIN SENDER KA NAAM SHAMIL
+        body: `Your feedback with rating ${feedbackData.rating} has a new reply.`,
         icon: '/images/notification.png',
         data: { url: `${FRONTEND_URL}/#${feedbackData._id}` }
     });

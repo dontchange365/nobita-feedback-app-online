@@ -6,6 +6,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit'); 
+// --- NAYA IMPORT ---
+const { startScheduler } = require('./scheduler/ai_responder');
+// --- NAYA IMPORT ---
 
 // Add these two lines to create and use an http server
 const { createServer } = require('http');
@@ -51,6 +55,38 @@ app.use((req, res, next) => {
     req.io = io;
     next();
 });
+
+// --- RATE LIMITING MIDDLEWARE START ---
+// Global API limiter (Strict for Auth/API)
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again after 15 minutes."
+});
+
+// Stricter limiter for high-cost operations (e.g., reset, signup, login)
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 60 minutes
+    max: 10, // Limit each IP to 10 requests per hour
+    message: "Too many authentication attempts from this IP, please try again after an hour."
+});
+
+// Feedback Submission Limiter (Less strict, more throughput expected)
+const feedbackLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30, // 30 submissions per IP every 15 minutes
+    message: "Too many feedback submissions from this IP, please wait a while."
+});
+
+// Make limiters available globally via app.locals (used in auth/feedback routes)
+app.locals.apiLimiter = apiLimiter;
+app.locals.authLimiter = authLimiter;
+app.locals.feedbackLimiter = feedbackLimiter;
+
+// Apply the general API limiter to all requests starting with /api/
+app.use('/api/', apiLimiter); 
+// --- RATE LIMITING MIDDLEWARE END ---
+
 
 // --- CACHING DISABLED FOR STATIC FILES START ---
 // Caching disabled for development by setting maxAge: 0
@@ -127,4 +163,7 @@ app.get('*', (req, res) => {
 // Start server with 0.0.0.0 bind for RDP/local access
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Nobita's server with File Manager is running on port ${PORT}: http://localhost:${PORT}`);
+    // --- SCHEDULER START ---
+    startScheduler(io); 
+    // --- SCHEDULER START ---
 });

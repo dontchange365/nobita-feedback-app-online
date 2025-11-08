@@ -74,7 +74,7 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
             filter: brightness(1.2);
         }
         
-        /* Animation Keyframes */
+        /* Animation Keyframes (Vote Button) */
         @keyframes like-pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -85,6 +85,86 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
         .vote-btn.upvote.liked-animate {
             animation: like-pulse 0.3s ease-in-out;
         }
+        
+        /* --- NEW RATING SUMMARY STYLES START --- */
+        .average-rating-container {
+            background: #1E1E3F; /* Dark Blue Background */
+            border: 2px solid #FFD700; /* Gold Border */
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.5s ease;
+        }
+
+        .average-rating-container h3 {
+            color: #B0B0B0;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+        
+        .average-number {
+            font-size: 3.5em; /* Very large font */
+            font-weight: 700;
+            color: #FFD700; /* Gold color */
+            line-height: 1.1;
+            margin-bottom: 5px;
+        }
+        
+        .sentiment-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Sentiment Colors */
+        .sentiment-text.excellent { color: #38C172; } /* Green */
+        .sentiment-text.good { color: #FFD700; } /* Yellow/Gold */
+        .sentiment-text.average { color: #FFA500; } /* Orange */
+        .sentiment-text.poor { color: #E3342F; } /* Red */
+
+        /* --- CSS STARS FOR AVERAGE RATING --- */
+        .css-stars-wrapper {
+            position: relative;
+            display: inline-block;
+            font-size: 2em; /* Large stars */
+            line-height: 1;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+            /* ADD ANIMATION FOR SUBTLE GLOW EFFECT */
+            animation: star-pulse-glow 3s infinite alternate ease-in-out; 
+        }
+
+        .css-stars-wrapper .css-stars-fill,
+        .css-stars-wrapper .css-stars-empty {
+            color: #333652; /* Empty star color (Dark Grey/Blue) */
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .css-stars-wrapper .css-stars-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #FFD700; /* Filled star color (Gold) */
+            
+            /* GLOW & OUTLINE EFFECT */
+            text-shadow: 
+                0 0 4px rgba(255, 255, 100, 0.8), /* Soft Glow */
+                0 0 1px #FFD700; /* Sharp Outline/Highlight */
+
+            /* width is set by JS based on rating percentage */
+        }
+
+        /* NEW ANIMATION KEYFRAMES */
+        @keyframes star-pulse-glow {
+            0% { transform: scale(1); opacity: 0.95; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+        /* --- CSS STARS END --- */
     </style>
 </head>
 <body>
