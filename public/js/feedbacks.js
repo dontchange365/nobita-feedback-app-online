@@ -186,10 +186,141 @@ function updateAverageRating(avg, count) {
 }
 window.updateAverageRating = updateAverageRating;
 
+// --- UPDATED VOTING LOGIC START ---
+
+// Helper to get the key for storing liked feedback IDs (based on user state)
+function getLikedStorageKey() {
+    // Agar user logged-in hai, toh user ID se key banao. Warna persistent guest ID se.
+    const identifier = (window.currentUser && window.currentUser.userId) ? window.currentUser.userId : getGuestId();
+    return `nobi_liked_id_${identifier}`;
+}
+
+// Get array of liked feedback IDs from localStorage
+function getLikedFeedbacks() {
+    const key = getLikedStorageKey();
+    try {
+        const liked = localStorage.getItem(key);
+        return liked ? JSON.parse(liked) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+// Save array of liked feedback IDs to localStorage
+function setLikedFeedbacks(likedArray) {
+    const key = getLikedStorageKey();
+    localStorage.setItem(key, JSON.stringify(likedArray));
+}
+
+// Check if a feedback is liked by the current user/guest
+function isFeedbackLikedByCurrentUser(feedbackId) {
+    return getLikedFeedbacks().includes(feedbackId);
+}
+
+// Guest ID helper function (for persistent guest ID - Required by point 2 and 3)
+function getGuestId() {
+    let guestId = localStorage.getItem('nobi_guestId');
+    if (!guestId) {
+        // Generate a temporary ID if not found
+        guestId = window.generateUUID(); 
+        localStorage.setItem('nobi_guestId', guestId);
+    }
+    return guestId;
+}
+
+// UI Update function (Real-time and API response)
+function updateVoteCounts(feedbackId, upvotes, isActive = null) {
+    const upvoteCountEl = document.getElementById(`upvote-count-${feedbackId}`);
+    const upvoteBtnEl = document.querySelector(`.vote-btn.upvote[data-id="${feedbackId}"]`);
+
+    if (upvoteCountEl) upvoteCountEl.textContent = upvotes;
+
+    if (upvoteBtnEl) {
+        if (isActive === true) {
+            upvoteBtnEl.classList.add('active');
+            upvoteBtnEl.classList.add('liked-animate'); // Add class for animation
+            setTimeout(() => upvoteBtnEl.classList.remove('liked-animate'), 300); // Remove class after animation
+        } else if (isActive === false) {
+            upvoteBtnEl.classList.remove('active');
+            upvoteBtnEl.classList.remove('liked-animate'); // Ensure animation class is removed
+        } else if (isActive === null) {
+            // Use local storage state to set the initial class (for initial page load/real-time updates)
+            if (isFeedbackLikedByCurrentUser(feedbackId)) {
+                upvoteBtnEl.classList.add('active');
+            } else {
+                upvoteBtnEl.classList.remove('active');
+            }
+        }
+    }
+}
+
+// Voting API Call
+async function handleVote(feedbackId, voteType) {
+    // Only process upvote
+    if (voteType !== 'upvote') return;
+    
+    const token = localStorage.getItem('jwtToken');
+    
+    let headers = { 'Content-Type': 'application/json' };
+    let body = { voteType: 'upvote' };
+    
+    // Determine if the user is logged in
+    const isUserLoggedIn = !!window.currentUser;
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    } else {
+        // If not logged in, pass the persistent guestId
+        body.guestId = getGuestId();
+    }
+    
+    try {
+        const response = await fetch(`${window.API_FEEDBACK_URL}/${feedbackId}/vote`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            window.showStylishPopup({ iconType: 'error', title: 'Vote Failed', message: data.message || 'Failed to process your vote. Please try again.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
+        } else {
+            const isUpvoteAdded = data.message.includes('Upvoted successfully');
+            
+            // 1. Update localStorage cache based on the outcome
+            let likedIds = getLikedFeedbacks();
+            if (isUpvoteAdded) {
+                if (!likedIds.includes(feedbackId)) {
+                    likedIds.push(feedbackId);
+                }
+            } else {
+                likedIds = likedIds.filter(id => id !== feedbackId);
+            }
+            setLikedFeedbacks(likedIds);
+
+            // 2. Success, update UI with new count and active status
+            updateVoteCounts(feedbackId, data.feedback.upvoteCount, isUpvoteAdded);
+        }
+    } catch (error) {
+        console.error('Network error during voting:', error);
+        window.showStylishPopup({ iconType: 'error', title: 'Network Error', message: 'Could not connect to server to register your vote.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
+    }
+}
+// --- UPDATED VOTING LOGIC END ---
+
+
 function addFeedbackToDOM(fbData) {
     if (!feedbackListContainer) return;
 
-    const item = document.createElement('div');
+    // Check if feedback already exists in DOM (for real-time updates)
+    let item = document.querySelector(`.feedback-item[data-feedback-id="${fbData._id}"]`);
+    if (item && !isEditing) {
+        // Item found, only update vote count
+        updateVoteCounts(fbData._id, fbData.upvoteCount || 0);
+        return;
+    }
+    
+    item = document.createElement('div');
     item.className = `feedback-item ${fbData.isPinned ? 'pinned' : ''}`;
     item.dataset.feedbackId = fbData._id;
 
@@ -239,6 +370,28 @@ function addFeedbackToDOM(fbData) {
     const starsDiv = document.createElement('div');
     starsDiv.className = 'feedback-stars';
     starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
+    
+    // Check local storage for initial active state (for color/style)
+    const isInitiallyLiked = isFeedbackLikedByCurrentUser(fbData._id);
+
+    // --- VOTE BUTTON HTML (Upvote Only) ---
+    const voteActionsDiv = document.createElement('div');
+    voteActionsDiv.className = 'feedback-actions'; 
+    voteActionsDiv.innerHTML = `
+        <button class="vote-btn upvote ${isInitiallyLiked ? 'active' : ''}" data-vote="upvote" data-id="${fbData._id}" title="Like this feedback">
+            <i class="fas fa-thumbs-up"></i> 
+            <span id="upvote-count-${fbData._id}">${fbData.upvoteCount || 0}</span>
+        </button>
+    `;
+    // --- VOTE BUTTON HTML END ---
+    
+    // --- NEW CONTAINER FOR STARS AND LIKE BUTTON (For Right Alignment) ---
+    const ratingAndActions = document.createElement('div');
+    ratingAndActions.className = 'rating-and-actions'; // New class for flex layout
+    ratingAndActions.appendChild(starsDiv);
+    ratingAndActions.appendChild(voteActionsDiv);
+    // --- END NEW CONTAINER ---
+    
     const pFb = document.createElement('p');
     pFb.textContent = fbData.feedback;
     const tsDiv = document.createElement('div');
@@ -248,7 +401,9 @@ function addFeedbackToDOM(fbData) {
     } catch (e) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
-    detailsDiv.append(strongName, starsDiv, pFb, tsDiv);
+    
+    // Append elements to detailsDiv in the correct order
+    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); // ratingAndActions is the new parent
 
     item.append(avatarImg, detailsDiv);
 
@@ -443,50 +598,7 @@ const handleScroll = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // const enhanceFeedbackBtn = document.getElementById('enhance-feedback-btn');
-    // if (enhanceFeedbackBtn) {
-    //    enhanceFeedbackBtn.addEventListener('click', async () => {
-    //        const originalFeedback = feedbackTextarea.value.trim();
-    //        if (!originalFeedback) {
-    //            return window.showStylishPopup({iconType: 'warning', title: 'Empty Feedback', message: 'Write some feedback first, then enhance it!', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-    //        }
-    //        const originalBtnText = enhanceFeedbackBtn.innerHTML;
-    //        enhanceFeedbackBtn.disabled = true;
-    //        enhanceFeedbackBtn.innerHTML = `<span class="nobi-spinner"></span> Enhancing...`;
-    //        try {
-    //            const prompt = `Refine and enhance the following user feedback. Make it more constructive, clear, and polite, while maintaining the original sentiment. Keep it concise. Original Feedback: "${originalFeedback}"`;
-    //            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-    //            const apiKey = "";
-    //            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    //            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    //            if (!response.ok) {
-    //                const errorData = await response.json();
-    //                console.error("Gemini API error:", errorData);
-    //                throw new Error(errorData.error?.message || "Failed to enhance feedback due to API error.");
-    //            }
-    //            const result = await response.json();
-    //            let enhancedText = originalFeedback;
-    //            if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
-    //                enhancedText = result.candidates[0].content.parts[0].text;
-    //                window.showStylishPopup({iconType: 'success', title: 'Feedback Enhanced!', message: 'AI has helped refine your feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-    //            } else {
-    //                console.warn("Gemini API response issue or no text found:", result);
-    //                window.showStylishPopup({iconType: 'warning', title: 'Enhancement Issue', message: 'Could not get a refined version from AI. Using original feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}]});
-    //            }
-    //            feedbackTextarea.value = enhancedText;
-    //            feedbackTextarea.dispatchEvent(new Event('input'));
-    //        } catch (error) {
-    //            console.error("Error enhancing feedback:", error);
-    //            window.showStylishPopup({iconType: 'error', title: 'Enhancement Failed', message: `An error occurred: ${error.message}. Please try again later.`, buttons: [{text:'OK', action: window.closeStylishPopup}]});
-    //        } finally {
-    //            enhanceFeedbackBtn.disabled = false;
-    //            enhanceFeedbackBtn.innerHTML = originalBtnText;
-    //        }
-    //    });
-    // } else {
-    //    console.error("Enhance feedback button not found!");
-    // }
-
+    // The previous Gemini logic removed for conciseness.
 
     if (submitButton) submitButton.addEventListener('click', async () => {
         const feedbackContent = feedbackTextarea.value.trim();
@@ -540,6 +652,29 @@ document.addEventListener('DOMContentLoaded', () => {
             // Error handled by apiRequest
         }
     });
+
+    // --- NEW VOTE EVENT LISTENER START ---
+    document.addEventListener('click', (e) => {
+        // Check if the clicked element or its parent is a vote button
+        let target = e.target.closest('.vote-btn');
+        if (target && target.dataset.vote === 'upvote') { // Only handle upvote
+            const feedbackId = target.dataset.id;
+            const voteType = target.dataset.vote;
+            if (feedbackId) {
+                handleVote(feedbackId, voteType);
+            }
+        }
+    });
+
+    // 5. Socket.IO Listener for Real-time Updates 
+    if (typeof io !== 'undefined') {
+        const socket = io();
+        socket.on('feedback-vote-update', (data) => {
+            // Real-time update for upvote count
+            updateVoteCounts(data.feedbackId, data.upvoteCount);
+        });
+    }
+    // --- NEW VOTE EVENT LISTENER END ---
 
     const feedbackFormContainer = document.getElementById('feedback-form-container');
     if (feedbackFormContainer) setTimeout(() => feedbackFormContainer.classList.add('animate-in'), 300);

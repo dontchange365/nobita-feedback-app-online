@@ -52,11 +52,24 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve admin panel static files properly
-app.use('/admin-panel', express.static(path.join(__dirname, 'admin-panel')));
+// --- CACHING DISABLED FOR STATIC FILES START ---
+// Caching disabled for development by setting maxAge: 0
+const noCacheOptions = {
+    maxAge: 0, // This sets Cache-Control: no-cache, no-store, must-revalidate
+    setHeaders: (res, path) => {
+        // Explicitly set headers to ensure no caching for all browsers
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+    }
+};
 
-// Serve frontend static files properly
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve admin panel static files properly (No Caching)
+app.use('/admin-panel', express.static(path.join(__dirname, 'admin-panel'), noCacheOptions));
+
+// Serve frontend static files properly (No Caching)
+app.use(express.static(path.join(__dirname, 'public'), noCacheOptions));
+// --- CACHING DISABLED FOR STATIC FILES END ---
 
 const authRoutes = require('./routes/auth');
 const feedbackRoutes = require('./routes/feedback');
@@ -72,6 +85,7 @@ app.use('/', fileManagerRoutes);
 app.use('/', avatarRoutes); // Use the new avatar router
 
 app.get('/:page', (req, res, next) => {
+    // Note: Since we disabled caching on static assets, this part is for HTML files.
     if (req.path.startsWith('/api/') || req.path.endsWith('.js') || req.path.endsWith('.css') || req.path.endsWith('.ico') || req.path.endsWith('.png') || req.path.endsWith('.svg')) return next();
     const file = path.join(__dirname, 'public', `${req.params.page}.html`);
     fs.access(file, (err) => {

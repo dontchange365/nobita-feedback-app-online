@@ -39,7 +39,23 @@ const feedbackSchema = new mongoose.Schema({
   originalContent: { name: String, feedback: String, rating: Number, timestamp: Date },
   replies: [{ text: { type: String, required: true }, timestamp: { type: Date, default: Date.now }, adminName: { type: String, default: 'Admin' } }],
   isPinned: { type: Boolean, default: false },
-  readByAdmin: { type: Boolean, default: false }
+  readByAdmin: { type: Boolean, default: false },
+  
+  // --- UPDATED VOTE FIELDS (Upvote Only) START ---
+  upvotes: [{ // User IDs who upvoted
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false
+  }],
+  upvoteGuests: [{ // Guest IDs who upvoted
+      type: String, 
+      required: false
+  }],
+  upvoteCount: { // Total upvote count
+      type: Number,
+      default: 0
+  }
+  // --- UPDATED VOTE FIELDS (Upvote Only) END ---
 });
 
 // Add the pagination plugin to the schema

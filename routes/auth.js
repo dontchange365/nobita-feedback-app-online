@@ -22,6 +22,44 @@ const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CALLBACK_URL
 );
 
+// --- IDENTITY MIGRATION LOGIC START ---
+/**
+ * Migrates existing guest upvotes and guest-submitted feedbacks to the newly registered/logged-in user.
+ */
+async function migrateGuestIdentity(guestId, newUser) {
+    if (!guestId || !newUser || !newUser._id) return;
+    
+    try {
+        // 1. Migrate Votes: Move upvotes from guest array to user array
+        await Feedback.updateMany(
+            { upvoteGuests: guestId },
+            {
+                $pull: { upvoteGuests: guestId }, // Remove the guest ID
+                $addToSet: { upvotes: newUser._id } // Add the user's ObjectId
+            }
+        );
+
+        // 2. Link Guest Feedback: Attach any old guest-submitted feedback to the new user ID
+        await Feedback.updateMany(
+            { guestId: guestId, userId: null }, // Find feedbacks submitted by this guest ID with no linked user
+            {
+                $set: { 
+                    userId: newUser._id, // Link to the new user ID
+                    name: newUser.name, // Update name to the registered user's name
+                    avatarUrl: newUser.avatarUrl // Update avatar to the registered user's avatar
+                }, 
+                $unset: { guestId: "" } // Remove the guestId field (migration complete)
+            }
+        );
+        console.log(`[IDENTITY_MIGRATION] Guest ID ${guestId} successfully migrated to User ID ${newUser._id}`);
+
+    } catch (error) {
+        console.error(`[IDENTITY_MIGRATION_ERROR] Failed to merge guest ID ${guestId}:`, error);
+    }
+}
+// --- IDENTITY MIGRATION LOGIC END ---
+
+
 router.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, linkGuestId } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "Name, email, and password are required." });
@@ -37,7 +75,11 @@ router.post('/api/auth/signup', async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const newUser = new User({ name, email: email.toLowerCase(), password: hashedPassword, avatarUrl: userAvatar, loginMethod: 'email', isVerified: false, emailVerificationToken: verificationToken, emailVerificationExpires: Date.now() + 10 * 60 * 1000, hasCustomAvatar: false });
         await newUser.save();
-        if (linkGuestId) { await Feedback.updateMany({ guestId: linkGuestId, userId: null }, { $set: { userId: newUser._id, name: newUser.name, avatarUrl: newUser.avatarUrl, guestId: null } }); }
+        
+        // --- MIGRATION CALL (SIGNUP) ---
+        if (linkGuestId) { await migrateGuestIdentity(linkGuestId, newUser); }
+        // --- MIGRATION CALL (SIGNUP) ---
+        
         const verifyUrl = `${FRONTEND_URL}/verify-email.html?token=${verificationToken}`;
         const emailHtml = NOBITA_EMAIL_TEMPLATE("📩 Email Verification", newUser.name, "✅ Verify Your Email", verifyUrl, newUser.avatarUrl, 'verify-request');
         try { await sendEmail({ email: newUser.email, subject: 'Nobita Feedback App: Email Verification', html: emailHtml }); } catch (emailError) { console.error("Error sending verification email:", emailError.message); }
@@ -48,7 +90,7 @@ router.post('/api/auth/signup', async (req, res) => {
 });
 
 router.post('/api/auth/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, linkGuestId } = req.body; // linkGuestId added here
     if (!email || !password) return res.status(400).json({ message: "Email and password are required." });
     try {
         const user = await User.findOne({ email: email.toLowerCase() });
@@ -57,6 +99,11 @@ router.post('/api/auth/login', async (req, res) => {
         if (!user.password) return res.status(401).json({ message: "Invalid login credentials." });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: "Invalid email or password." });
+        
+        // --- MIGRATION CALL (LOGIN) ---
+        if (linkGuestId) { await migrateGuestIdentity(linkGuestId, user); }
+        // --- MIGRATION CALL (LOGIN) ---
+
         const userForToken = createUserPayload(user);
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });
@@ -79,7 +126,11 @@ router.post('/api/auth/google-signin', async (req, res) => {
             } else { user = new User({ googleId, name, email: email.toLowerCase(), avatarUrl: googleAvatar || await getLeastUsedAvatarUrl(), loginMethod: 'google', isVerified: true, hasCustomAvatar: false }); }
             await user.save();
         } else { if (googleAvatar && !user.hasCustomAvatar) { user.avatarUrl = googleAvatar; await user.save(); } if (!user.isVerified) { user.isVerified = true; await user.save(); } }
-        if (linkGuestId) { await Feedback.updateMany({ guestId: linkGuestId, userId: null }, { $set: { userId: user._id, name: user.name, avatarUrl: user.avatarUrl, guestId: null } }); }
+        
+        // --- MIGRATION CALL (GOOGLE SIGNIN) ---
+        if (linkGuestId) { await migrateGuestIdentity(linkGuestId, user); }
+        // --- MIGRATION CALL (GOOGLE SIGNIN) ---
+        
         const userForToken = createUserPayload(user);
         const appToken = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token: appToken, user: userForToken });

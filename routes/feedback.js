@@ -154,4 +154,112 @@ router.put('/api/feedback/:id', authenticateToken, isEmailVerified, async (req, 
     } catch (error) { console.error(`Feedback update error (ID: ${feedbackId}):`, error); res.status(500).json({ message: 'Failed to update profile.', error: error.message }); }
 });
 
+// --- UPDATED ROUTE FOR VOTING (Upvote Only) START ---
+router.post('/api/feedback/:id/vote', async (req, res) => {
+    const feedbackId = req.params.id;
+    // voteType must be 'upvote'
+    const { voteType, guestId: guestIdFromBody } = req.body; 
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    const { ObjectId } = require('mongoose').Types; 
+
+    if (voteType !== 'upvote') {
+        return res.status(400).json({ message: 'Invalid vote type. Only "upvote" is supported.' });
+    }
+
+    try {
+        const feedback = await Feedback.findById(feedbackId);
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found.' });
+        }
+
+        let isUser = !!token;
+        let identifier; // Registered user ID (ObjectId) or Guest ID (string)
+        
+        // 1. Determine voter ID
+        if (isUser) {
+            try { 
+                const decodedUserPayload = jwt.verify(token, JWT_SECRET); 
+                identifier = new ObjectId(decodedUserPayload.userId); 
+            } catch (jwtError) { 
+                isUser = false; // Invalid token, treat as guest
+            }
+        }
+        
+        if (!isUser) {
+            // Guest User (Guest ID is persistent local storage value)
+            identifier = guestIdFromBody; 
+            if (!identifier) {
+                return res.status(400).json({ message: 'Authentication required or provide a unique guest identifier.' });
+            }
+        }
+
+        let updateQuery = {};
+        let actionMessage = '';
+
+        if (isUser) {
+            // Logged-in User Logic: Check if ID is already in upvotes array
+            const isUpvoted = feedback.upvotes.map(id => id.toString()).includes(identifier.toString());
+
+            if (isUpvoted) { // Remove Upvote
+                updateQuery = { $pull: { upvotes: identifier }, $inc: { upvoteCount: -1 } };
+                actionMessage = 'Upvote removed.';
+            } else { // Add Upvote
+                updateQuery = { $addToSet: { upvotes: identifier }, $inc: { upvoteCount: 1 } };
+                actionMessage = 'Upvoted successfully.';
+            }
+        } else {
+            // Guest Logic: Check if ID is already in upvoteGuests array
+            const isUpvoted = feedback.upvoteGuests.includes(identifier);
+
+            if (isUpvoted) { // Remove Upvote
+                updateQuery = { $pull: { upvoteGuests: identifier }, $inc: { upvoteCount: -1 } };
+                actionMessage = 'Upvote removed.';
+            } else { // Add Upvote
+                updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upvoteCount: 1 } };
+                actionMessage = 'Upvoted successfully.';
+            }
+        }
+        
+        if (Object.keys(updateQuery).length === 0) {
+            return res.status(200).json({ 
+                message: actionMessage || 'No change in vote status.',
+                feedback: { 
+                    _id: feedback._id,
+                    upvoteCount: feedback.upvoteCount,
+                }
+            });
+        }
+
+        // Database Update
+        const updatedFeedback = await Feedback.findByIdAndUpdate(
+            feedbackId, 
+            updateQuery, 
+            { new: true, runValidators: true }
+        );
+
+        // Real-time Update
+        if (req.io) {
+            req.io.emit('feedback-vote-update', {
+                feedbackId: updatedFeedback._id,
+                upvoteCount: updatedFeedback.upvoteCount,
+            });
+        }
+
+        res.status(200).json({ 
+            message: actionMessage, 
+            feedback: { 
+                _id: updatedFeedback._id,
+                upvoteCount: updatedFeedback.upvoteCount,
+            }
+        });
+
+    } catch (error) { 
+        console.error(`Feedback vote error (ID: ${feedbackId}):`, error); 
+        res.status(500).json({ message: 'Failed to process vote.', error: error.message }); 
+    }
+});
+// --- UPDATED ROUTE FOR VOTING (Upvote Only) END ---
+
+
 module.exports = router;

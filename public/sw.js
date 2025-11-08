@@ -1,5 +1,5 @@
 // sw.js - Service Worker for NOBITA Feedback App
-const CACHE_NAME = 'nobita-feedback-v1.2.2'; // CHANGE: Version ko badal diya
+const CACHE_NAME = 'nobita-feedback-v1.3.0-dev'; // CHANGE: Version ko badal diya to force Service Worker update
 
 // Empty array, so no files will be pre-cached on install
 const urlsToCache = [];
@@ -24,7 +24,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && !cacheName.endsWith('-api') && !cacheName.endsWith('-offline')) {
             console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -34,7 +34,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - Network first strategy for API calls, Cache first for static assets
+// Fetch event - Network only strategy for development to ensure fresh content
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // API requests - Network first with fallback
+  // API requests - Network first with fallback (Keeping this logic as it handles connectivity)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
@@ -69,32 +69,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets - Cache first strategy
+  // Static assets - !!! UPDATED: Network Only Strategy !!!
+  // This bypasses the Service Worker cache completely for static files, 
+  // forcing the fresh file to be loaded every time, solving the 'aching' issue.
   event.respondWith(
-    caches.match(request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-
-        // If not in cache, fetch from network
-        return fetch(request).then(response => {
-          // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone response for caching
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(request, responseToCache);
-            });
-
-          return response;
-        });
-      })
+    fetch(request).catch(error => {
+      // If network fails, simply throw the network error.
+      console.error('[SW] Static asset fetch failed:', error);
+      return new Response(null, { status: 503 });
+    })
   );
 });
 
