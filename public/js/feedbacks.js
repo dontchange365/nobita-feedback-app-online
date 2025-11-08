@@ -12,6 +12,11 @@ let currentEditFeedbackId = null;
 // The utility functions (`apiRequest`, `showStylishPopup`, `closeStylishPopup`, `updateUIAfterLogin`, etc.)
 // are also globally available via the `window` object in `main.js`.
 
+// --- DISPLAY CONFIG ---
+const DESIRED_DISPLAY_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟";
+// --- DISPLAY CONFIG ---
+
+
 // --- Feedback Specific Functions ---
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -167,7 +172,7 @@ function updateAverageRating(avg, count) {
     const avgNum = parseFloat(avg);
     let sentimentText = 'No ratings yet';
     let sentimentClass = '';
-    let fillPercentage = 0; // New variable for CSS width
+    let fillPercentage = 0; 
     
     // Determine Sentiment Text and Class 
     if (count > 0 && !isNaN(avgNum)) {
@@ -429,8 +434,7 @@ function addFeedbackToDOM(fbData) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
     
-    // FIX: Append the combined ratingAndActions container
-    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); 
+    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); // Use combined ratingAndActions
 
     item.append(avatarImg, detailsDiv);
 
@@ -480,7 +484,19 @@ function addFeedbackToDOM(fbData) {
             replyContent.className = 'admin-reply-content';
             let replyTs = '';
             try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })})`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`; }
-            replyContent.innerHTML = `<strong>(${(reply.adminName || 'Admin')}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`;
+            
+            // --- FINAL FIX: INTERCEPT AND REPLACE ADMIN NAME FOR DISPLAY ---
+            let displayedAdminName = reply.adminName || 'Admin';
+            
+            // YAHAN Hum Saare Admin/Bot Naamon Ko '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' Se Replace Kar Rahe Hain
+            // TAAKI OLD DATA AUR NEW DATA CONSISTENT DIKHE
+            if (displayedAdminName !== 'Guest' && displayedAdminName !== 'UNKNOWN_IP') {
+                displayedAdminName = DESIRED_DISPLAY_NAME;
+            }
+
+            replyContent.innerHTML = `<strong>(${displayedAdminName}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`;
+            // --- FINAL FIX ENDS ---
+
             replyDiv.append(adminAva, replyContent);
             detailsDiv.appendChild(replyDiv);
         }
