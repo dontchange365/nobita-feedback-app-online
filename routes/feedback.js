@@ -190,7 +190,58 @@ router.post('/api/feedback', feedbackLimiter, asyncHandler(async (req, res) => {
     // 3. Emit real-time update
     req.io.emit('new-feedback', newFeedback);
 
+<<<<<<< HEAD
     sendPushNotificationToAdmin(newFeedback);
+=======
+    // 4. Send Push Notification
+    sendPushNotificationToAdmin(newFeedback);
+
+    // === ADMIN EMAIL NOTIFICATION START ===
+    if (process.env.ADMIN_EMAIL) {
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL;
+            // 'finalUserName' variable pehle se defined hai upar
+            const feedbackUser = finalUserName || 'Anonymous'; 
+            // 'sanitizedFeedback' variable pehle se defined hai upar
+            const feedbackContent = sanitizedFeedback; 
+            const adminPanelLink = `${FRONTEND_URL}/admin-panel/index.html`;
+
+            const emailHtml = `
+                <div style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333;">
+                    <h2 style="color: #00ffdd; border-bottom: 2px solid #005566; padding-bottom: 10px;">🚀 New Feedback Received!</h2>
+                    <p>A new feedback has been submitted on NOBI BOT.</p>
+                    <p><strong>From:</strong> ${feedbackUser}</p>
+                    <p><strong>Feedback Content:</strong></p>
+                    <blockquote style="border-left: 4px solid #00ffdd; padding: 10px 15px; margin: 0 0 20px 0; background: #f4f4f4; color: #555;">
+                        ${feedbackContent}
+                    </blockquote>
+                    <p><strong>Rating:</strong> ${newFeedback.rating} ⭐</p>
+                    <a href="${adminPanelLink}" style="display: inline-block; background-color: #ff3399; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Go to Admin Panel
+                    </a>
+                    <p style="font-size: 12px; color: #888; margin-top: 25px;">
+                       (IP Address: ${userIp})
+                    </p>
+                </div>
+            `;
+
+            await sendEmail({
+                email: adminEmail,
+                subject: `🔔 New Feedback (${newFeedback.rating}★) from ${feedbackUser}`,
+                html: emailHtml
+            });
+            console.log(`Admin notification email sent to ${adminEmail}`);
+
+        } catch (emailError) {
+            // Agar admin ko email nahi gaya, tab bhi user ko error mat dikhao
+            // Sirf console mein log kar do
+            console.error('Failed to send admin notification email:', emailError.message);
+        }
+    }
+    // === ADMIN EMAIL NOTIFICATION END ===
+
+    // 5. Send response to user
+>>>>>>> 5121dc6 (💘 Auto Push 2025-11-09 23:54:03)
     res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
 }));
 
@@ -299,7 +350,11 @@ router.post('/api/feedback/:id/vote', asyncHandler(async (req, res) => {
             actionMessage = 'Upvote removed.';
             voteStatusChanged = true;
         } else { // Add Like
+<<<<<<< HEAD
             updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upvoteCount: 1 } };
+=======
+            updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upKvoteCount: 1 } };
+>>>>>>> 5121dc6 (💘 Auto Push 2025-11-09 23:54:03)
             actionMessage = 'Upvoted successfully.';
             voteStatusChanged = true;
         }
