@@ -6,6 +6,7 @@ const { Feedback, User } = require('../config/database');
 const { authenticateToken, isEmailVerified } = require('../middleware/auth');
 const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { sendPushNotificationToAdmin } = require('../services/pushNotification');
+const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService'); // NEW: Import Email Service
 const jwt = require('jsonwebtoken');
 
 // --- Centralized Error Handling Import ---
@@ -23,10 +24,36 @@ const { ADMIN_NAME } = require('../scheduler/ai_responder');
 // --- AI CONFIG: END ---
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://nobita-app.com'; // Fallback URL
 
 // --- Get Rate Limiter from app.locals ---
 const feedbackLimiter = router.stack.filter(layer => layer.name === 'feedbackLimiter')[0]?.handle || ((req, res, next) => next()); 
 // --- Get Rate Limiter from app.locals ---
+
+// --- Helper function for Milestone Check (NEW LOGIC) ---
+function shouldSendMilestoneEmail(currentCount, lastEmailedCount) {
+    // Milestones: 5, 10, 20, 50, 99 (99+ ke liye)
+    const milestones = [5, 10, 20, 50, 99]; 
+
+    // Find the next target milestone jo pichle emailed count se bada ho
+    const nextMilestone = milestones.find(m => m > lastEmailedCount);
+
+    if (nextMilestone === undefined) {
+        // 99+ milestone tak pahunch chuke hain. Ab email nahi bhejna hai.
+        return { shouldSend: false, newEmailedCount: lastEmailedCount };
+    }
+
+    if (currentCount >= nextMilestone) {
+        // Milestone hit ho gaya!
+        const newEmailedCount = nextMilestone;
+        
+        return { shouldSend: true, newEmailedCount: newEmailedCount };
+    }
+
+    // Next milestone tak nahi pahunche ya count kam ho gaya.
+    return { shouldSend: false, newEmailedCount: lastEmailedCount };
+}
+// --- Helper function for Milestone Check End ---
 
 // 1. GET Feedbacks (using asyncHandler)
 router.get('/api/feedbacks', asyncHandler(async (req, res) => {
@@ -217,19 +244,22 @@ router.post('/api/feedback/:id/vote', asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Invalid vote type. Only "upvote" is supported.' });
     }
 
-    const feedback = await Feedback.findById(feedbackId);
+    // Populate userId to check if the owner is logged in and for email details
+    const feedback = await Feedback.findById(feedbackId).populate('userId', 'email name avatarUrl lastEmailUpvoteCount'); 
     if (!feedback) {
         return res.status(404).json({ message: 'Feedback not found.' });
     }
 
     let isUser = !!token;
-    let identifier; // Registered user ID (ObjectId) or Guest ID (string)
+    let identifier = null; // Registered user ID (ObjectId) or Guest ID (string)
+    let voterUserId = null; // Stored voter ID if user is logged in
     
-    // 1. Determine voter ID
+    // 1. Determine voter ID and user status
     if (isUser) {
         try { 
             const decodedUserPayload = jwt.verify(token, JWT_SECRET); 
-            identifier = new ObjectId(decodedUserPayload.userId); 
+            voterUserId = decodedUserPayload.userId;
+            identifier = new ObjectId(voterUserId); 
         } catch (jwtError) { 
             isUser = false; // Invalid token, treat as guest
         }
@@ -245,32 +275,37 @@ router.post('/api/feedback/:id/vote', asyncHandler(async (req, res) => {
 
     let updateQuery = {};
     let actionMessage = '';
+    let voteStatusChanged = false;
 
     if (isUser) {
         // Logged-in User Logic: Check if ID is already in upvotes array
         const isUpvoted = feedback.upvotes.map(id => id.toString()).includes(identifier.toString());
 
-        if (isUpvoted) { // Remove Upvote
+        if (isUpvoted) { // Remove Like
             updateQuery = { $pull: { upvotes: identifier }, $inc: { upvoteCount: -1 } };
             actionMessage = 'Upvote removed.';
-        } else { // Add Upvote
+            voteStatusChanged = true;
+        } else { // Add Like
             updateQuery = { $addToSet: { upvotes: identifier }, $inc: { upvoteCount: 1 } };
             actionMessage = 'Upvoted successfully.';
+            voteStatusChanged = true;
         }
     } else {
         // Guest Logic: Check if ID is already in upvoteGuests array
         const isUpvoted = feedback.upvoteGuests.includes(identifier);
 
-        if (isUpvoted) { // Remove Upvote
+        if (isUpvoted) { // Remove Like
             updateQuery = { $pull: { upvoteGuests: identifier }, $inc: { upvoteCount: -1 } };
             actionMessage = 'Upvote removed.';
-        } else { // Add Upvote
+            voteStatusChanged = true;
+        } else { // Add Like
             updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upvoteCount: 1 } };
             actionMessage = 'Upvoted successfully.';
+            voteStatusChanged = true;
         }
     }
     
-    if (Object.keys(updateQuery).length === 0) {
+    if (!voteStatusChanged) {
         return res.status(200).json({ 
             message: actionMessage || 'No change in vote status.',
             feedback: { 
@@ -286,6 +321,53 @@ router.post('/api/feedback/:id/vote', asyncHandler(async (req, res) => {
         updateQuery, 
         { new: true, runValidators: true }
     );
+
+    // 2. Email Notification Logic (UPDATED)
+    // Removed !isOwnerVoting condition as per user's request: "Like chahe koi bhi kare email jana chahiye"
+    if (voteStatusChanged && actionMessage === 'Upvoted successfully.' && feedback.userId && feedback.userId.email) {
+        
+        const currentCount = updatedFeedback.upvoteCount;
+        // BUG FIX: lastEmailedCount ko original feedback object se retrieve karo
+        const lastEmailedCount = feedback.lastEmailUpvoteCount || 0; 
+        
+        // Check if email should be sent based on milestone rules
+        const { shouldSend, newEmailedCount } = shouldSendMilestoneEmail(currentCount, lastEmailedCount);
+
+        if (shouldSend) {
+            try {
+                const owner = feedback.userId;
+                // NEW: feedbackId ke saath link banao
+                const mailLink = `${FRONTEND_URL}/index.html?feedbackId=${feedback._id}`; 
+                const emailHtml = NOBITA_EMAIL_TEMPLATE(
+                    (newEmailedCount === 99 ? '🔥 Century Milestone!' : `👍 New Like Milestone!`),
+                    owner.name || 'User',
+                    'View Your Feedback',
+                    mailLink,
+                    owner.avatarUrl || 'https://placehold.co/80x80/6a0dad/FFFFFF?text=U',
+                    'feedback-liked',
+                    { 
+                        originalFeedback: feedback.feedback, 
+                        newUpvoteCount: updatedFeedback.upvoteCount 
+                    }
+                );
+                
+                await sendEmail({
+                    email: owner.email,
+                    subject: `Milestone: ${updatedFeedback.upvoteCount} likes on your feedback!`,
+                    html: emailHtml,
+                    message: `Your feedback (${feedback.feedback.substring(0, 50)}...) received ${updatedFeedback.upvoteCount} likes.`
+                });
+                
+                // --- IMPORTANT: Update the lastEmailedCount in the database ---
+                await Feedback.findByIdAndUpdate(feedbackId, { lastEmailUpvoteCount: newEmailedCount });
+                console.log(`Email sent to ${owner.email} for ${newEmailedCount} like milestone.`);
+                // -----------------------------------------------------------------
+
+            } catch (emailError) {
+                console.error(`Failed to send milestone notification email:`, emailError.message);
+            }
+        }
+    }
 
     // Real-time Update
     if (req.io) {

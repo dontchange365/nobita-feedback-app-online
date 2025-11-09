@@ -8,7 +8,7 @@ dotenv.config();
 const EMAIL_API_URL = process.env.VERCEL_EMAIL_API_URL; 
 const EMAIL_API_KEY = process.env.VERCEL_EMAIL_API_KEY; // Security key
 
-const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic") => {
+const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type = "generic", replyText = "") => {
   // ... (NOBITA_EMAIL_TEMPLATE is unchanged)
   // यह टेम्पलेट HTML अभी भी यहीं रहेगा
   let messageHTML = '';
@@ -16,6 +16,28 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type 
   else if (type === 'reset-confirm') { messageHTML = `Your password has been successfully reset.<br>You can now log in with your new password.`; } 
   else if (type === 'verify-request') { messageHTML = `Your account has been successfully created.<br>Click the button below to verify your email and unlock all features.`; } 
   else if (type === 'verify-confirm') { messageHTML = `Your email has been successfully verified.<br>Welcome to the NOBITA empire! 🔥`; } 
+  else if (type === 'admin-reply') { 
+      messageHTML = `
+        Good news! The Admin (👉𝙉𝙊𝘽𝙄𝙏𝘼🤟) has replied to your feedback.
+        <br><br>
+        <strong>Your Feedback:</strong> "${replyText.originalFeedback}"
+        <br>
+        <strong>Admin's Reply:</strong> <span style="background-color: #000a1a; padding: 5px 10px; border-radius: 4px; display: inline-block; border: 1px solid #ff3399;">"${replyText.reply}"</span>
+        <br><br>
+        Click the button below to view the full thread and reply back.
+      `; 
+  }
+  // NEW TEMPLATE TYPE: Feedback Liked Notification
+  else if (type === 'feedback-liked') { 
+      messageHTML = `
+        Someone liked your feedback! That's awesome.<br><br>
+        <strong>Your Feedback:</strong> "${replyText.originalFeedback}"
+        <br>
+        <span style="font-size: 1.5em; color: #00ffdd;">👍 You now have ${replyText.newUpvoteCount} total likes on this feedback!</span>
+        <br><br>
+        Click the button below to see the activity on your post.
+      `; 
+  }
   else { messageHTML = `This is a confirmation that your request was completed successfully.<br>Click the button below to continue.`; }
   return `
 <div style="font-family: 'Poppins',sans-serif; background: #f2f3f5; margin:0; padding: 0; min-height: 100vh; width: 100vw;">

@@ -1,17 +1,19 @@
 // scheduler/ai_responder.js
 
 const cron = require('node-cron');
-const { Feedback } = require('../config/database');
+const { Feedback, User } = require('../config/database'); // User import kiya gaya
 const { GoogleGenAI, Type } = require('@google/genai');
+const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService'); // Email Service Import kiya gaya
 
 // --- AI CONFIGURATION ---
-// BOT_INTERNAL_FILTER_NAME: Filtering ke liye, taaki AI apne purane replies se tone na seekhe.
 const BOT_INTERNAL_FILTER_NAME = "NOBITA AI BOT"; 
-// BOT_DISPLAY_NAME: Jo user/admin panel mein dikhega. Ab yeh "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟" hai.
-const BOT_DISPLAY_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"; 
+const BOT_DISPLAY_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"; // Display name Admin/AI dono ke liye same hai
+const AI_INTERNAL_SENDER = "🤖 NOBI AI"; // Email/Push ke liye use hoga, taaki user ko pata chale bot ne kiya hai
 
-const MIN_AGE_MS = 4 * 60 * 60 * 1000; // 4 HOURS IN MILLISECONDS
-const MAX_AGE_MS = 24 * 60 * 60 * 1000; // NEW: AI 24 HOURS se purane feedback ko ignore karega.
+const MIN_AGE_MS = 4 * 60 * 60 * 1000; // 4 HOURS
+const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 HOURS (Old backlog ignore karne ke liye)
+
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }); 
@@ -94,17 +96,20 @@ async function generateAutoReply(feedbackText, userName, recentAdminReplies) {
 const checkAndReply = async (io) => {
     try {
         const minCutoffTime = new Date(Date.now() - MIN_AGE_MS);
-        const maxCutoffTime = new Date(Date.now() - MAX_AGE_MS); // OLDER THAN THIS TIME WILL BE IGNORED
+        const maxCutoffTime = new Date(Date.now() - MAX_AGE_MS);
 
         // 1. FIND PENDING FEEDBACKS
         const pendingFeedbacks = await Feedback.find({
-            replies: { $size: 0 }, // Must be unreplied
+            replies: { $size: 0 }, // Unreplied
+            isAiProcessed: { $ne: true }, // AI ne pehle process na kiya ho
             timestamp: { 
-                $lte: minCutoffTime, // Must be older than 4 hours (The waiting period)
-                $gt: maxCutoffTime   // NEW: Must be newer than 24 hours (Avoids old backlog)
+                $lte: minCutoffTime, // 4 hours se purana ho (Waiting period)
+                $gt: maxCutoffTime   // 24 hours se naya ho (Backlog ignore)
             }, 
-            name: { $ne: BOT_DISPLAY_NAME } // NEW: Ignore feedbacks submitted by the bot's user (👉𝙉𝙊𝘽𝙄𝙏𝘼🤟)
-        }).sort({ timestamp: 1 }).limit(10); 
+            name: { $ne: BOT_DISPLAY_NAME }, // 👉𝙉𝙊𝘽𝙄𝙏𝘼🤟 user ko ignore karo
+        })
+        .populate('userId', 'email name pushSubscription avatarUrl') // User details fetch karo
+        .sort({ timestamp: 1 }).limit(10); 
 
         if (pendingFeedbacks.length === 0) {
             return;
@@ -127,9 +132,12 @@ const checkAndReply = async (io) => {
         for (const feedback of pendingFeedbacks) {
             
             // Re-fetch to ensure no concurrent update by human admin
-            const currentFeedback = await Feedback.findById(feedback._id);
+            const currentFeedback = await Feedback.findById(feedback._id).populate('userId', 'email name pushSubscription avatarUrl');
+
             if (currentFeedback.replies.length > 0) {
                 // ADMIN REPLIED WITHIN THE DELAY WINDOW
+                currentFeedback.isAiProcessed = true; // Still mark as processed
+                await currentFeedback.save();
                 continue; 
             }
             
@@ -140,16 +148,47 @@ const checkAndReply = async (io) => {
             );
 
             if (autoReplyText) {
-                // SAVE THE AI REPLY WITH THE CLEAN DISPLAY NAME
+                // 3a. SAVE THE AI REPLY
                 currentFeedback.replies.push({
                     text: autoReplyText,
-                    adminName: BOT_DISPLAY_NAME // DISPLAY NAME "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟" SAVE HOGA
+                    adminName: AI_INTERNAL_SENDER // AI ka internal name save hoga
                 });
+                currentFeedback.isAiProcessed = true; // BUG FIX: Mark as processed
                 await currentFeedback.save();
 
-                // EMIT REAL-TIME UPDATE
+                // 3b. EMIT REAL-TIME UPDATE (UI update ke liye)
                 if (io) {
                     io.emit('new-feedback', currentFeedback); 
+                }
+
+                // 3c. Send Email Notification (NEW LOGIC)
+                const user = currentFeedback.userId;
+                if (user && user.email) {
+                    try {
+                        const mailLink = `${FRONTEND_URL}/index.html`; 
+                        const emailHtml = NOBITA_EMAIL_TEMPLATE(
+                            'AI Reply Received!',
+                            user.name || 'User',
+                            'View AI Response',
+                            mailLink,
+                            user.avatarUrl || 'https://placehold.co/80x80/6a0dad/FFFFFF?text=U',
+                            'admin-reply',
+                            { 
+                                reply: autoReplyText,
+                                originalFeedback: currentFeedback.feedback
+                            }
+                        );
+                        
+                        await sendEmail({
+                            email: user.email,
+                            subject: `AI Reply: ${currentFeedback.feedback.substring(0, 30)}...`,
+                            html: emailHtml,
+                            message: `AI BOT ${AI_INTERNAL_SENDER} has replied to your feedback: ${autoReplyText}`
+                        });
+                        console.log(`[AI Responder] Email sent successfully to ${user.email}.`);
+                    } catch (emailError) {
+                        console.error(`[AI Responder] Failed to send email to ${user.email}:`, emailError.message);
+                    }
                 }
             }
         }
@@ -168,4 +207,4 @@ const startScheduler = (io) => {
     });
 };
 
-module.exports = { startScheduler, BOT_INTERNAL_NAME: BOT_INTERNAL_FILTER_NAME, BOT_DISPLAY_NAME };
+module.exports = { startScheduler, BOT_INTERNAL_NAME: BOT_INTERNAL_FILTER_NAME, BOT_DISPLAY_NAME, AI_INTERNAL_SENDER };

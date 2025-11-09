@@ -1,3 +1,4 @@
+// public/js/feedbacks.js
 // This file contains all the JavaScript logic specific to the feedback section.
 // It is designed to be loaded alongside main.js and other core scripts.
 
@@ -7,8 +8,13 @@ let currentSelectedRating = 0;
 let isEditing = false;
 let currentEditFeedbackId = null;
 
+// --- API ENDPOINTS (FIXED) ---
+const API_FEEDBACKS_URL = '/api/feedback'; // Used for POST (new feedback)
+const API_FEEDBACK_URL = '/api/feedback'; // Used for PUT (editing single item, same path but PUT method)
+const API_FETCH_FEEDBACKS_URL = '/api/feedbacks'; // Used for GET (list)
+// --- END API ENDPOINTS ---
+
 // The main `currentUser` object will be available globally from `main.js`.
-// The API constants (like API_FEEDBACK_URL, API_FETCH_FEEDBACKS_URL) are also available.
 // The utility functions (`apiRequest`, `showStylishPopup`, `closeStylishPopup`, `updateUIAfterLogin`, etc.)
 // are also globally available via the `window` object in `main.js`.
 
@@ -39,6 +45,10 @@ const feedbackVerificationPrompt = document.getElementById('feedback-verificatio
 const feedbackListContainer = document.getElementById('feedback-list-container');
 const averageRatingDisplayEl = document.getElementById('average-rating-display');
 const lazyLoadSpinner = document.getElementById('lazy-load-spinner-container');
+
+// NEW GLOBAL VARIABLE TO STORE THE ID
+let globalTargetFeedbackId = null;
+window.hasScrolledToId = false;
 
 starsElements.forEach(star => {
     star.addEventListener('click', () => {
@@ -119,6 +129,9 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
 
     // Append the new feedbacks
     feedbacksArray.forEach(addFeedbackToDOM);
+    
+    // NEW: Scroll after rendering
+    scrollToFeedbackIfRequired();
 }
 window.renderFeedbackData = renderFeedbackData;
 
@@ -129,18 +142,12 @@ async function fetchFeedbacks() {
     if (lazyLoadSpinner) lazyLoadSpinner.style.display = 'block';
 
     try {
-        const url = `${window.API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
+        const url = `${API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
         const responseData = await window.apiRequest(url, 'GET');
 
         let feedbacksArray = responseData.feedbacks;
         
-        // BUG FIX: Check Admin's voting status on load and save it locally
-        // IMPORTANT: The public fetch API does NOT return the upvotes array. 
-        // We rely on the client-side localStorage cache for visual status on refresh.
-        // We don't need the server's upvotes array here for the status bar, only the client's cache.
-
         // Render new feedbacks (append=true)
-        // Note: The first render will still be done in this function.
         const isFirstLoad = window.currentPage === 1;
         renderFeedbackData(feedbacksArray, !isFirstLoad, responseData.totalFeedbacks, responseData.averageRating);
 
@@ -169,6 +176,61 @@ async function fetchFeedbacks() {
     }
 }
 window.fetchFeedbacks = fetchFeedbacks;
+
+// --- NEW SCROLL TO FEEDBACK LOGIC START ---
+
+function getTargetIdFromURL() {
+    if (globalTargetFeedbackId) return globalTargetFeedbackId;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('feedbackId');
+    if (targetId) {
+        globalTargetFeedbackId = targetId;
+        // Clean the URL to prevent issues, but keep the globalTargetFeedbackId
+        if (window.history.replaceState) {
+            // Remove the parameter from the URL bar after grabbing it
+            const cleanUrl = window.location.pathname + window.location.search.replace(`feedbackId=${targetId}`, '').replace(/[?&]$/, '');
+            window.history.replaceState(null, null, cleanUrl);
+        }
+    }
+    return globalTargetFeedbackId;
+}
+
+function scrollToFeedbackIfRequired() {
+    const targetId = getTargetIdFromURL();
+    
+    // Check if we have already scrolled or if there's no ID
+    if (!targetId || window.hasScrolledToId) return;
+
+    const targetElement = document.getElementById(`feedback-item-${targetId}`);
+    
+    if (targetElement) {
+        // Scroll the element into view, positioning it in the center
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight the element temporarily using the CSS class
+        targetElement.classList.add('highlighted-scroll');
+        
+        // Set flag to prevent re-scrolling on subsequent scroll/render
+        window.hasScrolledToId = true; 
+
+        // Remove highlight after a few seconds
+        setTimeout(() => {
+            targetElement.classList.remove('highlighted-scroll');
+            // After successful scroll, ensure global ID is reset so manual fetch/scroll continues
+            globalTargetFeedbackId = null;
+        }, 4000);
+        
+    } else if (!window.isLoadingFeedbacks && window.hasMoreFeedbacks) {
+        // If the element isn't found, and we haven't checked all pages, load the next one.
+        console.log(`Target ID ${targetId} not found on current pages. Attempting to load next page (Page ${window.currentPage})...`);
+        
+        // Reset scroll flag momentarily while loading, but keep the target ID
+        window.hasScrolledToId = false; 
+        fetchFeedbacks();
+    }
+}
+// --- NEW SCROLL TO FEEDBACK LOGIC END ---
 
 // --- UPDATED updateAverageRating FUNCTION (CSS STARS) START ---
 function updateAverageRating(avg, count) {
@@ -316,7 +378,7 @@ async function handleVote(feedbackId, voteType) {
     }
     
     try {
-        const response = await fetch(`${window.API_FEEDBACK_URL}/${feedbackId}/vote`, {
+        const response = await fetch(`${API_FEEDBACK_URL}/${feedbackId}/vote`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body)
@@ -352,7 +414,8 @@ function addFeedbackToDOM(fbData) {
     if (!feedbackListContainer) return;
 
     // --- Check if item exists and if it's currently being edited (logic retained) ---
-    let item = document.querySelector(`.feedback-item[data-feedback-id="${fbData._id}"]`);
+    // NEW: Use the unique ID for checking existence
+    let item = document.getElementById(`feedback-item-${fbData._id}`); 
     if (item && !isEditing) {
         // Item found, only update vote count
         updateVoteCounts(fbData._id, fbData.upvoteCount || 0);
@@ -363,6 +426,7 @@ function addFeedbackToDOM(fbData) {
     item = document.createElement('div');
     item.className = `feedback-item ${fbData.isPinned ? 'pinned' : ''}`;
     item.dataset.feedbackId = fbData._id;
+    item.id = `feedback-item-${fbData._id}`; // NEW: Unique ID added for scrolling
 
     const avatarImg = document.createElement('img');
     avatarImg.className = 'avatar-img';
@@ -704,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!window.currentUser && guestId) feedbackPayload.guestId = guestId;
 
         const isSubmissionByLoggedInUser = !!window.currentUser;
-        const url = (isEditing && isSubmissionByLoggedInUser) ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACK_URL;
+        const url = (isEditing && isSubmissionByLoggedInUser) ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACKS_URL;
         const method = (isEditing && isSubmissionByLoggedInUser) ? 'PUT' : 'POST';
 
         if (isEditing && isSubmissionByLoggedInUser && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
@@ -729,6 +793,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial check and fetch
     window.resetFeedbackForm();
+
+    // Initial grab of the ID and start fetching
+    getTargetIdFromURL();
 
     // Initial fetch of the first page
     window.currentPage = 1;

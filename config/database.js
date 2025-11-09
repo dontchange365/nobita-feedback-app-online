@@ -41,6 +41,15 @@ const feedbackSchema = new mongoose.Schema({
   isPinned: { type: Boolean, default: false },
   readByAdmin: { type: Boolean, default: false },
   
+  // NEW FIELD: AI processing flag for scheduler
+  isAiProcessed: { type: Boolean, default: false },
+  
+  // NEW FIELD: Tracking upvote count for the last email sent
+  lastEmailUpvoteCount: { 
+      type: Number, 
+      default: 0 // Shuruat mein 0 set hoga
+  },
+  
   // --- UPDATED VOTE FIELDS (Upvote Only) START ---
   upvotes: [{ // User IDs who upvoted
       type: mongoose.Schema.Types.ObjectId,

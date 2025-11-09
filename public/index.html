@@ -35,12 +35,23 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
             left: 0;
             width: 100%;
             z-index: 9999; /* Sabse upar rakhne ke liye */
-            /* Background aur Shadow ab external CSS se aayenge, taaki original look maintain rahe */
         }
 
         /* FIX: FIXED NAVBAR KE NEECHE CONTENT KO DHAKELNE KE LIYE */
         .fancy-divider:first-of-type {
             margin-top: 65px !important; /* Navbar ki height jitna margin add kiya (approx 65px) */
+        }
+
+        /* NEW CSS FOR SCROLL HIGHLIGHTING */
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 10px 5px rgba(255, 215, 0, 0.7); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+        }
+
+        .feedback-item.highlighted-scroll {
+            border: 2px solid #FFD700;
+            animation: highlight-pulse 1.5s ease-out 0s 2; /* 2 times repeat hoga */
         }
         
         /* CSS for Upvote Placement and alignment (As requested by the user) */
@@ -280,9 +291,7 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
                 <button type="submit" class="busicon-auth-btn">Login</button>
             </form>
             <div class="busicon-divider"><span>or login with</span></div>
-            <div class="busicon-social-row">
-                <div id="google-btn-container-login"></div>
-            </div>
+            <div id="google-btn-container-login"></div>
             <div class="busicon-alt-action-row">
                 Don’t have an account? <a href="#" id="busicon-create-account-link">Signup</a>
             </div>
@@ -319,9 +328,7 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
                 <button type="submit" class="busicon-auth-btn">Sign Up</button>
             </form>
             <div class="busicon-divider"><span>or sign up with</span></div>
-            <div class="busicon-social-row">
-                <div id="google-btn-container-signup"></div>
-            </div>
+            <div id="google-btn-container-signup"></div>
             <div class="busicon-alt-action-row">
                 Already have an account? <a href="#" id="busicon-already-account-link">Login</a>
             </div>

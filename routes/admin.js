@@ -1,12 +1,13 @@
 // routes/admin.js
 
 const express = require('express');
-const router = require('express').Router();
+const router = express.Router();
 const { User, Feedback, Blog, AdminSettings } = require('../config/database');
 const { authenticateAdminToken } = require('../middleware/auth');
 const { createUserPayload } = require('../utils/helpers');
 const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
 const { sendPushNotificationToUser } = require('../services/pushNotification'); 
+const { sendEmail, NOBITA_EMAIL_TEMPLATE } = require('../services/emailService'); // ADDED: Email Service
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -121,7 +122,7 @@ router.delete('/api/admin/feedbacks/batch-delete', authenticateAdminToken, async
     res.status(200).json({ message: `${r.deletedCount} deleted.`, deletedCount: r.deletedCount });
 }));
 
-// POST Reply Route (UPDATED TO USE HARDCODED DISPLAY NAME)
+// POST Reply Route (UPDATED TO USE HARDCODED DISPLAY NAME AND EMAIL LOGIC)
 router.post('/api/admin/feedback/:id/reply', authenticateAdminToken, asyncHandler(async (req, res) => {
     const fId = req.params.id;
     const { replyText } = req.body;
@@ -131,22 +132,54 @@ router.post('/api/admin/feedback/:id/reply', authenticateAdminToken, asyncHandle
 
     if (!replyText) return res.status(400).json({ message: 'Reply text missing.' });
     
-    // 1. Fetch Feedback and User (for subscription)
-    const fb = await Feedback.findById(fId).populate('userId');
+    // 1. Fetch Feedback and User (for subscription AND email)
+    // Populate userId taaki user ki details (email, name, avatarUrl) mil sake
+    const fb = await Feedback.findById(fId).populate('userId', 'email name pushSubscription avatarUrl');
     if (!fb) return res.status(404).json({ message: 'ID not found.' });
     
     // 2. Add Reply
     // Use the hardcoded display name
-    fb.replies.push({ text: replyText, adminName: adminName, timestamp: new Date() });
+    const newReply = { text: replyText, adminName: adminName, timestamp: new Date() };
+    fb.replies.push(newReply);
     await fb.save();
 
-    // 3. Send Push Notification to User
+    // 3. Send Push Notification to User (Existing Logic)
     if (fb.userId) {
-        // Fetch User subscription
-        const user = await User.findById(fb.userId); 
+        // Since we populated fb.userId, we can use it directly
+        const user = fb.userId; 
         if (user && user.pushSubscription) {
-            // Pass the user's subscription, feedback data, and the display name
             await sendPushNotificationToUser(user.pushSubscription, fb, adminName);
+        }
+        
+        // 4. Send Email Notification to User (NEW LOGIC)
+        if (user && user.email) {
+            try {
+                // NEW: feedbackId ke saath link banao
+                const mailLink = `${FRONTEND_URL}/index.html?feedbackId=${fb._id}`; 
+                const emailHtml = NOBITA_EMAIL_TEMPLATE(
+                    'Admin Reply Received!',
+                    user.name || 'User',
+                    'View Reply Now',
+                    mailLink,
+                    user.avatarUrl || 'https://placehold.co/80x80/6a0dad/FFFFFF?text=U',
+                    'admin-reply',
+                    { 
+                        reply: replyText,
+                        originalFeedback: fb.feedback // User ka original feedback
+                    }
+                );
+                
+                await sendEmail({
+                    email: user.email,
+                    subject: `Admin Reply: ${fb.feedback.substring(0, 30)}...`,
+                    html: emailHtml,
+                    message: `Admin ${adminName} has replied to your feedback: ${replyText}`
+                });
+                console.log(`Email sent successfully to ${user.email} for reply.`);
+            } catch (emailError) {
+                console.error(`Failed to send reply notification email to ${user.email}:`, emailError.message);
+                // Continue execution despite email failure
+            }
         }
     }
     
