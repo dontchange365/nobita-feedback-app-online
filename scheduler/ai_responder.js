@@ -11,6 +11,7 @@ const BOT_INTERNAL_FILTER_NAME = "NOBITA AI BOT";
 const BOT_DISPLAY_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"; 
 
 const MIN_AGE_MS = 4 * 60 * 60 * 1000; // 4 HOURS IN MILLISECONDS
+const MAX_AGE_MS = 24 * 60 * 60 * 1000; // NEW: AI 24 HOURS se purane feedback ko ignore karega.
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }); 
@@ -38,7 +39,7 @@ async function generateAutoReply(feedbackText, userName, recentAdminReplies) {
 
         AUR HMESHA YAAD RKHNA TUM TONE KO SAMJHANA OR SMJHKR REPLY KRNAA KOI BANDA AGR GAALI WALA SHABD USE KRKE AGR GAALI BAK RAHA HAI BUT WO NOBITA KO NHI DE RHA GAALI MEANS DIRECT YA INDIRECT NOBITA KO MEANS ADMIN KO GAALI DIYA TOH USKO GAALI DEKR COUNTER KRNA HAI AND AGAR GAALI DEKR INDIRECTLY YA KAIDR BHI NOBITA KO GAALI NHI DERA H TO TUM USKO RESPECT SE REPLY KROGE
         AND HMESHA KAM SHABDO ME LIKE MAX 20 WORD.
-        JO USRR GAALI DEKR NOBITA KO TARGET NHI KRRA  H USKO GAALI NHI DENI Y FULLY FOLLOW KRNA H ALWAYS
+        JO USRR GAALI DEKR NOBITA KO TARGET NHI KRRA H USKO GAALI NHI DENI Y FULLY FOLLOW KRNA H ALWAYS
         
         AGR KOI BAAP HONE KA DAAWA KARE TOH OOSE GAALI DEKR ESA REPLY KRNA H JISSE HUM USKE BETE NA LGE NAA HI HAME WO TROLL KR PAAYE ESA REPLY KRNA H.. REPLY HMESHA LOGICAL KRNA H ... TAAREEF KRNE WALO KO RESPECT OR GAALI BAKNE WALE HATER KI GAND FAAR DENI H... KOI AGR GC ME AANE KO KAHE TO OOSE BTNA H KI @CHATBOT.NOBI YEH ACCOUNT KO ADD KR YEH BOT ACCOUNT HAI AND AGR KOI MAIN NOBITA KI ID MANGE TO WO H @NOBITA_HUU 
         
@@ -92,12 +93,17 @@ async function generateAutoReply(feedbackText, userName, recentAdminReplies) {
  */
 const checkAndReply = async (io) => {
     try {
-        const cutoffTime = new Date(Date.now() - MIN_AGE_MS);
+        const minCutoffTime = new Date(Date.now() - MIN_AGE_MS);
+        const maxCutoffTime = new Date(Date.now() - MAX_AGE_MS); // OLDER THAN THIS TIME WILL BE IGNORED
 
         // 1. FIND PENDING FEEDBACKS
         const pendingFeedbacks = await Feedback.find({
-            timestamp: { $lte: cutoffTime },
-            replies: { $size: 0 } 
+            replies: { $size: 0 }, // Must be unreplied
+            timestamp: { 
+                $lte: minCutoffTime, // Must be older than 4 hours (The waiting period)
+                $gt: maxCutoffTime   // NEW: Must be newer than 24 hours (Avoids old backlog)
+            }, 
+            name: { $ne: BOT_DISPLAY_NAME } // NEW: Ignore feedbacks submitted by the bot's user (👉𝙉𝙊𝘽𝙄𝙏𝘼🤟)
         }).sort({ timestamp: 1 }).limit(10); 
 
         if (pendingFeedbacks.length === 0) {

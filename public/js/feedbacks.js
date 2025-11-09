@@ -132,7 +132,12 @@ async function fetchFeedbacks() {
         const url = `${window.API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
         const responseData = await window.apiRequest(url, 'GET');
 
-        const feedbacksArray = responseData.feedbacks;
+        let feedbacksArray = responseData.feedbacks;
+        
+        // BUG FIX: Check Admin's voting status on load and save it locally
+        // IMPORTANT: The public fetch API does NOT return the upvotes array. 
+        // We rely on the client-side localStorage cache for visual status on refresh.
+        // We don't need the server's upvotes array here for the status bar, only the client's cache.
 
         // Render new feedbacks (append=true)
         // Note: The first render will still be done in this function.
@@ -233,7 +238,8 @@ function getLikedFeedbacks() {
     const key = getLikedStorageKey();
     try {
         const liked = localStorage.getItem(key);
-        return liked ? JSON.parse(liked) : [];
+        // BUG FIX: Ensure all IDs are strings when retrieved for reliable matching
+        return liked ? JSON.parse(liked).map(id => String(id)) : [];
     } catch (e) {
         return [];
     }
@@ -247,7 +253,9 @@ function setLikedFeedbacks(likedArray) {
 
 // Check if a feedback is liked by the current user/guest
 function isFeedbackLikedByCurrentUser(feedbackId) {
-    return getLikedFeedbacks().includes(feedbackId);
+    // BUG FIX: Ensure the feedbackId being checked is also a string
+    const idToCheck = String(feedbackId);
+    return getLikedFeedbacks().includes(idToCheck);
 }
 
 // Guest ID helper function (for persistent guest ID - Required by point 2 and 3)
@@ -323,11 +331,11 @@ async function handleVote(feedbackId, voteType) {
             // 1. Update localStorage cache based on the outcome
             let likedIds = getLikedFeedbacks();
             if (isUpvoteAdded) {
-                if (!likedIds.includes(feedbackId)) {
-                    likedIds.push(feedbackId);
+                if (!likedIds.includes(String(feedbackId))) { // BUG FIX: Ensure ID is cast to string before pushing
+                    likedIds.push(String(feedbackId));
                 }
             } else {
-                likedIds = likedIds.filter(id => id !== feedbackId);
+                likedIds = likedIds.filter(id => id !== String(feedbackId)); // BUG FIX: Ensure ID is cast to string for filtering
             }
             setLikedFeedbacks(likedIds);
 
@@ -403,7 +411,7 @@ function addFeedbackToDOM(fbData) {
     starsDiv.className = 'feedback-stars';
     starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
     
-    // Check local storage for initial active state
+    // Check local storage for initial active state (BUG FIX RELIANCE)
     const isInitiallyLiked = isFeedbackLikedByCurrentUser(fbData._id);
 
     // --- VOTE BUTTON HTML (Upvote Only) ---

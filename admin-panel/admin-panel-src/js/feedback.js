@@ -44,6 +44,21 @@ function niceTime(timestamp) {
   return t.toLocaleString('en-US', options);
 }
 
+// NEW HELPER: Get Admin User ID from JWT
+function getAdminIdFromToken() {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return null;
+    try {
+        // Decode JWT payload (payload is the second part)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Assuming Admin ID is stored as 'userId' in the token payload
+        return payload.userId; 
+    } catch (e) {
+        console.error("Failed to decode admin token:", e);
+        return null;
+    }
+}
+
 window.withSpinner = async function(btn, action) {
     if (!btn) return;
     const oldHtml = btn.innerHTML;
@@ -89,7 +104,21 @@ window.fetchAndProcessData = async function(page = 1, append = false, fetchOptio
         if (!res.ok) throw new Error('Failed to fetch feedbacks: ' + res.status);
 
         const data = await res.json();
-        const serverList = data.feedbacks || [];
+        const adminId = getAdminIdFromToken();
+        
+        let serverList = data.feedbacks || [];
+        
+        // BUG FIX: Check Admin's voting status on load and save it locally
+        if (adminId) {
+            serverList = serverList.map(fb => {
+                // IMPORTANT: Assumes backend returns fb.upvotes array when Admin is logged in.
+                const isAdminVoted = fb.upvotes && fb.upvotes.some(voterId => voterId === adminId || voterId.toString() === adminId);
+                return { 
+                    ...fb, 
+                    isAdminVoted: isAdminVoted 
+                };
+            });
+        }
         
         if (append) {
             allFeedbacks = [...allFeedbacks, ...serverList];
@@ -180,6 +209,17 @@ window.renderFeedbackCard = function(fb, index, animationOffset = 0) {
 
     const replyIndicator = (fb.replies && fb.replies.length > 0) ? `<span class="reply-indicator" title="Admin has replied"><i class="fas fa-reply"></i></span>` : '';
     
+    // START: UPVOTE COUNT FOR LIST VIEW (FIXED: Show if property exists & added stopPropagation)
+    const upvoteCount = fb.upvoteCount || 0;
+    const shouldShowUpvote = (typeof fb.upvoteCount === 'number');
+
+    const upvoteDisplay = shouldShowUpvote ? `
+        <span class="upvote-icon-count js-upvote-display" title="Total Upvotes" onclick="event.stopPropagation()">
+            <i class="fas fa-thumbs-up"></i> ${upvoteCount}
+        </span>
+    ` : '';
+    // END: UPVOTE COUNT FOR LIST VIEW
+
     // CHANGE: Added logic to render the last reply directly on the card
     const lastReply = fb.replies && fb.replies.length > 0 ? fb.replies[fb.replies.length - 1] : null;
     const replyHtml = lastReply ? `
@@ -203,7 +243,7 @@ window.renderFeedbackCard = function(fb, index, animationOffset = 0) {
                         ${fb.isPinned ? '📌' : ''}
                         ${replyIndicator}
                     </div>
-                </div>
+                    ${upvoteDisplay} </div>
                 <div class="content-row">
                     <p class="rating">${stars}</p>
                     <p class="feedback-time">${escapeHtml(feedbackTime)}</p>
@@ -269,6 +309,9 @@ window.renderDetailScreen = function(feedbackId) {
                     <small>Posted: ${escapeHtml(new Date(fb.originalContent.timestamp).toLocaleString('en-US', timeOptions))}</small>
                 </div>` : '';
 
+    // BUG FIX: Now relies on the persistent fb.isAdminVoted property
+    const initialLikedClass = fb.isAdminVoted ? 'liked' : ''; 
+
     detailContainer.innerHTML = `
                 <header class="detail-header">
                     <button class="back-button" onclick="navigateToList()">‹</button>
@@ -277,7 +320,10 @@ window.renderDetailScreen = function(feedbackId) {
                 <div class="detail-content">
                     <div class="detail-section">
                         <h4>Manage</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+                        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
+                            <button class="action-button admin-vote-toggle ${initialLikedClass}" id="admin-upvote-btn" onclick="tryAdminUpvoteFeedback('${escapeHtml(fb._id)}', this)">
+                                <i class="fas fa-thumbs-up"></i>
+                            </button>
                             <button class="action-button" onclick="tryPinFeedback('${escapeHtml(fb._id)}', ${fb.isPinned}, this)">${fb.isPinned ? 'Unpin' : 'Pin'}</button>
                             <button class="action-button" onclick="tryChangeAvatarForFeedback('${escapeHtml(fb._id)}', this)">New Avatar</button>
                             <button class="action-button danger" onclick="tryDeleteFeedback('${escapeHtml(fb._id)}', this)">Delete</button>
@@ -289,6 +335,11 @@ window.renderDetailScreen = function(feedbackId) {
                             <img src="${escapeHtml(userAvatar)}" alt="user avatar" class="feedback-display-avatar">
                             <div>
                                 <p class="rating" style="font-size:1.2rem; margin-top:0;">${'★'.repeat(safeRating(fb.rating))}${'☆'.repeat(5 - safeRating(fb.rating))}</p>
+                                
+                                <div class="upvote-count-detail" style="margin: 8px 0 15px 0; font-size: 1.1rem; font-weight: 600; color: var(--secondary-color);">
+                                    <i class="fas fa-thumbs-up" style="color:#FFD700; margin-right: 5px;"></i> 
+                                    ${fb.upvoteCount || 0} upvotes
+                                </div>
                                 <p>"${escapeHtml(fb.feedback)}"</p>
                                 <small>Submitted: ${escapeHtml(new Date(fb.timestamp).toLocaleString('en-US', timeOptions))}</small>
                             </div>
@@ -305,7 +356,38 @@ window.renderDetailScreen = function(feedbackId) {
                         <button class="action-button" style="width:100%" onclick="tryPostReply('${escapeHtml(fb._id)}', this)">Send Reply</button>
                     </div>
                 </div>`;
-    // Removed markFeedbackAsRead
+}
+
+
+// NEW FUNCTION: Toggles upvote status using the Admin's ID
+window.tryAdminUpvoteFeedback = async function(id, btn) {
+    await withSpinner(btn, async () => {
+        // IMPORTANT: Ye call Admin-protected route par honi chahiye
+        const responseData = await performApiAction(`/api/admin/feedback/${id}/admin-upvote`, {
+            method: 'PUT', // PUT is better semantics for modifying status
+        });
+
+        const fb = allFeedbacks.find(f => f._id === id);
+        if (fb) {
+            // BUG FIX 1: Update the local object with the new count
+            fb.upvoteCount = responseData.feedback.upvoteCount;
+            // BUG FIX 2: Store the Admin's current voting state on the local object
+            fb.isAdminVoted = responseData.feedback.isAdminVoted; 
+        }
+
+        // VISUAL FIX: Toggle the 'liked' class based on the new persistent state
+        if (fb.isAdminVoted) {
+            btn.classList.add('liked');
+        } else {
+            btn.classList.remove('liked');
+        }
+        
+        // Re-render to update the count in the detail menu and the list view
+        renderDetailScreen(id);
+        renderList(); 
+
+        showToast(responseData.message, 'success');
+    });
 }
 
 window.calculateAndDisplayStats = function(data) {

@@ -1,7 +1,7 @@
 // routes/admin.js
 
 const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const { User, Feedback, Blog, AdminSettings } = require('../config/database');
 const { authenticateAdminToken } = require('../middleware/auth');
 const { createUserPayload } = require('../utils/helpers');
@@ -14,6 +14,7 @@ const fs = require('fs');
 const axios = require('axios');
 const githubService = require('../services/githubService');
 const asyncHandler = require('express-async-handler'); // IMPORT ASYNCHANDLER
+const mongoose = require('mongoose'); // ADDED: Mongoose for ObjectId
 
 // --- BOT/ADMIN DISPLAY NAME ---
 const DISPLAY_ADMIN_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"; 
@@ -44,6 +45,66 @@ router.post('/api/admin/login', asyncHandler(async (req, res) => {
     const adminToken = jwt.sign(adminPayload, ADMIN_JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ message: "Admin login successful!", token: adminToken, admin: adminPayload });
 }));
+
+// NEW ADMIN UPVOTE ROUTE
+router.put('/api/admin/feedback/:id/admin-upvote', authenticateAdminToken, asyncHandler(async (req, res) => {
+    const feedbackId = req.params.id;
+    // req.user contains the Admin's decoded payload (standard practice with JWT middleware)
+    const adminUserId = req.user?.userId || req.adminUser?.userId; // Using req.user or req.adminUser
+    
+    if (!adminUserId) {
+        return res.status(401).json({ message: "Admin ID not found in token payload. Authentication issue." });
+    }
+
+    const feedback = await Feedback.findById(feedbackId);
+    if (!feedback) {
+        return res.status(404).json({ message: 'Feedback not found.' });
+    }
+
+    const adminId = new mongoose.Types.ObjectId(adminUserId);
+    let updateQuery = {};
+    let actionMessage = '';
+    let isAdminVoted = false; // Initialize status
+
+    // Check if Admin's ID is already in upvotes array
+    const isCurrentlyUpvoted = feedback.upvotes.some(id => id.toString() === adminId.toString());
+
+    if (isCurrentlyUpvoted) { // Remove Upvote
+        updateQuery = { $pull: { upvotes: adminId }, $inc: { upvoteCount: -1 } };
+        actionMessage = 'Like removed by Admin.'; // CHANGED: 'Upvote removed by Admin.'
+        isAdminVoted = false;
+    } else { // Add Upvote
+        updateQuery = { $addToSet: { upvotes: adminId }, $inc: { upvoteCount: 1 } };
+        actionMessage = 'Liked successfully by Admin.'; // CHANGED: 'Upvoted successfully by Admin.'
+        isAdminVoted = true;
+    }
+
+    const updatedFeedback = await Feedback.findByIdAndUpdate(
+        feedbackId, 
+        updateQuery, 
+        { new: true, runValidators: true }
+    );
+    
+    // Emit real-time update
+    if (req.io) {
+        req.io.emit('feedback-vote-update', {
+            feedbackId: updatedFeedback._id,
+            upvoteCount: updatedFeedback.upvoteCount,
+        });
+    }
+
+    // Bug Fix: Send isAdminVoted status to the frontend
+    res.status(200).json({ 
+        message: actionMessage, 
+        feedback: { 
+            _id: updatedFeedback._id,
+            upvoteCount: updatedFeedback.upvoteCount,
+            isAdminVoted: isAdminVoted // NEW: Admin ka voting status bhej rahe hain
+        }
+    });
+}));
+// END NEW ADMIN UPVOTE ROUTE
+
 
 // Admin-specific Feedback Routes
 router.delete('/api/admin/feedback/:id', authenticateAdminToken, asyncHandler(async (req, res) => {

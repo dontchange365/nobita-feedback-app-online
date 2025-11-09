@@ -29,6 +29,20 @@
     <link rel="stylesheet" href="css/breadcrumbs.css">
    
     <style>
+        /* FIX: NAVBAR KO FIXED (STICKY) BANANE KE LIYE */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999; /* Sabse upar rakhne ke liye */
+        }
+
+        /* FIX: FIXED NAVBAR KE NEECHE CONTENT KO DHAKELNE KE LIYE */
+        .fancy-divider:first-of-type {
+            margin-top: 65px !important; /* Navbar ki height jitna margin add kiya (approx 65px) */
+        }
+        
         /* NEW BLOG LIST STYLES */
         #blog-list {
             display: grid;

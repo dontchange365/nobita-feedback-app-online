@@ -27,6 +27,20 @@
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/breadcrumbs.css">
     <style>
+    /* FIX: NAVBAR KO FIXED (STICKY) BANANE KE LIYE */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999; /* Sabse upar rakhne ke liye */
+    }
+
+    /* FIX: FIXED NAVBAR KE NEECHE CONTENT KO DHAKELNE KE LIYE */
+    .fancy-divider:first-of-type {
+        margin-top: 65px !important; /* Navbar ki height jitna margin add kiya (approx 65px) */
+    }
+    
     body {
         display: flex;
         flex-direction: column;
@@ -76,6 +90,7 @@
     img.landing-icon:hover {
         box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
         transform: scale(1.05);
+        border-color: var(--secondary);
     }
 
     img.logo-icon {

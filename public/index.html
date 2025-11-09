@@ -28,6 +28,21 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/breadcrumbs.css">
     <style>
+        /* FIX: NAVBAR KO FIXED (STICKY) BANANE KE LIYE */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999; /* Sabse upar rakhne ke liye */
+            /* Background aur Shadow ab external CSS se aayenge, taaki original look maintain rahe */
+        }
+
+        /* FIX: FIXED NAVBAR KE NEECHE CONTENT KO DHAKELNE KE LIYE */
+        .fancy-divider:first-of-type {
+            margin-top: 65px !important; /* Navbar ki height jitna margin add kiya (approx 65px) */
+        }
+        
         /* CSS for Upvote Placement and alignment (As requested by the user) */
         .rating-and-actions {
             display: flex;             /* Horizontal layout */
@@ -333,7 +348,7 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
         </div>
     </div>
 
-    <div class="overlay" id="forgotPasswordNewOverlay">
+    <div id="forgotPasswordNewOverlay" class="overlay">
         <div class="forgot-new-popup" id="forgotPasswordNewPopupContent"></div>
     </div>
     <div id="userProfileModal" class="auth-modal-overlay"> 
