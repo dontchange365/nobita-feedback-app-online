@@ -176,7 +176,8 @@ function sortAndRenderList(totalCount, averageRating) {
     
     // 2. Re-render the list from the sorted array
     // `append=false` poori list ko naye order me reload karega
-    renderFeedbackData(window.allFeedbacks, false, totalCount, averageRating);
+    // *** MODIFIED: Return the result of renderFeedbackData ***
+    return renderFeedbackData(window.allFeedbacks, false, totalCount, averageRating);
 }
 
 // Main rendering function, now optimized for appending
@@ -208,7 +209,7 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
             msgP.className = 'no-feedback-message';
             msgP.style.cssText = 'text-align:center; padding:20px; color:rgba(255,255,255,0.7); grid-column: 1 / -1;';
             feedbackListContainer.appendChild(msgP);
-            return;
+            // return; // Don't return here, need to run scrollToFeedback
         }
     } else {
         const existingMsgP = feedbackListContainer.querySelector('p.no-feedback-message');
@@ -218,13 +219,17 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
     // Append the new feedbacks
     feedbacksArray.forEach(addFeedbackToDOM);
     
-    // NEW: Scroll after rendering
-    scrollToFeedbackIfRequired();
+    // *** MODIFIED: Return the result of scrollToFeedbackIfRequired ***
+    return scrollToFeedbackIfRequired();
 }
 window.renderFeedbackData = renderFeedbackData;
 
+/**
+ * Fetches feedbacks.
+ * @returns {Promise<boolean>} - Returns true if the target feedback was found.
+ */
 async function fetchFeedbacks() {
-    if (window.isLoadingFeedbacks || !window.hasMoreFeedbacks) return;
+    if (window.isLoadingFeedbacks || !window.hasMoreFeedbacks) return false;
 
     window.isLoadingFeedbacks = true;
     if (lazyLoadSpinner) lazyLoadSpinner.style.display = 'block';
@@ -234,6 +239,8 @@ async function fetchFeedbacks() {
         renderAverageRatingSkeleton(); 
         renderFeedbackSkeletons(3); 
     }
+
+    let found = false; // Variable to store if feedback was found
 
     try {
         // Fetch logic (backend sorting doesn't matter, we sort locally)
@@ -254,9 +261,9 @@ async function fetchFeedbacks() {
             });
         }
 
-        // --- MODIFIED (SMART SORTING) ---
-        // Ab renderFeedbackData direct call nahi hoga, pehle sort hoga
-        sortAndRenderList(responseData.totalFeedbacks, responseData.averageRating);
+        // --- MODIFIED (SMART SORTING & RECURSION FIX) ---
+        // sortAndRenderList ab `true` ya `false` return karega
+        found = sortAndRenderList(responseData.totalFeedbacks, responseData.averageRating);
         
         // Update global state
         window.currentPage++;
@@ -274,12 +281,14 @@ async function fetchFeedbacks() {
         console.error("Failed to fetch feedbacks:", err);
         window.hasMoreFeedbacks = false; // Stop trying to fetch on error
         if (window.currentPage === 1) {
-            renderFeedbackData([], false, 0, 0); // Skeletons ko hatane ke liye
+            sortAndRenderList(0, 0); // Skeletons ko hatane ke liye
         }
     } finally {
         window.isLoadingFeedbacks = false;
         if (lazyLoadSpinner) lazyLoadSpinner.style.display = 'none';
     }
+    
+    return found; // Return karega ki feedback mila ya nahi
 }
 window.fetchFeedbacks = fetchFeedbacks;
 
@@ -300,30 +309,73 @@ function getTargetIdFromURL() {
     return globalTargetFeedbackId;
 }
 
+/**
+ * --- MODIFIED: RECURSION REMOVED ---
+ * Ab ye function sirf scroll/highlight karta hai agar item milta hai.
+ * @returns {boolean} - Returns true if feedback was found and scrolled to.
+ */
 function scrollToFeedbackIfRequired() {
     const targetId = getTargetIdFromURL();
     
-    if (!targetId || window.hasScrolledToId) return;
+    // Agar ID nahi hai, ya pehle hi scroll kar chuke hain, toh false return karo
+    if (!targetId || window.hasScrolledToId) return false;
 
     const targetElement = document.getElementById(`feedback-item-${targetId}`);
     
     if (targetElement) {
+        // MIL GAYA!
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         targetElement.classList.add('highlighted-scroll');
         window.hasScrolledToId = true; 
 
         setTimeout(() => {
             targetElement.classList.remove('highlighted-scroll');
-            globalTargetFeedbackId = null;
+            globalTargetFeedbackId = null; 
         }, 4000);
         
-    } else if (!window.isLoadingFeedbacks && window.hasMoreFeedbacks) {
-        console.log(`Target ID ${targetId} not found. Loading next page...`);
-        window.hasScrolledToId = false; 
-        fetchFeedbacks();
+        return true; // <<<--- RETURN TRUE (FOUND IT)
     }
+    
+    // Item abhi tak DOM mein nahi mila
+    return false; // <<<--- RETURN FALSE (NOT FOUND YET)
 }
 // --- NEW SCROLL TO FEEDBACK LOGIC END ---
+
+
+// --- NEW FUNCTION: PAGE LOADER FOR SHARED LINKS ---
+/**
+ * Loads pages one by one until the target feedback ID is found.
+ * @param {string} targetId 
+ */
+async function loadPagesUntilFeedbackFound(targetId) {
+    console.log(`Searching for feedback ID: ${targetId}...`);
+    let found = false;
+    
+    // Loop while we have more pages AND we haven't found the item
+    while (window.hasMoreFeedbacks && !found) {
+        console.log(`Fetching page ${window.currentPage}...`);
+        // fetchFeedbacks() will load data, render, scroll, and return true/false
+        found = await fetchFeedbacks(); 
+        
+        if (found) {
+            console.log(`Successfully found and scrolled to ${targetId}`);
+            break;
+        }
+        
+        if (!window.hasMoreFeedbacks && !found) {
+            // Sab pages load ho gaye aur feedback nahi mila
+            console.warn(`Could not find feedback ${targetId}. Loaded all pages.`);
+            window.showStylishPopup({
+                iconType: 'error',
+                title: 'Feedback Not Found',
+                message: `The feedback you linked (${targetId.substring(0, 10)}...) could not be found. It might have been deleted.`,
+                buttons: [{ text: 'OK', action: window.closeStylishPopup }]
+            });
+        }
+    }
+}
+// --- END NEW FUNCTION ---
+
 
 // --- UPDATED updateAverageRating FUNCTION (CSS STARS) START ---
 function updateAverageRating(avg, count) {
@@ -894,6 +946,14 @@ const handleScroll = () => {
     }
     lastScrollTime = now;
 
+    // --- RECURSION FIX ---
+    // Agar hum targetId dhoondh rahe hain, toh user ke scroll karne par
+    // naya page load mat karo.
+    if (globalTargetFeedbackId && window.isLoadingFeedbacks) {
+        return;
+    }
+    // --- END FIX ---
+
     if (scrollPosition + windowHeight >= documentHeight - 500 && !window.isLoadingFeedbacks && window.hasMoreFeedbacks) {
         console.log("Fetching next page...");
         fetchFeedbacks();
@@ -1037,13 +1097,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetFeedbackForm();
 
     // Initial grab of the ID and start fetching
-    getTargetIdFromURL();
+    getTargetIdFromURL(); // This sets globalTargetFeedbackId
 
-    // Initial fetch of the first page
     window.currentPage = 1;
     window.hasMoreFeedbacks = true;
-    window.allFeedbacks = []; // Reset local array
-    fetchFeedbacks();
+    window.allFeedbacks = []; 
+
+    // === RECURSION FIX ===
+    if (globalTargetFeedbackId) {
+        // Agar URL me ID hai, toh sequential loader chalao
+        loadPagesUntilFeedbackFound(globalTargetFeedbackId);
+    } else {
+        // Normal page load, sirf page 1 fetch karo
+        fetchFeedbacks();
+    }
+    // === END FIX ===
 
     // Add scroll event listener for lazy loading
     window.addEventListener('scroll', handleScroll);
