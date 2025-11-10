@@ -182,6 +182,8 @@
     margin-bottom: 4px;
     text-transform: capitalize;
     font-weight: bold;
+    /* Action buttons ke liye jagah banana */
+    padding-right: 50px; 
 }
 
 .feedback-details strong.rating-5 { color: var(--rating-5-color); }
@@ -331,37 +333,13 @@
     color: #9B59B6;
     font-size: 0.95em;
     display: inline;
+    padding-right: 0; /* Override padding */
 }
 
 .admin-reply-content .reply-timestamp {
     font-size: 0.65em;
     color: rgba(255, 255, 255, 0.45);
     margin-left: 7px;
-}
-
-.edit-feedback-btn {
-    background: none;
-    border: none;
-    color: #5bc0de;
-    cursor: pointer;
-    font-size: 1.25em;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 4px;
-    opacity: 0.75;
-    z-index: 10;
-    transition: color 0.25s ease, transform 0.15s;
-}
-
-.edit-feedback-btn:hover {
-    color: #31b0d5;
-    transform: scale(1.08) rotate(4deg);
-    opacity: 1;
-}
-
-.edit-feedback-btn[disabled] {
-    display: none !important;
 }
 
 .edited-tag {
@@ -424,57 +402,6 @@
     background: #3a3a7aee;
 }
 
-.pin-feedback-btn {
-    background: none;
-    border: none;
-    color: #ffc107;
-    cursor: pointer;
-    font-size: 1.25em;
-    position: absolute;
-    top: 10px;
-    right: 45px;
-    padding: 4px;
-    opacity: 0.75;
-    z-index: 10;
-    transition: color 0.25s ease, transform 0.15s;
-}
-
-.pin-feedback-btn:hover {
-    color: #ffda73;
-    transform: scale(1.08) rotate(-4deg);
-    opacity: 1;
-}
-
-.pin-feedback-btn.unpin .fa-thumbtack::before {
-    content: "\f08d";
-    color: var(--success-color);
-}
-
-.pinned-badge {
-    position: absolute;
-    top: 12px;
-    right: -2px;
-    background: linear-gradient(135deg, #ffd700, #f9b119);
-    color: #332400;
-    font-weight: 700;
-    font-size: 0.9em;
-    padding: 6px 16px 6px 12px;
-    border-radius: 20px 0 0 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    z-index: 2;
-    letter-spacing: 0.2px;
-    gap: 6px;
-    border: 1px solid #c79300;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.2);
-}
-
-.pin-svg svg {
-    display: inline-block;
-    vertical-align: middle;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
-}
 /* New CSS for the local lazy load spinner */
 #lazy-load-spinner-container {
     width: 100%;
@@ -482,6 +409,240 @@
     padding: 20px;
     grid-column: 1 / -1; /* This makes it span the full width of the grid */
 }
+
+/* === SKELETON LOADER STYLES === */
+@keyframes skeleton-glow {
+  0% {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+.skeleton-line {
+    height: 16px;
+    border-radius: 4px;
+    animation: skeleton-glow 1.5s ease-in-out infinite;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-avg-rating {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid #FFD700; 
+    opacity: 0.7;
+}
+.skeleton-big-number {
+    width: 100px;
+    height: 80px;
+    border-radius: 8px;
+    animation: skeleton-glow 1.5s ease-in-out infinite;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-stars {
+     width: 150px;
+     height: 30px; 
+     border-radius: 6px;
+     animation: skeleton-glow 1.5s ease-in-out infinite;
+     background-color: rgba(255, 255, 255, 0.08);
+}
+.feedback-item-skeleton {
+    background: #23235aee;
+    border: 2.5px solid var(--secondary-color);
+    border-radius: 18px;
+    padding: 24px 22px;
+    display: flex;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0.5;
+}
+.skeleton-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: skeleton-glow 1.5s ease-in-out infinite;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.skeleton-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+/* === END SKELETON STYLES === */
+
+
+/* === SORT BUTTON STYLES === */
+.feedback-sort-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    grid-column: 1 / -1; 
+    justify-content: center;
+}
+.sort-btn {
+    background: #333652; 
+    color: rgba(255, 255, 255, 0.7);
+    border: 2px solid #333652;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+.sort-btn:hover {
+    background: #4a4e7a;
+    border-color: #4a4e7a;
+}
+.sort-btn.active {
+    background: var(--secondary-color);
+    color: #1a1a3e;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+.sort-btn .fas {
+    margin-right: 5px;
+}
+/* === END SORT STYLES === */
+
+
+/* === ACTION BUTTONS (PIN/SHARE/EDIT) - NEW STYLES === */
+            
+/* Ye container top-right par rahega aur buttons ko stack karega */
+.card-actions-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column; /* Buttons ko vertically stack karega */
+    align-items: flex-end; /* Buttons right-aligned rahenge */
+    gap: 8px; /* Buttons ke beech space */
+    z-index: 5;
+}
+
+/* Pinned Badge ka naya style (ab ye absolute nahi hai) */
+.pinned-badge {
+    background: linear-gradient(135deg, #ffd700, #f9b119);
+    color: #332400;
+    font-weight: 700;
+    font-size: 0.9em;
+    padding: 6px 12px; /* Thoda chhota padding */
+    border-radius: 20px; /* Symmetrical */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #c79300;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.2);
+    /* Isse ye container ke right me align hoga */
+    margin-left: auto; 
+}
+.pin-svg svg {
+    display: inline-block;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
+}
+
+/* Share aur Edit buttons ke liye naya common style */
+.card-action-btn {
+    background: rgba(20, 20, 50, 0.7); /* Dark semi-transparent bg */
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(160, 160, 255, 0.3); /* Light border */
+    color: #a0a0ff; /* Light color (User request) */
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+.card-action-btn:hover {
+    opacity: 1;
+    color: #d0d0ff;
+    border-color: #a0a0ff;
+    transform: scale(1.1);
+}
+.card-action-btn.edit-btn {
+    color: #5bc0de; /* Edit button cyan rahega */
+}
+.card-action-btn.edit-btn:hover {
+    color: #8ceeff;
+    border-color: #5bc0de;
+}
+.card-action-btn:disabled {
+    display: none;
+}
+/* === END ACTION BUTTON STYLES === */
+
+
+/* === VOTE BUTTON (IN-BUTTON SPINNER) === */
+/* Vote spinner animation */
+@keyframes vote-spinner-anim {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Chhota spinner jo button ke andar fit ho */
+.vote-spinner {
+    display: none; /* By default hidden */
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: vote-spinner-anim 0.6s linear infinite;
+}
+/* Jab liked state me loading ho, spinner ka color dark rakho */
+.vote-btn.active.loading .vote-spinner {
+     border-color: rgba(0, 0, 0, 0.5);
+     border-top-color: #333652;
+}
+
+/* Jab vote-btn par .loading class lage: */
+.vote-btn.loading {
+    cursor: wait;
+    /* Icon aur Text (number) ko chhupa do */
+}
+.vote-btn.loading > .fas, .vote-btn.loading > span[id^="upvote-count-"] {
+    display: none;
+}
+/* Spinner ko dikhao */
+.vote-btn.loading > .vote-spinner {
+    display: block;
+}
+
+/* === VOTE COUNT ANIMATION (NEW) === */
+@keyframes count-pop {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+/* Count (number) span */
+.vote-btn span[id^="upvote-count-"] {
+    display: inline-block; /* Animation ke liye zaroori */
+}
+/* Animation class */
+.vote-btn span.count-animate {
+    animation: count-pop 0.3s ease-out;
+}
+/* === END VOTE COUNT ANIMATION === */
+
 
 /* Responsive adjustments for feedbacks section */
 @media (max-width: 768px) {
@@ -507,6 +668,19 @@
     .feedback-stars { font-size: 1.3em; }
     .feedback-details p { font-size: 0.9em; }
     .admin-reply { font-size: 0.8em; padding: 7px 9px; }
-    .edit-feedback-btn { font-size: 1.1em; }
     .email-verification-prompt { padding: 12px; font-size: 0.9em; }
+    
+    /* Responsive fix for buttons on mobile */
+    .card-actions-container {
+        gap: 5px;
+    }
+    .card-action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8em;
+    }
+    .pinned-badge {
+        font-size: 0.8em;
+        padding: 5px 10px;
+    }
 }

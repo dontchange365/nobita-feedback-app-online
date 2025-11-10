@@ -953,3 +953,66 @@
     filter: brightness(1.2); 
     transform: translateY(-1px);
 }
+/* === SKELETON LOADER === */
+/* Add this to admin-panel/admin-panel-src/css/feedback.css */
+
+@keyframes skeleton-glow {
+  0% {
+    background-color: rgba(170, 170, 170, 0.1);
+  }
+  50% {
+    background-color: rgba(170, 170, 170, 0.25);
+  }
+  100% {
+    background-color: rgba(170, 170, 170, 0.1);
+  }
+}
+
+.skeleton-card {
+  background-color: var(--background-color-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.skeleton-card .header-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skeleton-card .card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: skeleton-glow 1.5s ease-in-out infinite;
+  margin-right: 10px;
+}
+
+.skeleton-card .user-info {
+  flex-grow: 1;
+}
+
+.skeleton-card .line {
+  height: 16px;
+  animation: skeleton-glow 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeleton-card .line-short {
+  width: 40%;
+  margin-top: 8px;
+  height: 12px;
+}
+
+.skeleton-card .line-long {
+  width: 90%;
+  margin-top: 10px;
+}
+
+.skeleton-card .line-medium {
+  width: 70%;
+  margin-top: 10px;
+}

@@ -190,9 +190,6 @@ router.post('/api/feedback', feedbackLimiter, asyncHandler(async (req, res) => {
     // 3. Emit real-time update
     req.io.emit('new-feedback', newFeedback);
 
-<<<<<<< HEAD
-    sendPushNotificationToAdmin(newFeedback);
-=======
     // 4. Send Push Notification
     sendPushNotificationToAdmin(newFeedback);
 
@@ -241,7 +238,6 @@ router.post('/api/feedback', feedbackLimiter, asyncHandler(async (req, res) => {
     // === ADMIN EMAIL NOTIFICATION END ===
 
     // 5. Send response to user
->>>>>>> 5121dc6 (💘 Auto Push 2025-11-09 23:54:03)
     res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
 }));
 
@@ -350,11 +346,7 @@ router.post('/api/feedback/:id/vote', asyncHandler(async (req, res) => {
             actionMessage = 'Upvote removed.';
             voteStatusChanged = true;
         } else { // Add Like
-<<<<<<< HEAD
             updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upvoteCount: 1 } };
-=======
-            updateQuery = { $addToSet: { upvoteGuests: identifier }, $inc: { upKvoteCount: 1 } };
->>>>>>> 5121dc6 (💘 Auto Push 2025-11-09 23:54:03)
             actionMessage = 'Upvoted successfully.';
             voteStatusChanged = true;
         }

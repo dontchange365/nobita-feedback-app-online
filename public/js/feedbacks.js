@@ -7,6 +7,8 @@ const FEEDBACKS_CACHE_KEY = 'nobi_feedbacks';
 let currentSelectedRating = 0;
 let isEditing = false;
 let currentEditFeedbackId = null;
+let currentSortOrder = 'newest'; // NEW: For Sorting
+window.allFeedbacks = []; // NEW: Store all feedbacks locally
 
 // --- API ENDPOINTS (FIXED) ---
 const API_FEEDBACKS_URL = '/api/feedback'; // Used for POST (new feedback)
@@ -34,6 +36,57 @@ function generateUUID() {
     });
 }
 window.generateUUID = generateUUID;
+
+// --- NEW SKELETON FUNCTIONS ---
+
+/**
+ * Renders a DETAILED skeleton placeholder for the average rating box.
+ */
+function renderAverageRatingSkeleton() {
+    if(!averageRatingDisplayEl) return;
+    // Ye detailed skeleton HTML ko average rating container me daal dega
+    averageRatingDisplayEl.innerHTML = `
+        <div class="skeleton-avg-rating">
+            <div class="skeleton-line" style="width: 60%; height: 20px;"></div>
+            <div class="skeleton-big-number"></div>
+            <div class="skeleton-line" style="width: 50%;"></div>
+            <div class="skeleton-stars"></div>
+            <div class="skeleton-line" style="width: 70%; margin-top: 10px;"></div>
+        </div>
+    `;
+}
+
+/**
+ * Renders multiple skeleton placeholders for the feedback list.
+ * @param {number} count - The number of skeletons to display.
+ */
+function renderFeedbackSkeletons(count = 3) {
+    if(!feedbackListContainer) return;
+    
+    // Purana "No feedback" message hatao
+    const existingMsgP = feedbackListContainer.querySelector('p.no-feedback-message');
+    if (existingMsgP) existingMsgP.remove();
+    
+    let skeletonsHtml = '';
+    for (let i = 0; i < count; i++) {
+        // Ye ek feedback item ka skeleton HTML hai
+        skeletonsHtml += `
+            <div class="feedback-item-skeleton">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-details">
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                    <div class="skeleton-line" style="width: 60%;"></div>
+                    <div class="skeleton-line" style="width: 90%; margin-top: 10px;"></div>
+                    <div class="skeleton-line" style="width: 80%;"></div>
+                </div>
+            </div>
+        `;
+    }
+    // Skeletons ko list me add karo
+    feedbackListContainer.insertAdjacentHTML('beforeend', skeletonsHtml);
+}
+// --- END SKELETON FUNCTIONS ---
+
 
 const starsElements = document.querySelectorAll('.star');
 const ratingInput = document.getElementById('rating');
@@ -99,16 +152,51 @@ function debounce(func, delay) {
     };
 }
 
+// --- UPDATED (PIN-PRIORITY SMART SORTING) ---
+/**
+ * Sorts the global `allFeedbacks` array based on `currentSortOrder`
+ * and then calls `renderFeedbackData` to update the DOM.
+ */
+function sortAndRenderList(totalCount, averageRating) {
+    // 1. Sort the local array
+    window.allFeedbacks.sort((a, b) => {
+        // 1. Pinned items ALWAYS come first, regardless of sort order
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+
+        // 2. If both are same (pinned or unpinned), THEN use the selected sort order
+        if (currentSortOrder === 'popular') {
+            // "Most Liked" sort
+            return (b.upvoteCount || 0) - (a.upvoteCount || 0);
+        } else {
+            // "Newest" sort (default)
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        }
+    });
+    
+    // 2. Re-render the list from the sorted array
+    // `append=false` poori list ko naye order me reload karega
+    renderFeedbackData(window.allFeedbacks, false, totalCount, averageRating);
+}
+
 // Main rendering function, now optimized for appending
 function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, averageRating = 0) {
     if (!feedbackListContainer) return;
 
     if (!append) {
-        // Clear all feedback items and messages, but keep average rating container and title
-        const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => child.id !== 'average-rating-display' && child.tagName.toLowerCase() !== 'h2' && child.classList.contains('feedback-item'));
+        // === SKELETON REMOVAL ===
+        feedbackListContainer.querySelectorAll('.feedback-item-skeleton').forEach(sk => sk.remove());
+        
+        // Clear all feedback items (lekin sort buttons ko nahi)
+        const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => 
+            child.id !== 'average-rating-display' && 
+            child.tagName.toLowerCase() !== 'h2' && 
+            !child.classList.contains('feedback-sort-container') && // Sort buttons ko mat hatana
+            child.classList.contains('feedback-item')
+        );
         childrenToRemove.forEach(child => child.remove());
 
-        // Update average rating and total count only on the first load
+        // Update average rating
         updateAverageRating(averageRating, totalCount);
 
         const existingMsgP = feedbackListContainer.querySelector('p.no-feedback-message');
@@ -141,16 +229,35 @@ async function fetchFeedbacks() {
     window.isLoadingFeedbacks = true;
     if (lazyLoadSpinner) lazyLoadSpinner.style.display = 'block';
 
+    // === SKELETON RENDER ===
+    if (window.currentPage === 1) { 
+        renderAverageRatingSkeleton(); 
+        renderFeedbackSkeletons(3); 
+    }
+
     try {
+        // Fetch logic (backend sorting doesn't matter, we sort locally)
         const url = `${API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
         const responseData = await window.apiRequest(url, 'GET');
 
         let feedbacksArray = responseData.feedbacks;
         
-        // Render new feedbacks (append=true)
-        const isFirstLoad = window.currentPage === 1;
-        renderFeedbackData(feedbacksArray, !isFirstLoad, responseData.totalFeedbacks, responseData.averageRating);
+        // Data ko global array me add/replace karo
+        if (window.currentPage === 1) {
+            window.allFeedbacks = feedbacksArray;
+        } else {
+            // Duplicates ko filter karke hi add karein
+            feedbacksArray.forEach(fb => {
+                if (!window.allFeedbacks.find(f => f._id === fb._id)) {
+                    window.allFeedbacks.push(fb);
+                }
+            });
+        }
 
+        // --- MODIFIED (SMART SORTING) ---
+        // Ab renderFeedbackData direct call nahi hoga, pehle sort hoga
+        sortAndRenderList(responseData.totalFeedbacks, responseData.averageRating);
+        
         // Update global state
         window.currentPage++;
         window.hasMoreFeedbacks = responseData.hasMore;
@@ -167,8 +274,7 @@ async function fetchFeedbacks() {
         console.error("Failed to fetch feedbacks:", err);
         window.hasMoreFeedbacks = false; // Stop trying to fetch on error
         if (window.currentPage === 1) {
-            // Handle initial load failure
-            renderFeedbackData([]);
+            renderFeedbackData([], false, 0, 0); // Skeletons ko hatane ke liye
         }
     } finally {
         window.isLoadingFeedbacks = false;
@@ -186,9 +292,7 @@ function getTargetIdFromURL() {
     const targetId = urlParams.get('feedbackId');
     if (targetId) {
         globalTargetFeedbackId = targetId;
-        // Clean the URL to prevent issues, but keep the globalTargetFeedbackId
         if (window.history.replaceState) {
-            // Remove the parameter from the URL bar after grabbing it
             const cleanUrl = window.location.pathname + window.location.search.replace(`feedbackId=${targetId}`, '').replace(/[?&]$/, '');
             window.history.replaceState(null, null, cleanUrl);
         }
@@ -199,33 +303,22 @@ function getTargetIdFromURL() {
 function scrollToFeedbackIfRequired() {
     const targetId = getTargetIdFromURL();
     
-    // Check if we have already scrolled or if there's no ID
     if (!targetId || window.hasScrolledToId) return;
 
     const targetElement = document.getElementById(`feedback-item-${targetId}`);
     
     if (targetElement) {
-        // Scroll the element into view, positioning it in the center
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Highlight the element temporarily using the CSS class
         targetElement.classList.add('highlighted-scroll');
-        
-        // Set flag to prevent re-scrolling on subsequent scroll/render
         window.hasScrolledToId = true; 
 
-        // Remove highlight after a few seconds
         setTimeout(() => {
             targetElement.classList.remove('highlighted-scroll');
-            // After successful scroll, ensure global ID is reset so manual fetch/scroll continues
             globalTargetFeedbackId = null;
         }, 4000);
         
     } else if (!window.isLoadingFeedbacks && window.hasMoreFeedbacks) {
-        // If the element isn't found, and we haven't checked all pages, load the next one.
-        console.log(`Target ID ${targetId} not found on current pages. Attempting to load next page (Page ${window.currentPage})...`);
-        
-        // Reset scroll flag momentarily while loading, but keep the target ID
+        console.log(`Target ID ${targetId} not found. Loading next page...`);
         window.hasScrolledToId = false; 
         fetchFeedbacks();
     }
@@ -241,7 +334,6 @@ function updateAverageRating(avg, count) {
     let sentimentClass = '';
     let fillPercentage = 0; 
     
-    // Determine Sentiment Text and Class 
     if (count > 0 && !isNaN(avgNum)) {
         if (avgNum >= 4.5) {
             sentimentText = 'Outstanding! (Excellent)';
@@ -260,14 +352,11 @@ function updateAverageRating(avg, count) {
         sentimentClass = 'average';
     }
 
-    // CALCULATE CSS FILL PERCENTAGE
     if (count > 0 && !isNaN(avgNum)) {
-        // Calculate width as a percentage of 5 stars
         fillPercentage = (avgNum / 5) * 100;
         if (fillPercentage > 100) fillPercentage = 100; 
     }
     
-    // CREATE HTML FOR CSS STARS
     const cssStarsHtml = `
         <div class="css-stars-wrapper">
             <div class="css-stars-empty">★★★★★</div>
@@ -290,7 +379,6 @@ function updateAverageRating(avg, count) {
 
 // Helper to get the key for storing liked feedback IDs (based on user state)
 function getLikedStorageKey() {
-    // Agar user logged-in hai, toh user ID se key banao. Warna persistent guest ID se.
     const identifier = (window.currentUser && window.currentUser.userId) ? window.currentUser.userId : getGuestId();
     return `nobi_liked_id_${identifier}`;
 }
@@ -300,7 +388,6 @@ function getLikedFeedbacks() {
     const key = getLikedStorageKey();
     try {
         const liked = localStorage.getItem(key);
-        // BUG FIX: Ensure all IDs are strings when retrieved for reliable matching
         return liked ? JSON.parse(liked).map(id => String(id)) : [];
     } catch (e) {
         return [];
@@ -315,7 +402,6 @@ function setLikedFeedbacks(likedArray) {
 
 // Check if a feedback is liked by the current user/guest
 function isFeedbackLikedByCurrentUser(feedbackId) {
-    // BUG FIX: Ensure the feedbackId being checked is also a string
     const idToCheck = String(feedbackId);
     return getLikedFeedbacks().includes(idToCheck);
 }
@@ -324,30 +410,48 @@ function isFeedbackLikedByCurrentUser(feedbackId) {
 function getGuestId() {
     let guestId = localStorage.getItem('nobi_guestId');
     if (!guestId) {
-        // Generate a temporary ID if not found
         guestId = window.generateUUID(); 
         localStorage.setItem('nobi_guestId', guestId);
     }
     return guestId;
 }
 
+// --- NEW (ANIMATED COUNT) ---
 // UI Update function (Real-time and API response)
-function updateVoteCounts(feedbackId, upvotes, isActive = null) {
+function updateVoteCounts(feedbackId, newCount, isActive = null, oldCount = null) {
     const upvoteCountEl = document.getElementById(`upvote-count-${feedbackId}`);
     const upvoteBtnEl = document.querySelector(`.vote-btn.upvote[data-id="${feedbackId}"]`);
 
-    if (upvoteCountEl) upvoteCountEl.textContent = upvotes;
+    // 1. Handle Count Animation
+    if (upvoteCountEl) {
+        // Check if old count was provided and is different from new count
+        const isDifferent = (oldCount !== null) && (oldCount !== newCount);
+        
+        if (isDifferent) {
+            // Animate from old to new
+            upvoteCountEl.classList.remove('count-animate');
+            // Force reflow (ye animation ko restart karne ke liye zaroori hai)
+            void upvoteCountEl.offsetWidth; 
+            // Naya count set karo aur animation class add karo
+            upvoteCountEl.textContent = newCount;
+            upvoteCountEl.classList.add('count-animate');
+        } else {
+            // Sirf count set karo (koi animation nahi)
+            upvoteCountEl.textContent = newCount;
+        }
+    }
 
+    // 2. Handle Button Active State (ye pehle jaisa hi hai)
     if (upvoteBtnEl) {
         if (isActive === true) {
             upvoteBtnEl.classList.add('active');
-            upvoteBtnEl.classList.add('liked-animate'); // Add class for animation
-            setTimeout(() => upvoteBtnEl.classList.remove('liked-animate'), 300); // Remove class after animation
+            upvoteBtnEl.classList.add('liked-animate'); 
+            setTimeout(() => upvoteBtnEl.classList.remove('liked-animate'), 300); 
         } else if (isActive === false) {
             upvoteBtnEl.classList.remove('active');
-            upvoteBtnEl.classList.remove('liked-animate'); // Ensure animation class is removed
+            upvoteBtnEl.classList.remove('liked-animate'); 
         } else if (isActive === null) {
-            // Use local storage state to set the initial class (for initial page load/real-time updates)
+            // Real-time update ya error ke case me
             if (isFeedbackLikedByCurrentUser(feedbackId)) {
                 upvoteBtnEl.classList.add('active');
             } else {
@@ -357,27 +461,37 @@ function updateVoteCounts(feedbackId, upvotes, isActive = null) {
     }
 }
 
+// --- NEW (IN-BUTTON SPINNER + ANIMATED COUNT) ---
 // Voting API Call
 async function handleVote(feedbackId, voteType) {
-    // Only process upvote
     if (voteType !== 'upvote') return;
+
+    const upvoteBtnEl = document.querySelector(`.vote-btn.upvote[data-id="${feedbackId}"]`);
+    if (!upvoteBtnEl || upvoteBtnEl.classList.contains('loading')) {
+        return; // Button nahi mila ya pehle se loading me hai
+    }
+
+    // *** NEW: Get OLD count ***
+    const upvoteCountEl = document.getElementById(`upvote-count-${feedbackId}`);
+    const oldCount = parseInt(upvoteCountEl.textContent, 10) || 0;
+    // *** END NEW ***
+
+    // 1. Show Spinner
+    upvoteBtnEl.classList.add('loading');
+    upvoteBtnEl.disabled = true; // Disable button during request
     
     const token = localStorage.getItem('jwtToken');
-    
     let headers = { 'Content-Type': 'application/json' };
     let body = { voteType: 'upvote' };
-    
-    // Determine if the user is logged in
-    const isUserLoggedIn = !!window.currentUser;
     
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     } else {
-        // If not logged in, pass the persistent guestId
         body.guestId = getGuestId();
     }
     
     try {
+        // 2. Manual Fetch (apiRequest use nahi kar rahe)
         const response = await fetch(`${API_FEEDBACK_URL}/${feedbackId}/vote`, {
             method: 'POST',
             headers: headers,
@@ -385,48 +499,120 @@ async function handleVote(feedbackId, voteType) {
         });
 
         const data = await response.json();
+        
         if (!response.ok) {
-            window.showStylishPopup({ iconType: 'error', title: 'Vote Failed', message: data.message || 'Failed to process your vote. Please try again.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
-        } else {
-            const isUpvoteAdded = data.message.includes('Upvoted successfully');
-            
-            // 1. Update localStorage cache based on the outcome
-            let likedIds = getLikedFeedbacks();
-            if (isUpvoteAdded) {
-                if (!likedIds.includes(String(feedbackId))) { // BUG FIX: Ensure ID is cast to string before pushing
-                    likedIds.push(String(feedbackId));
-                }
-            } else {
-                likedIds = likedIds.filter(id => id !== String(feedbackId)); // BUG FIX: Ensure ID is cast to string for filtering
-            }
-            setLikedFeedbacks(likedIds);
-
-            // 2. Success, update UI with new count and active status
-            updateVoteCounts(feedbackId, data.feedback.upvoteCount, isUpvoteAdded);
+            throw new Error(data.message || 'Failed to process your vote.');
         }
+
+        // 3. Success
+        const isUpvoteAdded = data.message.includes('Upvoted successfully');
+        const newCount = data.feedback.upvoteCount; // Naya count
+        
+        // Update localStorage
+        let likedIds = getLikedFeedbacks();
+        if (isUpvoteAdded) {
+            if (!likedIds.includes(String(feedbackId))) { 
+                likedIds.push(String(feedbackId));
+            }
+        } else {
+            likedIds = likedIds.filter(id => id !== String(feedbackId)); 
+        }
+        setLikedFeedbacks(likedIds);
+
+        // *** MODIFIED: Pass OLD count to animation function ***
+        updateVoteCounts(feedbackId, newCount, isUpvoteAdded, oldCount);
+
+        // Update local `allFeedbacks` array
+        const feedbackInArray = window.allFeedbacks.find(f => f._id === feedbackId);
+        if (feedbackInArray) {
+            feedbackInArray.upvoteCount = newCount;
+        }
+
+        // Re-sort agar popular sort active hai
+        if (currentSortOrder === 'popular') {
+            sortAndRenderList(window.totalFeedbacksCount, window.currentAverageRating);
+        }
+
     } catch (error) {
+        // 4. Show error
         console.error('Network error during voting:', error);
-        window.showStylishPopup({ iconType: 'error', title: 'Network Error', message: 'Could not connect to server to register your vote.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
+        window.showStylishPopup({ 
+            iconType: 'error', 
+            title: 'Vote Error', 
+            message: error.message || 'Could not connect to server.', 
+            buttons: [{ text: 'OK', action: window.closeStylishPopup }] 
+        });
+        // Error state me, UI ko purani (original) state par reset karo
+        updateVoteCounts(feedbackId, oldCount, null, null); 
+    } finally {
+        // 5. Hide Spinner
+        upvoteBtnEl.classList.remove('loading');
+        upvoteBtnEl.disabled = false;
     }
 }
+// --- END (IN-BUTTON SPINNER) ---
+
+// --- NEW (SMART SHARE) ---
+/**
+ * Handles the click event for the share button.
+ * Copies the feedback-specific URL to the clipboard.
+ * @param {Event} event - The click event.
+ * @param {string} feedbackId - The ID of the feedback to share.
+ */
+function handleShareClick(event, feedbackId) {
+    // Stop click from bubbling up to the edit button or card
+    event.stopPropagation();
+
+    // Create the URL
+    const url = new URL(window.location.href);
+    url.search = `?feedbackId=${feedbackId}`; // Sets the ?feedbackId=...
+    url.hash = ''; // Remove any existing hash
+    
+    const shareUrl = url.href;
+
+    // Copy to clipboard using modern API
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            // Success
+            window.showStylishPopup({ 
+                iconType: 'success', 
+                title: 'Link Copied!', 
+                message: 'A direct link to this feedback has been copied to your clipboard.', 
+                buttons: [{text:'OK', action: window.closeStylishPopup}] 
+            });
+        }, (err) => {
+            // Fail
+            console.error('Failed to copy: ', err);
+            window.showStylishPopup({ 
+                iconType: 'error', 
+                title: 'Copy Failed', 
+                message: 'Could not copy the link. Please try again.', 
+                buttons: [{text:'OK', action: window.closeStylishPopup}] 
+            });
+        });
+    } else {
+        // Fallback for older browsers
+        console.warn('Clipboard API not available. Implement fallback.');
+    }
+}
+// --- END (SMART SHARE) ---
 
 function addFeedbackToDOM(fbData) {
     if (!feedbackListContainer) return;
 
-    // --- Check if item exists and if it's currently being edited (logic retained) ---
-    // NEW: Use the unique ID for checking existence
+    // Check if item exists
     let item = document.getElementById(`feedback-item-${fbData._id}`); 
-    if (item && !isEditing) {
-        // Item found, only update vote count
-        updateVoteCounts(fbData._id, fbData.upvoteCount || 0);
+    if (item) {
+        // Item exists. This shouldn't happen with the new `sortAndRenderList`
+        // But if it does (e.g., socket update), just update votes
+        updateVoteCounts(fbData._id, fbData.upvoteCount || 0, null, null); // No animation for socket
         return;
     }
-    // --------------------------------------------------------------------------------
 
     item = document.createElement('div');
     item.className = `feedback-item ${fbData.isPinned ? 'pinned' : ''}`;
     item.dataset.feedbackId = fbData._id;
-    item.id = `feedback-item-${fbData._id}`; // NEW: Unique ID added for scrolling
+    item.id = `feedback-item-${fbData._id}`; 
 
     const avatarImg = document.createElement('img');
     avatarImg.className = 'avatar-img';
@@ -475,26 +661,21 @@ function addFeedbackToDOM(fbData) {
     starsDiv.className = 'feedback-stars';
     starsDiv.textContent = '★'.repeat(fbData.rating) + '☆'.repeat(5 - fbData.rating);
     
-    // Check local storage for initial active state (BUG FIX RELIANCE)
     const isInitiallyLiked = isFeedbackLikedByCurrentUser(fbData._id);
 
-    // --- VOTE BUTTON HTML (Upvote Only) ---
     const voteActionsDiv = document.createElement('div');
     voteActionsDiv.className = 'feedback-actions'; 
     voteActionsDiv.innerHTML = `
         <button class="vote-btn upvote ${isInitiallyLiked ? 'active' : ''}" data-vote="upvote" data-id="${fbData._id}" title="Like this feedback">
             <i class="fas fa-thumbs-up"></i> 
             <span id="upvote-count-${fbData._id}">${fbData.upvoteCount || 0}</span>
-        </button>
+            <span class="vote-spinner"></span> </button>
     `;
-    // --- VOTE BUTTON HTML END ---
     
-    // --- NEW CONTAINER FOR STARS AND LIKE BUTTON (REINSTATED FIX) ---
     const ratingAndActions = document.createElement('div');
-    ratingAndActions.className = 'rating-and-actions'; // New class for flex layout
+    ratingAndActions.className = 'rating-and-actions'; 
     ratingAndActions.appendChild(starsDiv);
     ratingAndActions.appendChild(voteActionsDiv);
-    // --- END NEW CONTAINER ---
 
     const pFb = document.createElement('p');
     pFb.textContent = fbData.feedback;
@@ -506,21 +687,47 @@ function addFeedbackToDOM(fbData) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
     
-    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); // Use combined ratingAndActions
+    detailsDiv.append(strongName, ratingAndActions, pFb, tsDiv); 
 
     item.append(avatarImg, detailsDiv);
 
+    // --- NEW ACTION CONTAINER ---
+    const actionsContainer = document.createElement('div');
+    actionsContainer.className = 'card-actions-container';
+
+    // 1. Add Pinned Badge (if pinned)
+    if (fbData.isPinned) {
+        actionsContainer.innerHTML += `
+            <div class="pinned-badge">
+                <span class="pin-svg">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4H16V6H14V4ZM14 2H6V4H14V2ZM12 18V10H8V18H6V8H4V6H6V4C6 2.9 6.9 2 8 2H12C13.1 2 14 2.9 14 4V6H16V8H14V18H12Z" fill="#332400"/>
+                </svg>
+                </span>
+                Pinned
+            </div>`;
+    }
+
+    // 2. Add Share Button (always)
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'card-action-btn share-btn'; // New class
+    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+    shareBtn.title = 'Copy link to this feedback';
+    shareBtn.onclick = (e) => handleShareClick(e, fbData._id);
+    actionsContainer.appendChild(shareBtn);
+
+    // 3. Add Edit Button (if owner)
     const isFeedbackOwner = window.currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === window.currentUser.userId;
     const canEdit = isFeedbackOwner && (window.currentUser.loginMethod === 'google' || (window.currentUser.loginMethod === 'email' && window.currentUser.isVerified));
-
+    
     if (fbData.userId && typeof fbData.userId === 'object') {
         const editBtn = document.createElement('button');
-        editBtn.className = 'edit-feedback-btn';
+        editBtn.className = 'card-action-btn edit-btn'; // New class
         editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editBtn.title = 'Edit your feedback';
         editBtn.disabled = !canEdit;
 
-        if (isFeedbackOwner && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
+        if (isFeedbackOwner && !canEdit) {
             editBtn.title = "Verify your email to edit this feedback.";
         }
 
@@ -540,8 +747,12 @@ function addFeedbackToDOM(fbData) {
             if (document.getElementById('feedback-form-container')) document.getElementById('feedback-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
             window.showStylishPopup({ iconType: 'info', title: 'Editing Feedback', message: 'The form has been pre-filled. Make changes and click "Update Feedback".', buttons: [{ text: 'Got it!', action: window.closeStylishPopup }] });
         };
-        item.appendChild(editBtn);
+        actionsContainer.appendChild(editBtn);
     }
+    
+    item.appendChild(actionsContainer);
+    // --- END NEW CONTAINER ---
+
 
     if (fbData.replies?.length > 0) {
         const reply = fbData.replies[fbData.replies.length - 1];
@@ -550,43 +761,25 @@ function addFeedbackToDOM(fbData) {
             replyDiv.className = 'admin-reply';
             const adminAva = document.createElement('img');
             adminAva.className = 'admin-reply-avatar';
-            adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; // Image of Admin Creator
+            adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; 
             adminAva.alt = 'Admin';
             const replyContent = document.createElement('div');
             replyContent.className = 'admin-reply-content';
             let replyTs = '';
             try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })})`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`; }
             
-            // --- FINAL FIX: INTERCEPT AND REPLACE ADMIN NAME FOR DISPLAY ---
             let displayedAdminName = reply.adminName || 'Admin';
-            
-            // YAHAN Hum Saare Admin/Bot Naamon Ko '👉𝙉𝙊𝘽𝙄𝙏𝘼🤟' Se Replace Kar Rahe Hain
-            // TAAKI OLD DATA AUR NEW DATA CONSISTENT DIKHE
             if (displayedAdminName !== 'Guest' && displayedAdminName !== 'UNKNOWN_IP') {
                 displayedAdminName = DESIRED_DISPLAY_NAME;
             }
 
             replyContent.innerHTML = `<strong>(${displayedAdminName}):</strong> ${reply.text} <span class="reply-timestamp">${replyTs}</span>`;
-            // --- FINAL FIX ENDS ---
 
             replyDiv.append(adminAva, replyContent);
             detailsDiv.appendChild(replyDiv);
         }
     }
-
-    if (fbData.isPinned) {
-        const pinnedBadgeHTML = `
-        <div class="pinned-badge">
-            <span class="pin-svg">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 4H16V6H14V4ZM14 2H6V4H14V2ZM12 18V10H8V18H6V8H4V6H6V4C6 2.9 6.9 2 8 2H12C13.1 2 14 2.9 14 4V6H16V8H14V18H12Z" fill="#332400"/>
-            </svg>
-            </span>
-            Pinned
-        </div>`;
-        item.insertAdjacentHTML('afterbegin', pinnedBadgeHTML);
-    }
-
+    
     feedbackListContainer.appendChild(item);
 }
 window.addFeedbackToDOM = addFeedbackToDOM;
@@ -632,27 +825,23 @@ window.resetFeedbackForm = resetFeedbackForm;
 // NEW: Handles the post-submission process including asking for notifications
 async function handleFeedbackSubmitSuccess(data) {
     if (data && data.feedback) {
-        // --- FIX IS HERE ---
         if (data.feedback.guestId) {
             localStorage.setItem('nobi_guestId', data.feedback.guestId);
         }
         if (data.feedback.name) {
             localStorage.setItem('nobi_guestName', data.feedback.name);
         }
-        // --- END FIX ---
+        // --- MODIFIED (SMART SORTING) ---
+        // Naye feedback ko global array me locally add karo
+        window.allFeedbacks.push(data.feedback);
+        // Poori list ko re-sort aur re-render karo
+        // (Stats approx update kar rahe hain, real data agle fetch par ayega)
+        sortAndRenderList(window.totalFeedbacksCount + 1, window.currentAverageRating);
     }
     window.showStylishPopup({ iconType: 'success', title: 'Feedback Submitted!', message: data.message || 'Thank you for your feedback!', buttons: [{text:'Great!', action: window.closeStylishPopup}] });
     resetFeedbackForm();
-    window.currentPage = 1;
-    window.hasMoreFeedbacks = true;
-    if (feedbackListContainer) feedbackListContainer.innerHTML = '';
-
-    if (averageRatingDisplayEl) feedbackListContainer.appendChild(averageRatingDisplayEl);
-    const h2Title = document.createElement('h2');
-    h2Title.textContent = 'Recent Feedbacks';
-    h2Title.classList.add('section-title');
-    feedbackListContainer.appendChild(h2Title);
-    await window.fetchFeedbacks();
+    
+    // (Fetch call removed, local update ho gaya hai)
 
     // After success, ask for notification permission
     const granted = await requestNotificationPermission();
@@ -699,7 +888,6 @@ const handleScroll = () => {
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
 
-    // Throttle scroll event by a simple timestamp check
     const now = Date.now();
     if (now - lastScrollTime < DEBOUNCE_DELAY) {
         return;
@@ -713,7 +901,7 @@ const handleScroll = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Vote event listener is correctly implemented here
+    // Vote event listener
     document.addEventListener('click', (e) => {
         let target = e.target.closest('.vote-btn');
         if (target && target.dataset.vote === 'upvote') {
@@ -725,15 +913,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Socket.IO Listener for Real-time Updates (vote update logic is in place)
+    // --- NEW (SMART SORTING) ---
+    // Sort button event listeners
+    const sortNewestBtn = document.getElementById('sort-by-newest');
+    const sortPopularBtn = document.getElementById('sort-by-popular');
+
+    if (sortNewestBtn && sortPopularBtn) {
+        sortNewestBtn.addEventListener('click', () => {
+            if (currentSortOrder === 'newest') return; // Pehle se active hai
+            currentSortOrder = 'newest';
+            sortNewestBtn.classList.add('active');
+            sortPopularBtn.classList.remove('active');
+            // List ko re-sort aur re-render karo
+            sortAndRenderList(window.totalFeedbacksCount, window.currentAverageRating);
+        });
+
+        sortPopularBtn.addEventListener('click', () => {
+            if (currentSortOrder === 'popular') return; // Pehle se active hai
+            currentSortOrder = 'popular';
+            sortPopularBtn.classList.add('active');
+            sortNewestBtn.classList.remove('active');
+            // List ko re-sort aur re-render karo
+            sortAndRenderList(window.totalFeedbacksCount, window.currentAverageRating);
+        });
+    }
+    // --- END (SMART SORTING) ---
+
+    // Socket.IO Listener for Real-time Updates
     if (typeof io !== 'undefined') {
         const socket = io();
         socket.on('feedback-vote-update', (data) => {
-            updateVoteCounts(data.feedbackId, data.upvoteCount);
+            // Update local array
+            const feedbackInArray = window.allFeedbacks.find(f => f._id === data.feedbackId);
+            if (feedbackInArray) {
+                feedbackInArray.upvoteCount = data.upvoteCount;
+            }
+            // Update UI (ye function check karega ki item DOM me hai ya nahi)
+            // Socket update ke liye animation nahi dikhayenge (null, null)
+            updateVoteCounts(data.feedbackId, data.upvoteCount, null, null); 
+
+            // Agar popular sort active hai, toh list ko re-sort karo
+            if (currentSortOrder === 'popular') {
+                sortAndRenderList(window.totalFeedbacksCount, window.currentAverageRating);
+            }
         });
     }
     
-    // Submission logic (also retained)
+    // Submission logic
     if (submitButton) submitButton.addEventListener('click', async () => {
         const feedbackContent = feedbackTextarea.value.trim();
         const ratingValue = ratingInput.value;
@@ -749,13 +975,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return window.showStylishPopup({ iconType: 'error', title: 'Name Required', message: 'Please enter your name to submit feedback as a guest.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
             }
 
-            // --- FIX IS HERE ---
             if (!guestId) {
                 guestId = generateUUID();
                 localStorage.setItem('nobi_guestId', guestId);
             }
             localStorage.setItem('nobi_guestName', nameValue);
-            // --- END FIX ---
 
             if (nameInputInFeedbackForm.value !== nameValue) nameInputInFeedbackForm.value = nameValue;
         }
@@ -777,10 +1001,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const spinnerText = (isEditing && isSubmissionByLoggedInUser) ? "Updating Feedback..." : "Submitting Feedback...";
         try {
+            // Note: Ab hum `apiRequest` ka istemaal kar rahe hain submit ke liye (kyunki iska spinner bada hai, jo theek hai)
+            // Sirf LIKE button ka spinner custom hai.
             const data = await window.apiRequest(url, method, feedbackPayload, false, submitButton, spinnerText);
 
-            // Replaced the simple success popup with the new handler
-            await handleFeedbackSubmitSuccess(data);
+            if (isEditing) {
+                // --- MODIFIED (SMART SORTING) ---
+                // Editing ke baad, local array update karo
+                const index = window.allFeedbacks.findIndex(f => f._id === currentEditFeedbackId);
+                if (index > -1) {
+                    // Update karte waqt, purana `isPinned` status barkaraar rakhein
+                    data.feedback.isPinned = window.allFeedbacks[index].isPinned;
+                    window.allFeedbacks[index] = data.feedback;
+                }
+                resetFeedbackForm();
+                // List ko re-sort aur re-render karo
+                sortAndRenderList(window.totalFeedbacksCount, window.currentAverageRating);
+                window.showStylishPopup({ iconType: 'success', title: 'Feedback Updated!', message: data.message, buttons: [{text:'Great!', action: window.closeStylishPopup}] });
+
+            } else {
+                // Naya feedback submit hua hai
+                await handleFeedbackSubmitSuccess(data);
+            }
 
         } catch (error) {
             // Error handled by apiRequest
@@ -800,6 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial fetch of the first page
     window.currentPage = 1;
     window.hasMoreFeedbacks = true;
+    window.allFeedbacks = []; // Reset local array
     fetchFeedbacks();
 
     // Add scroll event listener for lazy loading

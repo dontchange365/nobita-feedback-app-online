@@ -469,7 +469,16 @@ feedback,feedback with rating,animated feedback,cloudinary avatar,Google login a
     <div id="feedback-list-container" class="main-container">
         <div id="average-rating-display"></div>
         <h2 class="section-title">Recent Feedbacks</h2>
-    </div>
+
+        <div class="feedback-sort-container">
+            <button id="sort-by-newest" class="sort-btn active" data-sort="newest">
+                <i class="fas fa-history"></i> Newest
+            </button>
+            <button id="sort-by-popular" class="sort-btn" data-sort="popular">
+                <i class="fas fa-fire"></i> Most Liked
+            </button>
+        </div>
+        </div>
     <div id="lazy-load-spinner-container" style="display:none;">
         <span class="nobi-spinner"></span>
     </div>
