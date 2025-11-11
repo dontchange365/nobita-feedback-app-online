@@ -1038,3 +1038,38 @@ footer.main-footer {
 .forgot-new-popup .okay-btn:hover { filter: brightness(1.12);}
 
 }
+/* === SMART SCROLL TO TOP BUTTON === */
+/* === SMART SCROLL TO TOP BUTTON === */
+.scroll-to-top-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--secondary-color); /* Aapka Gold color */
+    color: var(--text-color-dark); /* Aapka Dark text color */
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    
+    /* Smart part: Chupa hua (hidden) by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px); /* Thoda neeche se slide hoga */
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s ease;
+}
+
+/* Jab 'show' class lagegi, tab button dikhega */
+.scroll-to-top-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top-btn:hover {
+    background-color: #ffd700; /* Thoda bright gold */
+    transform: translateY(-2px); /* Hover par halka sa upar */
+}

@@ -824,6 +824,32 @@ window.checkLoginStatus = checkLoginStatus;
         return null;
     }
     await registerServiceWorker();
+    
+    // === SMART SCROLL TO TOP LOGIC (START) ===
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    
+    if (scrollToTopBtn) {
+        // Scroll threshold (kitna scroll karne par button dikhe)
+        const scrollThreshold = 300; // 300px
+        
+        // Window scroll event
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > scrollThreshold) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        }, { passive: true }); // {passive: true} scroll performance behtar karta hai
+        
+        // Button click event
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // Smooth scroll!
+            });
+        });
+    }
+    // === SMART SCROLL TO TOP LOGIC (END) ===
 });
 
 // NEW: Function to subscribe a user to push notifications
