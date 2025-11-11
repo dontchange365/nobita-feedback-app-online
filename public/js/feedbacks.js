@@ -325,14 +325,20 @@ function scrollToFeedbackIfRequired() {
     if (targetElement) {
         // MIL GAYA!
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        targetElement.classList.add('highlighted-scroll');
-        window.hasScrolledToId = true; 
-
-        setTimeout(() => {
-            targetElement.classList.remove('highlighted-scroll');
-            globalTargetFeedbackId = null; 
-        }, 4000);
         
+        // --- BADA CHANGE (USER REQUEST) ---
+        // Purana 'highlighted-scroll' class hata diya
+        // Naya permanent glow class 'highlighted-scroll-permanent' add kiya
+        targetElement.classList.add('highlighted-scroll-permanent'); 
+        // --- END BADA CHANGE ---
+
+        window.hasScrolledToId = true; 
+        globalTargetFeedbackId = null; // ID ko clear kar do taaki lazy-loading normal ho jaye
+        
+        // --- REMOVED ---
+        // setTimeout block jo highlight ko remove karta tha, woh hata diya gaya hai.
+        // --- END REMOVED ---
+
         return true; // <<<--- RETURN TRUE (FOUND IT)
     }
     
@@ -649,6 +655,11 @@ function handleShareClick(event, feedbackId) {
 }
 // --- END (SMART SHARE) ---
 
+// --- REMOVED: GUEST DELETE FUNCTION ---
+// (handleGuestDelete function yahaan tha, ab hata diya hai)
+// --- END GUEST DELETE FUNCTION ---
+
+
 function addFeedbackToDOM(fbData) {
     if (!feedbackListContainer) return;
 
@@ -708,6 +719,14 @@ function addFeedbackToDOM(fbData) {
         edited.textContent = 'Edited';
         strongName.appendChild(edited);
     }
+    // --- NEW: GUEST EDITED TAG ---
+    else if (fbData.isEdited && fbData.guestId) {
+        const edited = document.createElement('span');
+        edited.className = 'edited-tag';
+        edited.textContent = 'Edited (Guest)';
+        strongName.appendChild(edited);
+    }
+    // --- END NEW ---
 
     const starsDiv = document.createElement('div');
     starsDiv.className = 'feedback-stars';
@@ -734,7 +753,7 @@ function addFeedbackToDOM(fbData) {
     const tsDiv = document.createElement('div');
     tsDiv.className = 'feedback-timestamp';
     try {
-        tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+        tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/KKolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
     } catch (e) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
@@ -768,18 +787,40 @@ function addFeedbackToDOM(fbData) {
     shareBtn.onclick = (e) => handleShareClick(e, fbData._id);
     actionsContainer.appendChild(shareBtn);
 
-    // 3. Add Edit Button (if owner)
+    // 3. Add Edit/Delete Buttons (LOGIC UPDATED)
     const isFeedbackOwner = window.currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === window.currentUser.userId;
-    const canEdit = isFeedbackOwner && (window.currentUser.loginMethod === 'google' || (window.currentUser.loginMethod === 'email' && window.currentUser.isVerified));
+    const canLoggedInUserEdit = isFeedbackOwner && (window.currentUser.loginMethod === 'google' || (window.currentUser.loginMethod === 'email' && window.currentUser.isVerified));
     
+    // --- NEW GUEST LOGIC START ---
+    let isGuestOwner = false;
+    let canGuestEdit = false;
+
+    if (!window.currentUser && fbData.guestId) { // Agar user logged in nahi hai, aur feedback guest ka hai
+        const currentGuestId = getGuestId();
+        isGuestOwner = (fbData.guestId === currentGuestId); // Check karo kya yeh *mera* guest feedback hai
+
+        if (isGuestOwner) {
+            const feedbackTime = new Date(fbData.timestamp).getTime();
+            const now = new Date().getTime();
+            const ageInMinutes = (now - feedbackTime) / (1000 * 60);
+            
+            if (ageInMinutes < 5) { // 5 Minute Window
+                canGuestEdit = true;
+            }
+        }
+    }
+    // --- NEW GUEST LOGIC END ---
+
+
+    // Case 1: Logged-in User is Owner
     if (fbData.userId && typeof fbData.userId === 'object') {
         const editBtn = document.createElement('button');
-        editBtn.className = 'card-action-btn edit-btn'; // New class
+        editBtn.className = 'card-action-btn edit-btn';
         editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editBtn.title = 'Edit your feedback';
-        editBtn.disabled = !canEdit;
+        editBtn.disabled = !canLoggedInUserEdit; // Logged-in user ka verification check
 
-        if (isFeedbackOwner && !canEdit) {
+        if (isFeedbackOwner && !canLoggedInUserEdit) {
             editBtn.title = "Verify your email to edit this feedback.";
         }
 
@@ -791,6 +832,7 @@ function addFeedbackToDOM(fbData) {
             if (window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
                 return window.showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback. Resend verification email?', buttons: [{ text: 'Send Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await window.requestAndShowVerificationEmail(); } }, { text: 'Later', action: window.closeStylishPopup }] });
             }
+            // Populate form (Logged-in user)
             if (nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.userId.name || fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input')); }
             if (feedbackTextarea) { feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); }
             currentSelectedRating = fbData.rating; if (ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
@@ -801,9 +843,42 @@ function addFeedbackToDOM(fbData) {
         };
         actionsContainer.appendChild(editBtn);
     }
+    // Case 2: Guest is Owner (and within 5-min window)
+    else if (isGuestOwner && canGuestEdit) {
+        
+        // Add Guest EDIT Button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'card-action-btn edit-btn';
+        editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        editBtn.title = 'Edit your feedback (Time remaining)';
+        
+        editBtn.onclick = e => {
+            e.stopPropagation();
+            // Populate form (Guest)
+            if (nameInputInFeedbackForm) { 
+                nameInputInFeedbackForm.value = fbData.name; 
+                nameInputInFeedbackForm.disabled = false; // Guest apna naam bhi edit kar sakta hai
+                nameInputInFeedbackForm.dispatchEvent(new Event('input')); 
+            }
+            if (feedbackTextarea) { feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); }
+            currentSelectedRating = fbData.rating; if (ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
+            if (submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
+            
+            isEditing = true; 
+            currentEditFeedbackId = fbData._id;
+            
+            document.getElementById('feedback-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            window.showStylishPopup({ iconType: 'info', title: 'Editing Feedback', message: 'You have 5 minutes from posting to edit. Make changes and click "Update".', buttons: [{ text: 'Got it!', action: window.closeStylishPopup }] });
+        };
+        actionsContainer.appendChild(editBtn);
+
+        // --- REMOVED: GUEST DELETE BUTTON ---
+        // (Delete button ka code yahaan tha, ab hata diya hai)
+        // --- END REMOVED ---
+    }
     
     item.appendChild(actionsContainer);
-    // --- END NEW CONTAINER ---
+    // --- END ACTION CONTAINER ---
 
 
     if (fbData.replies?.length > 0) {
@@ -1051,15 +1126,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let feedbackPayload = { name: nameValue, feedback: feedbackContent, rating: parseInt(ratingValue) };
         if (!window.currentUser && guestId) feedbackPayload.guestId = guestId;
 
+        // LOGIC UPDATED: Ab 'isEditing' logged-in user aur guest dono ke liye true ho sakta hai
         const isSubmissionByLoggedInUser = !!window.currentUser;
-        const url = (isEditing && isSubmissionByLoggedInUser) ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACKS_URL;
-        const method = (isEditing && isSubmissionByLoggedInUser) ? 'PUT' : 'POST';
+        const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACKS_URL;
+        const method = isEditing ? 'PUT' : 'POST';
 
         if (isEditing && isSubmissionByLoggedInUser && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
             return window.showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback.', buttons: [{text:'OK', action: window.closeStylishPopup}] });
         }
+        
+        // **IMPORTANT:** Backend `PUT /api/feedback/:id` route ko update karna zaroori hai
+        // taaki woh `feedbackPayload.guestId` ko check kare agar `req.user` nahi hai.
 
-        const spinnerText = (isEditing && isSubmissionByLoggedInUser) ? "Updating Feedback..." : "Submitting Feedback...";
+        const spinnerText = isEditing ? "Updating Feedback..." : "Submitting Feedback...";
         try {
             // Note: Ab hum `apiRequest` ka istemaal kar rahe hain submit ke liye (kyunki iska spinner bada hai, jo theek hai)
             // Sirf LIKE button ka spinner custom hai.

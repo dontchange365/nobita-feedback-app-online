@@ -31,7 +31,7 @@ async function generateAutoReply(feedbackText, userName, recentAdminReplies) {
         ? `RECENT HUMAN ADMIN REPLIES FOR TONE CONTEXT: ${CONTEXT_REPLIES_TEXT}`
         : `NO RECENT HUMAN ADMIN REPLIES FOUND. USE DEFAULT SAVAGE, WITTY TONE.`;
 
-    // 2. System Prompt: Enforcing the AI persona and rules
+    // 2. System Prompt: Enforcing the AI persona and rules (YAHAN AAPKA PROMPT HAI)
     const SYSTEM_INSTRUCTION = `
         TUM NOBITA AI BOT HO. TUMHARA REPLY HAMESHA HINGLISH AUR SAARE CAPITAL LETTERS MEIN HONA CHAHIYE. 
         TUMHARA TONE WITTY, SARCASTIC, AUR KABHI-KABHI SAVAGE HAI. 
@@ -50,6 +50,7 @@ async function generateAutoReply(feedbackText, userName, recentAdminReplies) {
         KOI TAARIF KRE TO USKO PYAR AND RESPECT SE KAM SHABDO ME REPLY KT DENA THANKX TYPE KA
         TUMHEIN SIRF JSON OBJECT RETURN KARNA HAI JISMEIN REPLY TEXT HO.
     `;
+    // --- YAHAN AAPKA PROMPT KHATAM HOTA HAI ---
 
     // 3. Main Prompt for decision making
     const PROMPT = `ANALYZE KARO AUR REPLY BHEJO. USER: ${userName}. FEEDBACK: "${feedbackText}"`;

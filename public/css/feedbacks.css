@@ -684,3 +684,33 @@
         padding: 5px 10px;
     }
 }
+
+/* === NEW: Highlight for Linked Feedback (User Request) === */
+@keyframes permanent-glow {
+    0% {
+        /* Start: Normal golden border */
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 6px 28px rgba(106, 13, 173, 0.13);
+    }
+    50% {
+        /* Mid-animation: Bright cyan glow */
+        border-color: #00ffdd; 
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 15px rgba(0, 255, 221, 0.6), 0 6px 28px rgba(106, 13, 173, 0.13);
+    }
+    100% {
+        /* End: Back to normal golden border */
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 6px 28px rgba(106, 13, 173, 0.13);
+    }
+}
+
+.feedback-item.highlighted-scroll-permanent {
+    /* Animation ko infinite kar diya */
+    animation: permanent-glow 1.8s infinite alternate ease-in-out;
+    /* z-index badha diya taaki ye sabse upar dikhe */
+    z-index: 10;
+    position: relative; /* z-index ke liye zaroori */
+    transform: scale(1.02); /* Thoda sa bada dikhega */
+    /* Purani animation (highlight-pulse) ko override karega */
+}
+/* === END NEW Highlight === */
