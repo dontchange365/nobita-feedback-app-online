@@ -825,34 +825,9 @@ window.checkLoginStatus = checkLoginStatus;
     }
     await registerServiceWorker();
     
-    // === SMART SCROLL TO TOP LOGIC (START) ===
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-    
-    if (scrollToTopBtn) {
-        // Scroll threshold (kitna scroll karne par button dikhe)
-        const scrollThreshold = 300; // 300px
-        
-        // Window scroll event
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > scrollThreshold) {
-                scrollToTopBtn.classList.add('show');
-            } else {
-                scrollToTopBtn.classList.remove('show');
-            }
-        }, { passive: true }); // {passive: true} scroll performance behtar karta hai
-        
-        // Button click event
-        scrollToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth' // Smooth scroll!
-            });
-        });
-    }
-    // === SMART SCROLL TO TOP LOGIC (END) ===
-});
+    // Scroll to top logic removed as per user request
 
-// NEW: Function to subscribe a user to push notifications
+    // NEW: Function to subscribe a user to push notifications
 async function registerUserForNotifications() {
     if (!('serviceWorker' in navigator) || !window.currentUser || !window.VAPID_PUBLIC_KEY) {
         console.warn("Cannot register for notifications: Service Worker, current user, or VAPID key not available.");
@@ -875,72 +850,73 @@ async function registerUserForNotifications() {
 }
 window.registerUserForNotifications = registerUserForNotifications;
 
-// AUTO URL CLEANER: .html ko URL se gayab kar deta hai + .html links ko auto clean redirect
-(function() {
-  // On page load, agar URL /page.html hai, toh .html hata de (browser address bar me, bina reload)
-  var path = window.location.pathname;
-  if (path.match(/\/([a-zA-Z0-9_-]+)\.html$/)) {
-    var clean = path.replace(/\.html$/, '');
-    if (clean !== path) window.history.replaceState({}, '', clean);
-  }
-  // Intercept all <a href="*.html"> click and clean redirect kare
-  document.addEventListener('DOMContentLoaded', function() {
-    document.body.addEventListener('click', function(e) {
-      // OG: Anchors with .html in href
-      var a = e.target.closest('a');
-      if (a && a.getAttribute('href') && a.getAttribute('href').endsWith('.html')) {
-        e.preventDefault();
-        var newUrl = a.getAttribute('href').replace('.html', '');
-        // Use location.assign for full reload (so backend serves right file)
-        window.location.assign(newUrl);
+    // AUTO URL CLEANER: .html ko URL se gayab kar deta hai + .html links ko auto clean redirect
+    (function() {
+      // On page load, agar URL /page.html hai, toh .html hata de (browser address bar me, bina reload)
+      var path = window.location.pathname;
+      if (path.match(/\/([a-zA-Z0-9_-]+)\.html$/)) {
+        var clean = path.replace(/\.html$/, '');
+        if (clean !== path) window.history.replaceState({}, '', clean);
       }
-    });
-  });
-})();
-// OG Index.html killer: saare anchor aur JS se index.html redirect ko handle karega
-(function() {
-  // Intercept all <a> clicks for any type of index.html reference
-  document.body.addEventListener('click', function(e) {
-    let a = e.target.closest('a');
-    if (a && a.getAttribute('href')) {
-      let href = a.getAttribute('href').replace(/^\.?\//, '').toLowerCase();
-      if (href === 'index.html' || href === 'index' || href === './index.html' || href === '/index.html' || href === '/index') {
+      // Intercept all <a href="*.html"> click and clean redirect kare
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.addEventListener('click', function(e) {
+          // OG: Anchors with .html in href
+          var a = e.target.closest('a');
+          if (a && a.getAttribute('href') && a.getAttribute('href').endsWith('.html')) {
+            e.preventDefault();
+            var newUrl = a.getAttribute('href').replace('.html', '');
+            // Use location.assign for full reload (so backend serves right file)
+            window.location.assign(newUrl);
+          }
+        });
+      });
+    })();
+    // OG Index.html killer: saare anchor aur JS se index.html redirect ko handle karega
+    (function() {
+      // Intercept all <a> clicks for any type of index.html reference
+      document.body.addEventListener('click', function(e) {
+        let a = e.target.closest('a');
+        if (a && a.getAttribute('href')) {
+          let href = a.getAttribute('href').replace(/^\.?\//, '').toLowerCase();
+          if (href === 'index.html' || href === 'index' || href === './index.html' || href === '/index.html' || href === '/index') {
 
-      }
-    }
-  });
+          }
+        }
+      });
 
 
-      // --- ADD THE FOLLOWING LINE DIRECTLY BELOW THE ABOVE LOGIC ---
-    if (window.checkUserVerificationStatus) window.checkUserVerificationStatus(); // Check user's email verification status on page load
-    // --- END ADDITION ---
+          // --- ADD THE FOLLOWING LINE DIRECTLY BELOW THE ABOVE LOGIC ---
+        if (window.checkUserVerificationStatus) window.checkUserVerificationStatus(); // Check user's email verification status on page load
+        // --- END ADDITION ---
 
 
-  // Patch window.location redirects (assign, replace, direct set)
-  let origAssign = window.location.assign;
-  let origReplace = window.location.replace;
-  Object.defineProperty(window.location, 'href', {
-    set: function(url) {
-      if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+      // Patch window.location redirects (assign, replace, direct set)
+      let origAssign = window.location.assign;
+      let origReplace = window.location.replace;
+      Object.defineProperty(window.location, 'href', {
+        set: function(url) {
+          if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
 
-      } else {
-        origAssign.call(window.location, url);
-      }
-    },
-    get: function() {
-      return window.location.toString();
-    }
-  });
-  window.location.assign = function(url) {
-    if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+          } else {
+            origAssign.call(window.location, url);
+          }
+        },
+        get: function() {
+          return window.location.toString();
+        }
+      });
+      window.location.assign = function(url) {
+        if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
 
-    }
-    return origAssign.apply(window.location, arguments);
-  };
-  window.location.replace = function(url) {
-    if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
+        }
+        return origAssign.apply(window.location, arguments);
+      };
+      window.location.replace = function(url) {
+        if (typeof url === 'string' && /\/?index(\.html)?$/i.test(url)) {
 
-    }
-    return origReplace.apply(window.location, arguments);
-  };
-})();
+        }
+        return origReplace.apply(window.location, arguments);
+      };
+    })();
+});
