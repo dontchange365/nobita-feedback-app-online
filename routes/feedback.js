@@ -241,41 +241,105 @@ router.post('/api/feedback', feedbackLimiter, asyncHandler(async (req, res) => {
     res.status(201).json({ message: 'Your feedback has been successfully submitted!', feedback: newFeedback });
 }));
 
-// 3. PUT Feedback (using asyncHandler)
-router.put('/api/feedback/:id', authenticateToken, isEmailVerified, asyncHandler(async (req, res) => {
+// 3. PUT Feedback (using asyncHandler) - UPDATED FOR GUEST EDIT
+router.put('/api/feedback/:id', asyncHandler(async (req, res) => { // REMOVED: authenticateToken, isEmailVerified
     const feedbackId = req.params.id;
-    const { feedback, rating } = req.body;
+    // Guest ID aur Name ko bhi body se expect karein
+    const { feedback, rating, guestId, name: nameFromRequest } = req.body; 
     
     // --- SANITIZE USER INPUTS ---
     const sanitizedFeedback = DOMPurify.sanitize(feedback);
+    const sanitizedGuestName = DOMPurify.sanitize(nameFromRequest);
     // --- SANITIZE USER INPUTS ---
     
-    const loggedInJwtUser = req.user;
     if (!sanitizedFeedback || !rating || rating === '0') return res.status(400).json({ message: 'Feedback and rating are required for update!' });
     
     const existingFeedback = await Feedback.findById(feedbackId);
     if (!existingFeedback) return res.status(404).json({ message: 'This feedback ID was not found.' });
-    if (!existingFeedback.userId || existingFeedback.userId.toString() !== loggedInJwtUser.userId) { return res.status(403).json({ message: 'You can only edit your own feedbacks.' }); }
-    
-    const currentUserFromDb = await User.findById(loggedInJwtUser.userId);
-    if (!currentUserFromDb) return res.status(404).json({ message: 'User attempting to edit feedback not found.' });
-    
-    // Use sanitized feedback for comparison
-    const contentActuallyChanged = existingFeedback.feedback !== sanitizedFeedback || existingFeedback.rating !== parseInt(rating);
-    
-    if (contentActuallyChanged) {
-        if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp }; }
+
+    // --- CHECK AUTHENTICATION (MANUAL) ---
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    let loggedInJwtUser = null;
+
+    if (token) {
+        // --- CASE 1: LOGGED-IN USER EDIT ---
+        try {
+            loggedInJwtUser = jwt.verify(token, JWT_SECRET);
+        } catch (jwtError) {
+            return res.status(403).json({ message: "Your session is invalid or has expired." });
+        }
+
+        // Check ownership for logged-in user
+        if (!existingFeedback.userId || existingFeedback.userId.toString() !== loggedInJwtUser.userId) {
+            return res.status(403).json({ message: 'You can only edit your own feedbacks.' });
+        }
         
-        // Use sanitized feedback here
-        existingFeedback.name = currentUserFromDb.name; 
-        existingFeedback.feedback = sanitizedFeedback; 
-        existingFeedback.rating = parseInt(rating); 
-        existingFeedback.timestamp = Date.now(); 
-        existingFeedback.isEdited = true; 
-        existingFeedback.avatarUrl = currentUserFromDb.avatarUrl;
+        // Check email verification for logged-in user
+        if (loggedInJwtUser.loginMethod === 'email' && !loggedInJwtUser.isVerified) {
+             return res.status(403).json({ message: "Email not verified. Please verify your email to perform this action." });
+        }
+
+        // --- Logged-in User Edit Logic ---
+        const currentUserFromDb = await User.findById(loggedInJwtUser.userId);
+        if (!currentUserFromDb) return res.status(404).json({ message: 'User attempting to edit feedback not found.' });
+
+        const contentActuallyChanged = existingFeedback.feedback !== sanitizedFeedback || existingFeedback.rating !== parseInt(rating);
+        
+        if (contentActuallyChanged) {
+            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp }; }
+            
+            existingFeedback.name = currentUserFromDb.name; // Name DB se aata hai
+            existingFeedback.feedback = sanitizedFeedback; 
+            existingFeedback.rating = parseInt(rating); 
+            // existingFeedback.timestamp = Date.now(); // Timestamp update nahi karna hai
+            existingFeedback.isEdited = true; 
+            existingFeedback.avatarUrl = currentUserFromDb.avatarUrl;
+        }
+        await existingFeedback.save();
+        res.status(200).json({ message: 'Your feedback has been updated!', feedback: existingFeedback });
+
+    } else {
+        // --- CASE 2: GUEST USER EDIT ---
+        if (!guestId) {
+            return res.status(401).json({ message: 'Authentication is required to edit feedback.' });
+        }
+
+        // Check ownership for guest
+        if (!existingFeedback.guestId || existingFeedback.guestId !== guestId) {
+            return res.status(403).json({ message: 'You do not have permission to edit this guest feedback.' });
+        }
+
+        // --- 5-MINUTE CHECK (BACKEND) ---
+        const feedbackTime = new Date(existingFeedback.timestamp).getTime();
+        const now = new Date().getTime();
+        const ageInMinutes = (now - feedbackTime) / (1000 * 60);
+
+        if (ageInMinutes > 5) {
+            return res.status(403).json({ message: 'The 5-minute edit window for guest feedback has expired.' });
+        }
+        // --- END 5-MINUTE CHECK ---
+
+        // --- Guest Edit Logic ---
+        // Guests apna naam bhi change kar sakte hain (agar frontend se bheja hai)
+        const contentActuallyChanged = existingFeedback.feedback !== sanitizedFeedback || 
+                                     existingFeedback.rating !== parseInt(rating) || 
+                                     (sanitizedGuestName && existingFeedback.name !== sanitizedGuestName);
+
+        if (contentActuallyChanged) {
+            if (!existingFeedback.originalContent) { existingFeedback.originalContent = { name: existingFeedback.name, feedback: existingFeedback.feedback, rating: existingFeedback.rating, timestamp: existingFeedback.timestamp }; }
+            
+            if (sanitizedGuestName) {
+                existingFeedback.name = sanitizedGuestName; // Guest name update karein
+            }
+            existingFeedback.feedback = sanitizedFeedback; 
+            existingFeedback.rating = parseInt(rating); 
+            // Timestamp update NAHI karna hai, taaki 5-min window reset na ho
+            existingFeedback.isEdited = true;
+        }
+        await existingFeedback.save();
+        res.status(200).json({ message: 'Your guest feedback has been updated!', feedback: existingFeedback });
     }
-    await existingFeedback.save();
-    res.status(200).json({ message: 'Your feedback has been updated!', feedback: existingFeedback });
 }));
 
 // 4. POST Vote (using asyncHandler)
