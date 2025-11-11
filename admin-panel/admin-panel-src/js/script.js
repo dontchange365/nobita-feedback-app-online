@@ -403,7 +403,7 @@ function closeStatModal() {
 }
 // --- END NEW FUNCTION DEFINITION ---
 
-// --- MODIFIED showStatModal FUNCTION ---
+// --- MODIFIED showStatModal FUNCTION (Removed existing function body and replaced with new structure) ---
 async function showStatModal(type) {
     const modalTitleEl = document.getElementById('stat-modal-title');
     const modalBodyEl = document.getElementById('stat-modal-body');
@@ -417,7 +417,7 @@ async function showStatModal(type) {
     if (type === 'analytics') {
         await renderAnalyticsModal(modalTitleEl, modalBodyEl);
     } else {
-        // Handle existing stats
+        // Handle existing stats (Non-analytics card loading is simpler)
         let body = '';
         let title = '';
         if (type === 'total') {
@@ -451,8 +451,10 @@ async function showStatModal(type) {
         modalBodyEl.innerHTML = body;
     }
 }
+// --- END MODIFIED showStatModal FUNCTION ---
 
-// --- NEW ANALYTICS RENDER FUNCTION ---
+
+// --- NEW ANALYTICS RENDER FUNCTION (UPDATED FOR SKELETON) ---
 async function renderAnalyticsModal(titleEl, bodyEl) {
     titleEl.innerHTML = `<i class="fas fa-chart-area"></i> Website Visits Analytics`;
 
@@ -463,6 +465,24 @@ async function renderAnalyticsModal(titleEl, bodyEl) {
         { key: 'last30days', name: 'Last 30 Days' },
         { key: 'all', name: 'All Time' }
     ];
+    
+    // Skeleton HTML Structure - REFINED
+    const skeletonHTML = `
+        <div id="analytics-results" class="skeleton-analytics-grid">
+            <div class="skeleton-card">
+                <div class="skeleton-line skeleton-header"></div>
+                <div class="skeleton-line skeleton-value"></div>
+                <div class="skeleton-line skeleton-description" style="width: 90%;"></div>
+                <div class="skeleton-line skeleton-description" style="width: 70%;"></div>
+            </div>
+            <div class="skeleton-card">
+                <div class="skeleton-line skeleton-header"></div>
+                <div class="skeleton-line skeleton-value"></div>
+                <div class="skeleton-line skeleton-description" style="width: 90%;"></div>
+                <div class="skeleton-line skeleton-description" style="width: 70%;"></div>
+            </div>
+        </div>
+    `;
 
     let filterHtml = `
         <div style="text-align:center; margin-bottom:15px;">
@@ -470,16 +490,18 @@ async function renderAnalyticsModal(titleEl, bodyEl) {
                 ${periods.map(p => `<option value="${p.key}">${p.name}</option>`).join('')}
             </select>
         </div>
-        <div id="analytics-results"></div>
+        <div id="analytics-results">${skeletonHTML}</div>
     `;
 
-    bodyEl.innerHTML = filterHtml;
+    bodyEl.innerHTML = filterHtml; // Display filter and skeleton immediately
     
     const resultsEl = document.getElementById('analytics-results');
     const filterEl = document.getElementById('analytics-period-filter');
     
     async function fetchData(period) {
-        resultsEl.innerHTML = `<div class="loading-indicator"><span class="spinner"></span> Calculating...</div>`;
+        // Show skeleton while fetching
+        resultsEl.innerHTML = skeletonHTML; 
+        
         try {
             const data = await performApiAction(`/api/admin/analytics?period=${period}`);
             
@@ -512,7 +534,6 @@ async function renderAnalyticsModal(titleEl, bodyEl) {
     filterEl.addEventListener('change', (e) => fetchData(e.target.value));
 }
 // --- END NEW ANALYTICS RENDER FUNCTION ---
-
 
 /**
  * A helper function to run an async action while showing a spinner on a button.

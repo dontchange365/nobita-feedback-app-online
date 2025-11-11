@@ -2019,3 +2019,79 @@ margin: 16px 0;
     
   }
 }
+
+/* --- SKELETON LOADER STYLES (REFINED) --- */
+@keyframes skeleton-loading {
+    0% {
+        background-color: rgba(0, 0, 0, 0.08);
+    }
+    50% {
+        background-color: rgba(0, 0, 0, 0.15);
+    }
+    100% {
+        background-color: rgba(0, 0, 0, 0.08);
+    }
+}
+.dark-mode @keyframes skeleton-loading {
+    0% {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    50% {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+    100% {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+.skeleton-analytics-grid {
+    display:grid; 
+    grid-template-columns:1fr 1fr; 
+    gap:15px; 
+    padding:10px;
+    /* Ensure the grid fits well inside the modal */
+    width: 100%;
+}
+
+.skeleton-card {
+    background-color: var(--surface);
+    border-radius: var(--card-radius);
+    padding: 18px 12px; /* Slightly more padding for better look */
+    box-shadow: var(--elevation-1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    min-height: 160px; /* Set a minimum height to prevent collapse */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dark-mode .skeleton-card {
+     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-line {
+    /* Use fixed height for stability */
+    height: 12px; 
+    margin: 5px auto;
+    border-radius: 4px;
+    animation: skeleton-loading 1.5s infinite alternate;
+}
+
+.skeleton-header {
+    width: 60%;
+    height: 14px;
+    margin-bottom: 12px; /* Separator */
+}
+
+.skeleton-value {
+    width: 70%;
+    height: 36px; /* Larger size for value */
+    margin: 8px auto 12px auto;
+}
+
+.skeleton-description {
+    width: 85%;
+    height: 10px;
+    margin: 4px auto;
+}
+/* --- END SKELETON LOADER STYLES --- */
