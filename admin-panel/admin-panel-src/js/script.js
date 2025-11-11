@@ -394,44 +394,125 @@ function showCustomMessage(message, type = 'info') {
     }, 3000);
 }
 
-function showStatModal(type) {
-    let title = '';
-    let body = '';
-    if (type === 'total') {
-        title = 'Total Feedbacks';
-        body = `<span style="font-size:2.2rem;font-weight:800;color:var(--accent-pink);">${document.getElementById('stats-total').textContent}</span>
-            <p>This is the <b>total number</b> of feedbacks received from users so far. More feedbacks mean more engagement!</p>`;
-    } else if (type === 'average') {
-        title = 'Average Rating';
-        body = `<span style="font-size:2.1rem;font-weight:800;color:gold;">${document.getElementById('stats-avg-rating').textContent}</span>
-                <p><b>Average rating</b> calculated from all feedbacks received. High average = Happy users!</p>`;
-    } else if (type === 'replies') {
-        title = 'Total Replies';
-        body = `<span style="font-size:2.1rem;font-weight:800;color:limegreen;">${document.getElementById('stats-replies').textContent}</span>
-                <p>Total <b>admin replies</b> given to all feedbacks. Quick responses boost credibility.</p>`;
-    } else if (type === 'pinned') {
-        title = 'Pinned Items';
-        body = `<span style="font-size:2.1rem;font-weight:800;color:deepskyblue;">${document.getElementById('stats-pinned').textContent}</span>
-            <p><b>Pinned feedbacks</b> are marked important for future review or showcase.</p>`;
-    } else if (type === 'session') {
-        title = 'Admin Session Detail';
-        body = `<div style="font-size:1.09rem;">
-                    <b>Logged in as:</b> <span style="color:var(--accent-pink);">${document.getElementById('admin-username-display').textContent}</span><br>
-                    <b>Login Time:</b> <span>${document.getElementById('admin-login-timestamp-display').textContent}</span><br>
-                    <b>Browser:</b> <span>${navigator.userAgent}</span>
-                </div>`;
-    } else {
-        title = "More Info";
-        body = "No data available.";
+// --- NEW FUNCTION DEFINITION ---
+function closeStatModal() {
+    const modalOverlay = document.getElementById('stat-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'none';
     }
-    document.getElementById('stat-modal-title').innerHTML = title;
-    document.getElementById('stat-modal-body').innerHTML = body;
-    document.getElementById('stat-modal-overlay').style.display = 'flex';
+}
+// --- END NEW FUNCTION DEFINITION ---
+
+// --- MODIFIED showStatModal FUNCTION ---
+async function showStatModal(type) {
+    const modalTitleEl = document.getElementById('stat-modal-title');
+    const modalBodyEl = document.getElementById('stat-modal-body');
+    const modalOverlay = document.getElementById('stat-modal-overlay');
+    
+    // Clear previous content
+    modalTitleEl.innerHTML = '';
+    modalBodyEl.innerHTML = '<div class="loading-indicator"><span class="spinner"></span> Loading data...</div>';
+    modalOverlay.style.display = 'flex';
+
+    if (type === 'analytics') {
+        await renderAnalyticsModal(modalTitleEl, modalBodyEl);
+    } else {
+        // Handle existing stats
+        let body = '';
+        let title = '';
+        if (type === 'total') {
+            title = 'Total Feedbacks';
+            body = `<span class="stat-value" style="color:var(--primary-color);">${document.getElementById('stats-total').textContent}</span>
+                <p class="stat-description">This is the <b>total number</b> of feedbacks received from users so far. More feedbacks mean more engagement!</p>`;
+        } else if (type === 'average') {
+            title = 'Average Rating';
+            body = `<span class="stat-value" style="color:gold;">${document.getElementById('stats-avg-rating').textContent}</span>
+                    <p class="stat-description"><b>Average rating</b> calculated from all feedbacks received. High average = Happy users!</p>`;
+        } else if (type === 'replies') {
+            title = 'Total Replies';
+            body = `<span class="stat-value" style="color:limegreen;">${document.getElementById('stats-replies').textContent}</span>
+                    <p class="stat-description">Total <b>admin replies</b> given to all feedbacks. Quick responses boost credibility.</p>`;
+        } else if (type === 'pinned') {
+            title = 'Pinned Items';
+            body = `<span class="stat-value" style="color:deepskyblue;">${document.getElementById('stats-pinned').textContent}</span>
+                <p class="stat-description"><b>Pinned feedbacks</b> are marked important for future review or showcase.</p>`;
+        } else if (type === 'session') {
+            title = 'Admin Session Detail';
+            body = `<div style="font-size:1.09rem;">
+                        <b>Logged in as:</b> <span style="color:var(--accent-pink);">${document.getElementById('admin-username-display').textContent}</span><br>
+                        <b>Login Time:</b> <span>${document.getElementById('admin-login-timestamp-display').textContent}</span><br>
+                        <b>Browser:</b> <span>${navigator.userAgent}</span>
+                    </div>`;
+        } else {
+            title = "More Info";
+            body = "No data available.";
+        }
+        modalTitleEl.innerHTML = title;
+        modalBodyEl.innerHTML = body;
+    }
 }
 
-function closeStatModal() {
-    document.getElementById('stat-modal-overlay').style.display = 'none';
+// --- NEW ANALYTICS RENDER FUNCTION ---
+async function renderAnalyticsModal(titleEl, bodyEl) {
+    titleEl.innerHTML = `<i class="fas fa-chart-area"></i> Website Visits Analytics`;
+
+    const periods = [
+        { key: 'today', name: 'Today' },
+        { key: 'yesterday', name: 'Yesterday' },
+        { key: 'last7days', name: 'Last 7 Days' },
+        { key: 'last30days', name: 'Last 30 Days' },
+        { key: 'all', name: 'All Time' }
+    ];
+
+    let filterHtml = `
+        <div style="text-align:center; margin-bottom:15px;">
+            <select id="analytics-period-filter" style="padding: 10px; border-radius: 8px; font-size: 1em; background: var(--background); color: var(--on-surface);">
+                ${periods.map(p => `<option value="${p.key}">${p.name}</option>`).join('')}
+            </select>
+        </div>
+        <div id="analytics-results"></div>
+    `;
+
+    bodyEl.innerHTML = filterHtml;
+    
+    const resultsEl = document.getElementById('analytics-results');
+    const filterEl = document.getElementById('analytics-period-filter');
+    
+    async function fetchData(period) {
+        resultsEl.innerHTML = `<div class="loading-indicator"><span class="spinner"></span> Calculating...</div>`;
+        try {
+            const data = await performApiAction(`/api/admin/analytics?period=${period}`);
+            
+            // Format numbers with commas
+            const formatNum = (num) => num.toLocaleString('en-IN'); 
+
+            resultsEl.innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; text-align:center; padding:10px;">
+                    <div class="stat-card" style="box-shadow:none; border:1px solid #00c9ff;">
+                        <p class="title" style="color:var(--info);">Total Visits</p>
+                        <span class="stat-value" style="color:#00c9ff; font-size:2.5em;">${formatNum(data.totalVisits)}</span>
+                        <p class="stat-description">Total number of all recorded visits. (IP repeat allowed)</p>
+                    </div>
+                    <div class="stat-card" style="box-shadow:none; border:1px solid #22c55e;">
+                        <p class="title" style="color:var(--success);">Unique Visitors</p>
+                        <span class="stat-value" style="color:#22c55e; font-size:2.5em;">${formatNum(data.uniqueVisits)}</span>
+                        <p class="stat-description">Unique users based on recorded IP addresses.</p>
+                    </div>
+                </div>
+            `;
+        } catch (e) {
+            resultsEl.innerHTML = `<div style="color:var(--error); text-align:center; padding:20px;">Failed to fetch analytics: ${e.message}</div>`;
+        }
+    }
+
+    // Initial fetch for All Time
+    await fetchData('all');
+    
+    // Add change listener
+    filterEl.addEventListener('change', (e) => fetchData(e.target.value));
 }
+// --- END NEW ANALYTICS RENDER FUNCTION ---
+
 
 /**
  * A helper function to run an async action while showing a spinner on a button.

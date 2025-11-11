@@ -10,6 +10,9 @@ const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit'); 
 const { startScheduler } = require('./scheduler/ai_responder'); 
 // --- RATE LIMITING & SCHEDULER IMPORTS ---
+// --- NEW: Visit Model Import ---
+const { Visit } = require('./config/database');
+// --- END NEW IMPORT ---
 
 // Add these two lines to create and use an http server
 const { createServer } = require('http');
@@ -60,6 +63,29 @@ app.use((req, res, next) => {
     req.io = io;
     next();
 });
+
+// --- NEW ANALYTICS MIDDLEWARE ---
+app.use(async (req, res, next) => {
+    // Only track public visits, exclude API calls and static files
+    if (req.path.startsWith('/api/') || req.path.includes('.') || req.path.startsWith('/admin-panel')) {
+        return next();
+    }
+    
+    // Log the visit to the database
+    if (req.clientIp && req.clientIp !== 'UNKNOWN_IP') {
+        try {
+            await Visit.create({ 
+                timestamp: Date.now(), 
+                ipAddress: req.clientIp 
+            });
+        } catch (e) {
+            console.error("Error logging visit:", e.message);
+        }
+    }
+    next();
+});
+// --- END NEW ANALYTICS MIDDLEWARE ---
+
 
 // --- RATE LIMITING MIDDLEWARE START ---
 const apiLimiter = rateLimit({

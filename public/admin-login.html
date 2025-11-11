@@ -19,7 +19,8 @@
             <span>🌙</span>
         </div>
         <h2>Admin Login</h2>
-        <div id="login-form-container">
+        
+        <div id="login-form-container" style="display: block;">
             <form id="admin-login-form">
                 <div class="input-group">
                     <label for="admin-username">Username</label>
@@ -41,6 +42,27 @@
                 </button>
             </form>
         </div>
+        
+        <div id="otp-form-container" style="display: none;">
+            <p class="otp-prompt-message">OTP has been sent to your admin email. Expires in 5 minutes.</p>
+            <form id="admin-otp-form">
+                <div class="input-group">
+                    <label for="admin-otp">6-Digit OTP</label>
+                    <input type="text" id="admin-otp" name="admin-otp" maxlength="6" required autocomplete="off">
+                </div>
+                <button type="submit" id="otp-verify-button">
+                    <span>Verify & Login</span>
+                    <div class="spinner"></div>
+                </button>
+                <button type="button" id="otp-resend-button" class="resend-button">
+                    <span>Resend OTP</span>
+                </button>
+            </form>
+            <button type="button" id="otp-back-button" class="back-button">
+                &larr; Back to Password
+            </button>
+        </div>
+        
     </div>
     <div id="toast-container"></div>
     <div id="redirect-popup">

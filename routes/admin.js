@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { User, Feedback, Blog, AdminSettings } = require('../config/database');
+const { User, Feedback, Blog, AdminSettings, Visit } = require('../config/database'); // Visit Model Import kiya
 const { authenticateAdminToken } = require('../middleware/auth');
 const { createUserPayload } = require('../utils/helpers');
 const { getLeastUsedAvatarUrl, getAndIncrementAvatarUsage } = require('../utils/avatarGenerator');
@@ -16,6 +16,7 @@ const axios = require('axios');
 const githubService = require('../services/githubService');
 const asyncHandler = require('express-async-handler'); // IMPORT ASYNCHANDLER
 const mongoose = require('mongoose'); // ADDED: Mongoose for ObjectId
+const crypto = require('crypto'); // ADDED: For OTP generation
 
 // --- BOT/ADMIN DISPLAY NAME ---
 const DISPLAY_ADMIN_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟"; 
@@ -26,7 +27,9 @@ const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const BASE_DIR = path.resolve(__dirname, '..');
+const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_EMAIL; // NEW CONSTANT FOR TARGET EMAIL
 
+// --- MODIFIED ADMIN LOGIN ROUTE (OTP GENERATION) ---
 router.post('/api/admin/login', asyncHandler(async (req, res) => {
     const { username, password } = req.body;
     if (username !== ADMIN_USERNAME) return res.status(401).json({ message: "Invalid username or password." });
@@ -36,75 +39,97 @@ router.post('/api/admin/login', asyncHandler(async (req, res) => {
         console.warn(`Admin user '${ADMIN_USERNAME}' not found in DB. Attempting to create it.`);
         if (!ADMIN_INITIAL_PASSWORD) { console.error("CRITICAL ERROR: ADMIN_INITIAL_PASSWORD env var is required to create the initial admin user."); return res.status(500).json({ message: "Server setup incomplete: Initial admin password not set." }); }
         const initialHashedPassword = await bcrypt.hash(ADMIN_INITIAL_PASSWORD, 12);
+        // NOTE: Admin DB email will be a dummy email, actual notification email comes from ENV
         adminUser = new User({ name: 'Admin User', username: ADMIN_USERNAME, email: `${ADMIN_USERNAME.toLowerCase().replace(/\s/g, '')}@admin.com`, password: initialHashedPassword, loginMethod: 'email', isVerified: true });
         await adminUser.save();
         console.log(`Admin user '${ADMIN_USERNAME}' created with default password.`);
     }
     const isMatch = await bcrypt.compare(password, adminUser.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid username or password." });
-    const adminPayload = { username: adminUser.username, userId: adminUser._id, loggedInAt: new Date().toISOString() };
-    const adminToken = jwt.sign(adminPayload, ADMIN_JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ message: "Admin login successful!", token: adminToken, admin: adminPayload });
+
+    // --- 2FA LOGIC START ---
+    const otp = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6-digit Hex OTP
+    const otpExpires = Date.now() + 5 * 60 * 1000; // 5 MINUTES expiration
+    
+    // Admin email fetch: USE ADMIN_NOTIFICATION_EMAIL FROM ENV
+    const adminEmail = ADMIN_NOTIFICATION_EMAIL;
+    if (!adminEmail) return res.status(500).json({ message: "Admin email (ADMIN_EMAIL) not configured in ENV." });
+
+    adminUser.adminOtp = otp;
+    adminUser.adminOtpExpires = otpExpires;
+    await adminUser.save();
+
+    const emailHtml = `
+        <div style="text-align:center; font-family: Poppins, sans-serif;">
+            <h2 style="color:#FFD700;">Admin Login OTP</h2>
+            <p>Aapne Nobita Admin Panel mein login request ki hai.</p>
+            <h1 style="color:#8B5CF6; font-size:3em; letter-spacing: 5px;">${otp}</h1>
+            <p>Yeh OTP <b>5 minute</b> mein expire ho jaayega. Agar aapne login request nahi ki, toh is email ko ignore karein.</p>
+        </div>
+    `;
+
+    try { 
+        await sendEmail({ 
+            email: adminEmail, // Use the email from ENV
+            subject: '🔐 Nobita Admin OTP (Expires in 5 mins)', 
+            html: emailHtml 
+        }); 
+        
+        // Final token abhi nahi bhejna, sirf ek status bhejni hai
+        res.status(202).json({ 
+            message: "OTP sent to admin email. Please verify.", 
+            step: "OTP_REQUIRED",
+            username: adminUser.username 
+        });
+
+    } catch (emailError) { 
+        console.error("Error sending Admin OTP email:", emailError.message);
+        res.status(500).json({ message: "Login failed. Could not send OTP email." });
+    }
 }));
 
-// NEW ADMIN UPVOTE ROUTE
-router.put('/api/admin/feedback/:id/admin-upvote', authenticateAdminToken, asyncHandler(async (req, res) => {
-    const feedbackId = req.params.id;
-    // req.user contains the Admin's decoded payload (standard practice with JWT middleware)
-    const adminUserId = req.user?.userId || req.adminUser?.userId; // Using req.user or req.adminUser
+
+// --- NEW OTP VERIFICATION ROUTE ---
+router.post('/api/admin/verify-otp', asyncHandler(async (req, res) => {
+    const { username, otp } = req.body;
+    if (!username || !otp) {
+        return res.status(400).json({ message: "Username and OTP are required." });
+    }
+
+    const adminUser = await User.findOne({ username: username });
+    if (!adminUser) {
+        return res.status(404).json({ message: "Admin user not found." });
+    }
+
+    if (adminUser.adminOtp !== otp.toUpperCase()) {
+        return res.status(401).json({ message: "Invalid OTP." });
+    }
+
+    if (adminUser.adminOtpExpires < Date.now()) {
+        // Clear expired OTP to prevent retries
+        adminUser.adminOtp = undefined;
+        adminUser.adminOtpExpires = undefined;
+        await adminUser.save();
+        return res.status(401).json({ message: "OTP expired. Please log in again." });
+    }
+
+    // OTP successful! Final JWT token issue karein (24 hours expiry)
+    const adminPayload = { username: adminUser.username, userId: adminUser._id, loggedInAt: new Date().toISOString() };
     
-    if (!adminUserId) {
-        return res.status(401).json({ message: "Admin ID not found in token payload. Authentication issue." });
-    }
-
-    const feedback = await Feedback.findById(feedbackId);
-    if (!feedback) {
-        return res.status(404).json({ message: 'Feedback not found.' });
-    }
-
-    const adminId = new mongoose.Types.ObjectId(adminUserId);
-    let updateQuery = {};
-    let actionMessage = '';
-    let isAdminVoted = false; // Initialize status
-
-    // Check if Admin's ID is already in upvotes array
-    const isCurrentlyUpvoted = feedback.upvotes.some(id => id.toString() === adminId.toString());
-
-    if (isCurrentlyUpvoted) { // Remove Upvote
-        updateQuery = { $pull: { upvotes: adminId }, $inc: { upvoteCount: -1 } };
-        actionMessage = 'Like removed by Admin.'; // CHANGED: 'Upvote removed by Admin.'
-        isAdminVoted = false;
-    } else { // Add Upvote
-        updateQuery = { $addToSet: { upvotes: adminId }, $inc: { upvoteCount: 1 } };
-        actionMessage = 'Liked successfully by Admin.'; // CHANGED: 'Upvoted successfully by Admin.'
-        isAdminVoted = true;
-    }
-
-    const updatedFeedback = await Feedback.findByIdAndUpdate(
-        feedbackId, 
-        updateQuery, 
-        { new: true, runValidators: true }
-    );
+    // --- 24 HOURS EXPIRY ---
+    const adminToken = jwt.sign(adminPayload, ADMIN_JWT_SECRET, { expiresIn: '24h' }); 
     
-    // Emit real-time update
-    if (req.io) {
-        req.io.emit('feedback-vote-update', {
-            feedbackId: updatedFeedback._id,
-            upvoteCount: updatedFeedback.upvoteCount,
-        });
-    }
+    // OTP fields clear karein for next login
+    adminUser.adminOtp = undefined;
+    adminUser.adminOtpExpires = undefined;
+    await adminUser.save();
 
-    // Bug Fix: Send isAdminVoted status to the frontend
     res.status(200).json({ 
-        message: actionMessage, 
-        feedback: { 
-            _id: updatedFeedback._id,
-            upvoteCount: updatedFeedback.upvoteCount,
-            isAdminVoted: isAdminVoted // NEW: Admin ka voting status bhej rahe hain
-        }
+        message: "OTP verified. Login successful!", 
+        token: adminToken, 
+        admin: adminPayload
     });
 }));
-// END NEW ADMIN UPVOTE ROUTE
 
 
 // Admin-specific Feedback Routes
@@ -396,5 +421,67 @@ router.post('/api/admin/create-page-from-template', authenticateAdminToken, asyn
     await fs.promises.writeFile(filePath, templateContent);
     res.status(200).json({ message: `Page "${fileName}" created successfully in public folder.` });
 }));
+
+// --- NEW ANALYTICS ENDPOINT ---
+router.get('/api/admin/analytics', authenticateAdminToken, asyncHandler(async (req, res) => {
+    const { period = 'all' } = req.query; // Filters: all, today, yesterday, last7days, last30days
+    
+    let dateFilter = {};
+    const now = new Date();
+    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+    
+    if (period !== 'all') {
+        let startTime;
+        let endTime = now;
+
+        switch (period) {
+            case 'today':
+                startTime = startOfToday;
+                break;
+            case 'yesterday':
+                startTime = new Date(startOfToday);
+                startTime.setDate(startOfToday.getDate() - 1);
+                endTime = startOfToday;
+                break;
+            case 'last7days':
+                startTime = new Date(startOfToday);
+                startTime.setDate(startOfToday.getDate() - 7);
+                break;
+            case 'last30days':
+                startTime = new Date(startOfToday);
+                startTime.setDate(startOfToday.getDate() - 30);
+                break;
+            case 'lastweek': // Last full week (Sun-Sat)
+                // This is a complex definition, using simple 7 days for quick calc
+                startTime = new Date(startOfToday);
+                startTime.setDate(startOfToday.getDate() - 7);
+                break;
+            default:
+                break;
+        }
+
+        if (startTime) {
+            dateFilter.timestamp = { $gte: startTime, $lte: endTime };
+        }
+    }
+
+    // 1. Total Visits Count
+    const totalVisits = await Visit.countDocuments(dateFilter);
+
+    // 2. Unique IP Count
+    const uniqueIpsResult = await Visit.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: '$ipAddress' } },
+        { $count: 'uniqueCount' }
+    ]);
+    const uniqueVisits = uniqueIpsResult.length > 0 ? uniqueIpsResult[0].uniqueCount : 0;
+    
+    res.status(200).json({
+        period: period,
+        totalVisits: totalVisits,
+        uniqueVisits: uniqueVisits
+    });
+}));
+// --- END NEW ANALYTICS ENDPOINT ---
 
 module.exports = router;

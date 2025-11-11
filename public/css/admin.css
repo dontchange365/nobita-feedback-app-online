@@ -80,6 +80,17 @@ body.dark-mode .input-group input {
     border-color: var(--accent-pink);
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
+
+/* --- NEW OTP INPUT STYLES --- */
+#admin-otp-form #admin-otp {
+    text-align: center;
+    font-size: 1.8rem;
+    letter-spacing: 0.3rem;
+    font-weight: 700;
+    padding: 1.2rem 1rem;
+}
+/* --- END NEW OTP INPUT STYLES --- */
+
 .password-toggle {
     position: absolute;
     right: 10px;
@@ -135,6 +146,56 @@ button[type="submit"]:hover {
     background-color: #d13a82;
     transform: translateY(-2px);
 }
+
+/* --- OTP Buttons Styles --- */
+#otp-form-container button {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+#otp-form-container #otp-verify-button {
+    background-color: var(--success-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#otp-form-container #otp-resend-button {
+    background-color: var(--warning-color);
+    color: var(--text-primary-light);
+}
+.dark-mode #otp-form-container #otp-resend-button {
+    color: var(--text-primary-dark);
+}
+
+#otp-form-container #otp-back-button {
+    background: none;
+    color: var(--text-secondary-light);
+    font-weight: 600;
+    margin-top: 20px;
+}
+.dark-mode #otp-form-container #otp-back-button {
+    color: var(--text-secondary-dark);
+}
+.otp-prompt-message {
+    font-size: 1rem;
+    color: var(--text-primary-light);
+    margin-bottom: 2rem;
+}
+.dark-mode .otp-prompt-message {
+    color: var(--text-primary-dark);
+}
+/* --- END OTP Buttons Styles --- */
+
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
     border-top: 4px solid #fff;
@@ -296,5 +357,22 @@ body.dark-mode #redirect-popup-content p {
     to { opacity: 1; transform: scale(1); }
 }
 #login-form-container {
+    /* Kept default block */
+}
+#otp-form-container {
+    /* Kept default none/block managed by JS */
+}
+.back-button {
+    background: none !important;
+    color: var(--text-secondary-light) !important;
+    font-weight: 600 !important;
+    text-align: center;
+    text-decoration: none;
     display: block;
+    margin-top: 1.5rem;
+    transition: color 0.2s;
+}
+.back-button:hover {
+    color: var(--accent-pink) !important;
+    text-decoration: underline;
 }

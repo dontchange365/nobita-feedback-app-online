@@ -22,7 +22,12 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String, default: undefined },
   emailVerificationExpires: { type: Date, default: undefined },
-  pushSubscription: { type: Object, default: null }
+  pushSubscription: { type: Object, default: null },
+  
+  // --- NEW 2FA FIELDS ---
+  adminOtp: { type: String, default: undefined }, 
+  adminOtpExpires: { type: Date, default: undefined }
+  // --- END NEW FIELDS ---
 });
 
 const feedbackSchema = new mongoose.Schema({
@@ -97,6 +102,13 @@ const avatarUsageSchema = new mongoose.Schema({
   usageCount: { type: Number, default: 0 }
 });
 
+// --- NEW VISIT SCHEMA ---
+const visitSchema = new mongoose.Schema({
+    timestamp: { type: Date, default: Date.now },
+    ipAddress: { type: String, required: true }
+});
+// --- END NEW VISIT SCHEMA ---
+
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
@@ -113,5 +125,6 @@ module.exports = {
   Blog: mongoose.model('Blog', blogSchema),
   NotificationSubscription: mongoose.model('NotificationSubscription', notificationSubscriptionSchema),
   AdminSettings: mongoose.model('AdminSettings', adminSettingsSchema),
-  AvatarUsage: mongoose.model('AvatarUsage', avatarUsageSchema)
+  AvatarUsage: mongoose.model('AvatarUsage', avatarUsageSchema),
+  Visit: mongoose.model('Visit', visitSchema) // Export the new model
 };
