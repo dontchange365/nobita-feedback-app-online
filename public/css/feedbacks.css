@@ -714,3 +714,48 @@
     /* Purani animation (highlight-pulse) ko override karega */
 }
 /* === END NEW Highlight === */
+/* === ADD THIS AT THE END OF feedbacks.css === */
+
+/* === NEW SEARCH BAR STYLES === */
+.feedback-search-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    grid-column: 1 / -1; /* Make it span full width in grid */
+}
+
+#feedback-search-input {
+    width: 100%;
+    padding: 12px 20px 12px 45px; /* Left padding for icon */
+    border-radius: 25px; /* Pill shape */
+    border: 2px solid var(--card-border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color-light);
+    font-size: 1em;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; /* Important for padding */
+}
+
+#feedback-search-input::placeholder {
+    color: var(--label-inactive-color);
+    opacity: 0.7;
+}
+
+#feedback-search-input:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.feedback-search-container .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--label-inactive-color);
+    opacity: 0.7;
+    font-size: 1.1em;
+    pointer-events: none; /* Icon par click na ho */
+}
+/* === END NEW SEARCH STYLES === */

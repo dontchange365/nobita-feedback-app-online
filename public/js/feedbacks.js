@@ -8,12 +8,12 @@ let currentSelectedRating = 0;
 let isEditing = false;
 let currentEditFeedbackId = null;
 let currentSortOrder = 'newest'; // NEW: For Sorting
+let currentSearchTerm = ''; // NEW: For Search
+let searchDebounceTimer = null; // NEW: For Search Debouncing
 window.allFeedbacks = []; // NEW: Store all feedbacks locally
 
 // --- API ENDPOINTS (FIXED) ---
-const API_FEEDBACKS_URL = '/api/feedback'; // Used for POST (new feedback)
-const API_FEEDBACK_URL = '/api/feedback'; // Used for PUT (editing single item, same path but PUT method)
-const API_FETCH_FEEDBACKS_URL = '/api/feedbacks'; // Used for GET (list)
+// Constants removed, will use global window.API_... from main.js
 // --- END API ENDPOINTS ---
 
 // The main `currentUser` object will be available globally from `main.js`.
@@ -188,11 +188,12 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
         // === SKELETON REMOVAL ===
         feedbackListContainer.querySelectorAll('.feedback-item-skeleton').forEach(sk => sk.remove());
         
-        // Clear all feedback items (lekin sort buttons ko nahi)
+        // Clear all feedback items (lekin sort/search controls ko nahi)
         const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => 
             child.id !== 'average-rating-display' && 
             child.tagName.toLowerCase() !== 'h2' && 
             !child.classList.contains('feedback-sort-container') && // Sort buttons ko mat hatana
+            !child.classList.contains('feedback-search-container') && // NEW: Search bar ko mat hatana
             child.classList.contains('feedback-item')
         );
         childrenToRemove.forEach(child => child.remove());
@@ -205,7 +206,12 @@ function renderFeedbackData(feedbacksArray, append = false, totalCount = 0, aver
 
         if (feedbacksArray.length === 0) {
             const msgP = document.createElement('p');
-            msgP.textContent = 'No feedbacks yet. Be the first to share your thoughts!';
+            // NEW: Search ke liye dynamic message
+            if (currentSearchTerm) {
+                msgP.textContent = `No feedbacks found matching "${currentSearchTerm}".`;
+            } else {
+                msgP.textContent = 'No feedbacks yet. Be the first to share your thoughts!';
+            }
             msgP.className = 'no-feedback-message';
             msgP.style.cssText = 'text-align:center; padding:20px; color:rgba(255,255,255,0.7); grid-column: 1 / -1;';
             feedbackListContainer.appendChild(msgP);
@@ -243,9 +249,17 @@ async function fetchFeedbacks() {
     let found = false; // Variable to store if feedback was found
 
     try {
-        // Fetch logic (backend sorting doesn't matter, we sort locally)
-        const url = `${API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
-        const responseData = await window.apiRequest(url, 'GET');
+        // --- FIX: Build URL string manually instead of using new URL() on a relative path ---
+        // Use the global constant from main.js (window.API_FETCH_FEEDBACKS_URL)
+        let url = `${window.API_FETCH_FEEDBACKS_URL}?page=${window.currentPage}&limit=${PAGE_LIMIT}`;
+
+        // Agar search term hai, toh use URL mein add karo
+        if (currentSearchTerm) {
+            url += `&q=${encodeURIComponent(currentSearchTerm)}`;
+        }
+        // --- END FIX ---
+
+        const responseData = await window.apiRequest(url, 'GET'); // url bhej rahe hain, url.href nahi
 
         let feedbacksArray = responseData.feedbacks;
         
@@ -538,7 +552,8 @@ async function handleVote(feedbackId, voteType) {
     upvoteBtnEl.classList.add('loading');
     upvoteBtnEl.disabled = true; // Disable button during request
     
-    const token = localStorage.getItem('jwtToken');
+    // --- BUG FIX: Use 'nobita_jwt' instead of 'jwtToken' ---
+    const token = localStorage.getItem('nobita_jwt');
     let headers = { 'Content-Type': 'application/json' };
     let body = { voteType: 'upvote' };
     
@@ -550,7 +565,8 @@ async function handleVote(feedbackId, voteType) {
     
     try {
         // 2. Manual Fetch (apiRequest use nahi kar rahe)
-        const response = await fetch(`${API_FEEDBACK_URL}/${feedbackId}/vote`, {
+        // --- FIX: Use global window.API_FEEDBACK_URL ---
+        const response = await fetch(`${window.API_FEEDBACK_URL}/${feedbackId}/vote`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(body)
@@ -753,7 +769,7 @@ function addFeedbackToDOM(fbData) {
     const tsDiv = document.createElement('div');
     tsDiv.className = 'feedback-timestamp';
     try {
-        tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/KKolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
+        tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`;
     } catch (e) {
         tsDiv.innerHTML = `<i class="far fa-clock"></i> Posted: ${new Date(fbData.timestamp).toLocaleString('en-US')}`;
     }
@@ -1035,6 +1051,46 @@ const handleScroll = () => {
     }
 };
 
+// --- NEW: SEARCH FUNCTION ---
+/**
+ * Handles new search input by debouncing and triggering a fresh fetch.
+ */
+function handleSearchInput() {
+    clearTimeout(searchDebounceTimer);
+    
+    const searchInput = document.getElementById('feedback-search-input');
+    const newSearchTerm = searchInput.value.trim();
+
+    // 300ms delay
+    searchDebounceTimer = setTimeout(async () => {
+        // Only fetch if the term has actually changed
+        if (newSearchTerm !== currentSearchTerm) {
+            console.log(`Searching for: ${newSearchTerm}`);
+            currentSearchTerm = newSearchTerm;
+
+            // *** RESET PAGINATION ***
+            window.currentPage = 1;
+            window.hasMoreFeedbacks = true;
+            window.allFeedbacks = []; // Clear local array
+            
+            // Clear existing list in DOM (except for sort/search controls)
+            if(feedbackListContainer) {
+                 const childrenToRemove = Array.from(feedbackListContainer.children).filter(child => 
+                    child.classList.contains('feedback-item') || 
+                    child.classList.contains('feedback-item-skeleton') ||
+                    child.classList.contains('no-feedback-message')
+                );
+                childrenToRemove.forEach(child => child.remove());
+            }
+
+            // fetchFeedbacks will now show skeletons and fetch Page 1
+            await fetchFeedbacks();
+        }
+    }, 300); // 300ms debounce time
+}
+// --- END NEW SEARCH FUNCTION ---
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // Vote event listener
     document.addEventListener('click', (e) => {
@@ -1073,6 +1129,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // --- END (SMART SORTING) ---
+
+    // --- NEW SEARCH LISTENER ---
+    const searchInput = document.getElementById('feedback-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearchInput);
+    }
+    // --- END NEW SEARCH LISTENER ---
 
     // Socket.IO Listener for Real-time Updates
     if (typeof io !== 'undefined') {
@@ -1128,7 +1191,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // LOGIC UPDATED: Ab 'isEditing' logged-in user aur guest dono ke liye true ho sakta hai
         const isSubmissionByLoggedInUser = !!window.currentUser;
-        const url = isEditing ? `${API_FEEDBACK_URL}/${currentEditFeedbackId}` : API_FEEDBACKS_URL;
+        // --- FIX: Use global window.API_... constants ---
+        const url = isEditing ? `${window.API_FEEDBACK_URL}/${currentEditFeedbackId}` : window.API_FEEDBACKS_URL;
         const method = isEditing ? 'PUT' : 'POST';
 
         if (isEditing && isSubmissionByLoggedInUser && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
@@ -1137,6 +1201,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // **IMPORTANT:** Backend `PUT /api/feedback/:id` route ko update karna zaroori hai
         // taaki woh `feedbackPayload.guestId` ko check kare agar `req.user` nahi hai.
+        
+        // --- NEW: Guest Edit ke liye bhi guestId bhejo ---
+        if (isEditing && !isSubmissionByLoggedInUser && guestId) {
+            feedbackPayload.guestId = guestId;
+        }
+        // --- END NEW ---
 
         const spinnerText = isEditing ? "Updating Feedback..." : "Submitting Feedback...";
         try {
