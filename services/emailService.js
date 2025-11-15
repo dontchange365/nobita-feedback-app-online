@@ -47,11 +47,7 @@ const NOBITA_EMAIL_TEMPLATE = (heading, name, buttonText, link, avatarUrl, type 
         <table cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background: #001133; border: 2px solid #00ffdd; border-radius: 12px; overflow: hidden; margin: 40px auto; box-shadow: 0 0 16px #00ffdd88;">
           <tr>
             <td align="center" style="padding: 0;">
-<<<<<<< HEAD
-              <img src="${avatarUrl}" alt="User Avatar" style="border-radius: 50%; margin: 24px auto 14px auto; display:block; width: 80px; height: 80px; object-fit: cover; box-shadow: 0 0 12px #00ffdd90;" onerror="this.src='https://placehold.co/80x80/1E90FF/FFFFFF?text=USER';"/>
-=======
               <img src="${avatarUrl}" alt="User Avatar" style="border-radius: 50%; margin: 24px auto 14px auto; display:block; width: 80px; height: 80px; object-fit: cover; border: 4px solid #00ffdd; box-shadow: 0 0 12px #00ffdd90;" onerror="this.src='https://placehold.co/80x80/1E90FF/FFFFFF?text=USER';"/>
->>>>>>> 5121dc6 (💘 Auto Push 2025-11-09 23:54:03)
               <div style="background: linear-gradient(90deg, #00c9ff, #92fe9d); padding: 16px 0; text-align:center;">
                 <h2 style="color: black; margin: 0; font-size: 1.6em; text-transform: uppercase; letter-spacing: 1px;">${heading}</h2>
               </div>
