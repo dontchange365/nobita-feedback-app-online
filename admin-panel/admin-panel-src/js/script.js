@@ -16,8 +16,10 @@ const socket = io();
 async function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
-            const reg = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service worker registered:', reg.scope);
+            // --- CHANGE: Updated registration path ---
+            const reg = await navigator.serviceWorker.register('/admin-panel/admin-service-worker.js', { scope: '/admin-panel/' });
+            console.log('Admin service worker registered:', reg.scope);
+            // --- END CHANGE ---
 
             navigator.serviceWorker.addEventListener('message', (event) => {
                 console.log("Push message in foreground:", event.data);
@@ -85,9 +87,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupWebSocketListeners();
 
     const swRegistration = await setupServiceWorker();
+    
+    // --- CHANGE: Re-enabled push subscription logic ---
     if (swRegistration) {
-        // Removed push notification subscription
+        console.log("Service Worker registered, attempting to subscribe for push...");
+        await subscribeAdminForPush(swRegistration);
     }
+    // --- END CHANGE ---
 
     // Start periodic session check
     setInterval(checkSession, 5 * 60 * 1000); // Check every 5 minutes
@@ -279,6 +285,7 @@ function logoutAdmin(redirect = false) {
     }
 }
 
+// --- CHANGE: Uncommented this function ---
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -289,6 +296,76 @@ function urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
 }
+// --- END CHANGE ---
+
+// --- CHANGE: Added new function to get VAPID key ---
+async function getVapidKey() {
+    try {
+        const response = await performApiAction('/api/vapid-public-key');
+        return response.key; // Assuming backend sends { key: '...' }
+    } catch (error) {
+        console.error('Failed to get VAPID key', error);
+        showToast('Error: Could not get notification key from server.', 'error');
+        return null;
+    }
+}
+// --- END CHANGE ---
+
+// --- CHANGE: Added new function to subscribe admin ---
+async function subscribeAdminForPush(registration) {
+    // Check if permission is already granted
+    if (Notification.permission === 'denied') {
+        console.warn('Admin push notifications denied by user.');
+        return;
+    }
+
+    try {
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+            console.log('Admin already subscribed to push notifications.');
+            // Optionally, send subscription to server again to ensure it's up-to-date
+            await performApiAction('/api/admin/subscribe-push', {
+                method: 'POST',
+                body: JSON.stringify({ subscription: existingSubscription })
+            });
+            return;
+        }
+
+        const vapidPublicKey = await getVapidKey();
+        if (!vapidPublicKey) {
+            console.error('Failed to subscribe: No VAPID key.');
+            return;
+        }
+
+        const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+        });
+
+        console.log('New admin push subscription obtained:', subscription);
+
+        // Send the new subscription to the new admin endpoint
+        await performApiAction('/api/admin/subscribe-push', {
+            method: 'POST',
+            body: JSON.stringify({ subscription: subscription })
+        });
+
+        console.log('Admin push subscription sent to server.');
+        showToast('Admin push notifications enabled!', 'success');
+
+    } catch (err) {
+        if (Notification.permission === 'denied') {
+            console.warn('Notification permission was denied during subscription.');
+            showToast('Push notifications blocked.', 'warning');
+        } else {
+            console.error('Failed to subscribe admin for push notifications:', err);
+            showToast('Failed to enable push notifications.', 'error');
+        }
+    }
+}
+// --- END CHANGE ---
+
 
 async function performApiAction(url, options = {}) {
     const adminToken = localStorage.getItem('adminToken');
@@ -305,17 +382,33 @@ async function performApiAction(url, options = {}) {
             headers: headers,
         });
         if (!response.ok) {
+            // --- FIX: Handle 401/403 properly ---
+            if (response.status === 401 || response.status === 403) {
+                 const errorData = await response.json().catch(() => ({
+                    message: `HTTP ${response.status}: ${response.statusText}`
+                }));
+                showToast(errorData.message || 'Admin session expired or unauthorized. Please log in again.', 'error');
+                logoutAdmin(true);
+                throw new Error(errorData.message || "Admin session invalidated."); // Stop further execution
+            }
+            // --- END FIX ---
             const errorData = await response.json().catch(() => ({
                 message: `HTTP ${response.status}: ${response.statusText}`
             }));
-            if (response.status === 401 || response.status === 403) {
-                showToast(errorData.message || 'Admin session expired or unauthorized. Please log in again.', 'error');
-                logoutAdmin(true);
-                return;
-            }
-            throw new Error(`HTTP Error: ${response.statusText}`);
+            throw new Error(errorData.message || `HTTP Error: ${response.statusText}`);
         }
-        return response.status === 204 ? true : await response.json();
+        
+        // --- FIX: Handle VAPID key which is not JSON ---
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+             return response.status === 204 ? true : await response.json();
+        } else {
+            // Handle plain text response (like the VAPID key)
+            const textResponse = await response.text();
+            return { key: textResponse }; // Wrap it in an object
+        }
+        // --- END FIX ---
+
     } catch (error) {
         console.error('API Action Failed:', error);
         if (error.message !== "Admin session invalidated.") {

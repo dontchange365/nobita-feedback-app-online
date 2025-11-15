@@ -1191,8 +1191,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // LOGIC UPDATED: Ab 'isEditing' logged-in user aur guest dono ke liye true ho sakta hai
         const isSubmissionByLoggedInUser = !!window.currentUser;
+        
         // --- FIX: Use global window.API_... constants ---
-        const url = isEditing ? `${window.API_FEEDBACK_URL}/${currentEditFeedbackId}` : window.API_FEEDBACKS_URL;
+        // --- START FIX ---
+        const url = isEditing ? `${window.API_FEEDBACK_URL}/${currentEditFeedbackId}` : window.API_FEEDBACK_URL;
+        // --- END FIX ---
         const method = isEditing ? 'PUT' : 'POST';
 
         if (isEditing && isSubmissionByLoggedInUser && window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {

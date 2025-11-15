@@ -439,7 +439,7 @@ router.get('/api/admin/analytics', authenticateAdminToken, asyncHandler(async (r
                 startTime = startOfToday;
                 break;
             case 'yesterday':
-                startTime = new Date(startOfToday);
+                startTime = new Date(startOfToda);
                 startTime.setDate(startOfToday.getDate() - 1);
                 endTime = startOfToday;
                 break;
@@ -483,5 +483,21 @@ router.get('/api/admin/analytics', authenticateAdminToken, asyncHandler(async (r
     });
 }));
 // --- END NEW ANALYTICS ENDPOINT ---
+
+// --- CHANGE: ADDED NEW ROUTE FOR ADMIN PUSH SUBSCRIPTION ---
+router.post('/api/admin/subscribe-push', authenticateAdminToken, asyncHandler(async (req, res) => {
+    const subscription = req.body.subscription;
+    const adminId = req.adminUser.userId;
+
+    if (!subscription || !subscription.endpoint) {
+        return res.status(400).json({ message: 'No push subscription data provided.' });
+    }
+
+    // Save the subscription to the admin's user document
+    await User.findByIdAndUpdate(adminId, { pushSubscription: subscription });
+
+    res.status(201).json({ message: 'Admin push subscription saved successfully!' });
+}));
+// --- END CHANGE ---
 
 module.exports = router;

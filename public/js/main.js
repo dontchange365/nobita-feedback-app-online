@@ -79,7 +79,10 @@ async function apiRequest(url, method, body = null, isFormData = false, buttonTo
             if (response.ok) {
                 data = text ? { message: text } : {};
             } else {
-                throw new Error(data.message || `Server Error (${response.status})`);
+                // --- FIX ---
+                // 'data.message' ki jagah 'text' ka istemal kiya hai
+                throw new Error(text || `Server Error (${response.status})`);
+                // --- END FIX ---
             }
         }
 
