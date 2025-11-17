@@ -150,6 +150,16 @@
     border-color: var(--primary-color);
 }
 
+.feedback-item.pinned {
+    border-color: #00ffdd; 
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.55), 0 0 15px rgba(0, 255, 221, 0.4); 
+    background: linear-gradient(135deg, #25254aee, #3a3a7aee);
+}
+.feedback-item.pinned:hover {
+    transform: translateY(-7px) scale(1.02); 
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6), 0 0 0 4px rgba(0, 255, 221, 0.2); 
+}
+
 .avatar-img {
     width: 52px;
     height: 52px;
@@ -298,15 +308,16 @@
 
 .admin-reply {
     margin-top: 10px;
-    padding: 9px 11px;
-    background-color: rgba(255, 215, 0, 0.09);
-    border-left: 3.5px solid var(--secondary-color);
-    border-radius: 7px;
-    font-size: 0.85em;
+    padding: 12px 14px; 
+    background-color: rgba(106, 13, 173, 0.15); 
+    border-left: 4px solid var(--secondary-color); 
+    border-radius: 9px;
+    font-size: 0.9em; 
     display: flex;
     align-items: flex-start;
-    gap: 7px;
+    gap: 10px;
     position: relative;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15) inset; 
 }
 
 .admin-reply::before {
@@ -324,16 +335,16 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1.5px solid #9B59B6;
+    border: 1.5px solid var(--secondary-color); 
     flex-shrink: 0;
     object-fit: cover;
 }
 
 .admin-reply-content strong {
-    color: #9B59B6;
-    font-size: 0.95em;
+    color: var(--secondary-color); /* FIX: Gold color for visibility */
+    font-size: 1em; 
     display: inline;
-    padding-right: 0; /* Override padding */
+    padding-right: 0; 
 }
 
 .admin-reply-content .reply-timestamp {
@@ -397,9 +408,13 @@
 }
 
 .feedback-item.pinned {
-    border-color: #FFD700;
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.45), 0 0 8px rgba(255, 255, 255, 0.2);
-    background: #3a3a7aee;
+    border-color: #00ffdd; 
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.55), 0 0 15px rgba(0, 255, 221, 0.4); 
+    background: linear-gradient(135deg, #25254aee, #3a3a7aee);
+}
+.feedback-item.pinned:hover {
+    transform: translateY(-7px) scale(1.02); 
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6), 0 0 0 4px rgba(0, 255, 221, 0.2); 
 }
 
 /* New CSS for the local lazy load spinner */
@@ -573,9 +588,13 @@
     transition: all 0.2s ease;
 }
 .card-action-btn:hover {
-    opacity: 1;
-    color: #d0d0ff;
-    border-color: #a0a0ff;
+    /* START CHANGE: Suggestion B - Glassmorphism Hover */
+    background: rgba(255, 255, 255, 0.15); 
+    backdrop-filter: blur(5px); 
+    border-color: #00ffdd; 
+    color: #00ffdd;
+    box-shadow: 0 0 10px rgba(0, 255, 221, 0.5); 
+    /* END CHANGE */
     transform: scale(1.1);
 }
 .card-action-btn.edit-btn {

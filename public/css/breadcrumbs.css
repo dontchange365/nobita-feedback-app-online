@@ -346,6 +346,29 @@
 .help-btn::after {
     content: none;
 }
+/* START CHANGE: Breadcrumb Styles (Suggestion 2) */
+.breadcrumb-link, .breadcrumb-root {
+    color: var(--secondary-color); /* Gold */
+    font-weight: 700;
+    transition: color 0.15s, text-shadow 0.15s, background 0.15s;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+    padding: 3px 6px; 
+    border-radius: 5px;
+}
+
+.breadcrumb-link:hover, .breadcrumb-root:hover {
+    color: #00ffdd; /* Cyan on hover (Vibrant) */
+    background: rgba(0, 255, 221, 0.1);
+    text-shadow: 0 0 8px #00ffdd;
+}
+
+.breadcrumb-sep {
+    color: var(--primary-color); /* Purple separator */
+    font-weight: 800;
+    user-select: none;
+}
+/* END CHANGE */
+
 /* Responsive adjustments for breadcrumbs and RDP guide */
 @media (max-width: 768px) {
     .container { padding: 0 15px; }
