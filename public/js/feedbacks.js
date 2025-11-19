@@ -12,16 +12,9 @@ let currentSearchTerm = ''; // NEW: For Search
 let searchDebounceTimer = null; // NEW: For Search Debouncing
 window.allFeedbacks = []; // NEW: Store all feedbacks locally
 
-// --- API ENDPOINTS (FIXED) ---
-// Constants removed, will use global window.API_... from main.js
-// --- END API ENDPOINTS ---
-
-// The main `currentUser` object will be available globally from `main.js`.
-// The utility functions (`apiRequest`, `showStylishPopup`, `closeStylishPopup`, `updateUIAfterLogin`, etc.)
-// are also globally available via the `window` object in `main.js`.
-
 // --- DISPLAY CONFIG ---
 const DESIRED_DISPLAY_NAME = "👉𝙉𝙊𝘽𝙄𝙏𝘼🤟";
+const ADMIN_AVATAR_URL = 'https://i.ibb.co/FsSs4SG/creator-avatar.png';
 // --- DISPLAY CONFIG ---
 
 
@@ -362,41 +355,6 @@ function scrollToFeedbackIfRequired() {
 // --- NEW SCROLL TO FEEDBACK LOGIC END ---
 
 
-// --- NEW FUNCTION: PAGE LOADER FOR SHARED LINKS ---
-/**
- * Loads pages one by one until the target feedback ID is found.
- * @param {string} targetId 
- */
-async function loadPagesUntilFeedbackFound(targetId) {
-    console.log(`Searching for feedback ID: ${targetId}...`);
-    let found = false;
-    
-    // Loop while we have more pages AND we haven't found the item
-    while (window.hasMoreFeedbacks && !found) {
-        console.log(`Fetching page ${window.currentPage}...`);
-        // fetchFeedbacks() will load data, render, scroll, and return true/false
-        found = await fetchFeedbacks(); 
-        
-        if (found) {
-            console.log(`Successfully found and scrolled to ${targetId}`);
-            break;
-        }
-        
-        if (!window.hasMoreFeedbacks && !found) {
-            // Sab pages load ho gaye aur feedback nahi mila
-            console.warn(`Could not find feedback ${targetId}. Loaded all pages.`);
-            window.showStylishPopup({
-                iconType: 'error',
-                title: 'Feedback Not Found',
-                message: `The feedback you linked (${targetId.substring(0, 10)}...) could not be found. It might have been deleted.`,
-                buttons: [{ text: 'OK', action: window.closeStylishPopup }]
-            });
-        }
-    }
-}
-// --- END NEW FUNCTION ---
-
-
 // --- UPDATED updateAverageRating FUNCTION (CSS STARS) START ---
 function updateAverageRating(avg, count) {
     if(!averageRatingDisplayEl) return;
@@ -626,54 +584,202 @@ async function handleVote(feedbackId, voteType) {
 }
 // --- END (IN-BUTTON SPINNER) ---
 
-// --- NEW (SMART SHARE) ---
-/**
- * Handles the click event for the share button.
- * Copies the feedback-specific URL to the clipboard.
- * @param {Event} event - The click event.
- * @param {string} feedbackId - The ID of the feedback to share.
- */
-function handleShareClick(event, feedbackId) {
-    // Stop click from bubbling up to the edit button or card
-    event.stopPropagation();
+// --- NEW FUNCTION: Renders the Share Popup with the card inside ---
+function renderSharePopup(fbData, shareUrl) {
+    const userName = (((fbData.userId && typeof fbData.userId === 'object') ? fbData.userId.name : fbData.name) || 'Guest User');
+    const avatarSource = fbData.avatarUrl || `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(userName?.[0]?.toUpperCase() || 'G')}`;
+    const rating = parseInt(fbData.rating) || 0;
+    const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
-    // Create the URL
-    const url = new URL(window.location.href);
-    url.search = `?feedbackId=${feedbackId}`; // Sets the ?feedbackId=...
-    url.hash = ''; // Remove any existing hash
+    // Get the last reply
+    const lastReply = fbData.replies?.length > 0 ? fbData.replies[fbData.replies.length - 1] : null;
+    const replyHtml = lastReply ? `
+        <div class="share-reply-summary">
+            <img src="${ADMIN_AVATAR_URL}" alt="Admin" class="share-admin-avatar">
+            <div class="share-admin-content">
+                <strong>${DESIRED_DISPLAY_NAME}</strong>
+                <p>"${lastReply.text}"</p>
+            </div>
+        </div>
+    ` : '';
     
+    // --- CHANGED: URL INPUT REMOVED, BUTTONS ARE ICON-ONLY ---
+    const sharePopupHTML = `
+        <div id="shareCardContainer">
+            <div id="feedbackCardToCapture" class="share-feedback-card">
+                <div class="share-header">
+                    <img src="${avatarSource}" alt="Avatar" class="share-user-avatar" onerror="this.src='https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(userName?.[0]?.toUpperCase() || 'G')}'">
+                    <div class="share-user-info">
+                        <strong>${userName}</strong>
+                        <div class="share-rating">${stars}</div>
+                    </div>
+                </div>
+                <p class="share-feedback-text">“${fbData.feedback}”</p>
+                ${replyHtml}
+                <div class="share-footer">
+                    <img src="${ADMIN_AVATAR_URL}" alt="Nobi" class="share-logo-small">
+                    <span>${new Date(fbData.timestamp).toLocaleDateString()} · NOBITA FEEDBACK</span>
+                </div>
+            </div>
+            
+            <div class="share-actions-buttons">
+                <button class="share-social-btn whatsapp-btn" onclick="window.shareCardImage('${fbData._id}', 'whatsapp')" title="WhatsApp Share">
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+                <button class="share-social-btn facebook-btn" onclick="window.shareCardImage('${fbData._id}', 'facebook')" title="Facebook Share">
+                    <i class="fab fa-facebook-f"></i>
+                </button>
+                <button class="share-social-btn instagram-btn" onclick="window.shareCardImage('${fbData._id}', 'instagram')" title="Instagram Share">
+                    <i class="fab fa-instagram"></i>
+                </button>
+                <button class="share-social-btn copy-link-btn" onclick="window.handleCardLinkCopy(event, '${fbData._id}')" title="Copy Link">
+                    <i class="fas fa-link"></i>
+                </button>
+                <button class="share-social-btn download-btn" onclick="window.shareCardImage('${fbData._id}', 'download')" title="Download Photo">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+
+            </div>
+    `;
+    // --- END CHANGED ---
+
+    window.showStylishPopup({
+        iconType: 'share',
+        title: 'Share Feedback',
+        message: '<p>Share this feedback as an image or copy the direct link.</p>',
+        formHTML: sharePopupHTML,
+        buttons: [
+            { text: 'Close', className: 'secondary', action: window.closeStylishPopup }
+        ]
+    });
+    // Ensure the main popup icon is the share icon
+    document.querySelector('.stylish-popup-card .popup-icon-area').innerHTML = '<i class="fas fa-share-alt"></i>';
+}
+window.renderSharePopup = renderSharePopup;
+
+
+// --- MODIFIED handleShareClick function to trigger the popup ---
+function handleShareClick(event, feedbackId) {
+    event.stopPropagation();
+    
+    const feedback = window.allFeedbacks.find(f => f._id === feedbackId);
+    if (!feedback) {
+        return window.showToast('Feedback data not found in cache.', 'error');
+    }
+
+    const url = new URL(window.location.href);
+    url.search = `?feedbackId=${feedbackId}`; 
+    url.hash = ''; 
     const shareUrl = url.href;
 
-    // Copy to clipboard using modern API
+    renderSharePopup(feedback, shareUrl);
+}
+window.handleShareClick = handleShareClick;
+// --- END MODIFIED handleShareClick function ---
+
+
+// --- BADA CHANGE: NEW INLINE SHARE LOGIC (Popup Removed) ---
+
+/**
+ * Executes the image capture and sharing intent.
+ */
+function shareCardImage(feedbackId, platform) {
+    // 1. Original feedback item element lein
+    const cardElement = document.getElementById(`feedback-item-${feedbackId}`);
+    
+    if (!cardElement || typeof html2canvas === 'undefined') {
+        return window.showToast('Image sharing library (html2canvas) not loaded.', 'error');
+    }
+
+    const shareUrl = `${window.location.origin}/?feedbackId=${feedbackId}`;
+    
+    // 2. Inline actions bar ko temporary hide karein for a clean screenshot
+    // (Since we are capturing the card in the popup, we must target the popup card element)
+    const popupCardElement = document.getElementById('feedbackCardToCapture');
+    if (!popupCardElement) {
+         return window.showToast('Share card preview not found.', 'error');
+    }
+
+
+    window.showToast('Creating image...', 'info');
+
+    // NOTE: Capturing the dynamically generated card inside the popup
+    html2canvas(popupCardElement, { 
+        allowTaint: true, 
+        useCORS: true, 
+        backgroundColor: '#23235a', // Match card background 
+        scale: 2 // Higher resolution capture
+    }).then(canvas => {
+        // We can close the popup once the canvas is generated
+        window.closeStylishPopup();
+
+        canvas.toBlob(function(blob) {
+            const file = new File([blob], `nobita_feedback.png`, { type: 'image/png' });
+
+            if (platform === 'download') {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `nobita_feedback_share_${feedbackId.substring(0, 8)}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                window.showToast('Image downloaded!', 'success');
+                return;
+            }
+            
+            // Web Share API for WhatsApp/Facebook/Instagram etc.
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                 navigator.share({
+                    title: 'Nobita Feedback',
+                    text: `Check out this feedback from Nobita: ${shareUrl}`,
+                    files: [file]
+                }).then(() => window.showToast('Shared successfully!', 'success'))
+                .catch((error) => {
+                    if (error.name === 'AbortError') return;
+                    window.showToast(`Sharing failed: ${error.message}`, 'error');
+                });
+            } else {
+                // Generic fallback (e.g., if files aren't supported, just share the link)
+                window.showToast(`Device does not support direct image share. Copying link instead.`, 'warning');
+                navigator.clipboard.writeText(`Check out this feedback: ${shareUrl}`);
+            }
+
+        }, 'image/png');
+
+    }).catch(error => {
+        console.error('Image capture failed:', error);
+        window.showToast(`Image capture failed: ${error.message || 'Check console.'}`, 'error');
+    });
+}
+window.shareCardImage = shareCardImage;
+
+
+/**
+ * Copies the feedback-specific URL to the clipboard.
+ */
+function handleCardLinkCopy(event, feedbackId) {
+    event.stopPropagation();
+
+    const url = new URL(window.location.href);
+    url.search = `?feedbackId=${feedbackId}`;
+    url.hash = ''; 
+    const shareUrl = url.href;
+
     if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl).then(() => {
-            // Success
-            window.showStylishPopup({ 
-                iconType: 'success', 
-                title: 'Link Copied!', 
-                message: 'A direct link to this feedback has been copied to your clipboard.', 
-                buttons: [{text:'OK', action: window.closeStylishPopup}] 
-            });
+            window.showToast('Direct link copied!', 'success');
         }, (err) => {
-            // Fail
-            console.error('Failed to copy: ', err);
-            window.showStylishPopup({ 
-                iconType: 'error', 
-                title: 'Copy Failed', 
-                message: 'Could not copy the link. Please try again.', 
-                buttons: [{text:'OK', action: window.closeStylishPopup}] 
-            });
+            window.showToast('Failed to copy link.', 'error');
         });
     } else {
-        // Fallback for older browsers
-        console.warn('Clipboard API not available. Implement fallback.');
+        window.showToast('Clipboard API not available.', 'warning');
     }
 }
-// --- END (SMART SHARE) ---
-
-// --- REMOVED: GUEST DELETE FUNCTION ---
-// (handleGuestDelete function yahaan tha, ab hata diya hai)
-// --- END GUEST DELETE FUNCTION ---
+window.handleCardLinkCopy = handleCardLinkCopy;
+// --- END BADA CHANGE ---
 
 
 function addFeedbackToDOM(fbData) {
@@ -682,9 +788,8 @@ function addFeedbackToDOM(fbData) {
     // Check if item exists
     let item = document.getElementById(`feedback-item-${fbData._id}`); 
     if (item) {
-        // Item exists. This shouldn't happen with the new `sortAndRenderList`
-        // But if it does (e.g., socket update), just update votes
-        updateVoteCounts(fbData._id, fbData.upvoteCount || 0, null, null); // No animation for socket
+        // ... (Existing code)
+        updateVoteCounts(fbData._id, fbData.upvoteCount || 0, null, null); 
         return;
     }
 
@@ -694,6 +799,7 @@ function addFeedbackToDOM(fbData) {
     item.id = `feedback-item-${fbData._id}`; 
 
     const avatarImg = document.createElement('img');
+    // ... (Avatar Image Creation)
     avatarImg.className = 'avatar-img';
     const charForAvatar = (fbData.name?.[0]?.toUpperCase() || 'G');
     let avatarSource = fbData.avatarUrl;
@@ -705,6 +811,7 @@ function addFeedbackToDOM(fbData) {
     avatarImg.src = avatarSource;
     avatarImg.alt = fbData.name || 'User Avatar';
     avatarImg.onerror = function() { this.src = `https://placehold.co/50x50/6a0dad/FFFFFF?text=${encodeURIComponent(charForAvatar)}`; };
+
 
     const detailsDiv = document.createElement('div');
     detailsDiv.className = 'feedback-details';
@@ -778,7 +885,7 @@ function addFeedbackToDOM(fbData) {
 
     item.append(avatarImg, detailsDiv);
 
-    // --- NEW ACTION CONTAINER ---
+    // --- NEW ACTION CONTAINER (for Edit/Pin/Delete/Share) ---
     const actionsContainer = document.createElement('div');
     actionsContainer.className = 'card-actions-container';
 
@@ -795,38 +902,34 @@ function addFeedbackToDOM(fbData) {
             </div>`;
     }
 
-    // 2. Add Share Button (always)
+    // 2. Add Share Button (Floating) - Triggers Popup
     const shareBtn = document.createElement('button');
-    shareBtn.className = 'card-action-btn share-btn'; // New class
+    shareBtn.className = 'card-action-btn share-btn';
     shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
-    shareBtn.title = 'Copy link to this feedback';
+    shareBtn.title = 'Share Feedback';
+    // --- MODIFIED: Uses handleShareClick to open the popup ---
     shareBtn.onclick = (e) => handleShareClick(e, fbData._id);
     actionsContainer.appendChild(shareBtn);
 
-    // 3. Add Edit/Delete Buttons (LOGIC UPDATED)
+
+    // 3. Add Edit/Delete Buttons (LOGIC REMAINS THE SAME)
     const isFeedbackOwner = window.currentUser && fbData.userId && typeof fbData.userId === 'object' && fbData.userId._id === window.currentUser.userId;
     const canLoggedInUserEdit = isFeedbackOwner && (window.currentUser.loginMethod === 'google' || (window.currentUser.loginMethod === 'email' && window.currentUser.isVerified));
     
-    // --- NEW GUEST LOGIC START ---
     let isGuestOwner = false;
     let canGuestEdit = false;
 
-    if (!window.currentUser && fbData.guestId) { // Agar user logged in nahi hai, aur feedback guest ka hai
+    if (!window.currentUser && fbData.guestId) { 
         const currentGuestId = getGuestId();
-        isGuestOwner = (fbData.guestId === currentGuestId); // Check karo kya yeh *mera* guest feedback hai
+        isGuestOwner = (fbData.guestId === currentGuestId); 
 
         if (isGuestOwner) {
             const feedbackTime = new Date(fbData.timestamp).getTime();
             const now = new Date().getTime();
             const ageInMinutes = (now - feedbackTime) / (1000 * 60);
-            
-            if (ageInMinutes < 5) { // 5 Minute Window
-                canGuestEdit = true;
-            }
+            if (ageInMinutes < 5) { canGuestEdit = true; }
         }
     }
-    // --- NEW GUEST LOGIC END ---
-
 
     // Case 1: Logged-in User is Owner
     if (fbData.userId && typeof fbData.userId === 'object') {
@@ -834,7 +937,7 @@ function addFeedbackToDOM(fbData) {
         editBtn.className = 'card-action-btn edit-btn';
         editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editBtn.title = 'Edit your feedback';
-        editBtn.disabled = !canLoggedInUserEdit; // Logged-in user ka verification check
+        editBtn.disabled = !canLoggedInUserEdit; 
 
         if (isFeedbackOwner && !canLoggedInUserEdit) {
             editBtn.title = "Verify your email to edit this feedback.";
@@ -842,13 +945,9 @@ function addFeedbackToDOM(fbData) {
 
         editBtn.onclick = e => {
             e.stopPropagation();
-            if (!isFeedbackOwner) {
-                return window.showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] });
-            }
-            if (window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) {
-                return window.showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback. Resend verification email?', buttons: [{ text: 'Send Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await window.requestAndShowVerificationEmail(); } }, { text: 'Later', action: window.closeStylishPopup }] });
-            }
-            // Populate form (Logged-in user)
+            if (!isFeedbackOwner) { return window.showStylishPopup({ iconType: 'error', title: 'Permission Denied', message: 'You can only edit your own feedback.', buttons: [{ text: 'OK', action: window.closeStylishPopup }] }); }
+            if (window.currentUser.loginMethod === 'email' && !window.currentUser.isVerified) { return window.showStylishPopup({ iconType: 'warning', title: 'Email Verification Required', message: 'Please verify your email to *edit* your feedback. Resend verification email?', buttons: [{ text: 'Send Email', addSpinnerOnClick: true, spinnerText: 'Sending...', action: async () => { await window.requestAndShowVerificationEmail(); } }, { text: 'Later', action: window.closeStylishPopup }] }); }
+            // Populate form
             if (nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.userId.name || fbData.name; nameInputInFeedbackForm.disabled = true; nameInputInFeedbackForm.dispatchEvent(new Event('input')); }
             if (feedbackTextarea) { feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); }
             currentSelectedRating = fbData.rating; if (ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
@@ -861,8 +960,6 @@ function addFeedbackToDOM(fbData) {
     }
     // Case 2: Guest is Owner (and within 5-min window)
     else if (isGuestOwner && canGuestEdit) {
-        
-        // Add Guest EDIT Button
         const editBtn = document.createElement('button');
         editBtn.className = 'card-action-btn edit-btn';
         editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
@@ -870,27 +967,15 @@ function addFeedbackToDOM(fbData) {
         
         editBtn.onclick = e => {
             e.stopPropagation();
-            // Populate form (Guest)
-            if (nameInputInFeedbackForm) { 
-                nameInputInFeedbackForm.value = fbData.name; 
-                nameInputInFeedbackForm.disabled = false; // Guest apna naam bhi edit kar sakta hai
-                nameInputInFeedbackForm.dispatchEvent(new Event('input')); 
-            }
+            if (nameInputInFeedbackForm) { nameInputInFeedbackForm.value = fbData.name; nameInputInFeedbackForm.disabled = false; nameInputInFeedbackForm.dispatchEvent(new Event('input')); }
             if (feedbackTextarea) { feedbackTextarea.value = fbData.feedback; feedbackTextarea.dispatchEvent(new Event('input')); }
             currentSelectedRating = fbData.rating; if (ratingInput) ratingInput.value = fbData.rating; updateStarVisuals(fbData.rating);
             if (submitButton) submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Update Feedback';
-            
-            isEditing = true; 
-            currentEditFeedbackId = fbData._id;
-            
+            isEditing = true; currentEditFeedbackId = fbData._id;
             document.getElementById('feedback-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
             window.showStylishPopup({ iconType: 'info', title: 'Editing Feedback', message: 'You have 5 minutes from posting to edit. Make changes and click "Update".', buttons: [{ text: 'Got it!', action: window.closeStylishPopup }] });
         };
         actionsContainer.appendChild(editBtn);
-
-        // --- REMOVED: GUEST DELETE BUTTON ---
-        // (Delete button ka code yahaan tha, ab hata diya hai)
-        // --- END REMOVED ---
     }
     
     item.appendChild(actionsContainer);
@@ -904,12 +989,12 @@ function addFeedbackToDOM(fbData) {
             replyDiv.className = 'admin-reply';
             const adminAva = document.createElement('img');
             adminAva.className = 'admin-reply-avatar';
-            adminAva.src = 'https://i.ibb.co/FsSs4SG/creator-avatar.png'; 
+            adminAva.src = ADMIN_AVATAR_URL; 
             adminAva.alt = 'Admin';
             const replyContent = document.createElement('div');
             replyContent.className = 'admin-reply-content';
             let replyTs = '';
-            try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })})`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`; }
+            try { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}).`; } catch (e) { replyTs = `(${new Date(reply.timestamp).toLocaleString('en-US')})`; }
             
             let displayedAdminName = reply.adminName || 'Admin';
             if (displayedAdminName !== 'Guest' && displayedAdminName !== 'UNKNOWN_IP') {
@@ -922,10 +1007,10 @@ function addFeedbackToDOM(fbData) {
             detailsDiv.appendChild(replyDiv);
         }
     }
+
     
     feedbackListContainer.appendChild(item);
 }
-window.addFeedbackToDOM = addFeedbackToDOM;
 
 // Resets feedback form
 function resetFeedbackForm() {

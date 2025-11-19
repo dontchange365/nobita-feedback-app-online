@@ -633,7 +633,7 @@
      border-top-color: #333652;
 }
 
-/* Jab vote-btn par .loading class lage: */
+/* Jab vote-btn par .loading class लगे: */
 .vote-btn.loading {
     cursor: wait;
     /* Icon aur Text (number) ko chhupa do */
@@ -778,3 +778,183 @@
     pointer-events: none; /* Icon par click na ho */
 }
 /* === END NEW SEARCH STYLES === */
+
+/* --- NEW SHARE CARD POPUP STYLES --- */
+/* Outer container to hold the card and actions (inside stylishPopupCard) */
+#shareCardContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* CHANGED: Max width thoda aur chhota kiya to fit inside max-width: 420px popup */
+    max-width: 320px; 
+    margin: 0 auto;
+}
+
+/* The element that is designed for html2canvas capture */
+.share-feedback-card {
+    background: #23235a; 
+    border: 2.5px solid #FFD700;
+    border-radius: 18px;
+    /* CHANGED: Card padding kam kiya to shrink the size */
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #fff;
+    width: 100%;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.share-header {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Gap kam kiya */
+    margin-bottom: 12px; /* Margin kam kiya */
+}
+
+.share-user-avatar {
+    width: 45px; /* Chhota avatar */
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #8B5CF6; 
+    flex-shrink: 0;
+}
+
+.share-user-info {
+    text-align: left;
+}
+
+.share-user-info strong {
+    color: #FFD700;
+    font-size: 1em; /* Font size kam kiya */
+    display: block;
+    margin-bottom: 2px;
+}
+
+.share-rating {
+    color: #FFD700;
+    font-size: 1.1em; /* Font size kam kiya */
+    letter-spacing: 1.5px;
+}
+
+.share-feedback-text {
+    font-style: italic;
+    font-size: 0.9em; /* Font size kam kiya */
+    line-height: 1.4;
+    margin: 0;
+    padding: 0 5px;
+    text-align: left;
+    /* Max height set kiya to prevent tall text from overgrowing */
+    max-height: 4.2em; 
+    overflow: hidden;
+}
+
+.share-reply-summary {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #1e1e40; 
+    border-left: 3px solid #8B5CF6;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+}
+
+.share-admin-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #8B5CF6;
+}
+
+.share-admin-content strong {
+    color: #8B5CF6;
+    font-size: 0.85em;
+    display: block;
+    margin-bottom: 2px;
+}
+.share-admin-content p {
+    font-size: 0.8em;
+    margin: 0;
+    color: #c1b8f8;
+}
+
+.share-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.7em; /* Small font size */
+    color: #aaa;
+}
+
+.share-logo-small {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* --- Social Buttons and Link Copy (Compact, Icon-only) --- */
+.share-actions-buttons {
+    /* FIX: Horizontal Flex layout for compact icons */
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.share-social-btn {
+    /* FIX: Icon only circular/square buttons */
+    width: 45px;
+    height: 45px;
+    border-radius: 50%; /* Circular buttons as per example image */
+    border: none;
+    font-size: 1.4em;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+.share-social-btn:hover {
+    transform: scale(1.1);
+}
+
+
+/* Custom Colors */
+.share-social-btn.whatsapp-btn { background-color: #25d366; } 
+.share-social-btn.facebook-btn { background-color: #1877f2; } 
+.share-social-btn.instagram-btn { background-color: #c13584; } 
+.share-social-btn.download-btn { background-color: #FFD700; color: #1a1a2e; } 
+.share-social-btn.copy-link-btn { background-color: #8B5CF6; } /* Primary Color */
+
+
+/* --- REMOVED URL INPUT AREA (User Request) --- */
+.link-copy-container {
+    /* Hide the entire container that held the URL input */
+    display: none !important;
+}
+
+
+/* Media Query: Ensure all icons remain compact on small screens */
+@media (max-width: 480px) {
+    .share-actions-buttons {
+        /* Revert to 2x2 grid */
+        gap: 10px;
+    }
+    .share-social-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+}
